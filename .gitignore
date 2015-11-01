@@ -1,0 +1,12 @@
+*.class
+*.out
+*.o
+META-INF/
+# Binary Files #
+*.jar
+# Package Files #
+.settings/
+.classpath
+.project
+# vim swp file #
+*.swp
