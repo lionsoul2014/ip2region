@@ -64,7 +64,7 @@ public class TestSearcher
 				
 				sTime = System.nanoTime();
 				dataBlock = algorithm==2 ? seacher.binarySearch(line) : seacher.btreeSearch(line);
-				cTime = (System.nanoTime() - sTime) / 100000;
+				cTime = (System.nanoTime() - sTime) / 1000000;
 				System.out.printf("%s in %.5f millseconds\n", dataBlock, cTime);
 			}
 			
