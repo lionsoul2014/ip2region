@@ -91,7 +91,8 @@ public class DbSearcher
 		if ( HeaderSip == null ) 
 		{
 			raf.seek(8L);	//pass the super block
-			byte[] b = new byte[dbConfig.getTotalHeaderSize()];
+			//byte[] b = new byte[dbConfig.getTotalHeaderSize()];
+			byte[] b = new byte[4096];
 			raf.readFully(b, 0, b.length);
 			
 			//fill the header
@@ -289,6 +290,16 @@ public class DbSearcher
 	public DataBlock binarySearch( String ip ) throws IOException
 	{
 		return binarySearch(Util.ip2long(ip));
+	}
+
+	/**
+	 * get the db config
+	 *
+	 * @return	DbConfig
+	*/
+	public DbConfig getDbConfig()
+	{
+		return dbConfig;
 	}
 	
 	/**
