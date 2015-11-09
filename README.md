@@ -38,13 +38,18 @@ java:
 
 php: 
 <pre>
-    php binding/php/testSearch ./data/ip2region.db
+    php binding/php/testSearcher ./data/ip2region.db
 </pre>
 
 c: 
 <pre>cd binding/c/
     gcc -g -O2 testSearch.c ip2region.c
     ./a.out ../../data/ip2region.db
+</pre>
+
+python: 
+<pre>
+    python binding/python/testSearcher ./data/ip2region.db
 </pre>
 
 均会看到如下界面：
