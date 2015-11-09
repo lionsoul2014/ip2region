@@ -61,7 +61,11 @@ IP2R_API uint_t ip2region_destroy(ip2region_t ip2rObj)
 	ip2rObj->HeaderPtr = NULL;
 
 	//close the db file resource
-	fclose(ip2rObj->dbHandler);
+	if ( ip2rObj->dbHandler != NULL ) 
+	{
+		fclose(ip2rObj->dbHandler);
+		ip2rObj->dbHandler = NULL;
+	}
 
 	return 1;
 }
