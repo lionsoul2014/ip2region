@@ -5,7 +5,7 @@
 " Autho: koma<komazhang@foxmail.com>
 " Date : 2015-11-06
 """
-import struct, io, socket, sys, os
+import struct, io, socket, sys
 
 class Ip2Region(object):
 	__headerSip = []
@@ -22,7 +22,45 @@ class Ip2Region(object):
 		"""
 		if not ip.isdigit(): ip = self.ip2long(ip)
 
-		print "binary...", ip
+		self.__f.seek(0)
+		b = self.__f.read(8)
+		startPtr = self.getLong(b, 0)
+		endPtr   = self.getLong(b, 4)
+
+		indexLen = endPtr - startPtr
+		self.__f.seek(startPtr)
+		b = self.__f.read(indexLen+12)
+
+		l, h, mixPtr = (0, int(indexLen/12), 0)
+		while l <= h:
+			m   = int((l+h)/2)
+			ptr = startPtr + m*12
+			self.__f.seek(ptr)
+
+			b 	= self.__f.read(12)
+			sip = self.getLong(b, 0)
+			eip = self.getLong(b, 4)
+
+			if ip > sip:
+				if ip > eip:
+					l = m + 1
+				else:
+					mixPtr = self.getLong(b, 8)
+					break;
+			else:
+				h = m - 1
+
+		if mixPtr == 0: return "N2"
+
+		dataPtr = mixPtr & 0x00FFFFFFL
+		dataLen = (mixPtr >> 24) & 0xFF
+		
+		self.__f.seek(dataPtr)
+		data = self.__f.read(dataLen)
+		return {
+			"city_id": self.getLong(data, 0),
+			"region" : data[4:]
+		}
 
 	def btreeSearch(self, ip):
 		"""
@@ -152,67 +190,3 @@ class Ip2Region(object):
 		self.__headerPtr = None
 		self.__f.close()
 		self.__f		 = None
-
-def testSearch():
-	"""
-	" ip2region test method
-	"""
-	llen = len(sys.argv)
-
-	if llen < 2:
-		print "Usage: python ip2Region.py [ip2region db file] [alrogrithm]"
-		print "Algorithm: binary or b-tree"
-		return 0
-
-	dbFile    = sys.argv[1]
-	method    = 1
-	algorithm = "b-tree"
-	
-	if (not os.path.isfile(dbFile)) or (not os.path.exists(dbFile)):
-		print "[Error]: Specified db file is not exists."
-		return 0
-
-	if llen > 2:
-		algorithm = sys.argv[2]
-		if algorithm == "binary":
-			method = 2
-
-	print "initializing %s..." % (algorithm)
-	print "+----------------------------------+"
-	print "| ip2region test script            |"
-	print "| Author: komazhang@foxmail.com    |"
-	print "| Type 'quit' to exit program      |"
-	print "+----------------------------------+"
-
-	searcher = Ip2Region(dbFile);
-
-	while True:
-		line = raw_input("ip2region>> ")
-		line = line.strip()
-
-		if line == "":
-			print "[Error]: Invalid ip address."
-			continue
-
-		if line == "quit":
-			print "[Info]: Thanks for your use, Bye."
-			break
-
-		if not searcher.isip(line):
-			print "[Error]: Invalid ip address."
-			continue
-
-		if method == 1:
-			data = searcher.btreeSearch(line)
-		else:
-			data = searcher.binarySearch(line)
-
-		if isinstance(data, dict):
-			print "[Return]: %s|%s" % (data["city_id"], data["region"])
-		else:
-			print "[Error]: ", data
-
-	searcher.close()
-
-if __name__ == "__main__":
-	testSearch()
