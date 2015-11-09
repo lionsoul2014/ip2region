@@ -1,4 +1,4 @@
-ip2region - ip到地区的映射库，妈妈再也不同担心我的ip定位。
+ip2region - ip到地区的映射库，妈妈再也不用担心我的ip定位。
 
 **1. 99.9%准确率，不定时更新：**
 
@@ -17,13 +17,14 @@ ip2region - ip到地区的映射库，妈妈再也不同担心我的ip定位。
 
 **4. 多查询客户端的支持，0.0x毫秒级别的查询**
 
-已经集成的客户端有：java, php, c。
+已经集成的客户端有：java, php, c, python。
 <pre>
 提供了两种查询算法，响应时间如下：
 客户端/binary算法/b-tree算法：
 java/0.x毫秒/0.x毫秒 (使用RandomAccessFile)
 php/0.x毫秒/0.1x毫秒
 c/0.0x毫秒/0.0x毫秒(b-tree算法基本稳定在0.02x毫秒级别)
+python/0.x毫秒/0.1x毫秒
 </pre>
 
 任何客户端b-tree都比binary算法快
