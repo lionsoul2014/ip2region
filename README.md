@@ -43,7 +43,7 @@ php:
 
 c: 
 <pre>cd binding/c/
-    gcc -g -O2 testSearch.c ip2region.c
+    gcc -g -O2 testSearcher.c ip2region.c
     ./a.out ../../data/ip2region.db
 </pre>
 
