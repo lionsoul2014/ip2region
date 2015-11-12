@@ -17,7 +17,7 @@ ip2region - ip到地区的映射库，妈妈再也不用担心我的ip定位。
 
 **4. 多查询客户端的支持，0.0x毫秒级别的查询**
 
-已经集成的客户端有：java, php, c, python。
+已经集成的客户端有：java, php, c, python，PHP扩展。
 <pre>
 提供了两种查询算法，响应时间如下：
 客户端/binary算法/b-tree算法：
