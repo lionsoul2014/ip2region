@@ -1,3 +1,6 @@
 [submodule "binding/ip2region4php"]
 	path = binding/ip2region4php
 	url = https://git.oschina.net/monsterkiller/ip2region.git
+[submodule "binding/php_ext"]
+	path = binding/php_ext
+	url = git@github.com:dongyado/ip2region.git
