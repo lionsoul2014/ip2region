@@ -9,72 +9,6 @@ import struct, sys, os, time
 from ip2Region import Ip2Region
 
 def testSearch():
-<<<<<<< HEAD
-	"""
-	" ip2region test function
-	"""
-	llen = len(sys.argv)
-
-	if llen < 2:
-		print "Usage: python ip2Region.py [ip2region db file] [alrogrithm]"
-		print "Algorithm: binary or b-tree"
-		return 0
-
-	dbFile    = sys.argv[1]
-	method    = 1
-	algorithm = "b-tree"
-	
-	if (not os.path.isfile(dbFile)) or (not os.path.exists(dbFile)):
-		print "[Error]: Specified db file is not exists."
-		return 0
-
-	if llen > 2:
-		algorithm = sys.argv[2]
-		if algorithm == "binary":
-			method = 2
-
-	print "initializing %s..." % (algorithm)
-	print "+----------------------------------+"
-	print "| ip2region test script            |"
-	print "| Author: komazhang@foxmail.com    |"
-	print "| Type 'quit' to exit program      |"
-	print "+----------------------------------+"
-
-	searcher = Ip2Region(dbFile);
-
-	while True:
-		line = raw_input("ip2region>> ")
-		line = line.strip()
-
-		if line == "":
-			print "[Error]: Invalid ip address."
-			continue
-
-		if line == "quit":
-			print "[Info]: Thanks for your use, Bye."
-			break
-
-		if not searcher.isip(line):
-			print "[Error]: Invalid ip address."
-			continue
-
-		sTime = time.time() * 1000
-		if method == 1:
-			data = searcher.btreeSearch(line)
-		else:
-			data = searcher.binarySearch(line)
-		eTime = time.time() * 1000
-
-		if isinstance(data, dict):
-			print "[Return]: %s|%s in %f millseconds" % (data["city_id"], data["region"], eTime-sTime)
-		else:
-			print "[Error]: ", data
-
-	searcher.close()
-
-if __name__ == "__main__":
-	testSearch()
-=======
     """
     " ip2region test function
     """
@@ -139,4 +73,3 @@ if __name__ == "__main__":
 
 if __name__ == "__main__":
     testSearch()
->>>>>>> 7e51a4909fdb01014f948c2dbc5cfb5fbed9ce56

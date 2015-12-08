@@ -1,6 +1,7 @@
 *.class
 *.out
 *.o
+*.pyc
 META-INF/
 # Binary Files #
 *.jar
