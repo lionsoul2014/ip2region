@@ -25,9 +25,9 @@ public class DbConfig
      * @param    dataBlockSize
      * @throws DbMakerConfigException 
     */
-    public DbConfig( int totalHeaderSize ) throws DbMakerConfigException {
-        if ( (totalHeaderSize % 8) != 0 )
-        {
+    public DbConfig( int totalHeaderSize ) throws DbMakerConfigException
+    {
+        if ( (totalHeaderSize % 8) != 0 ) {
             throw new DbMakerConfigException("totalHeaderSize must be times of 8");
         }
         
@@ -35,24 +35,29 @@ public class DbConfig
         this.indexBlockSize = 4096; //4 * 1024
     }
     
-    public DbConfig() throws DbMakerConfigException {
+    public DbConfig() throws DbMakerConfigException
+    {
         this(8192);
     }
 
-    public int getTotalHeaderSize() {
+    public int getTotalHeaderSize()
+    {
         return totalHeaderSize;
     }
 
-    public DbConfig setTotalHeaderSize(int totalHeaderSize) {
+    public DbConfig setTotalHeaderSize(int totalHeaderSize)
+    {
         this.totalHeaderSize = totalHeaderSize;
         return this;
     }
 
-    public int getIndexBlockSize() {
+    public int getIndexBlockSize()
+    {
         return indexBlockSize;
     }
 
-    public DbConfig setIndexBlockSize(int dataBlockSize) {
+    public DbConfig setIndexBlockSize(int dataBlockSize)
+    {
         this.indexBlockSize = dataBlockSize;
         return this;
     }

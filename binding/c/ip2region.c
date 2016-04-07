@@ -20,22 +20,19 @@ IP2R_API uint_t ip2region_create(ip2region_t ip2rObj, char *dbFile)
     memset(ip2rObj, 0x00, sizeof(ip2region_entry));
     ip2rObj->headerLen = 0;
     ip2rObj->HeaderSip = (uint_t *) IP2R_MALLOC(TOTAL_HEADER_LENGTH);
-    if ( ip2rObj->HeaderSip == NULL )
-    {
+    if ( ip2rObj->HeaderSip == NULL ) {
         return 0;
     }
 
     ip2rObj->HeaderPtr = (uint_t *) IP2R_MALLOC(TOTAL_HEADER_LENGTH);
-    if ( ip2rObj->HeaderPtr == NULL )
-    {
+    if ( ip2rObj->HeaderPtr == NULL ) {
         IP2R_FREE(ip2rObj->HeaderSip);
         return 0;
     }
 
     //open the db file
     ip2rObj->dbHandler = fopen(dbFile, "rb");
-    if ( ip2rObj->dbHandler == NULL  )
-    {
+    if ( ip2rObj->dbHandler == NULL  ) {
         IP2R_FREE(ip2rObj->HeaderSip);
         IP2R_FREE(ip2rObj->HeaderPtr);
         return 0;
@@ -61,8 +58,7 @@ IP2R_API uint_t ip2region_destroy(ip2region_t ip2rObj)
     ip2rObj->HeaderPtr = NULL;
 
     //close the db file resource
-    if ( ip2rObj->dbHandler != NULL ) 
-    {
+    if ( ip2rObj->dbHandler != NULL ) {
         fclose(ip2rObj->dbHandler);
         ip2rObj->dbHandler = NULL;
     }
@@ -85,8 +81,7 @@ IP2R_API uint_t ip2region_binary_search(ip2region_t ip2rObj, uint_t ip, databloc
     char buffer[256];
     int dataLen, dataptr;
 
-    if ( ip2rObj->totalBlocks == 0 )
-    {
+    if ( ip2rObj->totalBlocks == 0 ) {
         fseek(ip2rObj->dbHandler, 0, 0);
         if ( fread(buffer, 8, 1, ip2rObj->dbHandler) != 1 ) {
             return 0;
@@ -107,6 +102,7 @@ IP2R_API uint_t ip2region_binary_search(ip2region_t ip2rObj, uint_t ip, databloc
         if ( fread(buffer, INDEX_BLOCK_LENGTH, 1, ip2rObj->dbHandler) != 1 ) {
             return 0;
         }
+
         sip = getUnsignedInt(buffer, 0);
         if ( ip < sip ) {
             h = m - 1;
@@ -162,16 +158,14 @@ IP2R_API uint_t ip2region_btree_search(ip2region_t ip2rObj, uint_t ip, datablock
     uint_t sip, eip, idxptr, dptr;
     char buffer[TOTAL_HEADER_LENGTH];
 
-    if ( ip2rObj->headerLen == 0 )
-    {
+    if ( ip2rObj->headerLen == 0 ) {
         idx = 0;
         fseek(ip2rObj->dbHandler, 8, 0);    //pass the super block
         if ( fread(buffer, TOTAL_HEADER_LENGTH, 1, ip2rObj->dbHandler) != 1 ) {
             return 0;
         }
 
-        for ( i = 0; i < TOTAL_HEADER_LENGTH; i += 8 )
-        {
+        for ( i = 0; i < TOTAL_HEADER_LENGTH; i += 8 ) {
             sip    = getUnsignedInt(buffer, i);
             idxptr = getUnsignedInt(buffer, i + 4);
             if ( idxptr == 0 ) break;
@@ -307,8 +301,7 @@ IP2R_API uint_t ip2long(char *ip)
     char buffer[4], *cs = ip;
     uint_t ipval = 0;
 
-    while ( *cs != '\0' )
-    {
+    while ( *cs != '\0' ) {
         if ( *cs == '.' ) {
             //single part length limit
             if ( i > 3 ) {

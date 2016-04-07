@@ -88,8 +88,7 @@ public class DbSearcher
     public DataBlock btreeSearch( long ip ) throws IOException
     {
         //check and load the header
-        if ( HeaderSip == null ) 
-        {
+        if ( HeaderSip == null )  {
             raf.seek(8L);    //pass the super block
             //byte[] b = new byte[dbConfig.getTotalHeaderSize()];
             byte[] b = new byte[4096];
@@ -121,8 +120,7 @@ public class DbSearcher
         }
         
         int l = 0, h = headerLength, sptr = 0, eptr = 0;
-        while ( l <= h )
-        {    
+        while ( l <= h ) {
             int m = (l + h) >> 1;
             
             //perfetc matched, just return it
@@ -230,8 +228,7 @@ public class DbSearcher
     public DataBlock binarySearch( long ip ) throws IOException
     {
         int blen = IndexBlock.getIndexBlockLength();
-        if ( totalIndexBlocks == 0 )
-        {
+        if ( totalIndexBlocks == 0 ) {
             raf.seek(0L);
             byte[] superBytes = new byte[8];
             raf.readFully(superBytes, 0, superBytes.length);

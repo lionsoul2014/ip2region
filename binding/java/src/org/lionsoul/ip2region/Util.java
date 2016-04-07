@@ -17,8 +17,7 @@ public class Util
     */
     public static void write( byte[] b, int offset, long v, int bytes)
     {
-        for ( int i = 0; i < bytes; i++ )
-        {
+        for ( int i = 0; i < bytes; i++ ) {
             b[offset++] = (byte)((v >>> (8 * i)) & 0xFF);
         }
     }
@@ -133,8 +132,7 @@ public class Util
         String[] p = ip.split("\\.");
         if ( p.length != 4 ) return false;
         
-        for ( String pp : p )
-        {
+        for ( String pp : p ) {
             if ( pp.length() > 3 ) return false;
             int val = Integer.valueOf(pp);
             if ( val > 255 ) return false;

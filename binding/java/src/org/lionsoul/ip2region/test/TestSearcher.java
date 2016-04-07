@@ -51,8 +51,7 @@ public class TestSearcher
             double sTime = 0, cTime = 0;
             String line = null;
             DataBlock dataBlock = null;
-            while ( true )
-            {
+            while ( true ) {
                 System.out.print("ip2region>> ");
                 line = reader.readLine().trim();
                 if ( line.length() < 2 ) continue;

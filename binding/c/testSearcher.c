@@ -68,16 +68,14 @@ int main( int argc, char **argv )
 
     //create a new ip2rObj
     printf("+--initializing %s ... \n", algorithm);
-    if ( ip2region_create(&ip2rEntry, dbFile) == 0 )
-    {
+    if ( ip2region_create(&ip2rEntry, dbFile) == 0 ) {
         println("Error: Fail to create the ip2region object");
         return 0;
     }
 
     __PRINT_ABOUT__;
 
-    while ( 1 )
-    {
+    while ( 1 ) {
         print("ip2region>> ");
         getLine( stdin, line );
         if ( strlen(line) < 2 ) continue;

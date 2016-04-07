@@ -23,20 +23,24 @@ public class DataBlock
         this.region = region;
     }
 
-    public int getCityId() {
+    public int getCityId()
+    {
         return city_id;
     }
 
-    public DataBlock setCityId(int city_id) {
+    public DataBlock setCityId(int city_id)
+    {
         this.city_id = city_id;
         return this;
     }
 
-    public String getRegion() {
+    public String getRegion()
+    {
         return region;
     }
 
-    public DataBlock setRegion(String region) {
+    public DataBlock setRegion(String region)
+    {
         this.region = region;
         return this;
     }

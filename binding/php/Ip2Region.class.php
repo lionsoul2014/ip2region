@@ -50,8 +50,7 @@ class Ip2Region
     {
         //check and conver the ip address
         if ( is_string($ip) ) $ip = ip2long($ip);
-        if ( $this->totalBlocks == 0 )
-        {
+        if ( $this->totalBlocks == 0 ) {
             fseek($this->dbFileHandler, 0);
             $superBlock = fread($this->dbFileHandler, 8);
 
@@ -61,19 +60,18 @@ class Ip2Region
         }
 
         //binary search to define the data
-        $l    = 0;
-        $h    = $this->totalBlocks;
+        $l = 0;
+        $h = $this->totalBlocks;
         $dataPtr = 0;
-        while ( $l <= $h )
-        {
-            $m    = (($l + $h) >> 1);
-            $p    = $m * INDEX_BLOCK_LENGTH;
+        while ( $l <= $h ) {
+            $m = (($l + $h) >> 1);
+            $p = $m * INDEX_BLOCK_LENGTH;
 
             fseek($this->dbFileHandler, $this->firstIndexPtr + $p);
             $buffer = fread($this->dbFileHandler, INDEX_BLOCK_LENGTH);
             $sip    = self::getLong($buffer, 0);
             if ( $ip < $sip ) {
-                $h    = $m - 1;
+                $h = $m - 1;
             } else {
                 $eip = self::getLong($buffer, 4);
                 if ( $ip > $eip ) {
@@ -94,7 +92,7 @@ class Ip2Region
         $dataPtr = ($dataPtr & 0x00FFFFFF);
 
         fseek($this->dbFileHandler, $dataPtr);
-        $data     = fread($this->dbFileHandler, $dataLen);
+        $data = fread($this->dbFileHandler, $dataLen);
 
         return array(
             'city_id' => self::getLong($data, 0), 
@@ -113,17 +111,15 @@ class Ip2Region
         if ( is_string($ip) ) $ip = ip2long($ip);
 
         //check and load the header
-        if ( $this->HeaderSip == NULL ) 
-        {
+        if ( $this->HeaderSip == NULL ) {
             fseek($this->dbFileHandler, 8);
-            $buffer    = fread($this->dbFileHandler, TOTAL_HEADER_LENGTH);
+            $buffer = fread($this->dbFileHandler, TOTAL_HEADER_LENGTH);
             
             //fill the header
             $idx = 0;
             $this->HeaderSip = array();
             $this->HeaderPtr = array();
-            for ( $i = 0; $i < TOTAL_HEADER_LENGTH; $i += 8 )
-            {
+            for ( $i = 0; $i < TOTAL_HEADER_LENGTH; $i += 8 ) {
                 $startIp = self::getLong($buffer, $i);
                 $dataPtr = self::getLong($buffer, $i + 4);
                 if ( $dataPtr == 0 ) break;
@@ -138,8 +134,7 @@ class Ip2Region
         
         //1. define the index block with the binary search
         $l = 0; $h = $this->headerLen; $sptr = 0; $eptr = 0;
-        while ( $l <= $h )
-        {    
+        while ( $l <= $h ) {
             $m = (($l + $h) >> 1);
             
             //perfetc matched, just return it
@@ -234,8 +229,8 @@ class Ip2Region
     {
         return (
             (ord($b[$offset++]))        | 
-            (ord($b[$offset++]) << 8)    | 
-            (ord($b[$offset++]) << 16)    | 
+            (ord($b[$offset++]) << 8)   | 
+            (ord($b[$offset++]) << 16)  | 
             (ord($b[$offset  ]) << 24)
         );
     }
