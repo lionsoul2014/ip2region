@@ -41,7 +41,7 @@ class Ip2Region(object):
             sip = self.getLong(b, 0)
             eip = self.getLong(b, 4)
 
-            if ip > sip:
+            if ip >= sip:
                 if ip > eip:
                     l = m + 1
                 else:
@@ -118,7 +118,7 @@ class Ip2Region(object):
             m = int((l+h)/2)
             offset = m * 12
 
-            if ip > self.getLong(b, offset):
+            if ip >= self.getLong(b, offset):
                 if ip > self.getLong(b, offset+4):
                     l = m + 1
                 else:
