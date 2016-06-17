@@ -286,8 +286,8 @@ zend_module_entry ip2region_module_entry = {
 	ip2region_functions,
 	PHP_MINIT(ip2region),
 	PHP_MSHUTDOWN(ip2region),
-	PHP_RINIT(ip2region),		/* Replace with NULL if there's nothing to do at request start */
-	PHP_RSHUTDOWN(ip2region),	/* Replace with NULL if there's nothing to do at request end */
+	PHP_RINIT(ip2region),	
+	PHP_RSHUTDOWN(ip2region),
 	PHP_MINFO(ip2region),
 	PHP_IP2REGION_VERSION,
 	STANDARD_MODULE_PROPERTIES
