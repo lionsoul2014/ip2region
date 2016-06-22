@@ -1,0 +1,24 @@
+{
+  "name": "ip2region",
+  "version": "0.0.1",
+  "description": "ip database ",
+  "main": "ip2region.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lionsoul2016/ip2region"
+  },
+  "keywords": [
+    "ip2region",
+    "ip",
+    "region"
+  ],
+  "author": "dongyado",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lionsoul2016/ip2region/issues"
+  },
+  "homepage": "https://github.com/lionsoul2016/ip2region"
+}
