@@ -35,12 +35,15 @@ IP2R_API uint_t ip2region_create(ip2region_t ip2rObj, char *dbFile)
     if ( ip2rObj->dbHandler == NULL  ) {
         IP2R_FREE(ip2rObj->HeaderSip);
         IP2R_FREE(ip2rObj->HeaderPtr);
+        //fprintf(stderr, "Fail to open the db file %s\n", ip2rObj>dbFile);
+        //exit(-1);
         return 0;
     }
 
     ip2rObj->firstIndexPtr = 0;
     ip2rObj->lastIndexPtr  = 0;
     ip2rObj->totalBlocks   = 0;
+    ip2rObj->dbBinStr      = NULL;
 
     return 1;
 }
@@ -63,7 +66,92 @@ IP2R_API uint_t ip2region_destroy(ip2region_t ip2rObj)
         ip2rObj->dbHandler = NULL;
     }
 
+    //free the db binary string
+    if ( ip2rObj->dbBinStr != NULL ) {
+        IP2R_FREE(ip2rObj->dbBinStr);
+        ip2rObj->dbBinStr = NULL;
+    }
+
     return 1;
+}
+
+/**
+ * get the region associated with the specified ip address with the memory binary search algorithm
+ *
+ * @param   ip2rObj
+ * @param   ip
+ * @param   datablock
+*/
+IP2R_API uint_t ip2region_memory_search(ip2region_t ip2rObj, uint_t ip, datablock_t datablock) 
+{
+    int l, h, m, p;
+    uint_t sip, eip, dptr;
+    int dataLen, dataptr;
+    long filesize;
+    char *buffer;
+
+    if ( ip2rObj->dbBinStr == NULL ) {
+        //get the size of the file
+        fseek(ip2rObj->dbHandler, 0, SEEK_END);
+        filesize = ftell(ip2rObj->dbHandler);
+        fseek(ip2rObj->dbHandler, 0, SEEK_SET);
+
+        //alloc the buffer size
+        ip2rObj->dbBinStr = IP2R_MALLOC(filesize);
+        if ( ip2rObj->dbBinStr == NULL ) {
+            return 0;
+        }
+
+        //now read the whole file
+        if ( fread(ip2rObj->dbBinStr, filesize, 1, ip2rObj->dbHandler) != 1 ) {
+            return 0;
+        }
+
+        buffer = ip2rObj->dbBinStr;
+        ip2rObj->firstIndexPtr = getUnsignedInt(buffer, 0);
+        ip2rObj->lastIndexPtr  = getUnsignedInt(buffer, 4);
+        ip2rObj->totalBlocks   = (ip2rObj->lastIndexPtr-ip2rObj->firstIndexPtr)/INDEX_BLOCK_LENGTH + 1;
+    }
+
+    l = 0; h = ip2rObj->totalBlocks; dptr = 0;
+    while ( l <= h ) {
+        m = (l + h) >> 1;
+        p = ip2rObj->firstIndexPtr + m * INDEX_BLOCK_LENGTH;
+
+        buffer = ip2rObj->dbBinStr + p;
+        sip    = getUnsignedInt(buffer, 0);
+        if ( ip < sip ) {
+            h = m - 1;
+        } else {
+            eip = getUnsignedInt(buffer, 4);
+            if ( ip > eip ) {
+                l = m + 1;
+            } else {
+                dptr = getUnsignedInt(buffer, 8);
+                break;
+            }
+        }
+    }
+
+    if ( dptr == 0 ) return 0;
+
+    //get the data
+    dataLen = ((dptr >> 24) & 0xFF);
+    dataptr = (dptr & 0x00FFFFFF);
+    buffer  = ip2rObj->dbBinStr + dataptr;
+
+    //fill the data to the datablock
+    datablock->city_id = getUnsignedInt(buffer, 0);
+    dataLen -= 4;    //reduce the length of the city_id
+    memcpy(datablock->region, buffer + 4, dataLen); 
+    datablock->region[dataLen] = '\0';
+
+    return 1;
+}
+
+IP2R_API uint_t ip2region_memory_search_string(ip2region_t ip2rObj, char *ip, datablock_t datablock)
+{
+    return ip2region_memory_search(ip2rObj, ip2long(ip), datablock);
 }
 
 /**
