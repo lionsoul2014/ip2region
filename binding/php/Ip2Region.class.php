@@ -67,7 +67,6 @@ class Ip2Region
             $this->firstIndexPtr = self::getLong($this->dbBinStr, 0);
             $this->lastIndexPtr  = self::getLong($this->dbBinStr, 4);
             $this->totalBlocks   = ($this->lastIndexPtr-$this->firstIndexPtr)/INDEX_BLOCK_LENGTH + 1;
-            echo "length: ", strlen($this->dbBinStr);
         }
 
         if ( is_string($ip) ) $ip = ip2long($ip);
