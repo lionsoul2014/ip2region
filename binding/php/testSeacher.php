@@ -15,12 +15,19 @@ EOF;
 
 array_shift($argv);
 $dbFile     = $argv[0];
-$method     = 1;
+$method     = 'btreeSearch';
 $algorithm  = 'B-tree';
-if ( isset($argv[1])
-    && strtolower($argv[1]) == 'binary' ) {
-    $method    = 2;
-    $algorithm = 'Binary';
+if ( isset($argv[1]) ) {
+    switch ( strtolower($argv[1]) ) {
+    case 'binary':
+        $algorithm = 'Binary';
+        $method    = 'binarySearch';
+        break;
+    case 'memory':
+        $algorithm = 'Memory';
+        $method    = 'memorySearch';
+        break;
+    }
 }
 
 require dirname(__FILE__) . '/Ip2Region.class.php';
@@ -47,7 +54,7 @@ while ( true ) {
     }
 
     $s_time = getTime();
-    $data   = $method==2 ? $ip2regionObj->binarySearch($line) : $ip2regionObj->btreeSearch($line);
+    $data   = $ip2regionObj->{$method}($line);
     $c_time = getTime() - $s_time;
     printf("%s|%s in %.5f millseconds\n", $data['city_id'], $data['region'], $c_time);
 }
