@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import org.lionsoul.ip2region.DataBlock;
 import org.lionsoul.ip2region.DbConfig;
@@ -25,22 +27,44 @@ public class TestSearcher
             return;
         }
         
-        int algorithm = DbSearcher.BTREE_ALGORITHM;
         File file = new File(argv[0]);
         if ( file.exists() == false ) {
             System.out.println("Error: Invalid ip2region.db file");
             return;
         }
         
+        int algorithm = DbSearcher.BTREE_ALGORITHM;
+        String algoName = "B-tree";
         if ( argv.length > 1 ) {
-            if ( argv[1].equalsIgnoreCase("binary")) algorithm = DbSearcher.BIN_ALGORITHM;
+            if ( argv[1].equalsIgnoreCase("binary")) {
+                algoName  = "Binary"; 
+                algorithm = DbSearcher.BINARY_ALGORITHM;
+            } else if ( argv[1].equalsIgnoreCase("memory") ) {
+                algoName  = "Memory";
+                algorithm = DbSearcher.MEMORY_ALGORITYM;
+            }
         }
         
         try {
-            System.out.println("initializing "+((algorithm==2)?"Binary":"B-tree")+" ... ");
+            System.out.println("initializing "+algoName+" ... ");
             DbConfig config = new DbConfig();
-            DbSearcher seacher = new DbSearcher(config, argv[0]);
+            DbSearcher searcher = new DbSearcher(config, argv[0]);
             BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+            
+            //define the method
+            Method method = null;
+            switch ( algorithm ) 
+            {
+            case DbSearcher.BTREE_ALGORITHM:
+                method = searcher.getClass().getMethod("btreeSearch", String.class);
+                break;
+            case DbSearcher.BINARY_ALGORITHM:
+                method = searcher.getClass().getMethod("binarySearch", String.class);
+                break;
+            case DbSearcher.MEMORY_ALGORITYM:
+                method = searcher.getClass().getMethod("memorySearch", String.class);
+                break;
+            }
             
             System.out.println("+----------------------------------+");
             System.out.println("| ip2region test shell             |");
@@ -62,18 +86,33 @@ public class TestSearcher
                 }
                 
                 sTime = System.nanoTime();
-                dataBlock = algorithm==2 ? seacher.binarySearch(line) : seacher.btreeSearch(line);
+                dataBlock = (DataBlock) method.invoke(searcher, line);
                 cTime = (System.nanoTime() - sTime) / 1000000;
                 System.out.printf("%s in %.5f millseconds\n", dataBlock, cTime);
             }
             
             reader.close();
-            seacher.close();
+            searcher.close();
             System.out.println("+--Bye");
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         } catch (DbMakerConfigException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (SecurityException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IllegalArgumentException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }

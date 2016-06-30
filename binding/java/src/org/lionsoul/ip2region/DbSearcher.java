@@ -11,51 +11,124 @@ import java.io.RandomAccessFile;
 */
 public class DbSearcher 
 {
-    public static final int BTREE_ALGORITHM = 1;
-    public static final int BIN_ALGORITHM = 2;
-    
+    public static final int BTREE_ALGORITHM  = 1;
+    public static final int BINARY_ALGORITHM = 2;
+    public static final int MEMORY_ALGORITYM = 3;
+
     /**
      * db config
     */
     private DbConfig dbConfig = null;
-    
+
     /**
      * db file access handler
     */
     private RandomAccessFile raf = null;
-    
+
     /**
      * header blocks buffer 
     */
     private long[] HeaderSip = null;
     private int[]  HeaderPtr = null;
     private int headerLength;
-    
+
     /**
      * super blocks info 
     */
     private long firstIndexPtr = 0;
     private long lastIndexPtr = 0;
     private int totalIndexBlocks = 0;
-    
+
+    /**
+     * for memory mode
+     * the original db binary string
+    */
+    private byte[] dbBinStr = null;
+
     /**
      * construct class
      * 
-     * @param    bdConfig
-     * @param    dbFile
-     * @throws FileNotFoundException 
+     * @param   bdConfig
+     * @param   dbFile
+     * @throws  FileNotFoundException 
     */
     public DbSearcher( DbConfig dbConfig, String dbFile ) throws FileNotFoundException
     {
         this.dbConfig = dbConfig;
         raf = new RandomAccessFile(dbFile, "r");
     }
+
+    /**
+     * get the region with a int ip address with memory binary search algorithm
+     *
+     * @param   ip
+     * @throws  IOException
+    */
+    public DataBlock memorySearch(long ip) throws IOException
+    {
+        int blen = IndexBlock.getIndexBlockLength();
+        if ( dbBinStr == null ) {
+            dbBinStr = new byte[(int)raf.length()];
+            raf.seek(0L);
+            raf.readFully(dbBinStr, 0, dbBinStr.length);
+            
+            //initialize the global vars
+            firstIndexPtr    = Util.getIntLong(dbBinStr, 0);
+            lastIndexPtr     = Util.getIntLong(dbBinStr, 4);
+            totalIndexBlocks = (int)((lastIndexPtr - firstIndexPtr)/blen) + 1;
+        }
+        
+        //search the index blocks to define the data
+        int l = 0, h = totalIndexBlocks;
+        long sip, eip, dataptr = 0;
+        while ( l <= h ) {
+            int m = (l + h) >> 1;
+            int p = (int)(firstIndexPtr + m * blen);
+            
+            sip = Util.getIntLong(dbBinStr, p);
+            if ( ip < sip ) {
+                h = m - 1;
+            } else {
+                eip = Util.getIntLong(dbBinStr, p + 4);
+                if ( ip > eip ) {
+                    l = m + 1;
+                } else {
+                    dataptr = Util.getIntLong(dbBinStr, p + 8);
+                    break;
+                }
+            }
+        }
+        
+        //not matched
+        if ( dataptr == 0 ) return null;
+        
+        //get the data
+        int dataLen = (int)((dataptr >> 24) & 0xFF);
+        int dataPtr = (int)((dataptr & 0x00FFFFFF));
+        int city_id = (int)Util.getIntLong(dbBinStr, dataPtr);
+        String region = new String(dbBinStr, dataPtr + 4, dataLen - 4, "UTF-8");
+        
+        return new DataBlock(city_id, region, dataPtr);
+    }
     
+    /**
+     * get the region throught the ip address with memory binary search algorithm
+     * 
+     * @param   ip
+     * @return  DataBlock
+     * @throws  IOException 
+    */
+    public DataBlock memorySearch( String ip ) throws IOException
+    {
+        return memorySearch(Util.ip2long(ip));
+    }
+    
+
     /**
      * get by index ptr
      * 
-     * @param    indexPtr
-     * @throws IOException 
+     * @param   indexPtr
+     * @throws  IOException 
     */
     public DataBlock getByIndexPtr( long ptr ) throws IOException
     {
@@ -78,11 +151,11 @@ public class DbSearcher
         
         return new DataBlock(city_id, region, dataPtr);
     }
-    
+
     /**
      * get the region with a int ip address with b-tree algorithm
      * 
-     * @param    ip
+     * @param   ip
      * @throws  IOException 
     */
     public DataBlock btreeSearch( long ip ) throws IOException
@@ -206,23 +279,23 @@ public class DbSearcher
         
         return new DataBlock(city_id, region, dataPtr);
     }
-    
+
     /**
      * get the region throught the ip address with b-tree search algorithm
      * 
-     * @param    ip
-     * @return    DataBlock
-     * @throws IOException 
+     * @param   ip
+     * @return  DataBlock
+     * @throws  IOException 
     */
     public DataBlock btreeSearch( String ip ) throws IOException
     {
         return btreeSearch(Util.ip2long(ip));
     }
-    
+
     /**
      * get the region with a int ip address with binary search algorithm
      * 
-     * @param    ip
+     * @param   ip
      * @throws  IOException 
     */
     public DataBlock binarySearch( long ip ) throws IOException
@@ -276,13 +349,13 @@ public class DbSearcher
         
         return new DataBlock(city_id, region, dataPtr);
     }
-    
+
     /**
      * get the region throught the ip address with binary search algorithm
      * 
-     * @param    ip
-     * @return    DataBlock
-     * @throws IOException 
+     * @param   ip
+     * @return  DataBlock
+     * @throws  IOException 
     */
     public DataBlock binarySearch( String ip ) throws IOException
     {
@@ -292,13 +365,13 @@ public class DbSearcher
     /**
      * get the db config
      *
-     * @return    DbConfig
+     * @return  DbConfig
     */
     public DbConfig getDbConfig()
     {
         return dbConfig;
     }
-    
+
     /**
      * close the db 
      * 
@@ -308,6 +381,8 @@ public class DbSearcher
     {
         HeaderSip = null;    //let gc do its work
         HeaderPtr = null;
+        dbBinStr  = null;
         raf.close();
     }
+
 }
