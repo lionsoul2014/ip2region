@@ -76,7 +76,7 @@ public class DbSearcher
         int city_id = (int)Util.getIntLong(data, 0);
         String region = new String(data, 4, data.length - 4, "UTF-8");
         
-        return new DataBlock(city_id, region);
+        return new DataBlock(city_id, region, dataPtr);
     }
     
     /**
@@ -204,7 +204,7 @@ public class DbSearcher
         int city_id = (int)Util.getIntLong(data, 0);
         String region = new String(data, 4, data.length - 4, "UTF-8");
         
-        return new DataBlock(city_id, region);
+        return new DataBlock(city_id, region, dataPtr);
     }
     
     /**
@@ -274,7 +274,7 @@ public class DbSearcher
         int city_id = (int)Util.getIntLong(data, 0);
         String region = new String(data, 4, data.length - 4, "UTF-8");
         
-        return new DataBlock(city_id, region);
+        return new DataBlock(city_id, region, dataPtr);
     }
     
     /**
