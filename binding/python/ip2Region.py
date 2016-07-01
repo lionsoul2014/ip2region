@@ -2,7 +2,7 @@
 """
 " ip2region python seacher client module
 "
-" Autho: koma<komazhang@foxmail.com>
+" Author: koma<komazhang@foxmail.com>
 " Date : 2015-11-06
 """
 import struct, io, socket, sys
