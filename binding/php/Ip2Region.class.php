@@ -69,7 +69,7 @@ class Ip2Region
             $this->totalBlocks   = ($this->lastIndexPtr-$this->firstIndexPtr)/INDEX_BLOCK_LENGTH + 1;
         }
 
-        if ( is_string($ip) ) $ip = ip2long($ip);
+        if ( is_string($ip) ) $ip = self::safeIp2long($ip);
 
         //binary search to define the data
         $l = 0;
@@ -114,7 +114,7 @@ class Ip2Region
     public function binarySearch( $ip )
     {
         //check and conver the ip address
-        if ( is_string($ip) ) $ip = ip2long($ip);
+        if ( is_string($ip) ) $ip = self::safeIp2long($ip);
         if ( $this->totalBlocks == 0 ) {
             //check and open the original db file
             if ( $this->dbFileHandler == NULL ) {
@@ -182,7 +182,7 @@ class Ip2Region
     */
     public function btreeSearch( $ip )
     {
-        if ( is_string($ip) ) $ip = ip2long($ip);
+        if ( is_string($ip) ) $ip = self::safeIp2long($ip);
 
         //check and load the header
         if ( $this->HeaderSip == NULL ) {
@@ -301,6 +301,26 @@ class Ip2Region
         );
     }
 
+
+    /**
+     * safe self::safeIp2long function 
+     *
+     * @param ip 
+     * */
+    public static function safeIp2long($ip) 
+    {
+        $ip = ip2long($ip);
+
+        // convert signed int to unsigned int if on 32 bit operating system
+        if ($ip < 0 && PHP_INT_SIZE == 4) {
+            $ip = sprintf("%u", $ip);
+        } 
+
+        return $ip;
+    }
+
+
+
     /**
      * read a long from a byte buffer
      *
@@ -309,12 +329,19 @@ class Ip2Region
     */
     public static function getLong( $b, $offset )
     {
-        return (
+        $val =  (
             (ord($b[$offset++]))        | 
             (ord($b[$offset++]) << 8)   | 
             (ord($b[$offset++]) << 16)  | 
             (ord($b[$offset  ]) << 24)
         );
+
+        // convert signed int to unsigned int if on 32 bit operating system
+        if ($val < 0 && PHP_INT_SIZE == 4) {
+            $val = sprintf("%u", $val);
+        } 
+
+        return $val;
     }
 
     /**
