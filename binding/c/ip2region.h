@@ -52,7 +52,9 @@ typedef struct {
 	uint_t *HeaderSip;		//header start ip blocks
 	uint_t *HeaderPtr;		//header ptr blocks
 	uint_t headerLen;		//header block number
+    char *dbFile;           //path of db file
 	FILE *dbHandler;		//file handler
+    char *dbBinStr;         //db binary string for memory search mode
 
 	uint_t firstIndexPtr;	//first index ptr
 	uint_t lastIndexPtr;	//last index ptr
@@ -79,14 +81,26 @@ typedef datablock_entry * datablock_t;
 IP2R_API uint_t ip2region_create(ip2region_t, char *);
 
 /**
- * destroy the specifield ip2region object
+ * destroy the specified ip2region object
  *
  * @param	ip2region_t
 */
 IP2R_API uint_t ip2region_destroy(ip2region_t);
 
 /**
- * get the region associated with the specifield ip address with binary search algorithm
+ * get the region associated with the specified ip address with the memory binary search algorithm
+ *
+ * @param   ip2region_t
+ * @param   uint_t
+ * @param   datablock_t
+ * @date    2016/06/30
+*/
+IP2R_API uint_t ip2region_memory_search(ip2region_t, uint_t, datablock_t);
+IP2R_API uint_t ip2region_memory_search_string(ip2region_t, char *, datablock_t);
+
+
+/**
+ * get the region associated with the specified ip address with binary search algorithm
  *
  * @param	ip2rObj
  * @param	ip
@@ -97,7 +111,7 @@ IP2R_API uint_t ip2region_binary_search(ip2region_t, uint_t, datablock_t);
 IP2R_API uint_t ip2region_binary_search_string(ip2region_t, char *, datablock_t);
 
 /**
- * get the region associated with the specifield ip address with b-tree algorithm
+ * get the region associated with the specified ip address with b-tree algorithm
  *
  * @param	ip2rObj
  * @param	ip
@@ -108,7 +122,7 @@ IP2R_API uint_t ip2region_btree_search(ip2region_t, uint_t, datablock_t);
 IP2R_API uint_t ip2region_btree_search_string(ip2region_t, char *, datablock_t);
 
 /**
- * get a unsinged long(4bytes) from a specifield buffer start from the specifield offset
+ * get a unsinged long(4bytes) from a specified buffer start from the specified offset
  *
  * @param	buffer
  * @param	offset

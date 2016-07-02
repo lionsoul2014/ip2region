@@ -2,12 +2,12 @@
 /**
  * ip2region php seacher client class
  *
- * @author    chenxin<chenxin619315@gmail.com>
+ * @author  chenxin<chenxin619315@gmail.com>
  * @date    2015-10-29
 */
 
-defined('INDEX_BLOCK_LENGTH')    or define('INDEX_BLOCK_LENGTH',  12);
-defined('TOTAL_HEADER_LENGTH')    or define('TOTAL_HEADER_LENGTH', 4096);
+defined('INDEX_BLOCK_LENGTH')   or define('INDEX_BLOCK_LENGTH',  12);
+defined('TOTAL_HEADER_LENGTH')  or define('TOTAL_HEADER_LENGTH', 4096);
 
 class Ip2Region 
 {
@@ -29,6 +29,13 @@ class Ip2Region
     private $firstIndexPtr = 0;
     private $lastIndexPtr  = 0;
     private $totalBlocks   = 0;
+
+    /**
+     * for memory mode only
+     *  the original db binary string
+    */
+    private $dbBinStr = NULL;
+    private $dbFile = NULL;
     
     /**
      * construct method
@@ -37,7 +44,65 @@ class Ip2Region
     */
     public function __construct( $ip2regionFile )
     {
-        $this->dbFileHandler = fopen($ip2regionFile, 'r');
+        $this->dbFile = $ip2regionFile;
+    }
+
+    /**
+     * all the db binary string will be loaded into memory
+     * then search the memory only and this will a lot faster than disk base search
+     * @Note: 
+     * invoke it once before put it to public invoke could make it thread safe
+     *
+     * @param   $ip
+    */
+    public function memorySearch($ip)
+    {
+        //check and load the binary string for the first time
+        if ( $this->dbBinStr == NULL ) {
+            $this->dbBinStr = file_get_contents($this->dbFile);
+            if ( $this->dbBinStr == false ) {
+                throw new Exception("Fail to open the db file {$this->dbFile}");
+            }
+
+            $this->firstIndexPtr = self::getLong($this->dbBinStr, 0);
+            $this->lastIndexPtr  = self::getLong($this->dbBinStr, 4);
+            $this->totalBlocks   = ($this->lastIndexPtr-$this->firstIndexPtr)/INDEX_BLOCK_LENGTH + 1;
+        }
+
+        if ( is_string($ip) ) $ip = ip2long($ip);
+
+        //binary search to define the data
+        $l = 0;
+        $h = $this->totalBlocks;
+        $dataPtr = 0;
+        while ( $l <= $h ) {
+            $m = (($l + $h) >> 1);
+            $p = $this->firstIndexPtr + $m * INDEX_BLOCK_LENGTH;
+            $sip = self::getLong($this->dbBinStr, $p);
+            if ( $ip < $sip ) {
+                $h = $m - 1;
+            } else {
+                $eip = self::getLong($this->dbBinStr, $p + 4);
+                if ( $ip > $eip ) {
+                    $l = $m + 1;
+                } else {
+                    $dataPtr = self::getLong($this->dbBinStr, $p + 8);
+                    break;
+                }
+            }
+        }
+
+        //not matched just stop it here
+        if ( $dataPtr == 0 ) return NULL;
+
+        //get the data
+        $dataLen = (($dataPtr >> 24) & 0xFF);
+        $dataPtr = ($dataPtr & 0x00FFFFFF);
+
+        return array(
+            'city_id' => self::getLong($this->dbBinStr, $dataPtr), 
+            'region'  => substr($this->dbBinStr, $dataPtr + 4, $dataLen - 4)
+        );
     }
 
     /**
@@ -51,6 +116,14 @@ class Ip2Region
         //check and conver the ip address
         if ( is_string($ip) ) $ip = ip2long($ip);
         if ( $this->totalBlocks == 0 ) {
+            //check and open the original db file
+            if ( $this->dbFileHandler == NULL ) {
+                $this->dbFileHandler = fopen($this->dbFile, 'r');
+                if ( $this->dbFileHandler == false ) {
+                    throw new Exception("Fail to open the db file {$this->dbFile}");
+                }
+            }
+
             fseek($this->dbFileHandler, 0);
             $superBlock = fread($this->dbFileHandler, 8);
 
@@ -102,9 +175,10 @@ class Ip2Region
 
     /**
      * get the data block associated with the specifield ip with b-tree search algorithm
+     * @Note: not thread safe
      *
-     * @param    ip
-     * @return    Mixed Array for NULL for any error
+     * @param   ip
+     * @return  Mixed Array for NULL for any error
     */
     public function btreeSearch( $ip )
     {
@@ -112,6 +186,14 @@ class Ip2Region
 
         //check and load the header
         if ( $this->HeaderSip == NULL ) {
+            //check and open the original db file
+            if ( $this->dbFileHandler == NULL ) {
+                $this->dbFileHandler = fopen($this->dbFile, 'r');
+                if ( $this->dbFileHandler == false ) {
+                    throw new Exception("Fail to open the db file {$this->dbFile}");
+                }
+            }
+
             fseek($this->dbFileHandler, 8);
             $buffer = fread($this->dbFileHandler, TOTAL_HEADER_LENGTH);
             
@@ -240,7 +322,11 @@ class Ip2Region
     */
     public function __destruct()
     {
-        if ( $this->dbFileHandler != NULL ) fclose($this->dbFileHandler);
+        if ( $this->dbFileHandler != NULL ) {
+            fclose($this->dbFileHandler);
+        }
+
+        $this->dbBinStr  = NULL;
         $this->HeaderSip = NULL;
         $this->HeaderPtr = NULL;
     }

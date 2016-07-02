@@ -54,22 +54,27 @@ int main( int argc, char **argv )
     memset(&datablock, 0x00, sizeof(datablock_entry));
 
     if ( argc < 2  ) {
-        printf("Usage: a.out [ip2region db file path] [algorithm]");
+        printf("Usage: a.out [ip2region db file path] [algorithm]\n");
         return 0;
     }
 
     dbFile      = argv[1];
     algorithm = "B-tree";
     func_ptr  = ip2region_btree_search_string;
-    if ( argc >= 3 && strcmp(argv[2], "binary") == 0 ) {
-        algorithm = "Binary";
-        func_ptr = ip2region_binary_search_string;
+    if ( argc >= 3 ) {
+        if ( strcmp(argv[2], "binary") == 0 ) {
+            algorithm = "Binary";
+            func_ptr = ip2region_binary_search_string;
+        } else if ( strcmp(argv[2], "memory") == 0 ) {
+            algorithm = "Memory";
+            func_ptr = ip2region_memory_search_string;
+        }
     }
 
     //create a new ip2rObj
     printf("+--initializing %s ... \n", algorithm);
     if ( ip2region_create(&ip2rEntry, dbFile) == 0 ) {
-        println("Error: Fail to create the ip2region object");
+        println("Error: Fail to create the ip2region object\n");
         return 0;
     }
 
