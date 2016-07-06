@@ -33,9 +33,9 @@ function Ip2region(db_path)
     {
         var buffer = new Buffer(8);
         fs.readSync(ip2r.db_fd, buffer, 0, 8, 0);
-        console.log(buffer[0]);
 
-
+        console.log(getLong(buffer, 0));
+        console.log(getLong(buffer, 4));
 
         return ip2long(ip);
     }
@@ -55,9 +55,14 @@ function Ip2region(db_path)
         return val;
     }
 
-    function getLong(buffer) 
+    function getLong(buffer, offset) 
     {
-        
+        return  (   
+            (buffer[offset] & 0x000000FF ) | 
+            ((buffer[offset + 1] << 8)  & 0x0000FF00) | 
+            ((buffer[offset + 2] << 16) & 0x00FF0000) |
+            ((buffer[offset + 3] << 24) & 0xFF000000)
+        );
     }
 }
 
