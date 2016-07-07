@@ -88,24 +88,24 @@ ip2region.btreeSearch = function(ip)
 {
     var indexBlockBuffer  = new Buffer(indexBlockLength);
     var headerIndexBuffer = new Buffer(totalHeaderLength);
-    if( typeof(ip) == 'string' )  ip = ip2long($ip);
+    if( typeof(ip) == 'string' )  ip = ip2long(ip);
 
     var i = 0;
     // header index handler
     if (headerSip == null) {
-        fs.readSync(ip2region.db_fd, headerIndexBuffer, 0, totalHeaderLength,8);
-        headerSip = [];
-        headerPtr = [];
+        fs.readSync(this.db_fd, headerIndexBuffer, 0, totalHeaderLength, 8);
+        headerSip = new Array();
+        headerPtr = new Array();
 
         var startIp = 0;
         var dataPtr = 0;
         for ( i = 0; i < totalHeaderLength; i += 8) {
-            startIp = getLong(headerIndexBuffer, $i);
-            dataPtr = getLong(headerIndexBuffer, $i + 4);
+            startIp = getLong(headerIndexBuffer, i);
+            dataPtr = getLong(headerIndexBuffer, i + 4);
             if ( dataPtr == 0) break;
             
-            headerSip.array_push(startIp);
-            headerPtr.array_push(dataPtr);
+            headerSip.push(startIp);
+            headerPtr.push(dataPtr);
             headerLen++; // header index size count
         } 
     }
@@ -118,9 +118,9 @@ ip2region.btreeSearch = function(ip)
     var eptr = 0;
     
     while(low <= high) {
-        mid = ((low + hign) >> 1);
+        mid = ((low + high) >> 1);
         
-        if (ip == headerIndex[mid]) {
+        if (ip == headerSip[mid]) {
             if ( m > 0) {
                 sptr = headerPtr[mid - 1];
                 eptr = headerPtr[mid];
@@ -136,14 +136,14 @@ ip2region.btreeSearch = function(ip)
                 sptr = headerPtr[mid];
                 eptr = headerPtr[mid + 1];
                 break;
-            } else if ( ip > headerPtr[mid - 1]) {
+            } else if ( ip > headerSip[mid - 1]) {
                 sptr = headerPtr[mid - 1];
                 eptr = headerPtr[mid];
                 break;
             }
-            low = mid - 1;
+            high = mid - 1;
         } else {
-            if ( mid = headerLen - 1) {
+            if ( mid == headerLen - 1) {
                 sptr = headerPtr[mid - 1];
                 eptr = headerPtr[mid];
                 break;
@@ -159,26 +159,52 @@ ip2region.btreeSearch = function(ip)
     // match nothing 
     if (sptr == 0) return null;
     
-    
     // second search (in index)
-    var blockLen = eptr - sptr;
-    var blockBuffer = new Buffer(blockLen);
-    fs.readSync(ip2region.db_fd, blockBuffer, 0, blockLen + indexBlockLength, sptr);
+    var blockLen    = eptr - sptr;
+    var blockBuffer = new Buffer(blockLen + indexBlockLength);
+    fs.readSync(this.db_fd, blockBuffer, 0, blockLen + indexBlockLength, sptr);
 
     low = 0;
     high = blockLen / indexBlockLength;
     
     var p = 0;
-    
     var sip = 0;
     var eip = 0;
+    var dataPtr = 0;
+
     while(low <= high) {
         mid = ((low + high) >> 1);
         p = mid * indexBlockLength;
-        
+        sip = getLong(blockBuffer, p);
+
+        if (ip < sip) {
+            high = mid - 1;
+        } else {
+            eip = getLong(blockBuffer, p + 4);
+            if (ip > eip) {
+                low = mid + 1;
+            } else {
+                dataPtr =  getLong(blockBuffer, p + 8);
+                break;
+            }
+        }
     }
 
-    return ip2long(ip);
+    // read data
+    if (dataPtr == 0) return null;
+    var dataLen = ((dataPtr >> 24) & 0xFF);
+    var dataPtr = (dataPtr & 0x00FFFFFF);
+    var dataBuffer = new Buffer(dataLen);
+
+    fs.readSync(this.db_fd, dataBuffer, 0, dataLen, dataPtr);
+
+    var city_id = getLong(dataBuffer, 0);
+    var data    = dataBuffer.toString('utf8', 4, dataLen);
+
+    //console.log(city_id);
+    //console.log(data);
+
+    return { city: city_id, region: data };
 }
 
 
