@@ -26,10 +26,6 @@ var totalHeaderLength   = 4096;
  * */
 ip2region.binarySearch = function(ip)
 {
-    if( typeof(ip) == 'string' ) 
-        ip = ip2long(ip);
-
-    // search
     var low     = 0;
     var mid     = 0;
     var high    = totalBlocks;
@@ -38,6 +34,8 @@ ip2region.binarySearch = function(ip)
     var sip     = 0;
     var eip     = 0;
     var indexBuffer = new Buffer(12);
+
+    if( typeof(ip) == 'string' ) ip = ip2long(ip);
 
     // binary search
     while( low <= high ) {
@@ -78,11 +76,108 @@ ip2region.binarySearch = function(ip)
 }
 
 
+var headerSip = null;
+var headerPtr = 0;
+var headerLen = 0;
+
+
 /**
  * btree search
  * */
 ip2region.btreeSearch = function(ip) 
 {
+    var indexBlockBuffer  = new Buffer(indexBlockLength);
+    var headerIndexBuffer = new Buffer(totalHeaderLength);
+    if( typeof(ip) == 'string' )  ip = ip2long($ip);
+
+    var i = 0;
+    // header index handler
+    if (headerSip == null) {
+        fs.readSync(ip2region.db_fd, headerIndexBuffer, 0, totalHeaderLength,8);
+        headerSip = [];
+        headerPtr = [];
+
+        var startIp = 0;
+        var dataPtr = 0;
+        for ( i = 0; i < totalHeaderLength; i += 8) {
+            startIp = getLong(headerIndexBuffer, $i);
+            dataPtr = getLong(headerIndexBuffer, $i + 4);
+            if ( dataPtr == 0) break;
+            
+            headerSip.array_push(startIp);
+            headerPtr.array_push(dataPtr);
+            headerLen++; // header index size count
+        } 
+    }
+    
+    // first search  (in header index)
+    var low  = 0;
+    var mid  = 0;
+    var high = headerLen;
+    var sptr = 0;
+    var eptr = 0;
+    
+    while(low <= high) {
+        mid = ((low + hign) >> 1);
+        
+        if (ip == headerIndex[mid]) {
+            if ( m > 0) {
+                sptr = headerPtr[mid - 1];
+                eptr = headerPtr[mid];
+            } else {
+                sptr = headerPtr[mid];
+                eptr = headerPtr[mid + 1];
+            }
+            break;
+        }
+        
+        if ( ip < headerSip[mid]) {
+            if (mid == 0) {
+                sptr = headerPtr[mid];
+                eptr = headerPtr[mid + 1];
+                break;
+            } else if ( ip > headerPtr[mid - 1]) {
+                sptr = headerPtr[mid - 1];
+                eptr = headerPtr[mid];
+                break;
+            }
+            low = mid - 1;
+        } else {
+            if ( mid = headerLen - 1) {
+                sptr = headerPtr[mid - 1];
+                eptr = headerPtr[mid];
+                break;
+            } else if ( ip <= headerSip[mid + 1]) {
+                sptr = headerPtr[mid];
+                eptr = headerPtr[mid + 1];
+                break;
+            }
+            low = mid + 1;
+        }
+    }
+    
+    // match nothing 
+    if (sptr == 0) return null;
+    
+    
+    // second search (in index)
+    var blockLen = eptr - sptr;
+    var blockBuffer = new Buffer(blockLen);
+    fs.readSync(ip2region.db_fd, blockBuffer, 0, blockLen + indexBlockLength, sptr);
+
+    low = 0;
+    high = blockLen / indexBlockLength;
+    
+    var p = 0;
+    
+    var sip = 0;
+    var eip = 0;
+    while(low <= high) {
+        mid = ((low + high) >> 1);
+        p = mid * indexBlockLength;
+        
+    }
+
     return ip2long(ip);
 }
 
