@@ -22,9 +22,9 @@ var totalHeaderLength   = 4096;
 
 
 /**
- * binary search
+ * binary search synchronized
  * */
-ip2region.binarySearch = function(ip)
+ip2region.binarySearchSync = function(ip)
 {
     var low     = 0;
     var mid     = 0;
@@ -82,9 +82,9 @@ var headerLen = 0;
 
 
 /**
- * btree search
+ * btree  search synchronized
  * */
-ip2region.btreeSearch = function(ip) 
+ip2region.btreeSearchSync = function(ip) 
 {
     var indexBlockBuffer  = new Buffer(indexBlockLength);
     var headerIndexBuffer = new Buffer(totalHeaderLength);
@@ -242,10 +242,8 @@ function getLong(buffer, offset)
 }
 
 
-// api for create
-exports.create = function(db_path) {
-
-    // db file check
+exports.create = function(db_path) 
+{
     if (typeof(db_path) == "undefined" || fs.exists(db_path) ) {
         throw("[ip2region] db file not exists : " + db_path);
     }
@@ -272,8 +270,8 @@ exports.create = function(db_path) {
 }
 
 
-// api for destroy
-exports.destroy = function(ip2rObj){
+exports.destroy = function(ip2rObj)
+{
     ip2rObj.db_file_path = null;
     fs.closeSync(ip2rObj.db_fd);
 }
