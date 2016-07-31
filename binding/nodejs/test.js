@@ -8,8 +8,8 @@ var Ip2region = require('./ip2region');
 var ipObj = Ip2region.create('../../data/ip2region.db');
 
 // 2. use
-//console.log(ipObj.binarySearch("120.24.78.68"));
-console.log(ipObj.btreeSearch("120.24.78.68"));
+//console.log(ipObj.binarySearchSync("120.24.78.68"));
+console.log(ipObj.btreeSearchSync("120.24.78.68"));
 
 // 3. destroy
 Ip2region.destroy(ipObj);
