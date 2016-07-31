@@ -31,11 +31,13 @@ def testSearch():
         algorithm = sys.argv[2]
         if algorithm == "binary":
             method = 2
+        elif algorithm == "memory":
+            method = 3
 
     print "initializing %s..." % (algorithm)
     print "+----------------------------------+"
-    print "| ip2region test script            |"
-    print "| Author: komazhang@foxmail.com    |"
+    print "| ip2region test program           |"
+    print "| Author: chenxin619315@gmail.com. |"
     print "| Type 'quit' to exit program      |"
     print "+----------------------------------+"
 
@@ -60,12 +62,14 @@ def testSearch():
         sTime = time.time() * 1000
         if method == 1:
             data = searcher.btreeSearch(line)
-        else:
+        elif method == 2:
             data = searcher.binarySearch(line)
+        else:
+            data = searcher.memorySearch(line)
         eTime = time.time() * 1000
 
         if isinstance(data, dict):
-            print "[Return]: %s|%s in %f millseconds" % (data["city_id"], data["region"], eTime-sTime)
+            print "%s|%s in %f millseconds" % (data["city_id"], data["region"], eTime-sTime)
         else:
             print "[Error]: ", data
 
