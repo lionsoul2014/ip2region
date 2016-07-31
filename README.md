@@ -18,7 +18,7 @@ ip2region - 最自由的ip地址查询库，ip到地区的映射库，提供Bina
 
 **4. 多查询客户端的支持，0.0x毫秒级别的查询**
 
-已经集成的客户端有：java, php, c, python，php扩展(支持linux, php5, php7版本已支持)。
+已经集成的客户端有：java, php, c, python，nodejs，php扩展(支持linux, php5, php7版本已支持)。
 
     提供了两种查询算法，响应时间如下：
     客户端/binary算法/b-tree算法/Memory算法：
