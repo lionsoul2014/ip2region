@@ -4,25 +4,13 @@ import (
 	"testing"
 )
 
-func TestGetLong(t *testing.T) {
-	//region, err := New("../../../data/ip2region.db ")
-	//if err != nil {
-	//	t.Error(err)
-	//}
-	//region.BtreeSearch("222.46.20.201")
-	//region.MemorySearch("222.46.20.201")
-
-	//getLong([]byte("abcd"), 0)
-
-}
-
 func BenchmarkBtreeSearch(B *testing.B) {
 	region, err := New("../../data/ip2region.db ")
 	if err != nil {
 		B.Error(err)
 	}
 	for i:=0;i<B.N;i++{
-		region.BtreeSearch("222.46.20.201")
+		region.BtreeSearch("127.0.0.1")
 	}
 
 }
@@ -33,7 +21,7 @@ func BenchmarkMemorySearch(B *testing.B) {
 		B.Error(err)
 	}
 	for i:=0;i<B.N;i++{
-		region.MemorySearch("251.1.12.1")
+		region.MemorySearch("127.0.0.1")
 	}
 
 }
@@ -44,7 +32,7 @@ func BenchmarkBinarySearch(B *testing.B) {
 		B.Error(err)
 	}
 	for i:=0;i<B.N;i++{
-		region.BinarySearch("222.46.20.201")
+		region.BinarySearch("127.0.0.1")
 	}
 
 }

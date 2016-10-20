@@ -110,7 +110,7 @@ func (this *Ip2Region) MemorySearch(ipStr string) (ipInfo IpInfo, err error) {
 	var dataPtr, l int64;
 	for (l <= h) {
 
-		m := l + h >> 1
+		m := (l + h) >> 1
 		p := this.firstIndexPtr + m * INDEX_BLOCK_LENGTH
 		sip := getLong(this.dbBinStr, p)
 		if ip < sip {
