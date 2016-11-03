@@ -1,16 +1,7 @@
 ### 1.2.2
 
 1. ip数据文件更新至2016/11/02版本
-2. 增加ip2region.db数据库文件的java生成工具，用法如下：
-
-```shell
-cd 项目根目录
-java -jar dbMaker-{version}.jar -src 文本数据文件 -region 地域csv文件
-
-# 文件数据文件：是db文件的原始数据，自带的ip2region.db文件就是/data/ip.merge.txt生成而来
-# 地域csv文件：该文件目的是用于方便配置ip2region进行数据关系的存储，可以获取里面的city_id，这个直接使用/data/origin/global_region.csv文件即可
-```
-
+2. 增加ip2region.db数据库文件的java生成工具，请参考README获取使用方式
 3. 新增golang查询客户端的实现，感谢 [@mohong122](https://github.com/mohong122) 的关注和贡献
 
 ### 1.2
