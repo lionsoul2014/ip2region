@@ -1,7 +1,7 @@
 /**
  * test ip2region searcher program
  *
- * @author    chenxin<chenxin619315@gmail.com>
+ * @author  chenxin<chenxin619315@gmail.com>
  * @date    2015-10-30
 */
 
@@ -58,16 +58,13 @@ int main( int argc, char **argv )
         return 0;
     }
 
-    dbFile      = argv[1];
+    dbFile    = argv[1];
     algorithm = "B-tree";
     func_ptr  = ip2region_btree_search_string;
     if ( argc >= 3 ) {
         if ( strcmp(argv[2], "binary") == 0 ) {
             algorithm = "File";
             func_ptr = ip2region_binary_search_string;
-        } else if ( strcmp(argv[2], "file") == 0 ) {
-            algorithm = "File";
-            func_ptr = ip2region_file_search_string;
         }
     }
 

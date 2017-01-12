@@ -1,9 +1,10 @@
 /**
- * default ip2region implementation
+ * ip2region implementation with mmap support created by Leo Ma
  *
- * @see        #ip2region.h
- * @author    chenxin<chenxin619315@gmail.com>
- * @date    2015-10-30
+ * @see     #ip2region.h
+ * @author  chenxin<chenxin619315@gmail.com>
+ * @author  Leo Ma<http://git.oschina.net/begeekmyfriend>
+ * @date    2017/01/12
 */
 
 #include "ip2region.h"
@@ -98,7 +99,6 @@ IP2R_API uint_t ip2region_binary_search(ip2region_t ip2rObj, uint_t ip, databloc
     int l, h, m, p;
     uint_t sip, eip, dptr;
     int dataLen, dataptr;
-    long filesize;
     char *buffer;
 
     l = 0; h = ip2rObj->totalBlocks; dptr = 0;
@@ -140,89 +140,6 @@ IP2R_API uint_t ip2region_binary_search(ip2region_t ip2rObj, uint_t ip, databloc
 IP2R_API uint_t ip2region_binary_search_string(ip2region_t ip2rObj, char *ip, datablock_t datablock)
 {
     return ip2region_binary_search(ip2rObj, ip2long(ip), datablock);
-}
-
-/**
- * get the region associated with the specifield ip address with file binary search algorithm
- *
- * @param    ip2rObj
- * @param    ip
- * @param    datablock
- * @return    uint_t
-*/
-IP2R_API uint_t ip2region_file_search(ip2region_t ip2rObj, uint_t ip, datablock_t datablock)
-{
-    int l, h, m, p;
-    uint_t sip, eip, dptr;
-    char buffer[256];
-    int dataLen, dataptr;
-
-    FILE *dbHandler = fopen(ip2rObj->dbFile, "rb");
-    if ( dbHandler == NULL ) {
-        return 0;
-    }
-    fseek(dbHandler, 0, 0);
-    if ( fread(buffer, 8, 1, dbHandler) != 1 ) {
-        return 0;
-    }
-
-    ip2rObj->firstIndexPtr = getUnsignedInt(buffer, 0);
-    ip2rObj->lastIndexPtr  = getUnsignedInt(buffer, 4);
-    ip2rObj->totalBlocks   = (ip2rObj->lastIndexPtr-ip2rObj->firstIndexPtr)/INDEX_BLOCK_LENGTH + 1;
-
-    //binary search the index blocks to define the data block
-    l = 0; h = ip2rObj->totalBlocks; dptr = 0;
-    while ( l <= h ) {
-        m = (l + h) >> 1;
-        p = ip2rObj->firstIndexPtr + m * INDEX_BLOCK_LENGTH;
-
-        fseek(dbHandler, p, 0);
-        if ( fread(buffer, INDEX_BLOCK_LENGTH, 1, dbHandler) != 1 ) {
-            return 0;
-        }
-
-        sip = getUnsignedInt(buffer, 0);
-        if ( ip < sip ) {
-            h = m - 1;
-        } else {
-            eip = getUnsignedInt(buffer, 4);
-            if ( ip > eip ) {
-                l = m + 1;
-            } else {
-                dptr = getUnsignedInt(buffer, 8);
-                break;
-            }
-        }
-    }
-
-    if ( dptr == 0 ) return 0;
-
-    //get the data
-    dataLen = ((dptr >> 24) & 0xFF);
-    dataptr = (dptr & 0x00FFFFFF);
-
-    //memset(data, 0x00, sizeof(data));
-    fseek(dbHandler, dataptr, 0);
-    if ( fread(buffer, dataLen, 1, dbHandler) != 1 ) {
-        return 0;
-    }
-
-    //fill the data to the datablock
-    datablock->city_id = getUnsignedInt(buffer, 0);
-    dataLen -= 4;    //reduce the length of the city_id
-    memcpy(datablock->region, buffer + 4, dataLen); 
-    datablock->region[dataLen] = '\0';
-
-    if ( dbHandler != NULL ) {
-        fclose(dbHandler);
-    }
-
-    return 1;
-}
-
-IP2R_API uint_t ip2region_file_search_string(ip2region_t ip2rObj, char *ip, datablock_t datablock)
-{
-    return ip2region_file_search(ip2rObj, ip2long(ip), datablock);
 }
 
 /**

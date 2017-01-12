@@ -52,9 +52,9 @@ typedef struct {
 	uint_t *HeaderSip;		//header start ip blocks
 	uint_t *HeaderPtr;		//header ptr blocks
 	uint_t headerLen;		//header block number
-        char *dbFile;           //path of db file
-        char *dbBinStr;         //db binary string for memory search mode
-        uint_t dbSize;
+    char *dbFile;           //path of db file
+    char *dbBinStr;         //db binary string for memory search mode
+    uint_t dbSize;
 	uint_t firstIndexPtr;	//first index ptr
 	uint_t lastIndexPtr;	//last index ptr
 	uint_t totalBlocks;		//total index blocks number
@@ -96,18 +96,6 @@ IP2R_API uint_t ip2region_destroy(ip2region_t);
 */
 IP2R_API uint_t ip2region_binary_search(ip2region_t, uint_t, datablock_t);
 IP2R_API uint_t ip2region_binary_search_string(ip2region_t, char *, datablock_t);
-
-
-/**
- * get the region associated with the specified ip address with file binary search algorithm
- *
- * @param	ip2rObj
- * @param	ip
- * @param	datablock
- * @return	uint_t
-*/
-IP2R_API uint_t ip2region_file_search(ip2region_t, uint_t, datablock_t);
-IP2R_API uint_t ip2region_file_search_string(ip2region_t, char *, datablock_t);
 
 /**
  * get the region associated with the specified ip address with b-tree algorithm
