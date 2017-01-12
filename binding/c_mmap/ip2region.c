@@ -73,16 +73,16 @@ IP2R_API uint_t ip2region_create(ip2region_t ip2rObj, char *dbFile)
 */
 IP2R_API uint_t ip2region_destroy(ip2region_t ip2rObj)
 {
+    IP2R_FREE(ip2rObj->dbFile);
     IP2R_FREE(ip2rObj->HeaderSip);
-    ip2rObj->HeaderSip = NULL;
     IP2R_FREE(ip2rObj->HeaderPtr);
-    ip2rObj->HeaderPtr = NULL;
 
     //free the db binary string
     if ( ip2rObj->dbBinStr != NULL ) {
         munmap(ip2rObj->dbBinStr, ip2rObj->dbSize);
-        ip2rObj->dbBinStr = NULL;
     }
+
+    memset(ip2rObj, 0x00, sizeof(ip2region_entry));
 
     return 1;
 }
