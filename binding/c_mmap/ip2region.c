@@ -16,7 +16,7 @@
 /**
  * create a new ip2region object
  *
- * @param    dbFile path
+ * @param   dbFile path
 */
 IP2R_API uint_t ip2region_create(ip2region_t ip2rObj, char *dbFile)
 {

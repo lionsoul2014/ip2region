@@ -2,6 +2,7 @@
  * ip2region header file
  *
  * @author	chenxin<chenxin619315@gmail.com>
+ * @author  Leo Ma<http://git.oschina.net/begeekmyfriend>
 */
 
 #ifndef _IP2REGION_H
