@@ -13,8 +13,9 @@
 7，生产data目录下的ip2region.db二进制数据库文件
 ```
 
-2，数据升级至：2017/03/15版本。
-3，增加c_mmap查询客户端，C客户端查询文件读取使用内存映射加速，感谢[Leo Ma](http://git.oschina.net/begeekmyfriend)的贡献
+2，修复原始数据关于“香港，台湾，澳门”国家信息错误的bug，reported at http://git.oschina.net/lionsoul/ip2region/issues/21
+3，将数据升级至：2017/03/15同步版本
+4，增加c_mmap查询客户端，C客户端查询文件读取使用内存映射加速，感谢[Leo Ma](http://git.oschina.net/begeekmyfriend)的贡献
 
 备注：部分阿里云数据有问题，缺失的部分使用免费开放的ipip.net的数据代替了。
 
