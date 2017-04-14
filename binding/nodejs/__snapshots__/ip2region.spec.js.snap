@@ -1,0 +1,29 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`binarySearch 1`] = `
+Object {
+  "city": 2163,
+  "region": "中国|华南|广东省|深圳市|阿里云",
+}
+`;
+
+exports[`binarySearch 2`] = `
+Object {
+  "city": 0,
+  "region": "未分配或者内网IP|0|0|0|0",
+}
+`;
+
+exports[`should query 1`] = `
+Object {
+  "city": 2163,
+  "region": "中国|华南|广东省|深圳市|阿里云",
+}
+`;
+
+exports[`should query 2`] = `
+Object {
+  "city": 0,
+  "region": "未分配或者内网IP|0|0|0|0",
+}
+`;

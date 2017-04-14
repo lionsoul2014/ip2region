@@ -4,7 +4,7 @@
   "description": "ip database ",
   "main": "ip2region.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -20,5 +20,8 @@
   "bugs": {
     "url": "https://github.com/lionsoul2016/ip2region/issues"
   },
-  "homepage": "https://github.com/lionsoul2016/ip2region"
+  "homepage": "https://github.com/lionsoul2016/ip2region",
+  "devDependencies": {
+    "jest": "^19.0.2"
+  }
 }
