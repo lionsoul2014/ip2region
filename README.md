@@ -84,7 +84,7 @@ java -jar dbMaker-{version}.jar -src 文本数据文件 -region 地域csv文件 
 
 ```shell
 cd ip2region项目根目录
-java -jar dbMaker-1.2.2.jar -src ./data/ip.merge.txt ./data/global_region.csv
+java -jar dbMaker-1.2.2.jar -src ./data/ip.merge.txt -region ./data/global_region.csv
 
 # 会看到一大片的输出
 ```
