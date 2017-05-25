@@ -18,7 +18,7 @@ ip2region - 最自由的ip地址查询库，ip到地区的映射库，提供Bina
 
 **4. 多查询客户端的支持，0.0x毫秒级别的查询**
 
-已经集成的客户端有：java, php, c, python，nodejs，php扩展(支持linux, php5, php7版本已支持)。
+已经集成的客户端有：java, php, c, python，nodejs，php扩展(支持linux, php5, php7版本已支持)，golang。
 
     提供了两种查询算法，响应时间如下：
     客户端/binary算法/b-tree算法/Memory算法：
@@ -64,3 +64,29 @@ python:
 输入ip地址开始测试，第一次会稍微有点慢，在运行命令后面接入binary,memory来尝试其他算法，建议使用b-tree算法，速度和并发需求的可以使用memory算法。
 
 具体集成请参考不同客户端的测试源码。
+
+**6. 如何生成ip2region.db文件**
+
+从ip2region 1.2.2版本开始里面提交了一个dbMaker-{version}.jar的可以执行jar文件，用它来完成这个工作：
+* 1, 确保你安装好了java环境（不玩Java的童鞋就自己谷歌找找拉，临时用一用，几分钟的事情）
+* 2, cd到ip2region的根目录，然后运行如下命令：
+
+```shell
+java -jar dbMaker-{version}.jar -src 文本数据文件 -region 地域csv文件 [-dst 生成的ip2region.db文件的目录]
+
+# 文本数据文件：db文件的原始文本数据文件路径，自带的ip2region.db文件就是/data/ip.merge.txt生成而来的，你可以换成自己的或者更改/data/ip.merge.txt重新生成
+# 地域csv文件：该文件目的是方便配置ip2region进行数据关系的存储，得到的数据包含一个city_id，这个直接使用/data/origin/global_region.csv文件即可
+# ip2region.db文件的目录：是可选参数，没有指定的话会在当前目录生成一份./data/ip2region.db文件
+```
+
+* 3, 获取生成的ip2region.db文件覆盖原来的ip2region.db文件即可
+* 4, 默认的ip2region.db文件生成命令:
+
+```shell
+cd ip2region项目根目录
+java -jar dbMaker-1.2.2.jar -src ./data/ip.merge.txt -region ./data/global_region.csv
+
+# 会看到一大片的输出
+```
+
+* 5, 数据库文件的结构和原理请阅读 @冬芽 的blog：[“ip2region数据库文件的结构和原理”](http://dongyado.com/tools/2016/08/18/structure-of-ip2region-database-file/)

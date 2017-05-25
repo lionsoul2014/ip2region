@@ -6,6 +6,7 @@
 META-INF/
 # Binary Files #
 *.jar
+!dbMaker-*.jar
 # Package Files #
 .settings/
 .classpath
