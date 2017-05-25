@@ -1,6 +1,6 @@
-golang 实现ip地址查询
+###golang 实现ip地址查询
 
-获取
+####获取
 
 ```
 go get github.com/mohong122/ip2region/binding/golang
@@ -9,7 +9,7 @@ go get github.com/mohong122/ip2region/binding/golang
 
 
 
-使用
+####使用
 
 ```golang
 
@@ -38,7 +38,7 @@ func main() {
 
 ```
 
-返回对象
+####返回对象
 ```golang
 type IpInfo struct {
 	CityId   int64
@@ -50,7 +50,7 @@ type IpInfo struct {
 }
 ```
 
-性能
+#### 性能
 
 |名称|次数|平均耗时|
 |---|---|------|
@@ -58,3 +58,32 @@ BenchmarkBtreeSearch-4|    200000 |             7715 ns/op
 BenchmarkMemorySearch-4|  2000000  |             840 ns/op
 BenchmarkBinarySearch-4|    30000   |          42680 ns/op
 
+
+#### 测试程序
+
+```
+cd /binging/golang
+
+go run main.go ../../data/ip2Region.db
+
+Or
+
+go build -o ip2region main.go
+./ip2region ../../data/ip2region.db
+
+```
+
+会看到如下界面
+
+```
+initializing
++-------------------------------------------------------+
+| ip2region test script                                 |
+| format 'ip type'                                      |
+| type option 'b-tree','binary','memory' default b-tree |
+| Type 'quit' to exit program                           |
++-------------------------------------------------------+
+ip2reginon >> 127.0.0.1 memory
+0|未分配或者内网IP|0|0|0|0  960.5µs
+
+```
