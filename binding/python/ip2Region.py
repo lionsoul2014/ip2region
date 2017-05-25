@@ -7,16 +7,24 @@
 """
 import struct, io, socket, sys
 
+INDEX_BLOCK_LENGTH = 12
+
 class Ip2Region(object):
-    __headerSip = []
-    __headerPtr = []
-    __f         = None
-    __sPtr      = 0
-    __indexLen  = 0
-    __dbBinStr  = ''
 
     def __init__(self, dbfile):
-        self.initDatabase(dbfile)
+        self.__headerSip = []
+        self.__headerPtr = []
+        self.__f         = None
+        self.__sPtr      = 0
+        self.__indexLen  = 0
+        self.__dbBinStr  = ''
+
+        try:
+            self.__f = io.open(dbfile, "rb")
+        except IOError, e:
+            print "[Error]: ", e
+            sys.exit()
+
 
     def memorySearch(self, ip):
         """
@@ -35,10 +43,10 @@ class Ip2Region(object):
         indexLen = self.__indexLen
         dbBinStr = self.__dbBinStr
 
-        l, h, mixPtr = (0, int(indexLen/12), 0)
+        l, h, mixPtr = (0, int(indexLen/INDEX_BLOCK_LENGTH), 0)
         while l <= h:
             m   = int((l+h)/2)
-            ptr = startPtr + m*12
+            ptr = startPtr + m*INDEX_BLOCK_LENGTH
 
             sip = self.getLong(dbBinStr, ptr)
             eip = self.getLong(dbBinStr, ptr+4)
@@ -74,15 +82,15 @@ class Ip2Region(object):
         indexLen = self.__indexLen
 
         self.__f.seek(startPtr)
-        b = self.__f.read(indexLen+12)
+        b = self.__f.read(indexLen+INDEX_BLOCK_LENGTH)
 
-        l, h, mixPtr = (0, int(indexLen/12), 0)
+        l, h, mixPtr = (0, int(indexLen/INDEX_BLOCK_LENGTH), 0)
         while l <= h:
             m   = int((l+h)/2)
-            ptr = startPtr + m*12
+            ptr = startPtr + m*INDEX_BLOCK_LENGTH
             self.__f.seek(ptr)
 
-            b   = self.__f.read(12)
+            b   = self.__f.read(INDEX_BLOCK_LENGTH)
             sip = self.getLong(b, 0)
             eip = self.getLong(b, 4)
 
@@ -164,12 +172,12 @@ class Ip2Region(object):
 
         indexLen = eptr - sptr
         self.__f.seek(sptr)
-        b = self.__f.read(indexLen + 12)
-        
-        l, h, mixPtr = (0, int(indexLen/12), 0)
+        b = self.__f.read(indexLen + INDEX_BLOCK_LENGTH)
+
+        l, h, mixPtr = (0, int(indexLen/INDEX_BLOCK_LENGTH), 0)
         while l <= h:
             m = int((l+h)/2)
-            offset = m * 12
+            offset = m * INDEX_BLOCK_LENGTH
 
             if ip >= self.getLong(b, offset):
                 if ip > self.getLong(b, offset+4):
@@ -184,16 +192,6 @@ class Ip2Region(object):
 
         return self.returnData(mixPtr)
 
-    def initDatabase(self, dbfile):
-        """
-        " initialize the database for search
-        " param: dbFile
-        """
-        try:
-            self.__f = io.open(dbfile, "rb")
-        except IOError, e:
-            print "[Error]: ", e
-            sys.exit()
 
     def returnData(self, dsptr):
         """
@@ -202,7 +200,7 @@ class Ip2Region(object):
         """
         dataPtr = dsptr & 0x00FFFFFFL
         dataLen = (dsptr >> 24) & 0xFF
-        
+
         self.__f.seek(dataPtr)
         data = self.__f.read(dataLen)
 
