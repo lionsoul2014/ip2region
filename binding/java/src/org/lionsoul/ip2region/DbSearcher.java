@@ -4,6 +4,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
+import org.lionsoul.ip2region.impl.ByteArrayDBReader;
+import org.lionsoul.ip2region.impl.RandomAccessFileDBReader;
+
+
 /**
  * ip db searcher class (Not thread safe)
  * 
@@ -23,7 +27,7 @@ public class DbSearcher
     /**
      * db file access handler
     */
-    private RandomAccessFile raf = null;
+    private DBReader reader;
 
     /**
      * header blocks buffer 
@@ -54,8 +58,31 @@ public class DbSearcher
     */
     public DbSearcher( DbConfig dbConfig, String dbFile ) throws FileNotFoundException
     {
+        this(dbConfig, new RandomAccessFileDBReader(new RandomAccessFile(dbFile, "r")));
+    }
+    
+    /**
+     * 支持从抽象的DBReader读取数据库
+     * @param dbConfig
+     * @param reader
+     * @author wendal(wendal1985@gmail.com)
+     */
+    public DbSearcher( DbConfig dbConfig, DBReader reader) 
+    {
         this.dbConfig = dbConfig;
-        raf = new RandomAccessFile(dbFile, "r");
+        this.reader = reader;
+    }
+    
+    /**
+     * 支持从字节数组读取数据
+     * @param dbConfig
+     * @param buf
+     * @author wendal(wendal1985@gmail.com)
+     */
+    public DbSearcher( DbConfig dbConfig, byte[] buf)
+    {
+        this.dbConfig = dbConfig;
+        this.reader = new ByteArrayDBReader(buf);
     }
 
     /**
@@ -68,9 +95,7 @@ public class DbSearcher
     {
         int blen = IndexBlock.getIndexBlockLength();
         if ( dbBinStr == null ) {
-            dbBinStr = new byte[(int)raf.length()];
-            raf.seek(0L);
-            raf.readFully(dbBinStr, 0, dbBinStr.length);
+            dbBinStr = reader.full();
             
             //initialize the global vars
             firstIndexPtr    = Util.getIntLong(dbBinStr, 0);
@@ -132,9 +157,9 @@ public class DbSearcher
     */
     public DataBlock getByIndexPtr( long ptr ) throws IOException
     {
-        raf.seek(ptr);
+        reader.seek(ptr);
         byte[] buffer = new byte[12];
-        raf.readFully(buffer, 0, buffer.length);
+        reader.readFully(buffer, 0, buffer.length);
         //long startIp = Util.getIntLong(buffer, 0);
         //long endIp = Util.getIntLong(buffer, 4);
         long extra = Util.getIntLong(buffer, 8);
@@ -142,9 +167,9 @@ public class DbSearcher
         int dataLen = (int)((extra >> 24) & 0xFF);
         int dataPtr = (int)((extra & 0x00FFFFFF));
         
-        raf.seek(dataPtr);
+        reader.seek(dataPtr);
         byte[] data = new byte[dataLen];
-        raf.readFully(data, 0, data.length);
+        reader.readFully(data, 0, data.length);
         
         int city_id = (int)Util.getIntLong(data, 0);
         String region = new String(data, 4, data.length - 4, "UTF-8");
@@ -162,10 +187,10 @@ public class DbSearcher
     {
         //check and load the header
         if ( HeaderSip == null )  {
-            raf.seek(8L);    //pass the super block
+            reader.seek(8L);    //pass the super block
             //byte[] b = new byte[dbConfig.getTotalHeaderSize()];
             byte[] b = new byte[4096];
-            raf.readFully(b, 0, b.length);
+            reader.readFully(b, 0, b.length);
             
             //fill the header
             int len = b.length >> 3, idx = 0;  //b.lenght / 8
@@ -241,8 +266,8 @@ public class DbSearcher
         //2. search the index blocks to define the data
         int blockLen = eptr - sptr, blen = IndexBlock.getIndexBlockLength();
         byte[] iBuffer = new byte[blockLen + blen];    //include the right border block
-        raf.seek(sptr);
-        raf.readFully(iBuffer, 0, iBuffer.length);
+        reader.seek(sptr);
+        reader.readFully(iBuffer, 0, iBuffer.length);
         
         l = 0; h = blockLen / blen;
         long sip, eip, dataptr = 0;
@@ -270,9 +295,9 @@ public class DbSearcher
         int dataLen = (int)((dataptr >> 24) & 0xFF);
         int dataPtr = (int)((dataptr & 0x00FFFFFF));
         
-        raf.seek(dataPtr);
+        reader.seek(dataPtr);
         byte[] data = new byte[dataLen];
-        raf.readFully(data, 0, data.length);
+        reader.readFully(data, 0, data.length);
         
         int city_id = (int)Util.getIntLong(data, 0);
         String region = new String(data, 4, data.length - 4, "UTF-8");
@@ -302,9 +327,9 @@ public class DbSearcher
     {
         int blen = IndexBlock.getIndexBlockLength();
         if ( totalIndexBlocks == 0 ) {
-            raf.seek(0L);
+            reader.seek(0L);
             byte[] superBytes = new byte[8];
-            raf.readFully(superBytes, 0, superBytes.length);
+            reader.readFully(superBytes, 0, superBytes.length);
             //initialize the global vars
             firstIndexPtr = Util.getIntLong(superBytes, 0);
             lastIndexPtr = Util.getIntLong(superBytes, 4);
@@ -317,8 +342,8 @@ public class DbSearcher
         long sip, eip, dataptr = 0;
         while ( l <= h ) {
             int m = (l + h) >> 1;
-            raf.seek(firstIndexPtr + m * blen);    //set the file pointer
-            raf.readFully(buffer, 0, buffer.length);
+            reader.seek(firstIndexPtr + m * blen);    //set the file pointer
+            reader.readFully(buffer, 0, buffer.length);
             sip = Util.getIntLong(buffer, 0);
             if ( ip < sip ) {
                 h = m - 1;
@@ -340,9 +365,9 @@ public class DbSearcher
         int dataLen = (int)((dataptr >> 24) & 0xFF);
         int dataPtr = (int)((dataptr & 0x00FFFFFF));
         
-        raf.seek(dataPtr);
+        reader.seek(dataPtr);
         byte[] data = new byte[dataLen];
-        raf.readFully(data, 0, data.length);
+        reader.readFully(data, 0, data.length);
         
         int city_id = (int)Util.getIntLong(data, 0);
         String region = new String(data, 4, data.length - 4, "UTF-8");
@@ -382,7 +407,7 @@ public class DbSearcher
         HeaderSip = null;    //let gc do its work
         HeaderPtr = null;
         dbBinStr  = null;
-        raf.close();
+        reader.close();
     }
 
 }
