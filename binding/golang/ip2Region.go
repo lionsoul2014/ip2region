@@ -48,6 +48,10 @@ type IpInfo struct {
 	ISP      string
 }
 
+func (ip IpInfo)String() string {
+	return strconv.FormatInt(ip.CityId, 10) + "|" + ip.Country + "|" + ip.Region + "|" + ip.Province + "|" + ip.City + "|" + ip.ISP
+}
+
 func getIpInfo(cityId int64, line []byte) IpInfo {
 
 	lineSlice := strings.Split(string(line), "|")
