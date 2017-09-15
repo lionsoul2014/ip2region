@@ -15,7 +15,7 @@ def testSearch():
     llen = len(sys.argv)
 
     if llen < 2:
-        print "Usage: python ip2Region.py [ip2region db file] [alrogrithm]"
+        print "Usage: python testSearcher.py [ip2region db file] [alrogrithm]"
         print "Algorithm: binary or b-tree"
         return 0
 
