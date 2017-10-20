@@ -89,4 +89,4 @@ java -jar dbMaker-1.2.2.jar -src ./data/ip.merge.txt -region ./data/global_regio
 # 会看到一大片的输出
 ```
 
-* 5, 数据库文件的结构和原理请阅读 @冬芽 的blog：[“ip2region数据库文件的结构和原理”](http://dongyado.com/tools/2016/08/18/structure-of-ip2region-database-file/)
+* 5, 数据库文件的结构和原理请阅读 @冬芽 的blog：[“ip2region数据库文件的结构和原理”](http://dongyado.com/tool/2016/08/18/structure-of-ip2region-database-file/)
