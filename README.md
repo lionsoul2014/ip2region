@@ -1,6 +1,6 @@
 ### @Note 升级注意 
 
-** 1.3版本因为调整了ip2regine.db的生成配置，binding下各种语言的实现也需要做调整，已经提交了更改，请结合最新的ip2region.db和对应的binding一起使用，跨版本会有问题！**
+**1.3版本因为调整了ip2regine.db的生成配置，binding下各种语言的实现也需要做调整，已经提交了更改，请结合最新的ip2region.db和对应的binding一起使用，跨版本会有问题！**
 
 <br />
 ip2region - 最自由的ip地址查询库，ip到地区的映射库，提供Binary,B树和纯内存三种查询算法，妈妈再也不用担心我的ip地址定位。
