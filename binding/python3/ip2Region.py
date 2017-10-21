@@ -110,7 +110,7 @@ class Ip2Region(object):
             #pass the super block
             self.__f.seek(8)
             #read the header block
-            b = self.__f.read(4086)
+            b = self.__f.read(8192)
             #parse the header block
             sip = None
             ptr = None

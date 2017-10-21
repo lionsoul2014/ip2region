@@ -18,7 +18,7 @@ var lastIndexPtr        = 0;
 var superBlock          = new Buffer(8);
 
 var indexBlockLength    = 12;
-var totalHeaderLength   = 4096;
+var totalHeaderLength   = 8192;
 
 
 /**
