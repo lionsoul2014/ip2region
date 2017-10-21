@@ -44,7 +44,7 @@ typedef unsigned int uint_t;
 typedef unsigned long ulong_t;
 
 #define INDEX_BLOCK_LENGTH 12
-#define TOTAL_HEADER_LENGTH 4096
+#define TOTAL_HEADER_LENGTH 8192
 
 /*
  * ip2region properties struct

@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	INDEX_BLOCK_LENGTH = 12
-	TOTAL_HEADER_LENGTH = 4096
+	INDEX_BLOCK_LENGTH  = 12
+	TOTAL_HEADER_LENGTH = 8192
 )
 
 var err error

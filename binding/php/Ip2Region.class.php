@@ -7,7 +7,7 @@
 */
 
 defined('INDEX_BLOCK_LENGTH')   or define('INDEX_BLOCK_LENGTH',  12);
-defined('TOTAL_HEADER_LENGTH')  or define('TOTAL_HEADER_LENGTH', 4096);
+defined('TOTAL_HEADER_LENGTH')  or define('TOTAL_HEADER_LENGTH', 8192);
 
 class Ip2Region 
 {

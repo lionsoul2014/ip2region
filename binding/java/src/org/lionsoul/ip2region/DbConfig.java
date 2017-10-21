@@ -32,12 +32,12 @@ public class DbConfig
         }
         
         this.totalHeaderSize = totalHeaderSize;
-        this.indexBlockSize = 4096; //4 * 1024
+        this.indexBlockSize  = 8192; //4 * 2048
     }
     
     public DbConfig() throws DbMakerConfigException
     {
-        this(8192);
+        this(8 * 2048);
     }
 
     public int getTotalHeaderSize()
