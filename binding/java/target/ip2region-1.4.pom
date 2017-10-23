@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>org.lionsoul</groupId>
+  <artifactId>ip2region</artifactId>
+  <version>1.4</version>
+  <packaging>jar</packaging>
+
+  <name>ip2region</name>
+  <url>http://gitee.com/lionsoul/ip2region/</url>
+  <description>Open source internel address locator</description>
+  
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  
+  <scm>
+      <url>git@gitee.com:lionsoul/ip2region.git</url>
+      <connection>scm:git:git@gitee.com:lionsoul/ip2region.git</connection>
+      <developerConnection>scm:git:git@gitee.com:lionsoul/ip2region.git</developerConnection>
+  </scm>
+  
+  <developers>
+      <developer>
+          <id>lionsoul</id>
+          <name>chenxin</name>
+          <email>chenxin619315@gmail.com</email>
+      </developer>
+  </developers>
+  
+  <issueManagement>
+      <url>http://gitee.com/lionsoul/ip2region/issues</url>
+      <system>gitee issues</system>
+  </issueManagement>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>2.1.2</version>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <phase>package</phase>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      
+      <plugin>          
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.9</version>
+        <executions>
+          <execution>
+            <id>attach-javadocs</id>
+            <phase>package</phase>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+            <configuration>
+              <additionalparam>${javadoc.opts}</additionalparam>
+            </configuration>
+          </execution>
+        </executions>
+        <configuration>
+             <failOnError>false</failOnError>
+        </configuration>
+       </plugin>
+       
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>1.4</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <mainClass>org.lionsoul.ip2region.test.TestSearcher</mainClass>
+                </transformer>
+              </transformers>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+	  <profile>
+	    <id>java8-doclint-disabled</id>
+	    <activation>
+	      <jdk>[1.8,)</jdk>
+	    </activation>
+	    <properties>
+	      <javadoc.opts>-Xdoclint:none</javadoc.opts>
+	    </properties>
+	  </profile>
+      <profile>
+          <id>release</id>
+          <build>
+              <plugins>
+                  <!-- Source -->
+                  <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-source-plugin</artifactId>
+                      <version>2.2.1</version>
+                      <executions>
+                          <execution>
+                              <phase>package</phase>
+                              <goals>
+                                  <goal>jar-no-fork</goal>
+                              </goals>
+                          </execution>
+                      </executions>
+                  </plugin>
+                  <!-- Javadoc -->
+                  <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-javadoc-plugin</artifactId>
+                      <version>2.9.1</version>
+                      <executions>
+                          <execution>
+                              <phase>package</phase>
+			                  <goals>
+			                    <goal>jar</goal>
+			                  </goals>
+			                  <configuration>
+			                    <additionalparam>${javadoc.opts}</additionalparam>
+			                  </configuration>
+                          </execution>
+                      </executions>
+                  </plugin>
+                  <!-- GPG -->
+                  <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-gpg-plugin</artifactId>
+                      <version>1.5</version>
+                      <executions>
+                          <execution>
+                              <phase>verify</phase>
+                              <goals>
+                                  <goal>sign</goal>
+                              </goals>
+                          </execution>
+                      </executions>
+                  </plugin>
+              </plugins>
+          </build>
+          <distributionManagement>
+              <snapshotRepository>
+                  <id>oss-parent</id>
+                  <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+              </snapshotRepository>
+              <repository>
+                  <id>oss-parent</id>
+                  <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+              </repository>
+          </distributionManagement>
+      </profile>
+  </profiles>
+
+</project>
