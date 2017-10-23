@@ -30,7 +30,12 @@ ip2region - 最自由的ip地址查询库，ip到地区的映射库，提供Bina
 任何客户端b-tree都比binary算法快，当然Memory算法固然是最快的！
 
 maven仓库地址：
-```
+```xml
+<dependency>
+    <groupId>org.lionsoul</groupId>
+    <artifactId>ip2region</artifactId>
+    <version>1.4</version>
+</dependency>
 ```
 
 ### 5. 测试程序：
