@@ -41,38 +41,38 @@ maven仓库地址：
 ### 5. 测试程序：
 java: 
 ```shell
-	cd binding/java
-	ant all
-	java -jar ip2region-{version}.jar ./data/ip2region.db
+cd binding/java
+ant all
+java -jar ip2region-{version}.jar ./data/ip2region.db
 ```
 
 php: 
 ```shell
-    php binding/php/testSearcher ./data/ip2region.db
+php binding/php/testSearcher ./data/ip2region.db
 ```
 
 c: 
 ```shell
-    cd binding/c/
-    gcc -g -O2 testSearcher.c ip2region.c
-    ./a.out ../../data/ip2region.db
+cd binding/c/
+gcc -g -O2 testSearcher.c ip2region.c
+./a.out ../../data/ip2region.db
 ```
 
 python: 
 ```shell
-    python binding/python/testSearcher ./data/ip2region.db
+python binding/python/testSearcher ./data/ip2region.db
 ```
 
 均会看到如下界面：
 ```shell
-    initializing  B-tree ... 
-    +----------------------------------+
-    | ip2region test script            |
-    | Author: chenxin619315@gmail.com  |
-    | Type 'quit' to exit program      |
-    +----------------------------------+
-    p2region>> 101.105.35.57
-    2163|中国|华南|广东省|深圳市|鹏博士 in 0.02295 millseconds
+initializing  B-tree ... 
++----------------------------------+
+| ip2region test script            |
+| Author: chenxin619315@gmail.com  |
+| Type 'quit' to exit program      |
++----------------------------------+
+p2region>> 101.105.35.57
+2163|中国|华南|广东省|深圳市|鹏博士 in 0.02295 millseconds
 ```
 
 输入ip地址开始测试，第一次会稍微有点慢，在运行命令后面接入binary,memory来尝试其他算法，建议使用b-tree算法，速度和并发需求的可以使用memory算法。
