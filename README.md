@@ -48,7 +48,7 @@ java -jar ip2region-{version}.jar ./data/ip2region.db
 
 php: 
 ```shell
-php binding/php/testSearcher ./data/ip2region.db
+php binding/php/testSearcher.php ./data/ip2region.db
 ```
 
 c: 
@@ -60,7 +60,7 @@ gcc -g -O2 testSearcher.c ip2region.c
 
 python: 
 ```shell
-python binding/python/testSearcher ./data/ip2region.db
+python binding/python/testSearcher.py ./data/ip2region.db
 ```
 
 均会看到如下界面：
