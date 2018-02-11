@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net46</TargetFrameworks>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>Rocher</Authors>
+    <Company>Rocher</Company>
+    <Description>准确率99.9%的ip地址定位库，0.0x毫秒级查询, 支持Binary,B树,内存三种查询算法，妈妈再也不用担心我的ip地址定位！</Description>
+    <PackageReleaseNotes>ip2region - 最自由的ip地址查询库，ip到地区的映射库，提供Binary,B树和纯内存三种查询算法，妈妈再也不用担心我的ip地址定位。</PackageReleaseNotes>
+    <Copyright>Rocher</Copyright>
+    <PackageTags>ip2region c# IP</PackageTags>
+    <RepositoryUrl>https://gitee.com/rocherkong/IP2Region</RepositoryUrl>
+    <Version>1.1.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Update="DBFile\ip2region.db">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>
