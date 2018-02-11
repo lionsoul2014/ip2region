@@ -18,10 +18,11 @@ ip2region - 最自由的ip地址查询库，ip到地区的映射库，提供Bina
 
 ### 4. 多查询客户端的支持，0.0x毫秒级别的查询
 
-已经集成的客户端有：java, php, c, python，nodejs，php扩展(支持linux, php5, php7版本已支持)，golang。
+已经集成的客户端有：java, C#, php, c, python，nodejs，php扩展(支持linux, php5, php7版本已支持)，golang。
 
     提供了两种查询算法，响应时间如下：
     客户端/binary算法/b-tree算法/Memory算法：
+    c#/0.x毫秒/0.x毫秒/0.x毫秒
     java/0.x毫秒/0.x毫秒/0.1x毫秒 (使用RandomAccessFile)
     php/0.x毫秒/0.1x毫秒/0.1x毫秒
     c/0.0x毫秒/0.0x毫秒/0.00x毫秒(b-tree算法基本稳定在0.02x毫秒级别)
@@ -37,8 +38,21 @@ maven仓库地址：
     <version>1.4</version>
 </dependency>
 ```
+nuget安装命令
+```shell
+Install-Package IP2Region
+```
 
 ### 5. 测试程序：
+c#:
+```shell
+cd IP2Region_ConsoleTest
+dotnet run
+example result:
+请输入IP地址：
+36.149.160.55
+```
+
 java: 
 ```shell
 cd binding/java
