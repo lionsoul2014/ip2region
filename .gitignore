@@ -22,3 +22,5 @@ META-INF/
 /binding/java/doc/
 /binding/java/target/
 /binding/java/*.jar
+
+/binding/c/testSearcher
