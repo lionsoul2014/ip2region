@@ -4,12 +4,23 @@
 *.pyc
 *~
 META-INF/
+
 # Binary Files #
 *.jar
 !dbMaker-*.jar
+
 # Package Files #
 .settings/
 .classpath
 .project
+
 # vim swp file #
 *.swp
+
+# binding
+/binding/java/classes/
+/binding/java/doc/
+/binding/java/target/
+/binding/java/*.jar
+
+/binding/c/testSearcher
