@@ -121,7 +121,7 @@ ip2region.btreeSearchSync = function(ip)
         mid = ((low + high) >> 1);
         
         if (ip == headerSip[mid]) {
-            if ( m > 0) {
+            if ( mid > 0) {
                 sptr = headerPtr[mid - 1];
                 eptr = headerPtr[mid];
             } else {
