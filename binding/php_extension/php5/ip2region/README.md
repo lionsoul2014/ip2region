@@ -1,7 +1,7 @@
 # ip2region 的PHP拓展(php5版本)
 
 ### 安装步骤
-* git clone https://github.com/lionsoul2016/ip2region.git
+* git clone https://github.com/lionsoul2014/ip2region.git
 * cd ip2region
 * cp binding/php_extension/php5/ip2region 到 php source code 的ext目录下
 * cp binding/c/下面所有的文件到 php source code 的ext/ip2region/lib 目录下
