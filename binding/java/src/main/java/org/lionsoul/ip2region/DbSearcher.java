@@ -82,7 +82,7 @@ public class DbSearcher
         int l = 0, h = totalIndexBlocks;
         long sip, eip, dataptr = 0;
         while ( l <= h ) {
-            int m = (l + h) >> 1;
+            int m = Util.mean(l, h);
             int p = (int)(firstIndexPtr + m * blen);
             
             sip = Util.getIntLong(dbBinStr, p);
@@ -194,7 +194,7 @@ public class DbSearcher
         
         int l = 0, h = headerLength, sptr = 0, eptr = 0;
         while ( l <= h ) {
-            int m = (l + h) >> 1;
+            int m = Util.mean(l, h);
             
             //perfetc matched, just return it
             if ( ip == HeaderSip[m] ) {
@@ -247,7 +247,7 @@ public class DbSearcher
         l = 0; h = blockLen / blen;
         long sip, eip, dataptr = 0;
         while ( l <= h ) {
-            int m = (l + h) >> 1;
+            int m = Util.mean(l, h);
             int p = m * blen;
             sip = Util.getIntLong(iBuffer, p);
             if ( ip < sip ) {
@@ -316,7 +316,7 @@ public class DbSearcher
         byte[] buffer = new byte[blen];
         long sip, eip, dataptr = 0;
         while ( l <= h ) {
-            int m = (l + h) >> 1;
+            int m = Util.mean(l, h);
             raf.seek(firstIndexPtr + m * blen);    //set the file pointer
             raf.readFully(buffer, 0, buffer.length);
             sip = Util.getIntLong(buffer, 0);
