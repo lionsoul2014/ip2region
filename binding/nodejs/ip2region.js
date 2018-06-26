@@ -61,7 +61,7 @@ ip2region.binarySearchSync = function(ip)
     // read data
     if (dataPos == 0) return null;
     var dataLen = ((dataPos >> 24) & 0xFF);
-    var dataPos = (dataPos & 0x00FFFFFF);
+    dataPos = (dataPos & 0x00FFFFFF);
     var dataBuffer = new Buffer(dataLen);
 
     fs.readSync(this.db_fd, dataBuffer, 0, dataLen, dataPos);
