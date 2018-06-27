@@ -5,7 +5,7 @@ describe('ip2region', () => {
   let instance;
 
   beforeAll(() => {
-    instance = new IP2Region({dbPath: path.join(__dirname, '../../data/ip2region.db')});
+    instance = IP2Region.create(path.join(__dirname, '../../data/ip2region.db'));
   });
 
   afterAll(() => {
