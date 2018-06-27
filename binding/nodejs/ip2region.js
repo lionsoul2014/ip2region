@@ -54,6 +54,10 @@ function getLong(buffer, offset) {
  */
 
 class IP2Region {
+    static create(dbPath) {
+        return new IP2Region({dbPath});
+    }
+
     constructor(options = {}) {
         const { dbPath } = options;
         if (!dbPath || !fs.existsSync(dbPath)) {
