@@ -106,7 +106,7 @@ class Ip2Region
     }
 
     /**
-     * get the data block throught the specifield ip address or long ip numeric with binary search algorithm
+     * get the data block through the specified ip address or long ip numeric with binary search algorithm
      *
      * @param    ip
      * @return    mixed Array or NULL for any error
@@ -174,7 +174,7 @@ class Ip2Region
     }
 
     /**
-     * get the data block associated with the specifield ip with b-tree search algorithm
+     * get the data block associated with the specified ip with b-tree search algorithm
      * @Note: not thread safe
      *
      * @param   ip
