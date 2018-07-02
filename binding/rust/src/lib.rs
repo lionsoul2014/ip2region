@@ -11,12 +11,15 @@ mod db;
 mod error;
 pub use error::{Error, Result};
 mod owned;
+
+#[doc(hidden)]
+pub use db::DB_PATH;
+pub use owned::{OwnedIp2Region, OwnedIpInfo};
+
 #[cfg(feature = "lazy")]
 use db::DB_BYTES;
-pub use db::DB_PATH;
 #[cfg(feature = "lazy")]
 pub use owned::memory_search;
-pub use owned::{OwnedIp2Region, OwnedIpInfo};
 
 const INDEX_BLOCK_LENGTH: u32 = 12;
 const TOTAL_HEADER_LENGTH: usize = 8192;
