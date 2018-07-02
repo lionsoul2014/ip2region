@@ -7,9 +7,13 @@ use std::fs::File;
 use std::io::{self, Read, Seek, SeekFrom};
 use std::{fmt, str};
 
+mod db;
 mod error;
 pub use error::{Error, Result};
 mod owned;
+#[cfg(feature = "lazy")]
+use db::DB_BYTES;
+pub use db::DB_PATH;
 #[cfg(feature = "lazy")]
 pub use owned::memory_search;
 pub use owned::{OwnedIp2Region, OwnedIpInfo};
@@ -150,7 +154,8 @@ impl Ip2Region {
                 let m = (l + h) >> 1;
                 let p = self.first_index_ptr + m * INDEX_BLOCK_LENGTH;
                 self.db_file.seek(SeekFrom::Start(p as u64))?;
-                self.db_file.read_exact(&mut buf[0..INDEX_BLOCK_LENGTH as usize])?;
+                self.db_file
+                    .read_exact(&mut buf[0..INDEX_BLOCK_LENGTH as usize])?;
                 let sip = get_u32(&buf[..INDEX_BLOCK_LENGTH as usize], 0);
                 if ip < sip {
                     h = m - 1;
@@ -298,8 +303,6 @@ impl Ip2Region {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    const DB_PATH: &str = "data/ip2region.db";
 
     #[test]
     fn it_works() {

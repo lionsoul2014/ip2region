@@ -10,7 +10,7 @@
 
 复制下面的 toml 添加依赖即可使用，其 api 是 `memory_search`。
 
-只是目前 DB足有3.2M，还是有些感人的。
+只是目前 DB 足有3.2M，还是有些感人的。
 
 ```toml
 [dependencies.ip2region]
