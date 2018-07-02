@@ -1,0 +1,13 @@
+[package]
+name = "example"
+version = "0.1.0"
+authors = ["biluohc <biluohc@qq.com>"]
+
+[dependencies]
+
+[dependencies.ip2region]
+path = "../"
+# git = "https://github.com/lionsoul2014/ip2region"
+# git = "https://github.com/biluohc/ip2region"
+version = "*"
+features = ["lazy"]

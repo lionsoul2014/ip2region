@@ -1,2 +1,2 @@
 [workspace]
-members = ["binding/rust"]
+members = ["binding/rust", "binding/rust/example"]
