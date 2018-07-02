@@ -1,17 +1,2 @@
-[package]
-name = "ip2region"
-version = "0.1.0"
-authors = ["biluohc <biluohc@qq.com>"]
-
-include = ["src/**/*", "Cargo.toml", "data/ip2region.db", "binding/rust.md"]
-
-[[bin]]
-name="ip2region"
-path="src/main.rs"
-
-[dependencies]
-lazy_static ={ version = "^1", optional = true }
-
-[features]
-lazy = ["lazy_static"]
-
+[workspace]
+members = ["binding/rust"]

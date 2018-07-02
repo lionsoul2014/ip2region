@@ -1,7 +1,5 @@
 extern crate ip2region;
 
-const DB_PATH: &str = "data/ip2region.db";
-
 use ip2region::*;
 use std::env;
 use std::io::{self, *};

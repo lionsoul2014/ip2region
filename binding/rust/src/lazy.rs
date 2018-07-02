@@ -1,4 +1,4 @@
-static DB_BYTES: &'static [u8] = include_bytes!("../data/ip2region.db");
+use super::DB_BYTES;
 
 lazy_static! {
     static ref OWNED_IP_2_REGION: OwnedIp2Region = {
