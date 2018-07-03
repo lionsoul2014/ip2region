@@ -65,8 +65,13 @@ impl OwnedIp2Region {
         })
     }
 
-    pub fn memory_search(&self, ip_str: &str) -> Result<IpInfo> {
-        let ip = ip2u32(ip_str)?;
+    pub fn memory_search<S: AsRef<str>>(&self, ip_str: S) -> Result<IpInfo> {
+        let ip = ip_str.as_ref().parse()?;
+        self.memory_search_ip(&ip)
+    }
+
+    pub fn memory_search_ip(&self, ip_addr: &IpAddr) -> Result<IpInfo> {
+        let ip = ip2u32(ip_addr)?;
         let mut h = self.total_blocks;
         let (mut data_ptr, mut l) = (0u32, 0u32);
         while l <= h {
@@ -88,7 +93,7 @@ impl OwnedIp2Region {
         }
 
         if data_ptr == 0 {
-            Err("not found")?;
+            Err(Error::NotFound)?;
         }
 
         let data_len = (data_ptr >> 24) & 0xff;
