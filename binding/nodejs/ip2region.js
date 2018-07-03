@@ -4,274 +4,300 @@
  * project: https://github.com/lionsoul2014/ip2region
  *
  * @author dongyado<dongyado@gmail.com>
- * */
-var fs   = require('fs');
+ */
+const fs = require('fs');
 
-var ipbase = [16777216, 65536, 256, 1]; // for ip2long
-var ip2region = {};
-ip2region.db_file_path   = null;
-ip2region.db_fd          = null;
-
-var totalBlocks         = 0;
-var firstIndexPtr       = 0;
-var lastIndexPtr        = 0;
-var superBlock          = new Buffer(8);
-
-var indexBlockLength    = 12;
-var totalHeaderLength   = 8192;
-
+const IP_BASE = [16777216, 65536, 256, 1];
+const INDEX_BLOCK_LENGTH = 12;
+const TOTAL_HEADER_LENGTH = 8192;
 
 /**
- * binary search synchronized
- * */
-ip2region.binarySearchSync = function(ip)
-{
-    var low     = 0;
-    var mid     = 0;
-    var high    = totalBlocks;
-    var dataPos = 0;
-    var pos     = 0;
-    var sip     = 0;
-    var eip     = 0;
-    var indexBuffer = new Buffer(12);
+ * Convert ip to long (xxx.xxx.xxx.xxx to a integer)
+ *
+ * @param {string} ip
+ * @return {number} long value
+ */
+function ip2long(ip) {
+    const arr = ip.split('.');
+    if (arr.length !== 4) {
+        throw new Error('invalid ip');
+    }
+    return arr.reduce((val, n, i) => {
+        n = Number(n);
+        if (!Number.isInteger(n) || n < 0 || n > 255) {
+            throw new Error('invalid ip');
+        }
+        return val + IP_BASE[i] * n;
+    }, 0);
+}
 
-    if( typeof(ip) == 'string' ) ip = ip2long(ip);
+/**
+ * Get long value from buffer with specified offset
+ *
+ * @param {Buffer} buffer
+ * @param {number} offset
+ * @return {number} long value
+ */
+function getLong(buffer, offset) {
+    const val =
+        (buffer[offset] & 0x000000ff) |
+        ((buffer[offset + 1] << 8) & 0x0000ff00) |
+        ((buffer[offset + 2] << 16) & 0x00ff0000) |
+        ((buffer[offset + 3] << 24) & 0xff000000);
+    return val < 0 ? val >>> 0 : val;
+}
 
-    // binary search
-    while( low <= high ) {
-        mid = ((low + high) >> 1);
-        pos = firstIndexPtr + mid * indexBlockLength;
-        fs.readSync(this.db_fd, indexBuffer, 0, indexBlockLength, pos);
-        sip = getLong(indexBuffer, 0);
+/**
+ * @typedef {Object} SearchResult
+ * @property {number} city
+ * @property {string} region
+ */
 
-        //console.log( ' sip : ' + sip + ' eip : ' + eip );
-        if ( ip < sip) {
-            high = mid - 1;
+class IP2Region {
+    static create(dbPath) {
+        const oldInstance = IP2Region._instances.get(dbPath);
+        if (oldInstance) {
+            return oldInstance;
         } else {
-            eip = getLong(indexBuffer, 4);
-            if ( ip > eip ) {
+            const instance = new IP2Region({ dbPath });
+            IP2Region._instances.set(dbPath, instance);
+            return instance;
+        }
+    }
+
+    /**
+     * For backward compatibility
+     */
+    static destroy() {
+        IP2Region._instances.forEach(([key, instance]) => {
+            instance.destroy();
+        });
+    }
+
+    constructor(options = {}) {
+        const { dbPath } = options;
+        if (!dbPath || !fs.existsSync(dbPath)) {
+            throw new Error(`[ip2region] db file not exists : ${dbPath}`);
+        }
+
+        try {
+            this.dbFd = fs.openSync(dbPath, 'r');
+        } catch (e) {
+            throw new Error(
+                `[ip2region] Can not open ip2region.db file , path: ${dbPath}`
+            );
+        }
+
+        IP2Region._instances.set((this.dbPath = dbPath), this);
+
+        this.totalBlocks = this.firstIndexPtr = this.lastIndexPtr = 0;
+        this.calcTotalBlocks();
+
+        this.headerIndexBuffer = new Buffer(TOTAL_HEADER_LENGTH);
+        this.headerSip = [];
+        this.headerPtr = [];
+        this.headerLen = 0;
+        this.prepareHeader();
+    }
+
+    /**
+     * @public
+     */
+    destroy() {
+        fs.closeSync(ip2rObj.dbFd);
+        IP2Region._instances.delete(this.dbPath);
+    }
+
+    /**
+     * @public
+     * @param {string} ip
+     * @return {SearchResult}
+     */
+    binarySearchSync(ip) {
+        ip = ip2long(ip);
+
+        let low = 0;
+        let mid = 0;
+        let high = this.totalBlocks;
+        let dataPos = 0;
+        let pos = 0;
+        let sip = 0;
+        let eip = 0;
+        const indexBuffer = new Buffer(12);
+
+        // binary search
+        while (low <= high) {
+            mid = (low + high) >> 1;
+            pos = this.firstIndexPtr + mid * INDEX_BLOCK_LENGTH;
+            fs.readSync(this.dbFd, indexBuffer, 0, INDEX_BLOCK_LENGTH, pos);
+            sip = getLong(indexBuffer, 0);
+
+            if (ip < sip) {
+                high = mid - 1;
+            } else {
+                eip = getLong(indexBuffer, 4);
+                if (ip > eip) {
+                    low = mid + 1;
+                } else {
+                    dataPos = getLong(indexBuffer, 8);
+                    break;
+                }
+            }
+        }
+        return this.readData(dataPos);
+    }
+
+    /**
+     * @public
+     * @param {string} ip
+     * @return {SearchResult}
+     */
+    btreeSearchSync(ip) {
+        ip = ip2long(ip);
+
+        // first search  (in header index)
+        let low = 0;
+        let mid = 0;
+        let high = this.headerLen;
+        let sptr = 0;
+        let eptr = 0;
+
+        while (low <= high) {
+            mid = (low + high) >> 1;
+
+            if (ip == this.headerSip[mid]) {
+                if (mid > 0) {
+                    sptr = this.headerPtr[mid - 1];
+                    eptr = this.headerPtr[mid];
+                } else {
+                    sptr = this.headerPtr[mid];
+                    eptr = this.headerPtr[mid + 1];
+                }
+                break;
+            }
+
+            if (ip < this.headerSip[mid]) {
+                if (mid == 0) {
+                    sptr = this.headerPtr[mid];
+                    eptr = this.headerPtr[mid + 1];
+                    break;
+                } else if (ip > this.headerSip[mid - 1]) {
+                    sptr = this.headerPtr[mid - 1];
+                    eptr = this.headerPtr[mid];
+                    break;
+                }
+                high = mid - 1;
+            } else {
+                if (mid == this.headerLen - 1) {
+                    sptr = this.headerPtr[mid - 1];
+                    eptr = this.headerPtr[mid];
+                    break;
+                } else if (ip <= this.headerSip[mid + 1]) {
+                    sptr = this.headerPtr[mid];
+                    eptr = this.headerPtr[mid + 1];
+                    break;
+                }
                 low = mid + 1;
+            }
+        }
+
+        // match nothing
+        if (sptr == 0) return null;
+
+        // second search (in index)
+        const blockLen = eptr - sptr;
+        const blockBuffer = new Buffer(blockLen + INDEX_BLOCK_LENGTH);
+        fs.readSync(
+            this.dbFd,
+            blockBuffer,
+            0,
+            blockLen + INDEX_BLOCK_LENGTH,
+            sptr
+        );
+
+        low = 0;
+        high = blockLen / INDEX_BLOCK_LENGTH;
+
+        let p = 0;
+        let sip = 0;
+        let eip = 0;
+        let dataPtr = 0;
+
+        while (low <= high) {
+            mid = (low + high) >> 1;
+            p = mid * INDEX_BLOCK_LENGTH;
+            sip = getLong(blockBuffer, p);
+
+            if (ip < sip) {
+                high = mid - 1;
             } else {
-                dataPos = getLong(indexBuffer, 8);
-                break;
+                eip = getLong(blockBuffer, p + 4);
+                if (ip > eip) {
+                    low = mid + 1;
+                } else {
+                    dataPtr = getLong(blockBuffer, p + 8);
+                    break;
+                }
             }
+        }
+        return this.readData(dataPtr);
+    }
+
+    /**
+     * @private
+     */
+    calcTotalBlocks() {
+        const superBlock = new Buffer(8);
+        fs.readSync(this.dbFd, superBlock, 0, 8, 0);
+        this.firstIndexPtr = getLong(superBlock, 0);
+        this.lastIndexPtr = getLong(superBlock, 4);
+        this.totalBlocks =
+            (this.lastIndexPtr - this.firstIndexPtr) / INDEX_BLOCK_LENGTH + 1;
+    }
+
+    /**
+     * @private
+     */
+    prepareHeader() {
+        fs.readSync(
+            this.dbFd,
+            this.headerIndexBuffer,
+            0,
+            TOTAL_HEADER_LENGTH,
+            8
+        );
+
+        for (let i = 0; i < TOTAL_HEADER_LENGTH; i += 8) {
+            const startIp = getLong(this.headerIndexBuffer, i);
+            const dataPtr = getLong(this.headerIndexBuffer, i + 4);
+            if (dataPtr == 0) break;
+
+            this.headerSip.push(startIp);
+            this.headerPtr.push(dataPtr);
+            this.headerLen++; // header index size count
         }
     }
 
-    // read data
-    if (dataPos == 0) return null;
-    var dataLen = ((dataPos >> 24) & 0xFF);
-    dataPos = (dataPos & 0x00FFFFFF);
-    var dataBuffer = new Buffer(dataLen);
+    /**
+     * @private
+     * @param {number} dataPos
+     * @return {SearchResult}
+     */
+    readData(dataPos) {
+        if (dataPos == 0) return null;
+        const dataLen = (dataPos >> 24) & 0xff;
+        dataPos = dataPos & 0x00ffffff;
+        const dataBuffer = new Buffer(dataLen);
 
-    fs.readSync(this.db_fd, dataBuffer, 0, dataLen, dataPos);
+        fs.readSync(this.dbFd, dataBuffer, 0, dataLen, dataPos);
 
-    var city_id = getLong(dataBuffer, 0);
-    var data    = dataBuffer.toString('utf8', 4, dataLen);
+        const city = getLong(dataBuffer, 0);
+        const region = dataBuffer.toString('utf8', 4, dataLen);
 
-    //console.log(city_id);
-    //console.log(data);
-
-    return { city: city_id, region: data };
+        return { city, region };
+    }
 }
 
+IP2Region._instances = new Map();
 
-var headerSip = null;
-var headerPtr = 0;
-var headerLen = 0;
-
-
-/**
- * btree  search synchronized
- * */
-ip2region.btreeSearchSync = function(ip) 
-{
-    var indexBlockBuffer  = new Buffer(indexBlockLength);
-    var headerIndexBuffer = new Buffer(totalHeaderLength);
-    if( typeof(ip) == 'string' )  ip = ip2long(ip);
-
-    var i = 0;
-    // header index handler
-    if (headerSip == null) {
-        fs.readSync(this.db_fd, headerIndexBuffer, 0, totalHeaderLength, 8);
-        headerSip = new Array();
-        headerPtr = new Array();
-
-        var startIp = 0;
-        var dataPtr = 0;
-        for ( i = 0; i < totalHeaderLength; i += 8) {
-            startIp = getLong(headerIndexBuffer, i);
-            dataPtr = getLong(headerIndexBuffer, i + 4);
-            if ( dataPtr == 0) break;
-            
-            headerSip.push(startIp);
-            headerPtr.push(dataPtr);
-            headerLen++; // header index size count
-        } 
-    }
-    
-    // first search  (in header index)
-    var low  = 0;
-    var mid  = 0;
-    var high = headerLen;
-    var sptr = 0;
-    var eptr = 0;
-    
-    while(low <= high) {
-        mid = ((low + high) >> 1);
-        
-        if (ip == headerSip[mid]) {
-            if ( mid > 0) {
-                sptr = headerPtr[mid - 1];
-                eptr = headerPtr[mid];
-            } else {
-                sptr = headerPtr[mid];
-                eptr = headerPtr[mid + 1];
-            }
-            break;
-        }
-        
-        if ( ip < headerSip[mid]) {
-            if (mid == 0) {
-                sptr = headerPtr[mid];
-                eptr = headerPtr[mid + 1];
-                break;
-            } else if ( ip > headerSip[mid - 1]) {
-                sptr = headerPtr[mid - 1];
-                eptr = headerPtr[mid];
-                break;
-            }
-            high = mid - 1;
-        } else {
-            if ( mid == headerLen - 1) {
-                sptr = headerPtr[mid - 1];
-                eptr = headerPtr[mid];
-                break;
-            } else if ( ip <= headerSip[mid + 1]) {
-                sptr = headerPtr[mid];
-                eptr = headerPtr[mid + 1];
-                break;
-            }
-            low = mid + 1;
-        }
-    }
-    
-    // match nothing 
-    if (sptr == 0) return null;
-    
-    // second search (in index)
-    var blockLen    = eptr - sptr;
-    var blockBuffer = new Buffer(blockLen + indexBlockLength);
-    fs.readSync(this.db_fd, blockBuffer, 0, blockLen + indexBlockLength, sptr);
-
-    low = 0;
-    high = blockLen / indexBlockLength;
-    
-    var p = 0;
-    var sip = 0;
-    var eip = 0;
-    var dataPtr = 0;
-
-    while(low <= high) {
-        mid = ((low + high) >> 1);
-        p = mid * indexBlockLength;
-        sip = getLong(blockBuffer, p);
-
-        if (ip < sip) {
-            high = mid - 1;
-        } else {
-            eip = getLong(blockBuffer, p + 4);
-            if (ip > eip) {
-                low = mid + 1;
-            } else {
-                dataPtr =  getLong(blockBuffer, p + 8);
-                break;
-            }
-        }
-    }
-
-    // read data
-    if (dataPtr == 0) return null;
-    var dataLen = ((dataPtr >> 24) & 0xFF);
-    var dataPtr = (dataPtr & 0x00FFFFFF);
-    var dataBuffer = new Buffer(dataLen);
-
-    fs.readSync(this.db_fd, dataBuffer, 0, dataLen, dataPtr);
-
-    var city_id = getLong(dataBuffer, 0);
-    var data    = dataBuffer.toString('utf8', 4, dataLen);
-
-    //console.log(city_id);
-    //console.log(data);
-
-    return { city: city_id, region: data };
-}
-
-
-/**
- * convert ip to long (xxx.xxx.xxx.xxx to a integer)
- * */
-function ip2long(ip)
-{
-    var val = 0;
-    ip.split('.').forEach(function(ele, i){
-        val += ipbase[i] * ele;
-    }); 
-
-    return val;
-}
-
-
-/**
- * get long value from buffer with specified offset
- * */
-function getLong(buffer, offset) 
-{
-    var val =  (   
-        (buffer[offset] & 0x000000FF) | 
-        ((buffer[offset + 1] <<  8) & 0x0000FF00) | 
-        ((buffer[offset + 2] << 16) & 0x00FF0000) |
-        ((buffer[offset + 3] << 24) & 0xFF000000)
-    );
-
-    // convert to unsigned int
-    if (val < 0) {
-        val = val >>> 0;
-    }
-    return val;
-}
-
-
-exports.create = function(db_path) 
-{
-    if (typeof(db_path) == "undefined" || fs.exists(db_path) ) {
-        throw("[ip2region] db file not exists : " + db_path);
-    }
-    
-    ip2region.db_file_path = db_path; 
-
-    try {
-        ip2region.db_fd = fs.openSync(ip2region.db_file_path, 'r');
-    } catch(e) {
-        throw("[ip2region] Can not open ip2region.db file , path : "
-                + ip2region.db_file_path);
-    }
-
-    // init basic search environment
-    if (totalBlocks == 0) {
-        fs.readSync(ip2region.db_fd, superBlock, 0, 8, 0);
-        firstIndexPtr = getLong(superBlock, 0);
-        lastIndexPtr  = getLong(superBlock, 4);
-        totalBlocks   = (lastIndexPtr - firstIndexPtr) 
-                            / indexBlockLength + 1;
-    }
-
-    return ip2region;
-}
-
-
-exports.destroy = function(ip2rObj)
-{
-    ip2rObj.db_file_path = null;
-    fs.closeSync(ip2rObj.db_fd);
-}
+module.exports = IP2Region;
