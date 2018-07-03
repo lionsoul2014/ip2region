@@ -2,9 +2,11 @@
 
 ## 用法
 
-都在 `src/example` 里
+Demo： 在 `example` 目录里
 
-另外 `cargo doc --features lazy` 可以看到所有 `API`。
+API文档： `cargo doc --features lazy --open` 可以看到所有。 
+
+运行测试： `cargo test --features lazy` 
 
 ### 添加依赖
 
@@ -20,11 +22,11 @@ version = "*"
 ```
 
 ### 代码
-查看 `src/example/src/main.rs` 
+查看 `example/src/main.rs` 
 
 ### `lazy` feature 把 DB 直接打包进二进制
 
-取消上面 toml 的 `# features = ["lazy"]` 行的注释即可使用，其 api 是 `memory_search`。
+取消上面 toml 的 `# features = ["lazy"]` 行的注释即可使用，其 api 是 `memory_search` 和  `memory_search_ip`。
 
 只是目前 DB 足有3.2M，还是有些感人的。
 

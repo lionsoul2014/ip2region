@@ -5,6 +5,7 @@ extern crate lazy_static;
 use std::cell::RefCell;
 use std::fs::File;
 use std::io::{self, Read, Seek, SeekFrom};
+use std::net::IpAddr;
 use std::{fmt, str};
 
 mod db;
@@ -19,7 +20,7 @@ pub use owned::{OwnedIp2Region, OwnedIpInfo};
 #[cfg(feature = "lazy")]
 use db::DB_BYTES;
 #[cfg(feature = "lazy")]
-pub use owned::memory_search;
+pub use owned::{memory_search, memory_search_ip};
 
 const INDEX_BLOCK_LENGTH: u32 = 12;
 const TOTAL_HEADER_LENGTH: usize = 8192;
@@ -89,20 +90,34 @@ fn get_u32(bytes: &[u8], offset: u32) -> u32 {
     tmp as u32
 }
 
-fn ip2u32(ip_str: &str) -> Result<u32> {
-    let bits = ip_str
-        .split('.')
-        .filter(|s| !s.is_empty())
-        .collect::<Vec<&str>>();
-    if bits.len() != 4 {
-        Err("ip format error(it does not have 4 parts, like 1.1.1.1)")?;
+fn ip2u32(ip: &IpAddr) -> Result<u32> {
+    if ip.is_ipv6() {
+        return Err(Error::UnsupportIpv6);
     }
-    let mut sum: u32 = 0;
-    for (i, n) in bits.iter().enumerate() {
-        let bit = n.parse::<u32>()?;
-        sum += bit << 24 - 8 * i;
+    if ip.is_unspecified() {
+        return Err(Error::IpIsUnspecified);
     }
-    Ok(sum)
+    if ip.is_loopback() {
+        return Err(Error::IpIsLoopback);
+    }
+    if ip.is_multicast() {
+        return Err(Error::IpIsMulticast);
+    }
+
+    match ip {
+        IpAddr::V4(v4) => {
+            if v4.is_private() {
+                return Err(Error::IpIsPrivate);
+            }
+
+            let mut sum: u32 = 0;
+            for (i, n) in v4.octets().iter().enumerate() {
+                sum += (*n as u32) << 24 - 8 * i;
+            }
+            return Ok(sum);
+        }
+        IpAddr::V6(_v6) => unreachable!(),
+    }
 }
 
 pub struct Ip2Region {
@@ -138,7 +153,11 @@ impl Ip2Region {
         OwnedIp2Region::new2(&mut self.db_file).map_err(Error::Io)
     }
 
-    pub fn binary_search(&mut self, ip_str: &str) -> Result<OwnedIpInfo> {
+    pub fn binary_search<S: AsRef<str>>(&mut self, ip_str: S) -> Result<OwnedIpInfo> {
+        let ip = ip_str.as_ref().parse::<IpAddr>()?;
+        self.binary_search_ip(&ip)
+    }
+    pub fn binary_search_ip(&mut self, ip_addr: &IpAddr) -> Result<OwnedIpInfo> {
         BUF.with(|buf| {
             let mut buf = buf.borrow_mut();
 
@@ -150,7 +169,7 @@ impl Ip2Region {
                 self.total_blocks =
                     (self.last_index_ptr - self.first_index_ptr) / INDEX_BLOCK_LENGTH + 1;
             }
-            let ip = ip2u32(ip_str)?;
+            let ip = ip2u32(ip_addr)?;
             let mut h = self.total_blocks;
             let (mut data_ptr, mut l) = (0u32, 0u32);
             while l <= h {
@@ -173,7 +192,7 @@ impl Ip2Region {
                 }
             }
             if data_ptr == 0 {
-                Err("not found")?;
+                Err(Error::NotFound)?;
             }
 
             let data_len = (data_ptr >> 24) & 0xff;
@@ -189,7 +208,11 @@ impl Ip2Region {
         })
     }
 
-    pub fn btree_search(&mut self, ip_str: &str) -> Result<OwnedIpInfo> {
+    pub fn btree_search<S: AsRef<str>>(&mut self, ip_str: S) -> Result<OwnedIpInfo> {
+        let ip = ip_str.as_ref().parse::<IpAddr>()?;
+        self.btree_search_ip(&ip)
+    }
+    pub fn btree_search_ip(&mut self, ip_addr: &IpAddr) -> Result<OwnedIpInfo> {
         BUF_BTREE.with(|buf| {
             let mut buf = buf.borrow_mut();
 
@@ -212,7 +235,7 @@ impl Ip2Region {
                 self.header_len = idx
             }
 
-            let ip = ip2u32(ip_str)?;
+            let ip = ip2u32(ip_addr)?;
             let mut h = self.header_len;
             let (mut sptr, mut eptr, mut l) = (0u32, 0u32, 0u32);
 
@@ -257,7 +280,7 @@ impl Ip2Region {
             }
 
             if sptr == 0 {
-                Err("not found")?;
+                Err(Error::NotFound)?;
             }
             let block_len = eptr - sptr;
             self.db_file.seek(SeekFrom::Start(sptr as u64))?;
@@ -285,7 +308,7 @@ impl Ip2Region {
                 }
             }
             if data_ptr == 0 {
-                Err("not found")?;
+                Err(Error::NotFound)?;
             }
 
             let data_len = (data_ptr >> 24) & 0xff;
