@@ -25,3 +25,11 @@ META-INF/
 /binding/java/*.jar
 
 /binding/c/testSearcher
+
+# rust
+Cargo.lock
+target
+
+
+
+
