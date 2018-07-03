@@ -55,7 +55,23 @@ function getLong(buffer, offset) {
 
 class IP2Region {
     static create(dbPath) {
-        return new IP2Region({dbPath});
+        const oldInstance = IP2Region._instances.get(dbPath);
+        if (oldInstance) {
+            return oldInstance;
+        } else {
+            const instance = new IP2Region({ dbPath });
+            IP2Region._instances.set(dbPath, instance);
+            return instance;
+        }
+    }
+
+    /**
+     * For backward compatibility
+     */
+    static destroy() {
+        IP2Region._instances.forEach(([key, instance]) => {
+            instance.destroy();
+        });
     }
 
     constructor(options = {}) {
@@ -72,6 +88,8 @@ class IP2Region {
             );
         }
 
+        IP2Region._instances.set((this.dbPath = dbPath), this);
+
         this.totalBlocks = this.firstIndexPtr = this.lastIndexPtr = 0;
         this.calcTotalBlocks();
 
@@ -87,6 +105,7 @@ class IP2Region {
      */
     destroy() {
         fs.closeSync(ip2rObj.dbFd);
+        IP2Region._instances.delete(this.dbPath);
     }
 
     /**
@@ -278,5 +297,7 @@ class IP2Region {
         return { city, region };
     }
 }
+
+IP2Region._instances = new Map();
 
 module.exports = IP2Region;
