@@ -1,6 +1,6 @@
 [package]
 name = "ip2region"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["biluohc <biluohc@qq.com>"]
 
 include = ["./*", "../../data/ip2region.db", "../../Cargo.toml"]

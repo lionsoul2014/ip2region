@@ -11,6 +11,10 @@ lazy_static! {
     };
 }
 
-pub fn memory_search(ip_str: &str) -> Result<IpInfo> {
+pub fn memory_search<S: AsRef<str>>(ip_str: S) -> Result<IpInfo<'static>> {
     OWNED_IP_2_REGION.memory_search(ip_str)
+}
+
+pub fn memory_search_ip(ip_addr: &IpAddr) -> Result<IpInfo> {
+    OWNED_IP_2_REGION.memory_search_ip(ip_addr)
 }
