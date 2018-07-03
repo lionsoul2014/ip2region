@@ -4,6 +4,7 @@
  * project: https://github.com/lionsoul2014/ip2region
  *
  * @author dongyado<dongyado@gmail.com>
+ * @author leeching<leeching.fx@gmail.com>
  */
 const fs = require('fs');
 
