@@ -67,12 +67,12 @@ void search(
 
 	if ( res == 1 )
 	{
-		add_assoc_long( *return_value,   "cityId", (*_block).city_id);
+		add_assoc_long( *return_value,   "city_id", (*_block).city_id);
 		//add_assoc_string( *return_value, "region", (*_block).region, 1);
 		// for phpng
 		add_assoc_string( *return_value, "region", (*_block).region);
 	} else {
-		add_assoc_long( *return_value,   "cityId", 0);
+		add_assoc_long( *return_value,   "city_id", 0);
 		//add_assoc_string( *return_value, "region", "[Error] Search Failed! Please check the  path of ip2region db file.", 1);
 		// for phpng
 		add_assoc_string( *return_value, "region", "[Error] Search Failed! Please check the  path of ip2region db file.");

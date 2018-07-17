@@ -1,0 +1,17 @@
+[package]
+name = "ip2region"
+version = "0.2.0"
+authors = ["biluohc <biluohc@qq.com>"]
+
+include = ["./*", "../../data/ip2region.db", "../../Cargo.toml"]
+
+[[bin]]
+name="ip2region"
+path="src/main.rs"
+
+[dependencies]
+lazy_static ={ version = "^1", optional = true }
+
+[features]
+lazy = ["lazy_static"]
+
