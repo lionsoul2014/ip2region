@@ -31,5 +31,9 @@ Cargo.lock
 target
 
 
-
-
+# VS ignore cases
+/**/*.sln
+/binding/c#/**/.vs/
+/binding/c#/**/packages
+/binding/c#/**/bin
+/binding/c#/**/obj

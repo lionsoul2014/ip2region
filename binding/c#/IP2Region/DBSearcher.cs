@@ -3,261 +3,244 @@
 // Github https://github.com/RocherKong
 // Date 2018.02.09
 //*******************************
+using IP2Region.Models;
 using System;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace IP2Region
 {
-    public class DbSearcher
+    public class DbSearcher : IDisposable
     {
-        public static int BTREE_ALGORITHM = 1;
-        public static int BINARY_ALGORITHM = 2;
-        public static int MEMORY_ALGORITYM = 3;
+        const int BTREE_ALGORITHM = 1;
+        const int BINARY_ALGORITHM = 2;
+        const int MEMORY_ALGORITYM = 3;
 
-        /**
-         * db config
-        */
-        private DbConfig dbConfig = null;
+        private DbConfig _dbConfig = null;
 
         /**
          * db file access handler
         */
-        private FileStream raf = null;
+        private FileStream _raf = null;
 
         /**
          * header blocks buffer 
         */
-        private long[] HeaderSip = null;
-        private int[] HeaderPtr = null;
-        private int headerLength;
+        private long[] _headerSip = null;
+        private int[] _headerPtr = null;
+        private int _headerLength;
 
         /**
          * super blocks info 
         */
-        private long firstIndexPtr = 0;
-        private long lastIndexPtr = 0;
-        private int totalIndexBlocks = 0;
+        private long _firstIndexPtr = 0;
+        private long _lastIndexPtr = 0;
+        private int _totalIndexBlocks = 0;
 
         /**
          * for memory mode
          * the original db binary string
         */
-        private byte[] dbBinStr = null;
+        private byte[] _dbBinStr = null;
 
-        /**
-         * construct class
-         * 
-         * @param   bdConfig
-         * @param   dbFile
-         * @throws  FileNotFoundException 
-        */
-        public DbSearcher(DbConfig dbConfig, String dbFile)
+        /// <summary>
+        /// Get by index ptr.
+        /// </summary>
+        private DataBlock GetByIndexPtr(long ptr)
         {
-            this.dbConfig = dbConfig;
-            raf = new FileStream(dbFile, FileMode.Open, FileAccess.Read);
+            _raf.Seek(ptr, SeekOrigin.Begin);
+            byte[]
+            buffer = new byte[12];
+            _raf.Read(buffer, 0, buffer.Length);
+
+            long extra = Utils.getIntLong(buffer, 8);
+
+            int dataLen = (int)((extra >> 24) & 0xFF);
+            int dataPtr = (int)((extra & 0x00FFFFFF));
+
+            _raf.Seek(dataPtr, SeekOrigin.Begin);
+            byte[] data = new byte[dataLen];
+            _raf.Read(data, 0, data.Length);
+
+            int city_id = (int)Utils.getIntLong(data, 0);
+            string region = Encoding.UTF8.GetString(data, 4, data.Length - 4);
+
+            return new DataBlock(city_id, region, dataPtr);
         }
 
-        /**
-         * get the region with a int ip address with memory binary search algorithm
-         *
-         * @param   ip
-         * @throws  IOException
-        */
-        public DataBlock MemorySearch(long ip)
+        public DbSearcher(DbConfig dbConfig, string dbFile)
         {
-            int blen = IndexBlock.GetIndexBlockLength();
-            if (dbBinStr == null)
+            if (_dbConfig == null)
             {
-                dbBinStr = new byte[(int)raf.Length];
-                raf.Seek(0L, SeekOrigin.Begin);
-                raf.Read(dbBinStr, 0, dbBinStr.Length);
+                _dbConfig = dbConfig;
+            }
+            _raf = new FileStream(dbFile, FileMode.Open, FileAccess.Read, FileShare.Read);
+        }
+
+        public DbSearcher(string dbFile) : this(null, dbFile) { }
+
+        #region Sync Methods
+        /// <summary>
+        /// Get the region with a int ip address with memory binary search algorithm.
+        /// </summary>
+        private DataBlock MemorySearch(long ip)
+        {
+            int blen = IndexBlock.LENGTH;
+            if (_dbBinStr == null)
+            {
+                _dbBinStr = new byte[(int)_raf.Length];
+                _raf.Seek(0L, SeekOrigin.Begin);
+                _raf.Read(_dbBinStr, 0, _dbBinStr.Length);
 
                 //initialize the global vars
-                firstIndexPtr = Util.getIntLong(dbBinStr, 0);
-                lastIndexPtr = Util.getIntLong(dbBinStr, 4);
-                totalIndexBlocks = (int)((lastIndexPtr - firstIndexPtr) / blen) + 1;
+                _firstIndexPtr = Utils.getIntLong(_dbBinStr, 0);
+                _lastIndexPtr = Utils.getIntLong(_dbBinStr, 4);
+                _totalIndexBlocks = (int)((_lastIndexPtr - _firstIndexPtr) / blen) + 1;
             }
 
             //search the index blocks to define the data
-            int l = 0, h = totalIndexBlocks;
-            long sip, eip, dataptr = 0;
+            int l = 0, h = _totalIndexBlocks;
+            long sip = 0;
+
             while (l <= h)
             {
                 int m = (l + h) >> 1;
-                int p = (int)(firstIndexPtr + m * blen);
+                int p = (int)(_firstIndexPtr + m * blen);
 
-                sip = Util.getIntLong(dbBinStr, p);
+                sip = Utils.getIntLong(_dbBinStr, p);
+
                 if (ip < sip)
                 {
                     h = m - 1;
                 }
                 else
                 {
-                    eip = Util.getIntLong(dbBinStr, p + 4);
-                    if (ip > eip)
+                    sip = Utils.getIntLong(_dbBinStr, p + 4);
+                    if (ip > sip)
                     {
                         l = m + 1;
                     }
                     else
                     {
-                        dataptr = Util.getIntLong(dbBinStr, p + 8);
+                        sip = Utils.getIntLong(_dbBinStr, p + 8);
                         break;
                     }
                 }
             }
 
             //not matched
-            if (dataptr == 0) return null;
+            if (sip == 0) return null;
 
             //get the data
-            int dataLen = (int)((dataptr >> 24) & 0xFF);
-            int dataPtr = (int)((dataptr & 0x00FFFFFF));
-            int city_id = (int)Util.getIntLong(dbBinStr, dataPtr);
-            String region = System.Text.Encoding.UTF8.GetString(dbBinStr, dataPtr + 4, dataLen - 4);//new String(dbBinStr, dataPtr + 4, dataLen - 4, Encoding.UTF8);
+            int dataLen = (int)((sip >> 24) & 0xFF);
+            int dataPtr = (int)((sip & 0x00FFFFFF));
+            int city_id = (int)Utils.getIntLong(_dbBinStr, dataPtr);
+            string region = Encoding.UTF8.GetString(_dbBinStr, dataPtr + 4, dataLen - 4);//new String(dbBinStr, dataPtr + 4, dataLen - 4, Encoding.UTF8);
 
             return new DataBlock(city_id, region, dataPtr);
         }
 
-        /**
-         * get the region throught the ip address with memory binary search algorithm
-         * 
-         * @param   ip
-         * @return  DataBlock
-         * @throws  IOException 
-*/
-        public DataBlock MemorySearch(String ip)
+        /// <summary>
+        /// Get the region throught the ip address with memory binary search algorithm.
+        /// </summary>
+        public DataBlock MemorySearch(string ip)
         {
-            return MemorySearch(Util.ip2long(ip));
+            return MemorySearch(Utils.ip2long(ip));
         }
 
-
-        /**
-         * get by index ptr
-         * 
-         * @param   indexPtr
-         * @throws  IOException 
-*/
-        public DataBlock GetByIndexPtr(long ptr)
-        {
-            raf.Seek(ptr, SeekOrigin.Begin);
-            byte[]
-            buffer = new byte[12];
-            raf.Read(buffer, 0, buffer.Length);
-            //long startIp = Util.getIntLong(buffer, 0);
-            //long endIp = Util.getIntLong(buffer, 4);
-            long extra = Util.getIntLong(buffer, 8);
-
-            int dataLen = (int)((extra >> 24) & 0xFF);
-            int dataPtr = (int)((extra & 0x00FFFFFF));
-
-            raf.Seek(dataPtr, SeekOrigin.Begin);
-            byte[] data = new byte[dataLen];
-            raf.Read(data, 0, data.Length);
-
-            int city_id = (int)Util.getIntLong(data, 0);
-            String region = Encoding.UTF8.GetString(data, 4, data.Length - 4);
-            //new String(data, 4, data.Length - 4, "UTF-8");
-
-            return new DataBlock(city_id, region, dataPtr);
-        }
-
-        /**
-         * get the region with a int ip address with b-tree algorithm
-         * 
-         * @param   ip
-         * @throws  IOException 
-*/
-        public DataBlock BtreeSearch(long ip)
+        /// <summary>
+        /// Get the region with a int ip address with b-tree algorithm.
+        /// </summary>
+        private DataBlock BtreeSearch(long ip)
         {
             //check and load the header
-            if (HeaderSip == null)
+            if (_headerSip == null)
             {
-                raf.Seek(8L, SeekOrigin.Begin);    //pass the super block
-                                                   //byte[] b = new byte[dbConfig.getTotalHeaderSize()];
+                _raf.Seek(8L, SeekOrigin.Begin);    //pass the super block
+                                                    //byte[] b = new byte[dbConfig.getTotalHeaderSize()];
                 byte[] b = new byte[4096];
-                raf.Read(b, 0, b.Length);
+                _raf.Read(b, 0, b.Length);
 
                 //fill the header
                 int len = b.Length >> 3, idx = 0;  //b.lenght / 8
-                HeaderSip = new long[len];
-                HeaderPtr = new int[len];
+                _headerSip = new long[len];
+                _headerPtr = new int[len];
                 long startIp, dataPtrTemp;
                 for (int i = 0; i < b.Length; i += 8)
                 {
-                    startIp = Util.getIntLong(b, i);
-                    dataPtrTemp = Util.getIntLong(b, i + 4);
+                    startIp = Utils.getIntLong(b, i);
+                    dataPtrTemp = Utils.getIntLong(b, i + 4);
                     if (dataPtrTemp == 0) break;
 
-                    HeaderSip[idx] = startIp;
-                    HeaderPtr[idx] = (int)dataPtrTemp;
+                    _headerSip[idx] = startIp;
+                    _headerPtr[idx] = (int)dataPtrTemp;
                     idx++;
                 }
 
-                headerLength = idx;
+                _headerLength = idx;
             }
 
             //1. define the index block with the binary search
-            if (ip == HeaderSip[0])
+            if (ip == _headerSip[0])
             {
-                return GetByIndexPtr(HeaderPtr[0]);
+                return GetByIndexPtr(_headerPtr[0]);
             }
-            else if (ip == HeaderSip[headerLength - 1])
+            else if (ip == _headerPtr[_headerLength - 1])
             {
-                return GetByIndexPtr(HeaderPtr[headerLength - 1]);
+                return GetByIndexPtr(_headerPtr[_headerLength - 1]);
             }
 
-            int l = 0, h = headerLength, sptr = 0, eptr = 0;
+            int l = 0, h = _headerLength, sptr = 0, eptr = 0;
+            int m = 0;
+
             while (l <= h)
             {
-                int m = (l + h) >> 1;
+                m = (l + h) >> 1;
 
-                //perfetc matched, just return it
-                if (ip == HeaderSip[m])
+                //perfectly matched, just return it
+                if (ip == _headerSip[m])
                 {
                     if (m > 0)
                     {
-                        sptr = HeaderPtr[m - 1];
-                        eptr = HeaderPtr[m];
+                        sptr = _headerPtr[m - 1];
+                        eptr = _headerPtr[m];
                     }
                     else
                     {
-                        sptr = HeaderPtr[m];
-                        eptr = HeaderPtr[m + 1];
+                        sptr = _headerPtr[m];
+                        eptr = _headerPtr[m + 1];
                     }
-
-                    break;
                 }
-
                 //less then the middle value
-                if (ip < HeaderSip[m])
+                else if (ip < _headerSip[m])
                 {
                     if (m == 0)
                     {
-                        sptr = HeaderPtr[m];
-                        eptr = HeaderPtr[m + 1];
+                        sptr = _headerPtr[m];
+                        eptr = _headerPtr[m + 1];
                         break;
                     }
-                    else if (ip > HeaderSip[m - 1])
+                    else if (ip > _headerSip[m - 1])
                     {
-                        sptr = HeaderPtr[m - 1];
-                        eptr = HeaderPtr[m];
+                        sptr = _headerPtr[m - 1];
+                        eptr = _headerPtr[m];
                         break;
                     }
                     h = m - 1;
                 }
                 else
                 {
-                    if (m == headerLength - 1)
+                    if (m == _headerLength - 1)
                     {
-                        sptr = HeaderPtr[m - 1];
-                        eptr = HeaderPtr[m];
+                        sptr = _headerPtr[m - 1];
+                        eptr = _headerPtr[m];
                         break;
                     }
-                    else if (ip <= HeaderSip[m + 1])
+                    else if (ip <= _headerSip[m + 1])
                     {
-                        sptr = HeaderPtr[m];
-                        eptr = HeaderPtr[m + 1];
+                        sptr = _headerPtr[m];
+                        eptr = _headerPtr[m + 1];
                         break;
                     }
                     l = m + 1;
@@ -268,169 +251,179 @@ namespace IP2Region
             if (sptr == 0) return null;
 
             //2. search the index blocks to define the data
-            int blockLen = eptr - sptr, blen = IndexBlock.GetIndexBlockLength();
-            byte[]
-            iBuffer = new byte[blockLen + blen];    //include the right border block
-            raf.Seek(sptr, SeekOrigin.Begin);
-            raf.Read(iBuffer, 0, iBuffer.Length);
+            int blockLen = eptr - sptr, blen = IndexBlock.LENGTH;
+            byte[] iBuffer = new byte[blockLen + blen];    //include the right border block
+            _raf.Seek(sptr, SeekOrigin.Begin);
+            _raf.Read(iBuffer, 0, iBuffer.Length);
 
             l = 0; h = blockLen / blen;
-            long sip, eip, dataptr = 0;
+            long sip = 0;
+            int p = 0;
+
             while (l <= h)
             {
-                int m = (l + h) >> 1;
-                int p = m * blen;
-                sip = Util.getIntLong(iBuffer, p);
+                m = (l + h) >> 1;
+                p = m * blen;
+                sip = Utils.getIntLong(iBuffer, p);
                 if (ip < sip)
                 {
                     h = m - 1;
                 }
                 else
                 {
-                    eip = Util.getIntLong(iBuffer, p + 4);
-                    if (ip > eip)
+                    sip = Utils.getIntLong(iBuffer, p + 4);
+                    if (ip > sip)
                     {
                         l = m + 1;
                     }
                     else
                     {
-                        dataptr = Util.getIntLong(iBuffer, p + 8);
+                        sip = Utils.getIntLong(iBuffer, p + 8);
                         break;
                     }
                 }
             }
 
             //not matched
-            if (dataptr == 0) return null;
+            if (sip == 0) return null;
 
             //3. get the data
-            int dataLen = (int)((dataptr >> 24) & 0xFF);
-            int dataPtr = (int)((dataptr & 0x00FFFFFF));
+            int dataLen = (int)((sip >> 24) & 0xFF);
+            int dataPtr = (int)((sip & 0x00FFFFFF));
 
-            raf.Seek(dataPtr, SeekOrigin.Begin);
+            _raf.Seek(dataPtr, SeekOrigin.Begin);
             byte[] data = new byte[dataLen];
-            raf.Read(data, 0, data.Length);
+            _raf.Read(data, 0, data.Length);
 
-            int city_id = (int)Util.getIntLong(data, 0);
+            int city_id = (int)Utils.getIntLong(data, 0);
             String region = Encoding.UTF8.GetString(data, 4, data.Length - 4);// new String(data, 4, data.Length - 4, "UTF-8");
 
             return new DataBlock(city_id, region, dataPtr);
         }
 
-        /**
-         * get the region throught the ip address with b-tree search algorithm
-         * 
-         * @param   ip
-         * @return  DataBlock
-         * @throws  IOException 
-        */
-        public DataBlock BtreeSearch(String ip)
+        /// <summary>
+        /// Get the region throught the ip address with b-tree search algorithm.
+        /// </summary>
+        public DataBlock BtreeSearch(string ip)
         {
-            return BtreeSearch(Util.ip2long(ip));
+            return BtreeSearch(Utils.ip2long(ip));
         }
 
-        /**
-         * get the region with a int ip address with binary search algorithm
-         * 
-         * @param   ip
-         * @throws  IOException 
-*/
-        public DataBlock BinarySearch(long ip)
+        /// <summary>
+        /// Get the region with a int ip address with binary search algorithm.
+        /// </summary>
+        private DataBlock BinarySearch(long ip)
         {
-            int blen = IndexBlock.GetIndexBlockLength();
-            if (totalIndexBlocks == 0)
+            int blen = IndexBlock.LENGTH;
+            if (_totalIndexBlocks == 0)
             {
-                raf.Seek(0L, SeekOrigin.Begin);
+                _raf.Seek(0L, SeekOrigin.Begin);
                 byte[] superBytes = new byte[8];
-                raf.Read(superBytes, 0, superBytes.Length);
+                _raf.Read(superBytes, 0, superBytes.Length);
                 //initialize the global vars
-                firstIndexPtr = Util.getIntLong(superBytes, 0);
-                lastIndexPtr = Util.getIntLong(superBytes, 4);
-                totalIndexBlocks = (int)((lastIndexPtr - firstIndexPtr) / blen) + 1;
+                _firstIndexPtr = Utils.getIntLong(superBytes, 0);
+                _lastIndexPtr = Utils.getIntLong(superBytes, 4);
+                _totalIndexBlocks = (int)((_lastIndexPtr - _firstIndexPtr) / blen) + 1;
             }
 
             //search the index blocks to define the data
-            int l = 0, h = totalIndexBlocks;
-            byte[]
-            buffer = new byte[blen];
-            long sip, eip, dataptr = 0;
+            int l = 0, h = _totalIndexBlocks;
+            byte[] buffer = new byte[blen];
+            long sip = 0;
+
             while (l <= h)
             {
                 int m = (l + h) >> 1;
-                raf.Seek(firstIndexPtr + m * blen, SeekOrigin.Begin);    //set the file pointer
-                raf.Read(buffer, 0, buffer.Length);
-                sip = Util.getIntLong(buffer, 0);
+                _raf.Seek(_firstIndexPtr + m * blen, SeekOrigin.Begin);    //set the file pointer
+                _raf.Read(buffer, 0, buffer.Length);
+                sip = Utils.getIntLong(buffer, 0);
                 if (ip < sip)
                 {
                     h = m - 1;
                 }
                 else
                 {
-                    eip = Util.getIntLong(buffer, 4);
-                    if (ip > eip)
+                    sip = Utils.getIntLong(buffer, 4);
+                    if (ip > sip)
                     {
                         l = m + 1;
                     }
                     else
                     {
-                        dataptr = Util.getIntLong(buffer, 8);
+                        sip = Utils.getIntLong(buffer, 8);
                         break;
                     }
                 }
             }
 
             //not matched
-            if (dataptr == 0) return null;
+            if (sip == 0) return null;
 
             //get the data
-            int dataLen = (int)((dataptr >> 24) & 0xFF);
-            int dataPtr = (int)((dataptr & 0x00FFFFFF));
+            int dataLen = (int)((sip >> 24) & 0xFF);
+            int dataPtr = (int)((sip & 0x00FFFFFF));
 
-            raf.Seek(dataPtr, SeekOrigin.Begin);
+            _raf.Seek(dataPtr, SeekOrigin.Begin);
             byte[] data = new byte[dataLen];
-            raf.Read(data, 0, data.Length);
+            _raf.Read(data, 0, data.Length);
 
-            int city_id = (int)Util.getIntLong(data, 0);
+            int city_id = (int)Utils.getIntLong(data, 0);
             String region = Encoding.UTF8.GetString(data, 4, data.Length - 4);//new String(data, 4, data.Length - 4, "UTF-8");
 
             return new DataBlock(city_id, region, dataPtr);
         }
 
-        /**
-         * get the region throught the ip address with binary search algorithm
-         * 
-         * @param   ip
-         * @return  DataBlock
-         * @throws  IOException 
-        */
+        /// <summary>
+        /// Get the region throught the ip address with binary search algorithm.
+        /// </summary>
         public DataBlock BinarySearch(String ip)
         {
-            return BinarySearch(Util.ip2long(ip));
+            return BinarySearch(Utils.ip2long(ip));
         }
 
-        /**
-         * get the db config
-         *
-         * @return  DbConfig
-*/
-        public DbConfig GetDbConfig()
+        #endregion
+
+        #region Async Methods
+
+        /// <summary>
+        /// Get the region throught the ip address with memory binary search algorithm.
+        /// </summary>
+        public async Task<DataBlock> AsyncMemorySearch(string ip)
         {
-            return dbConfig;
+            return await Task.FromResult(MemorySearch(ip));
+        }
+        /// <summary>
+        /// Get the region throught the ip address with b-tree search algorithm.
+        /// </summary>
+        public async Task<DataBlock> AsyncBtreeSearch(string ip)
+        {
+            return await Task.FromResult(BtreeSearch(ip));
         }
 
-        /**
-         * close the db 
-         * 
-         * @throws IOException 
-*/
+        /// <summary>
+        /// Get the region throught the ip address with binary search algorithm.
+        /// </summary>
+        public async Task<DataBlock> AsyncBinarySearch(string ip)
+        {
+            return await Task.FromResult(BinarySearch(ip));
+        }
+
+        #endregion
+        /// <summary>
+        /// Close the db.
+        /// </summary>
         public void Close()
         {
-            HeaderSip = null;    //let gc do its work
-            HeaderPtr = null;
-            dbBinStr = null;
-            raf.Close();
+            _headerSip = null;    //let gc do its work
+            _headerPtr = null;
+            _dbBinStr = null;
+            _raf.Close();
         }
 
+        public void Dispose()
+        {
+            Close();
+        }
     }
 
 }

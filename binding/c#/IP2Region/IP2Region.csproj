@@ -13,6 +13,10 @@
     <Version>1.1.0</Version>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.0|AnyCPU'">
+    <LangVersion>7</LangVersion>
+  </PropertyGroup>
+
   <ItemGroup>
     <None Update="DBFile\ip2region.db">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
