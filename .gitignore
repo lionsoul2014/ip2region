@@ -16,9 +16,20 @@ META-INF/
 
 # vim swp file #
 *.swp
+.idea
 
 # binding
 /binding/java/classes/
 /binding/java/doc/
 /binding/java/target/
 /binding/java/*.jar
+
+/binding/c/testSearcher
+
+# rust
+Cargo.lock
+target
+
+
+
+

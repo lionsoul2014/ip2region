@@ -53,6 +53,14 @@ example result:
 36.149.160.55
 ```
 
+node:
+```
+> let ip2region = require('./ip2region.js');
+> let dbService = ip2region.create('./ip2region.db');
+> dbService.binarySearchSync(' 101.105.35.57')
+{ city: 0, region: '中国|0|广东|深圳|鹏博士' }
+```
+
 java: 
 ```shell
 cd binding/java
