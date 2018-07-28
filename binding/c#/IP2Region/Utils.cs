@@ -2,25 +2,27 @@
 // Create By Rocher Kong 
 // Github https://github.com/RocherKong
 // Date 2018.02.09
+//
+// Modified By Dongwei
+// Date 2018.07.18
+// GitHub https://github.com/Maledong
 //*******************************
 using System;
-using System.Globalization;
-using System.Text;
 
 namespace IP2Region
 {
-
-    public class Util
+    public class IPInValidException : Exception
     {
-        /**
-         * write specfield bytes to a byte array start from offset
-         * 
-         * @param    b
-         * @param    offset
-         * @param    v
-         * @param    bytes
-        */
-        public static void write(byte[] b, int offset, ulong v, int bytes)
+        const string ERROR_MSG = "IP Illigel. Please input a valid IP.";
+
+        public IPInValidException() : base(ERROR_MSG) { }
+    }
+    internal static class Utils
+    {
+        /// <summary>
+        /// Write specfield bytes to a byte array start from offset.
+        /// </summary>
+        public static void Write(byte[] b, int offset, ulong v, int bytes)
         {
             for (int i = 0; i < bytes; i++)
             {
@@ -28,13 +30,9 @@ namespace IP2Region
             }
         }
 
-        /**
-         * write a int to a byte array
-         * 
-         * @param    b
-         * @param    offet
-         * @param    v
-        */
+        /// <summary>
+        /// Write a int to a byte array.
+        /// </summary>
         public static void writeIntLong(byte[] b, int offset, long v)
         {
             b[offset++] = (byte)((v >> 0) & 0xFF);
@@ -43,12 +41,9 @@ namespace IP2Region
             b[offset] = (byte)((v >> 24) & 0xFF);
         }
 
-        /**
-         * get a int from a byte array start from the specifiled offset
-         * 
-         * @param    b
-         * @param    offset
-        */
+        /// <summary>
+        /// Get a int from a byte array start from the specifiled offset.
+        /// </summary>
         public static long getIntLong(byte[] b, int offset)
         {
             return (
@@ -59,12 +54,9 @@ namespace IP2Region
             );
         }
 
-        /**
-         * get a int from a byte array start from the specifield offset
-         * 
-         * @param    b
-         * @param    offset
-        */
+        /// <summary>
+        /// Get a int from a byte array start from the specifield offset.
+        /// </summary>
         public static int getInt3(byte[] b, int offset)
         {
             return (
@@ -89,16 +81,23 @@ namespace IP2Region
             );
         }
 
-        /**
-         * string ip to long ip
-         * 
-         * @param    ip
-         * @return    long
-        */
+        /// <summary>
+        /// String ip to long ip.
+        /// </summary>
         public static long ip2long(string ip)
         {
             string[] p = ip.Split('.');
-            if (p.Length != 4) return 0;
+            if (p.Length != 4) throw new IPInValidException();
+
+            foreach (string pp in p)
+            {
+                if (pp.Length > 3) throw new IPInValidException();
+                if (!int.TryParse(pp, out int value) || value > 255)
+                {
+                    throw new IPInValidException();
+                }
+            }
+
             var bip1 = long.TryParse(p[0], out long ip1);
             var bip2 = long.TryParse(p[1], out long ip2);
             var bip3 = long.TryParse(p[2], out long ip3);
@@ -106,10 +105,11 @@ namespace IP2Region
 
             if (!bip1 || !bip2 || !bip3 || !bip4
                 || ip4 > 255 || ip1 > 255 || ip2 > 255 || ip3 > 255
-                || ip4 < 1 || ip1 < 1 || ip2 < 1 || ip3 < 1)
+                || ip4 < 0 || ip1 < 0 || ip2 < 0 || ip3 < 0)
             {
-                throw new Exception("IP Illegal.");
+                throw new IPInValidException();
             }
+
 
             long p1 = ((ip1 << 24) & 0xFF000000);
             long p2 = ((ip2 << 16) & 0x00FF0000);
@@ -118,44 +118,12 @@ namespace IP2Region
             return ((p1 | p2 | p3 | p4) & 0xFFFFFFFFL);
         }
 
-        /**
-         * int to ip string 
-         * 
-         * @param    ip
-         * @return    string
-        */
+        /// <summary>
+        /// Int to ip string.
+        /// </summary>
         public static string long2ip(long ip)
         {
-            StringBuilder sb = new StringBuilder();
-
-            sb
-            .Append((ip >> 24) & 0xFF).Append('.')
-            .Append((ip >> 16) & 0xFF).Append('.')
-            .Append((ip >> 8) & 0xFF).Append('.')
-            .Append((ip >> 0) & 0xFF);
-
-            return sb.ToString();
-        }
-
-        /**
-         * check the validate of the specifeld ip address
-         * 
-         * @param    ip
-         * @return    boolean
-        */
-        public static Boolean isIpAddress(string ip)
-        {
-            string[] p = ip.Split('.');
-            if (p.Length != 4) return false;
-
-            foreach (string pp in p)
-            {
-                if (pp.Length > 3) return false;
-                int val = int.Parse(pp);
-                if (val > 255) return false;
-            }
-
-            return true;
+            return $"{(ip >> 24) & 0xFF}.{(ip >> 16) & 0xFF}.{(ip >> 8) & 0xFF}.{ip & 0xFF}";
         }
     }
 
