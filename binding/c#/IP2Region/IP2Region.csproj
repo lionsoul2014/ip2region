@@ -1,7 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net46</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net46;net45;net47</TargetFrameworks>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Rocher</Authors>
     <Company>Rocher</Company>
@@ -10,7 +10,7 @@
     <Copyright>Rocher</Copyright>
     <PackageTags>ip2region c# IP</PackageTags>
     <RepositoryUrl>https://gitee.com/rocherkong/IP2Region</RepositoryUrl>
-    <Version>1.1.0</Version>
+    <Version>1.2.0</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.0|AnyCPU'">
@@ -18,7 +18,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Update="DBFile\ip2region.db">
+    <None Update="DB\ip2region.db">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
