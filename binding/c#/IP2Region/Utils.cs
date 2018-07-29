@@ -1,12 +1,9 @@
 //*******************************
-// Create By Rocher Kong 
+// Created By Rocher Kong 
 // Github https://github.com/RocherKong
 // Date 2018.02.09
-//
-// Modified By Dongwei
-// Date 2018.07.18
-// GitHub https://github.com/Maledong
 //*******************************
+
 using System;
 
 namespace IP2Region
@@ -14,7 +11,6 @@ namespace IP2Region
     public class IPInValidException : Exception
     {
         const string ERROR_MSG = "IP Illigel. Please input a valid IP.";
-
         public IPInValidException() : base(ERROR_MSG) { }
     }
     internal static class Utils
@@ -33,7 +29,7 @@ namespace IP2Region
         /// <summary>
         /// Write a int to a byte array.
         /// </summary>
-        public static void writeIntLong(byte[] b, int offset, long v)
+        public static void WriteIntLong(byte[] b, int offset, long v)
         {
             b[offset++] = (byte)((v >> 0) & 0xFF);
             b[offset++] = (byte)((v >> 8) & 0xFF);
@@ -44,7 +40,7 @@ namespace IP2Region
         /// <summary>
         /// Get a int from a byte array start from the specifiled offset.
         /// </summary>
-        public static long getIntLong(byte[] b, int offset)
+        public static long GetIntLong(byte[] b, int offset)
         {
             return (
                 ((b[offset++] & 0x000000FFL)) |
@@ -57,7 +53,7 @@ namespace IP2Region
         /// <summary>
         /// Get a int from a byte array start from the specifield offset.
         /// </summary>
-        public static int getInt3(byte[] b, int offset)
+        public static int GetInt3(byte[] b, int offset)
         {
             return (
                 (b[offset++] & 0x000000FF) |
@@ -66,7 +62,7 @@ namespace IP2Region
             );
         }
 
-        public static int getInt2(byte[] b, int offset)
+        public static int GetInt2(byte[] b, int offset)
         {
             return (
                 (b[offset++] & 0x000000FF) |
@@ -74,17 +70,16 @@ namespace IP2Region
             );
         }
 
-        public static int getInt1(byte[] b, int offset)
+        public static int GetInt1(byte[] b, int offset)
         {
             return (
                 (b[offset] & 0x000000FF)
             );
         }
-
         /// <summary>
         /// String ip to long ip.
         /// </summary>
-        public static long ip2long(string ip)
+        public static long Ip2long(string ip)
         {
             string[] p = ip.Split('.');
             if (p.Length != 4) throw new IPInValidException();
@@ -97,7 +92,6 @@ namespace IP2Region
                     throw new IPInValidException();
                 }
             }
-
             var bip1 = long.TryParse(p[0], out long ip1);
             var bip2 = long.TryParse(p[1], out long ip2);
             var bip3 = long.TryParse(p[2], out long ip3);
@@ -109,8 +103,6 @@ namespace IP2Region
             {
                 throw new IPInValidException();
             }
-
-
             long p1 = ((ip1 << 24) & 0xFF000000);
             long p2 = ((ip2 << 16) & 0x00FF0000);
             long p3 = ((ip3 << 8) & 0x0000FF00);
@@ -121,7 +113,7 @@ namespace IP2Region
         /// <summary>
         /// Int to ip string.
         /// </summary>
-        public static string long2ip(long ip)
+        public static string Long2ip(long ip)
         {
             return $"{(ip >> 24) & 0xFF}.{(ip >> 16) & 0xFF}.{(ip >> 8) & 0xFF}.{ip & 0xFF}";
         }

@@ -1,13 +1,8 @@
 //*******************************
-// Create By Rocher Kong 
+// Created By Rocher Kong 
 // Github https://github.com/RocherKong
 // Date 2018.02.09
-//
-// Modified By Dongwei
-// Date 2018.07.18
-// GitHub https://github.com/Maledong
 //*******************************
-
 
 namespace IP2Region.Models
 {
@@ -31,12 +26,12 @@ namespace IP2Region.Models
             IndexPtr = indexPtr;
         }
 
-       /// <summary>
-       /// Get the bytes for total storage
-       /// </summary>
-       /// <returns>
-       /// Bytes gotten.
-       /// </returns>
+        /// <summary>
+        /// Get the bytes for total storage
+        /// </summary>
+        /// <returns>
+        /// Bytes gotten.
+        /// </returns>
         public byte[] GetBytes()
         {
             /*
@@ -46,10 +41,8 @@ namespace IP2Region.Models
              *  start ip      index ptr
             */
             byte[] b = new byte[8];
-
-            Utils.writeIntLong(b, 0, IndexStartIp);
-            Utils.writeIntLong(b, 4, IndexPtr);
-
+            Utils.WriteIntLong(b, 0, IndexStartIp);
+            Utils.WriteIntLong(b, 4, IndexPtr);
             return b;
         }
     }
