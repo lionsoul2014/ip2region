@@ -4,9 +4,10 @@ using Xunit;
 
 namespace IP2Region.Test.xUnit
 {
-    public class SearchTest
+    public class SearchTest : IDisposable
     {
         private readonly DbSearcher _search;
+        
         public SearchTest()
         {
             _search = new DbSearcher(Environment.CurrentDirectory + @"\DB\ip2region.db");
@@ -41,6 +42,9 @@ namespace IP2Region.Test.xUnit
             Assert.Equal(bTreeSearchResult.Region, memResult.Region);
         }
 
-
+        public void Dispose()
+        {
+            _search.Dispose();
+        }
     }
 }
