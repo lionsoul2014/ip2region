@@ -1,7 +1,5 @@
 ﻿using BenchmarkDotNet.Attributes;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace IP2Region.Test.Benchmark
 {
@@ -17,7 +15,7 @@ namespace IP2Region.Test.Benchmark
 
         public TestBase(String DBFilePath)
         {
-            this._dBFilePath = DBFilePath;
+            _dBFilePath = DBFilePath;
         }
 
         [GlobalSetup]
@@ -37,7 +35,7 @@ namespace IP2Region.Test.Benchmark
         [GlobalCleanup]
         public void Dispose()
         {
-            _search?.Dispose();
+            _search.Dispose();
         }
 
         public String GetRandomIP()
