@@ -388,24 +388,24 @@ namespace IP2Region
         /// <summary>
         /// Get the region throught the ip address with memory binary search algorithm.
         /// </summary>
-        public async Task<DataBlock> AsyncMemorySearch(string ip)
+        public Task<DataBlock> AsyncMemorySearch(string ip)
         {
-            return await Task.FromResult(MemorySearch(ip));
+            return Task.FromResult(MemorySearch(ip));
         }
         /// <summary>
         /// Get the region throught the ip address with b-tree search algorithm.
         /// </summary>
-        public async Task<DataBlock> AsyncBtreeSearch(string ip)
+        public Task<DataBlock> AsyncBtreeSearch(string ip)
         {
-            return await Task.FromResult(BtreeSearch(ip));
+            return Task.FromResult(BtreeSearch(ip));
         }
 
         /// <summary>
         /// Get the region throught the ip address with binary search algorithm.
         /// </summary>
-        public async Task<DataBlock> AsyncBinarySearch(string ip)
+        public Task<DataBlock> AsyncBinarySearch(string ip)
         {
-            return await Task.FromResult(BinarySearch(ip));
+            return Task.FromResult(BinarySearch(ip));
         }
 
         #endregion
