@@ -18,7 +18,7 @@ namespace BenchmarkTest.BenchTests
         [Benchmark]
         public async Task TestAsyncSpeedForMemorySearch()
         {
-            await _dbSearcher.AsyncMemorySearch(validIp);
+            await _dbSearcher.MemorySearchAsync(validIp);
         }
 
         [Benchmark]
@@ -29,7 +29,7 @@ namespace BenchmarkTest.BenchTests
         [Benchmark]
         public async Task TestAsyncBinarySearch()
         {
-            await _dbSearcher.AsyncBinarySearch(validIp);
+            await _dbSearcher.BinarySearchAsync(validIp);
         }
 
         [Benchmark]
@@ -40,7 +40,7 @@ namespace BenchmarkTest.BenchTests
         [Benchmark]
         public async Task TestAsyncSpeedForBTreeSearch()
         {
-            await _dbSearcher.AsyncBtreeSearch(validIp);
+            await _dbSearcher.BtreeSearchAsync(validIp);
         }
     }
 }
