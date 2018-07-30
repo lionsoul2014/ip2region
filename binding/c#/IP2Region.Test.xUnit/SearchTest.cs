@@ -30,9 +30,10 @@ namespace IP2Region.Test.xUnit
         [Fact]
         public async Task SearchAsync_Test()
         {
-            var memResult = await _search.MemorySearchAsync("183.192.62.65");
-            var binarySearchResult = await _search.BinarySearchAsync("183.192.62.65");
-            var bTreeSearchResult = await _search.BtreeSearchAsync("183.192.62.65");
+            // We don't need the synchronizeContext, so just set to false
+            var memResult = await _search.MemorySearchAsync("183.192.62.65").ConfigureAwait(false);
+            var binarySearchResult = await _search.BinarySearchAsync("183.192.62.65").ConfigureAwait(false);
+            var bTreeSearchResult = await _search.BtreeSearchAsync("183.192.62.65").ConfigureAwait(false);
 
             Assert.NotNull(memResult.Region);
             Assert.NotNull(binarySearchResult.Region);
