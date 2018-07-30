@@ -13,7 +13,6 @@ namespace IP2Region.Test.Benchmark
         public DataBlock MemorySearch()
         {
             RandomIP = GetRandomIP();
-            //Console.WriteLine(RandomIP);
             return _search.MemorySearch(RandomIP);
         }
 
