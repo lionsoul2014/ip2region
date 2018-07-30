@@ -4,7 +4,8 @@
   "description": "ip database ",
   "main": "ip2region.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "coverage":"npm run test && jest --coverage"
   },
   "repository": {
     "type": "git",
