@@ -1,13 +1,8 @@
 ﻿//*******************************
-// Create By Rocher Kong 
+// Created By Rocher Kong 
 // Github https://github.com/RocherKong
 // Date 2018.02.09
-// 
-// Modified By Dongwei
-// Date 2018.07.18
-// GitHub https://github.com/Maledong
 //*******************************
-
 namespace IP2Region.Models
 {
     public class DataBlock

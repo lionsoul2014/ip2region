@@ -1,11 +1,7 @@
 //*******************************
-// Create By Rocher Kong 
+// Created By Rocher Kong 
 // Github https://github.com/RocherKong
 // Date 2018.02.09
-//
-// Modified By Dongwei
-// Date 2018.07.18
-// GitHub https://github.com/Maledong
 //*******************************
 
 namespace IP2Region
@@ -56,12 +52,12 @@ namespace IP2Region
             */
             byte[] b = new byte[12];
 
-            Utils.writeIntLong(b, 0, StartIP);    //start ip
-            Utils.writeIntLong(b, 4, EndIp);        //end ip
+            Utils.WriteIntLong(b, 0, StartIP);    //start ip
+            Utils.WriteIntLong(b, 4, EndIp);        //end ip
 
             //write the data ptr and the length
             long mix = DataPtr | ((DataLen << 24) & 0xFF000000L);
-            Utils.writeIntLong(b, 8, mix);
+            Utils.WriteIntLong(b, 8, mix);
 
             return b;
         }
