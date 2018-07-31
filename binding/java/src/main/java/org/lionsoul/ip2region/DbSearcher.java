@@ -163,8 +163,8 @@ public class DbSearcher
         //check and load the header
         if ( HeaderSip == null )  {
             raf.seek(8L);    //pass the super block
-            //byte[] b = new byte[dbConfig.getTotalHeaderSize()];
-            byte[] b = new byte[4096];
+            byte[] b = new byte[dbConfig.getTotalHeaderSize()];
+            // byte[] b = new byte[4096];
             raf.readFully(b, 0, b.length);
             
             //fill the header
