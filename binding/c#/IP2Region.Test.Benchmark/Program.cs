@@ -7,7 +7,7 @@ namespace IP2Region.Test.Benchmark
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Welcome To IP2Regin!");
+            Console.WriteLine("Now starting benchmark test, please wait......");
             var summary = BenchmarkRunner.Run<DbSearch_Test>();
             Console.ReadLine();
         }
