@@ -9,7 +9,7 @@
 你可以任意修改代码，但必须确保通过全部的单元测试。要保证通过全部的单元测试，请在 Nodejs 控制台下切换到 nodejs 目录：
 
 1）在此之前，请先运行 `npm i` 确保你已经安装了各类初始化第三方工具。
-2）然后运行 `npm run coverage` 确保你的代码可以通过全部测试（必要时可以添加测试），同时保证代码覆盖率都是绿色（80%以上）。
+2）然后运行 `npm run coverage` 确保你的代码可以通过全部测试（必要时可以添加测试）。
 
 ```bash
 D:\Projects\ip2region\binding\nodejs>npm run coverage
@@ -53,4 +53,21 @@ Tests:       14 passed, 14 total
 Snapshots:   168 passed, 168 total
 Time:        1.792s
 Ran all test suites.
+```
+3）使用benchmark测试，结果如下：
+```bash
+D:\Projects\ip2region\binding\nodejs>node D:\Projects\ip2region\binding\nodejs\tests\benchmarkTests\main.js
+MemorySearchSync x 55,969 ops/sec ±2.22% (90 runs sampled)
+BinarySearchSync x 610 ops/sec ±5.41% (77 runs sampled)
+BtreeSearchSync x 2,439 ops/sec ±6.93% (69 runs sampled)
+MemorySearch x 2,924 ops/sec ±0.67% (85 runs sampled)
+BinarySearch x 154 ops/sec ±2.20% (69 runs sampled)
+BtreeSearch x 294 ops/sec ±2.58% (76 runs sampled)
+Rand    Name                Time (in milliseconds)
+1       MemorySearchSync    0.018
+2       MemorySearch        0.342
+3       BtreeSearchSync     0.410
+4       BinarySearchSync    1.639
+5       BtreeSearch         3.407
+6       BinarySearch        6.497
 ```

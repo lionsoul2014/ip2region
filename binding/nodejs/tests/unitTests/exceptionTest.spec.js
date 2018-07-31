@@ -1,6 +1,6 @@
 // This test is used for tesing of exceptions
 
-const IP2Region = require('../ip2region');
+const IP2Region = require('../../ip2region');
 
 describe('Constructor Test', () => {
   let instance;

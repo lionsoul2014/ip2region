@@ -5,7 +5,7 @@
   "main": "ip2region.js",
   "scripts": {
     "test": "jest",
-    "coverage":"npm run test && jest --coverage"
+    "coverage": "npm run test && jest --coverage"
   },
   "repository": {
     "type": "git",
@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/lionsoul2016/ip2region",
   "devDependencies": {
-    "jest": "^19.0.2"
+    "jest": "^19.0.2",
+    "benchmark": "^2.1.4"
   }
 }
