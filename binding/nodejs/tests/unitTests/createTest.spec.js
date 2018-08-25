@@ -1,7 +1,7 @@
 // This test is used for tesing of a static function `create` of IP2Region
-const IP2Region = require('../ip2region');
-const testIps = require('./utils/testData');
-const asyncFor = require('./utils/asyncFor');
+const IP2Region = require('../../ip2region');
+const testIps = require('../utils/testData');
+const asyncFor = require('../utils/asyncFor');
 
 describe('Create Test', () => {
   let instance;
@@ -26,6 +26,11 @@ describe('Create Test', () => {
     }
   });
 
+  test('memorySearchSync query', () => {
+    for (const ip of testIps) {
+      expect(instance.memorySearchSync(ip)).toMatchSnapshot();
+    }
+  });
 
   //#region callBack
   test('binarySearch query', (done) => {
@@ -52,10 +57,23 @@ describe('Create Test', () => {
       () => { done() });
   });
 
+  test('memorySearch query', (done) => {
+    asyncFor(testIps,
+      (value, continueCallBack) => {
+        instance.memorySearch(value, (err, result) => {
+          expect(err).toBe(null);
+          expect(result).toMatchSnapshot();
+          continueCallBack();
+        });
+      },
+      () => { done() });
+  });
+
+
   //#endregion
 
   //#region Async Promisify test
-  const node_ver = require('./utils/fetchMainVersion');
+  const node_ver = require('../utils/fetchMainVersion');
 
   // If we have Nodejs >= 8, we now support `async` and `await`
   if (node_ver >= 8) {
@@ -90,6 +108,19 @@ describe('Create Test', () => {
 
     };
 
+    const asyncMemorySearch = async (ip) => {
+      return new Promise((succ, fail) => {
+        instance.memorySearch(ip, (err, result) => {
+          if (err) {
+            fail(err);
+          }
+          else {
+            succ(result);
+          }
+        });
+      });
+    }
+
     test('async binarySearch query', async () => {
       for (let i = 0; i < testIps.length; ++i) {
         const result = await asyncBinarySearch(testIps[i]);
@@ -100,6 +131,13 @@ describe('Create Test', () => {
     test('async btreeSearch query', async () => {
       for (let i = 0; i < testIps.length; ++i) {
         const result = await asyncBtreeSearch(testIps[i]);
+        expect(result).toMatchSnapshot();
+      }
+    });
+
+    test('async memorySearch query', async () => {
+      for (let i = 0; i < testIps.length; ++i) {
+        const result = await asyncMemorySearch(testIps[i]);
         expect(result).toMatchSnapshot();
       }
     });
