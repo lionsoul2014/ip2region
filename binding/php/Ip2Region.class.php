@@ -301,6 +301,127 @@ class Ip2Region
         );
     }
 
+    public function btreeMemorySearch( $ip )
+    {
+        if ( $this->dbBinStr == NULL ) {
+            $this->dbBinStr = file_get_contents($this->dbFile);
+            if ( $this->dbBinStr == false ) {
+                throw new Exception("Fail to open the db file {$this->dbFile}");
+            }
+
+            $this->firstIndexPtr = self::getLong($this->dbBinStr, 0);
+            $this->lastIndexPtr  = self::getLong($this->dbBinStr, 4);
+            $this->totalBlocks   = ($this->lastIndexPtr-$this->firstIndexPtr)/INDEX_BLOCK_LENGTH + 1;
+        }
+
+        if ( is_string($ip) ) $ip = self::safeIp2long($ip);
+
+        //check and load the header
+        if ( $this->HeaderSip == NULL ) {
+            $buffer = substr($this->dbBinStr,8,TOTAL_HEADER_LENGTH);
+
+            //fill the header
+            $idx = 0;
+            $this->HeaderSip = array();
+            $this->HeaderPtr = array();
+            for ( $i = 0; $i < TOTAL_HEADER_LENGTH; $i += 8 ) {
+                $startIp = self::getLong($buffer, $i);
+                $dataPtr = self::getLong($buffer, $i + 4);
+                if ( $dataPtr == 0 ) break;
+
+                $this->HeaderSip[] = $startIp;
+                $this->HeaderPtr[] = $dataPtr;
+                $idx++;
+            }
+
+            $this->headerLen = $idx;
+        }
+
+        //1. define the index block with the binary search
+        $l = 0; $h = $this->headerLen; $sptr = 0; $eptr = 0;
+        while ( $l <= $h ) {
+            $m = (($l + $h) >> 1);
+
+            //perfetc matched, just return it
+            if ( $ip == $this->HeaderSip[$m] ) {
+                if ( $m > 0 ) {
+                    $sptr = $this->HeaderPtr[$m-1];
+                    $eptr = $this->HeaderPtr[$m  ];
+                } else {
+                    $sptr = $this->HeaderPtr[$m ];
+                    $eptr = $this->HeaderPtr[$m+1];
+                }
+
+                break;
+            }
+
+            //less then the middle value
+            if ( $ip < $this->HeaderSip[$m] ) {
+                if ( $m == 0 ) {
+                    $sptr = $this->HeaderPtr[$m  ];
+                    $eptr = $this->HeaderPtr[$m+1];
+                    break;
+                } else if ( $ip > $this->HeaderSip[$m-1] ) {
+                    $sptr = $this->HeaderPtr[$m-1];
+                    $eptr = $this->HeaderPtr[$m  ];
+                    break;
+                }
+                $h = $m - 1;
+            } else {
+                if ( $m == $this->headerLen - 1 ) {
+                    $sptr = $this->HeaderPtr[$m-1];
+                    $eptr = $this->HeaderPtr[$m  ];
+                    break;
+                } else if ( $ip <= $this->HeaderSip[$m+1] ) {
+                    $sptr = $this->HeaderPtr[$m  ];
+                    $eptr = $this->HeaderPtr[$m+1];
+                    break;
+                }
+                $l = $m + 1;
+            }
+        }
+
+        //match nothing just stop it
+        if ( $sptr == 0 ) return NULL;
+
+        //2. search the index blocks to define the data
+        $blockLen = $eptr - $sptr;
+        $index =substr($this->dbBinStr,$sptr, $blockLen + INDEX_BLOCK_LENGTH);
+
+        $dataptr = 0;
+        $l = 0; $h = $blockLen / INDEX_BLOCK_LENGTH;
+        while ( $l <= $h ) {
+            $m = (($l + $h) >> 1);
+            $p = (int)($m * INDEX_BLOCK_LENGTH);
+            $sip = self::getLong($index, $p);
+            if ( $ip < $sip ) {
+                $h = $m - 1;
+            } else {
+                $eip = self::getLong($index, $p + 4);
+                if ( $ip > $eip ) {
+                    $l = $m + 1;
+                } else {
+                    $dataptr = self::getLong($index, $p + 8);
+                    break;
+                }
+            }
+        }
+
+        //not matched
+        if ( $dataptr == 0 ) return NULL;
+
+        //3. get the data
+        $dataLen = (($dataptr >> 24) & 0xFF);
+        $dataPtr = ($dataptr & 0x00FFFFFF);
+
+        $data =substr($this->dbBinStr,$dataPtr, $dataLen);
+
+        return array(
+            'city_id' => self::getLong($data, 0),
+            'region'  => substr($data, 4)
+        );
+    }
+
 
     /**
      * safe self::safeIp2long function 
