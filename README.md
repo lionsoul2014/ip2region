@@ -35,7 +35,7 @@ maven仓库地址：
 <dependency>
     <groupId>org.lionsoul</groupId>
     <artifactId>ip2region</artifactId>
-    <version>1.4</version>
+    <version>1.7</version>
 </dependency>
 ```
 nuget安装命令
