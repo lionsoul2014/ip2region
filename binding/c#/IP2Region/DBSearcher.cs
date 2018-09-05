@@ -23,7 +23,7 @@ namespace IP2Region
         /// <summary>
         /// db file access handler
         /// </summary>
-        private FileStream _raf = null;
+        private Stream _raf = null;
 
         /// <summary>
         /// header blocks buffer
@@ -74,6 +74,18 @@ namespace IP2Region
         }
 
         public DbSearcher(string dbFile) : this(null, dbFile) { }
+
+        public DbSearcher(DbConfig dbConfig, Stream dbFileStream)
+        {
+            if (_dbConfig == null)
+            {
+                _dbConfig = dbConfig;
+            }
+
+            _raf = dbFileStream;
+        }
+
+        public DbSearcher(Stream dbFileStream) : this(null, dbFileStream) { }
 
         #region Sync Methods
         /// <summary>
