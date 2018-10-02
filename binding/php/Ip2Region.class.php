@@ -358,4 +358,3 @@ class Ip2Region
         $this->HeaderPtr = NULL;
     }
 }
-?>
