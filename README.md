@@ -35,7 +35,7 @@ maven仓库地址：
 <dependency>
     <groupId>org.lionsoul</groupId>
     <artifactId>ip2region</artifactId>
-    <version>1.7</version>
+    <version>1.7.2</version>
 </dependency>
 ```
 nuget安装命令
@@ -114,6 +114,7 @@ java -jar dbMaker-1.2.2.jar -src ./data/ip.merge.txt -region ./data/global_regio
 * 5, 数据库文件的结构和原理请阅读 @冬芽 的blog：[“ip2region数据库文件的结构和原理”](http://dongyado.com/tool/2016/08/18/structure-of-ip2region-database-file/)
 
 
-### 7. 注意事项
+### 7. 其他备注
 * 1, 全部binding的各个search接口都<b>不是</b>线程安全的实现，不同线程可以通过创建不同的查询对象来使用。
 * 2, memorySearch接口，在发布对象前进行一次预查询，可以安全用于多线程环境。
+* 3, ip2region交流分享，微信：lionsoul2014，QQ：1187582057
