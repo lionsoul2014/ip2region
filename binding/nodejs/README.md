@@ -1,5 +1,18 @@
 # nodejs 客户端
 
+## Install
+```
+npm install lionsoul-ip2region --save 
+```
+
+## Example
+
+```
+const searcher = require('lionsoul-ip2region').create();
+searcher.btreeSearchSync('xxx.xxx.xxx.xxx')
+// => { city: 2163, region: '中国|0|广东省|深圳市|联通' }
+```
+
 ## 实现情况：
 
 现已实现同步和异步查询，具体使用方法可以参考 `nodejs\tests\constructorTest.spec.js` 和`nodejs\tests\createTest.spec.js`。

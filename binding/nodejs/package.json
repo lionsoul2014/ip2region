@@ -1,5 +1,5 @@
 {
-  "name": "ip2region",
+  "name": "lionsoul-ip2region",
   "version": "0.0.1",
   "description": "ip database ",
   "main": "ip2region.js",
@@ -7,6 +7,7 @@
     "test": "jest",
     "coverage": "npm run test && jest --coverage"
   },
+  "files": ["data/"],
   "repository": {
     "type": "git",
     "url": "https://github.com/lionsoul2016/ip2region"
