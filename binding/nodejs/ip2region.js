@@ -8,6 +8,8 @@
  * @author dongwei<maledong_github@outlook.com>
  */
 const fs = require('fs');
+const path = require('path');
+const DEFAULT_DB_PATH  = path.join(__dirname,'./data/ip2region.db') ;
 
 //#region Private Functions
 /**
@@ -134,7 +136,7 @@ class IP2Region {
     //#region Static Functions
 
     // Single Instance
-    static create(dbPath) {
+    static create(dbPath = DEFAULT_DB_PATH) {
         let existInstance = _globalInstances.get(dbPath);
         if (existInstance == null) {
             existInstance = new IP2Region({ dbPath: dbPath });
