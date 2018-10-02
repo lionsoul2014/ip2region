@@ -59,6 +59,23 @@ public class DbSearcher
     }
 
     /**
+     * construct method with self-define std ip2region bianry string support
+     * Thanks to the issue from Wendal at https://gitee.com/lionsoul/ip2region/issues/IILFL
+     *
+     * @param   dbConfig
+     * @param   dbBinStr
+     */
+    public DbSearcher(DbConfig dbConfig, byte[] dbBinStr)
+    {
+        this.dbConfig = dbConfig;
+        this.dbBinStr = dbBinStr;
+
+        firstIndexPtr = Util.getIntLong(dbBinStr, 0);
+        lastIndexPtr  = Util.getIntLong(dbBinStr, 4);
+        totalIndexBlocks = (int)((lastIndexPtr - firstIndexPtr)/IndexBlock.getIndexBlockLength()) + 1;
+    }
+
+    /**
      * get the region with a int ip address with memory binary search algorithm
      *
      * @param   ip
