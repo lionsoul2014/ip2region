@@ -1,5 +1,5 @@
 --[[
-_M lua binding
+Ip2region lua binding
 
 @author chenxin<chenxin619315@gmail.com>
 @date   2018/10/02
