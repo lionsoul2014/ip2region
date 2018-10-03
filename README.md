@@ -45,7 +45,7 @@ Install-Package IP2Region
 ```
 
 ### 5. 测试程序：
-C# 和 Node.js，请具体参考文件夹中README.md 说明。
+C#、Node.js、lua的测试请具体参考文件夹中README.md 说明。
 
 java: 
 ```shell
