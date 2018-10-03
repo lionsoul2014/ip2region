@@ -8,16 +8,26 @@ Ip2region lua binding
 require("bit32");
 
 local Ip2region = {
+    dbFile = "",
     dbFileHandler = "",
+    dbBinStr = "",
     HeaderSip = "", 
     HeaderPtr = "",
     headerLen = "",
-    firstIndexPtr = "",
-    lastIndexPtr = "", 
-    totalBlocks = "",
-    dbBinStr = "",
-    dbFile = ""
+    firstIndexPtr = 0,
+    lastIndexPtr = 0, 
+    totalBlocks = 0
 };
+
+
+-- common constants
+local INDEX_BLOCK_LENGTH  = 12;
+local TOTAL_HEADER_LENGTH = 8192;
+function Ip2region:new(obj)
+    obj = obj or {};
+    setmetatable(obj, {__index = self});
+    return obj;
+end
 
 
 
@@ -90,18 +100,6 @@ function get_file_contents(file)
 end
 
 
-
-
--- common constants
-local INDEX_BLOCK_LENGTH  = 12;
-local TOTAL_HEADER_LENGTH = 8192;
-
-function Ip2region:new(obj)
-    obj = obj or {};
-    setmetatable(obj, {__index = self});
-    return obj;
-end
-
 --[[
 all the db binary string will be loaded into memory
 then search the memory only and this will a lot faster than disk base search
@@ -171,6 +169,67 @@ or long ip numeric with binary search algorithm
 @return table or nil for failed
 ]]--
 function Ip2region:binarySearch(ip)
+    -- check and conver the ip address
+    if ( type(ip) == "string" ) then
+        ip = ip2long(ip);
+    end
+
+    if ( self.totalBlocks == 0 ) then
+        -- check and open the original db file
+        if ( self.dbFileHandler == "" ) then
+            self.dbFileHandler = io.open(self.dbFile, "r");
+            if ( not self.dbFileHandler ) then
+                return nil;
+            end
+        end
+
+        self.dbFileHandler:seek("set", 0);
+        local superBlock = self.dbFileHandler:read(8);
+
+        self.firstIndexPtr = getLong(superBlock, 1);    -- 0 + 1
+        self.lastIndexPtr  = getLong(superBlock, 5);    -- 4 + 1
+        self.totalBlocks   = (self.lastIndexPtr-self.firstIndexPtr)/INDEX_BLOCK_LENGTH + 1;
+    end
+
+
+    -- binary search to define the data
+    local l = 0;
+    local h = self.totalBlocks;
+    local dataPtr = 0;
+    while ( l <= h ) do
+        local m = math.floor((l + h) / 2);
+        local p = m * INDEX_BLOCK_LENGTH;
+        self.dbFileHandler:seek("set", self.firstIndexPtr + p);
+        local buffer = self.dbFileHandler:read(INDEX_BLOCK_LENGTH);
+        local sip = getLong(buffer, 1); -- 0 + 1
+        if ( ip < sip ) then
+            h = m - 1;
+        else
+            local eip = getLong(buffer, 5);   -- 4 + 1
+            if ( ip > eip ) then
+                l = m + 1;
+            else
+                dataPtr = getLong(buffer, 9);   -- 8 + 1
+                break;
+            end
+        end
+    end
+
+    -- not matched just stop it here
+    if ( dataPtr == 0 ) then return nil; end
+
+
+    -- get the data
+    local dataLen = bit32.band(bit32.rshift(dataPtr, 24), 0xFF);
+    dataPtr = bit32.band(dataPtr, 0x00FFFFFF);
+
+    self.dbFileHandler:seek("set", dataPtr);
+    local data = self.dbFileHandler:read(dataLen);
+
+    return {
+        city_id = getLong(data, 1),    -- 0 + 1
+        region  = string.sub(data, 5)  -- 4 + 1
+    };
 end
 
 
@@ -181,6 +240,131 @@ get the data block associated with the specified ip with b-tree search algorithm
 @return table or nil for failed
 ]]--
 function Ip2region:btreeSearch(ip)
+    if ( type(ip) ) then
+        ip = ip2long(ip);
+    end
+
+    -- check and load the header
+    if ( self.HeaderSip == "" ) then
+        -- check and open the original db file
+        if ( self.dbFileHandler == "" ) then
+            self.dbFileHandler = io.open(self.dbFile, 'r');
+            if ( not self.dbFileHandler ) then
+                return nil;
+            end
+        end
+
+        self.dbFileHandler:seek("set", 8);
+        local buffer = self.dbFileHandler:read(TOTAL_HEADER_LENGTH);
+        
+        -- fill the header
+        local i = 0;
+        local idx = 0;
+        self.HeaderSip = {};
+        self.HeaderPtr = {};
+        for i=0, TOTAL_HEADER_LENGTH, 8 do
+            local startIp = getLong(buffer, i + 1); -- 0 + 1
+            local dataPtr = getLong(buffer, i + 5); -- 4 + 1
+            if ( dataPtr == 0 ) then
+                break;
+            end
+
+            table.insert(self.HeaderSip, startIp);
+            table.insert(self.HeaderPtr, dataPtr);
+            idx = idx + 1;
+        end
+
+        self.headerLen = idx;
+    end
+    
+    -- 1. define the index block with the binary search
+    local l = 0; 
+    local h = self.headerLen;
+    local sptr = 0;
+    local eptr = 0;
+    while ( l <= h ) do
+        local m = math.floor((l + h) / 2);
+        -- perfetc matched, just return it
+        if ( ip == self.HeaderSip[m] ) then
+            if ( m > 0 ) then
+                sptr = self.HeaderPtr[m-1];
+                eptr = self.HeaderPtr[m  ];
+            else
+                sptr = self.HeaderPtr[m  ];
+                eptr = self.HeaderPtr[m+1];
+            end
+            
+            break;
+        end
+        
+        -- less then the middle value
+        if ( ip < self.HeaderSip[m] ) then
+            if ( m == 0 ) then
+                sptr = self.HeaderPtr[m  ];
+                eptr = self.HeaderPtr[m+1];
+                break;
+            elseif ( ip > self.HeaderSip[m-1] ) then
+                sptr = self.HeaderPtr[m-1];
+                eptr = self.HeaderPtr[m  ];
+                break;
+            end
+            h = m - 1;
+        else
+            if ( m == self.headerLen - 1 ) then
+                sptr = self.HeaderPtr[m-1];
+                eptr = self.HeaderPtr[m  ];
+                break;
+            elseif ( ip <= self.HeaderSip[m+1] ) then
+                sptr = self.HeaderPtr[m  ];
+                eptr = self.HeaderPtr[m+1];
+                break;
+            end
+            l = m + 1;
+        end
+    end
+    
+    -- match nothing just stop it
+    if ( sptr == 0 ) then return nil; end
+    
+    -- 2. search the index blocks to define the data
+    self.dbFileHandler:seek("set", sptr);
+    local blockLen = eptr - sptr;
+    local index = self.dbFileHandler:read(blockLen + INDEX_BLOCK_LENGTH);
+    local dataPtr = 0;
+
+    l = 0;
+    h = blockLen / INDEX_BLOCK_LENGTH;
+    while ( l <= h ) do
+        local m = math.floor((l + h) / 2);
+        local p = m * INDEX_BLOCK_LENGTH;
+        local sip = getLong(index, p + 1);       -- 0 + 1
+        if ( ip < sip ) then
+            h = m - 1;
+        else
+            local eip = getLong(index, p + 5);   -- 4 + 1
+            if ( ip > eip ) then
+                l = m + 1;
+            else
+                dataPtr = getLong(index, p + 9); -- 8 + 1
+                break;
+            end
+        end
+    end
+    
+    -- not matched
+    if ( dataPtr == 0 ) then return nil; end
+    
+    -- 3. get the data
+    local dataLen = bit32.band(bit32.rshift(dataPtr, 24), 0xFF);
+    dataPtr = bit32.band(dataPtr, 0x00FFFFFF);
+    
+    self.dbFileHandler:seek("set", dataPtr);
+    local data = self.dbFileHandler:read(dataLen);
+
+    return {
+        city_id = getLong(data, 1),     -- 0 + 1
+        region  = string.sub(data, 5)   -- 4 + 1
+    };
 end
 
 
