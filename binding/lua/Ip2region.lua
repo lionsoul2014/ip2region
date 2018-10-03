@@ -1,5 +1,5 @@
 --[[
-Ip2region lua binding
+_M lua binding
 
 @author chenxin<chenxin619315@gmail.com>
 @date   2018/10/02
@@ -7,23 +7,22 @@ Ip2region lua binding
 
 require("bit32");
 
-local Ip2region = {
+local INDEX_BLOCK_LENGTH  = 12;
+local TOTAL_HEADER_LENGTH = 8192;
+local _M = {
     dbFile = "",
-    dbFileHandler = "",
+    dbFileHandler = nil,
     dbBinStr = "",
-    HeaderSip = "", 
-    HeaderPtr = "",
-    headerLen = "",
+    HeaderSip = nil, 
+    HeaderPtr = nil,
+    headerLen = 0,
     firstIndexPtr = 0,
     lastIndexPtr = 0, 
     totalBlocks = 0
 };
 
-
--- common constants
-local INDEX_BLOCK_LENGTH  = 12;
-local TOTAL_HEADER_LENGTH = 8192;
-function Ip2region:new(obj)
+_G["Ip2region"] = _M;
+function _M:new(obj)
     obj = obj or {};
     setmetatable(obj, {__index = self});
     return obj;
@@ -58,27 +57,37 @@ internal function to convert the string ip to a long value
 @param  ip
 @return Integer
 ]]--
-function ip2long(ip)
+function _M:ip2long(ip)
     local ini = 1;
     local iip = 0;
     local off = 24;
-    local int = 0;
     while true do
         local pos = string.find(ip, '.', ini, true);
-        if ( not pos or off <= 0 ) then
+        if ( not pos ) then
             break;
         end
 
-        int = tonumber(string.sub(ip, ini, pos - 1));
-        iip = bit32.bor(iip, bit32.lshift(int, off));
+        local sub = string.sub(ip, ini, pos - 1);
+        if ( string.len(sub) < 1 ) then
+            return nil;
+        end
+
+        iip = bit32.bor(iip, bit32.lshift(tonumber(sub), off));
         ini = pos + 1;
         off = off - 8;
     end
 
-    int = tonumber(string.sub(ip, ini));
-    iip = bit32.bor(iip, bit32.lshift(int, off));
+    -- check if it is a valid ip address
+    if ( off ~= 0 or ini > string.len(ip) ) then
+        return nil;
+    end
 
-    return iip;
+    local sub = string.sub(ip, ini);
+    if ( string.len(sub) < 1 ) then
+        return nil;
+    end
+
+    return bit32.bor(iip, bit32.lshift(tonumber(sub), off));
 end
 
 
@@ -108,7 +117,15 @@ then search the memory only and this will a lot faster than disk base search
 @param  ip
 @return table or nil for failed
 ]]--
-function Ip2region:memorySearch(ip)
+function _M:memorySearch(ip)
+    -- string ip conversion
+    if ( type(ip) == "string" ) then
+        ip = self:ip2long(ip);
+        if ( ip == nil ) then
+            return nil;
+        end
+    end;
+
     -- check and load the binary string for the first time
     if ( self.dbBinStr == "" ) then
         self.dbBinStr = get_file_contents(self.dbFile);
@@ -121,9 +138,6 @@ function Ip2region:memorySearch(ip)
         self.totalBlocks   = (self.lastIndexPtr - self.firstIndexPtr)/INDEX_BLOCK_LENGTH + 1;
     end
 
-    if ( type(ip) == "string" ) then
-        ip = ip2long(ip);
-    end;
 
     -- binary search to define the data
     local l = 0;
@@ -168,15 +182,18 @@ or long ip numeric with binary search algorithm
 @param  ip
 @return table or nil for failed
 ]]--
-function Ip2region:binarySearch(ip)
+function _M:binarySearch(ip)
     -- check and conver the ip address
     if ( type(ip) == "string" ) then
-        ip = ip2long(ip);
+        ip = self:ip2long(ip);
+        if ( ip == nil ) then
+            return nil;
+        end
     end
 
     if ( self.totalBlocks == 0 ) then
         -- check and open the original db file
-        if ( self.dbFileHandler == "" ) then
+        if ( self.dbFileHandler == nil ) then
             self.dbFileHandler = io.open(self.dbFile, "r");
             if ( not self.dbFileHandler ) then
                 return nil;
@@ -239,15 +256,19 @@ get the data block associated with the specified ip with b-tree search algorithm
 @param  ip
 @return table or nil for failed
 ]]--
-function Ip2region:btreeSearch(ip)
-    if ( type(ip) ) then
-        ip = ip2long(ip);
+function _M:btreeSearch(ip)
+    -- string ip to integer conversion
+    if ( type(ip) == "string" ) then
+        ip = self:ip2long(ip);
+        if ( ip == nil ) then
+            return nil;
+        end
     end
 
     -- check and load the header
-    if ( self.HeaderSip == "" ) then
+    if ( self.headerLen == 0 ) then
         -- check and open the original db file
-        if ( self.dbFileHandler == "" ) then
+        if ( self.dbFileHandler == nil ) then
             self.dbFileHandler = io.open(self.dbFile, 'r');
             if ( not self.dbFileHandler ) then
                 return nil;
@@ -277,6 +298,7 @@ function Ip2region:btreeSearch(ip)
         self.headerLen = idx;
     end
     
+
     -- 1. define the index block with the binary search
     local l = 0; 
     local h = self.headerLen;
@@ -368,4 +390,4 @@ function Ip2region:btreeSearch(ip)
 end
 
 
-return Ip2region;
+return _M;
