@@ -47,3 +47,6 @@ data = searcher:memorySearch("101.233.153.103");
 -- 返回结果如下
 print("city_id=", data.city_id, "region=", data.region);
 ```
+
+### 三，备注
+* 1，Ip2region模块的位运算依赖了bit32模块，这个是lua 5.2才开始支持的。
