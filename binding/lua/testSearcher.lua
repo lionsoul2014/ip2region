@@ -12,13 +12,15 @@ Usage: lua testSearcher.lua [ip2region db file] [algorithm]
     os.exit();
 end
 
-local Ip2region = require "Ip2region";
+local ip2region = require "Ip2region";
 -- local cjson = require "cjson";
 -- local socket = require "socket";
 
 
 -- check and parse the dbFile and the method algorithm
-local searcher  = Ip2region:new({dbFile = arg[1]});
+-- set the dbFile
+-- ip2region.dbFile = arg[1];
+ip2region:setDbFile(arg[1]);
 local algorithm = "btree";
 if ( arg[2] ~= nil ) then
     local arg_2 = string.lower(arg[2]);
@@ -51,17 +53,17 @@ while ( true ) do
         break;
     elseif ( line == "quit" ) then
         break;
-    elseif ( searcher:ip2long(line) == nil ) then
+    elseif ( ip2region:ip2long(line) == nil ) then
         print("Invalid ip address=", line);
     else
         local data;
         local s_time = os.clock();
         if ( algorithm == "btree" ) then
-            data = searcher:btreeSearch(line);
+            data = ip2region:btreeSearch(line);
         elseif ( algorithm == "binary" ) then
-            data = searcher:binarySearch(line);
+            data = ip2region:binarySearch(line);
         elseif ( algorithm == "memory" ) then
-            data = searcher:memorySearch(line);
+            data = ip2region:memorySearch(line);
         end
 
         local cost_time = (os.clock() - s_time) * 1000; -- to millseconds

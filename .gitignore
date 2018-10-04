@@ -3,6 +3,9 @@
 *.o
 *.pyc
 *~
+*.log
+*.la
+*.so
 META-INF/
 
 # Binary Files #
