@@ -22,11 +22,11 @@ local _M = {
 };
 
 _G["Ip2region"] = _M;
-function _M:new(obj)
-    obj = obj or {};
-    setmetatable(obj, {__index = self});
-    return obj;
-end
+-- function _M:new(obj)
+--     obj = obj or {};
+--     setmetatable(obj, {__index = self});
+--     return obj;
+-- end
 
 
 
@@ -106,6 +106,16 @@ function get_file_contents(file)
     local str = io.read("*a");
     io.close();
     return str;
+end
+
+
+--[[
+set the current db file path
+
+@param  dbFile
+]]--
+function _M:setDbFile(dbFile)
+    self.dbFile = dbFile;
 end
 
 
