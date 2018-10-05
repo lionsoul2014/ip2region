@@ -30,7 +30,7 @@ _M.__index = _M;
 _M.__tostring = function(table)
     local t = {
         "dbFile=" .. table.dbFile,
-        "dbFileHandler=" .. table.dbFileHandler,
+        -- "dbFileHandler=" .. table.dbFileHandler,
         "headerLen=" .. table.headerLen,
         "firstIndexPtr" .. table.firstIndexPtr,
         "lastIndexPtr" .. table.lastIndexPtr,
