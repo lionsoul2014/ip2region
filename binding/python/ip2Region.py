@@ -8,12 +8,17 @@
 import struct, io, socket, sys
 
 class Ip2Region(object):
-    __headerSip = []
-    __headerPtr = []
-    __f         = None
-    __sPtr      = 0
-    __indexLen  = 0
-    __dbBinStr  = ''
+    __INDEX_BLOCK_LENGTH  = 12
+    __TOTAL_HEADER_LENGTH = 8192
+
+    __f          = None
+    __headerSip  = []
+    __headerPtr  = []
+    __headerLen  = 0
+    __indexSPtr  = 0
+    __indexLPtr  = 0
+    __indexCount = 0
+    __dbBinStr   = ''
 
     def __init__(self, dbfile):
         self.initDatabase(dbfile)
@@ -26,35 +31,30 @@ class Ip2Region(object):
         if not ip.isdigit(): ip = self.ip2long(ip)
 
         if self.__dbBinStr == '':
-            self.__dbBinStr = self.__f.read() #read all the contents in file
-            self.__sPtr     = self.getLong(self.__dbBinStr, 0)
-            endPtr          = self.getLong(self.__dbBinStr, 4)
-            self.__indexLen = endPtr - self.__sPtr
+            self.__dbBinStr   = self.__f.read() #read all the contents in file
+            self.__indexSPtr  = self.getLong(self.__dbBinStr, 0)
+            self.__indexLPtr  = self.getLong(self.__dbBinStr, 4)
+            self.__indexCount = int((self.__indexLPtr - self.__indexSPtr)/self.__INDEX_BLOCK_LENGTH)+1
 
-        startPtr = self.__sPtr
-        indexLen = self.__indexLen
-        dbBinStr = self.__dbBinStr
-
-        l, h, mixPtr = (0, int(indexLen/12), 0)
+        l, h, dataPtr = (0, self.__indexCount, 0)
         while l <= h:
-            m   = int((l+h)/2)
-            ptr = startPtr + m*12
+            m = int((l+h) >> 1)
+            p = self.__indexSPtr + m*self.__INDEX_BLOCK_LENGTH
+            sip = self.getLong(self.__dbBinStr, p)
 
-            sip = self.getLong(dbBinStr, ptr)
-            eip = self.getLong(dbBinStr, ptr+4)
-
-            if ip >= sip:
-                if ip > eip:
-                    l = m + 1
-                else:
-                    mixPtr = self.getLong(dbBinStr, ptr+8)
-                    break;
+            if ip < sip:
+                h = m -1
             else:
-                h = m - 1
+                eip = self.getLong(self.__dbBinStr, p+4)
+                if ip > eip:
+                    l = m + 1;
+                else:
+                    dataPtr = self.getLong(self.__dbBinStr, p+8)
+                    break
 
-        if mixPtr == 0: return "N2"
+        if dataPtr == 0: raise Exception("Data pointer not found")
 
-        return self.returnData(mixPtr)
+        return self.returnData(dataPtr)
 
     def binarySearch(self, ip):
         """
@@ -63,41 +63,34 @@ class Ip2Region(object):
         """
         if not ip.isdigit(): ip = self.ip2long(ip)
 
-        if self.__indexLen < 1:
+        if self.__indexCount == 0:
             self.__f.seek(0)
-            b = self.__f.read(8)
-            self.__sPtr = self.getLong(b, 0)
-            endPtr      = self.getLong(b, 4)
-            self.__indexLen = endPtr - self.__sPtr
+            superBlock = self.__f.read(8)
+            self.__indexSPtr = self.getLong(superBlock, 0)
+            self.__indexLPtr = self.getLong(superBlock, 4)
+            self.__indexCount = int((self.__indexLPtr - self.__indexSPtr) / self.__INDEX_BLOCK_LENGTH) + 1
 
-        startPtr = self.__sPtr
-        indexLen = self.__indexLen
-
-        self.__f.seek(startPtr)
-        b = self.__f.read(indexLen+12)
-
-        l, h, mixPtr = (0, int(indexLen/12), 0)
+        l, h, dataPtr = (0, self.__indexCount, 0)
         while l <= h:
-            m   = int((l+h)/2)
-            ptr = startPtr + m*12
-            self.__f.seek(ptr)
+            m = int((l+h) >> 1)
+            p = m*self.__INDEX_BLOCK_LENGTH
 
-            b   = self.__f.read(12)
-            sip = self.getLong(b, 0)
-            eip = self.getLong(b, 4)
-
-            if ip >= sip:
+            self.__f.seek(self.__indexSPtr+p)
+            buffer = self.__f.read(self.__INDEX_BLOCK_LENGTH)
+            sip = self.getLong(buffer, 0)
+            if ip < sip:
+                h = m - 1
+            else:
+                eip = self.getLong(buffer, 4)
                 if ip > eip:
                     l = m + 1
                 else:
-                    mixPtr = self.getLong(b, 8)
-                    break;
-            else:
-                h = m - 1
+                    dataPtr = self.getLong(buffer, 8)
+                    break
 
-        if mixPtr == 0: return "N2"
+        if dataPtr == 0: raise Exception("Data pointer not found")
 
-        return self.returnData(mixPtr)
+        return self.returnData(dataPtr)
 
     def btreeSearch(self, ip):
         """
@@ -107,82 +100,81 @@ class Ip2Region(object):
         if not ip.isdigit(): ip = self.ip2long(ip)
 
         if len(self.__headerSip) < 1:
+            headerLen = 0
             #pass the super block
             self.__f.seek(8)
             #read the header block
-            b = self.__f.read(8192)
+            b = self.__f.read(self.__TOTAL_HEADER_LENGTH)
             #parse the header block
-            sip = None
-            ptr = None
-            for i in range(0, len(b)-1, 8):
+            for i in range(0, len(b), 8):
                 sip = self.getLong(b, i)
                 ptr = self.getLong(b, i+4)
                 if ptr == 0:
                     break
                 self.__headerSip.append(sip)
                 self.__headerPtr.append(ptr)
+                headerLen += 1
+            self.__headerLen = headerLen
 
-        headerLen = len(self.__headerSip) - 1
-        l, h, sptr, eptr = (0, headerLen, 0, 0)
+        l, h, sptr, eptr = (0, self.__headerLen, 0, 0)
         while l <= h:
-            m = int((l+h)/2)
+            m = int((l+h) >> 1)
 
             if ip == self.__headerSip[m]:
                 if m > 0:
                     sptr = self.__headerPtr[m-1]
                     eptr = self.__headerPtr[m]
-                    break;
                 else:
                     sptr = self.__headerPtr[m]
                     eptr = self.__headerPtr[m+1]
-                    break;
+                break
 
-            if ip > self.__headerSip[m]:
-                if m == headerLen:
-                    sptr = self.__headerPtr[m-1]
-                    eptr = self.__headerPtr[m]
-                    break;
-                elif ip < self.__headerSip[m+1]:
-                    sptr = self.__headerPtr[m]
-                    eptr = self.__headerPtr[m+1]
-                    break;
-
-                l = m + 1
-            else:
+            if ip < self.__headerSip[m]:
                 if m == 0:
                     sptr = self.__headerPtr[m]
                     eptr = self.__headerPtr[m+1]
-                    break;
+                    break
                 elif ip > self.__headerSip[m-1]:
                     sptr = self.__headerPtr[m-1]
                     eptr = self.__headerPtr[m]
-                    break;
-
+                    break
                 h = m - 1
+            else:
+                if m == self.__headerLen - 1:
+                    sptr = self.__headerPtr[m-1]
+                    eptr = self.__headerPtr[m]
+                    break
+                elif ip <= self.__headerSip[m+1]:
+                    sptr = self.__headerPtr[m]
+                    eptr = self.__headerPtr[m+1]
+                    break
+                l = m + 1
 
-        if sptr == 0: return "N1"
+        if sptr == 0: raise Exception("Index pointer not found")
 
         indexLen = eptr - sptr
         self.__f.seek(sptr)
-        b = self.__f.read(indexLen + 12)
+        index = self.__f.read(indexLen + self.__INDEX_BLOCK_LENGTH)
         
-        l, h, mixPtr = (0, int(indexLen/12), 0)
+        l, h, dataPrt = (0, int(indexLen/self.__INDEX_BLOCK_LENGTH), 0)
         while l <= h:
-            m = int((l+h)/2)
-            offset = m * 12
+            m = int((l+h) >> 1)
+            offset = int(m * self.__INDEX_BLOCK_LENGTH)
+            sip = self.getLong(index, offset)
 
-            if ip >= self.getLong(b, offset):
-                if ip > self.getLong(b, offset+4):
-                    l = m + 1
-                else:
-                    mixPtr = self.getLong(b, offset+8)
-                    break;
-            else:
+            if ip < sip:
                 h = m - 1
+            else:
+                eip = self.getLong(index, offset+4)
+                if ip > eip:
+                    l = m + 1;
+                else:
+                    dataPrt = self.getLong(index, offset+8)
+                    break
 
-        if mixPtr == 0: return "N2"
+        if dataPrt == 0: raise Exception("Data pointer not found")
 
-        return self.returnData(mixPtr)
+        return self.returnData(dataPrt)
 
     def initDatabase(self, dbfile):
         """
@@ -191,18 +183,18 @@ class Ip2Region(object):
         """
         try:
             self.__f = io.open(dbfile, "rb")
-        except IOError, e:
-            print "[Error]: ", e
+        except IOError as e:
+            print("[Error]: %s" % e)
             sys.exit()
 
-    def returnData(self, dsptr):
+    def returnData(self, dataPtr):
         """
         " get ip data from db file by data start ptr
         " param: dsptr
         """
-        dataPtr = dsptr & 0x00FFFFFFL
-        dataLen = (dsptr >> 24) & 0xFF
-        
+        dataLen = (dataPtr >> 24) & 0xFF
+        dataPtr = dataPtr & 0x00FFFFFF
+
         self.__f.seek(dataPtr)
         data = self.__f.read(dataLen)
 
@@ -213,7 +205,6 @@ class Ip2Region(object):
 
     def ip2long(self, ip):
         _ip = socket.inet_aton(ip)
-
         return struct.unpack("!L", _ip)[0]
 
     def isip(self, ip):
@@ -228,13 +219,14 @@ class Ip2Region(object):
         return True
 
     def getLong(self, b, offset):
-        if len( b[offset:offset+4] ) == 4:
+        if len(b[offset:offset+4]) == 4:
             return struct.unpack('I', b[offset:offset+4])[0]
-
         return 0
 
     def close(self):
-        self.__headerSip = None
+        if self.__f != None:
+            self.__f.close()
+
+        self.__dbBinStr  = None
         self.__headerPtr = None
-        self.__f.close()
-        self.__f         = None
+        self.__headerSip = None
