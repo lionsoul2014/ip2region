@@ -46,9 +46,10 @@ construct method
 @param  obj
 @return Ip2region object
 --]]
-function _M:new(obj)
-    obj = obj or {};
+function _M.new(dbFile)
+    obj = {};
     setmetatable(obj, _M);
+    obj.dbFile = dbFile;
     return obj;
 end
 
@@ -80,7 +81,13 @@ internal function to convert the string ip to a long value
 @param  ip
 @return Integer
 ]]--
-function _M:ip2long(ip)
+function _M.ip2long(self, ip)
+    -- dynamic arguments checking
+    -- to support object.ip2long and object:ip2long access
+    if ( type(self) == "string") then
+        ip = self;
+    end
+
     local ini = 1;
     local iip = 0;
     local off = 24;
