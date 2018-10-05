@@ -15,7 +15,7 @@
  *
  * @param    dbFile path
 */
-IP2R_API uint_t ip2region_create(ip2region_t ip2rObj, char *dbFile)
+IP2R_API uint_t ip2region_create(ip2region_t ip2rObj, const char *dbFile)
 {
     memset(ip2rObj, 0x00, sizeof(ip2region_entry));
     ip2rObj->headerLen = 0;
@@ -149,7 +149,7 @@ IP2R_API uint_t ip2region_memory_search(ip2region_t ip2rObj, uint_t ip, databloc
     return 1;
 }
 
-IP2R_API uint_t ip2region_memory_search_string(ip2region_t ip2rObj, char *ip, datablock_t datablock)
+IP2R_API uint_t ip2region_memory_search_string(ip2region_t ip2rObj, const char *ip, datablock_t datablock)
 {
     return ip2region_memory_search(ip2rObj, ip2long(ip), datablock);
 }
@@ -226,7 +226,7 @@ IP2R_API uint_t ip2region_binary_search(ip2region_t ip2rObj, uint_t ip, databloc
     return 1;
 }
 
-IP2R_API uint_t ip2region_binary_search_string(ip2region_t ip2rObj, char *ip, datablock_t datablock)
+IP2R_API uint_t ip2region_binary_search_string(ip2region_t ip2rObj, const char *ip, datablock_t datablock)
 {
     return ip2region_binary_search(ip2rObj, ip2long(ip), datablock);
 }
@@ -355,7 +355,7 @@ IP2R_API uint_t ip2region_btree_search(ip2region_t ip2rObj, uint_t ip, datablock
     return 1;
 }
 
-IP2R_API uint_t ip2region_btree_search_string(ip2region_t ip2rObj, char *ip, datablock_t datablock)
+IP2R_API uint_t ip2region_btree_search_string(ip2region_t ip2rObj, const char *ip, datablock_t datablock)
 {
     return ip2region_btree_search(ip2rObj, ip2long(ip), datablock);
 }
@@ -367,7 +367,7 @@ IP2R_API uint_t ip2region_btree_search_string(ip2region_t ip2rObj, char *ip, dat
  * @param    offset
  * @return    uint_t
 */
-IP2R_API uint_t getUnsignedInt(char *buffer, int offset)
+IP2R_API uint_t getUnsignedInt(const char *buffer, int offset)
 {
     return (
         ((buffer[offset  ]) & 0x000000FF) | 
@@ -383,10 +383,11 @@ IP2R_API uint_t getUnsignedInt(char *buffer, int offset)
  * @param    ip
  * @return    uint_t
 */
-IP2R_API uint_t ip2long(char *ip)
+IP2R_API uint_t ip2long(const char *ip)
 {
     int i = 0, p = 24;
-    char buffer[4], *cs = ip;
+    char buffer[4];
+    const char *cs = ip;
     uint_t ipval = 0;
 
     while ( *cs != '\0' ) {

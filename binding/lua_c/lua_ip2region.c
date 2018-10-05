@@ -8,17 +8,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <lua.h>
-#include <luaxlib.h>
+#include <lauxlib.h>
 #include "../c/ip2region.h"
 
-#define L_METATABLE_NAME "ip2region"
+#define L_METATABLE_NAME "Ip2region"
 
 
 /** create a new ip2region object with a specified dbFile */
 static int lua_ip2region_new(lua_State *L)
 {
     ip2region_entry *self;
-    char *dbFile;
+    const char *dbFile;
 
     /* Check the arguments are valid */
     dbFile = luaL_checkstring(L, 1);
@@ -45,7 +45,6 @@ static int lua_ip2region_destroy(lua_State *L)
     ip2region_entry *self;
     self = (ip2region_entry *) luaL_checkudata(L, 1, L_METATABLE_NAME);
     ip2region_destroy(self);
-    &self = NULL;
 
     return 0;
 }
@@ -56,22 +55,22 @@ static int lua_ip2region_destroy(lua_State *L)
 do {    \
     entry = (ip2region_entry *) luaL_checkudata(L, 1, L_METATABLE_NAME); \
     ip = luaL_checkstring(L, 2);  \
-while (0);
+} while (0); \
 
 
 #define set_search_result(data, rptr) \
 do { \
     rptr = (datablock_entry *) lua_newuserdata(L, sizeof(datablock_entry)); \
     rptr->city_id = data.city_id;   \
-    memcpy(rptr->data.region, data.region, strlen(data.region)); \
-while (0); \
+    memcpy(rptr->region, data.region, strlen(data.region)); \
+} while (0); \
 
 
 /** ip2region_memory_search wrapper */
 static int lua_ip2region_memory_search(lua_State *L)
 {
     ip2region_entry *self;
-    char *addr;
+    const char *addr;
     datablock_entry data, *rptr;
 
     // self = (ip2region_entry *) luaL_checkudata(L, 1, L_METATABLE_NAME);
@@ -97,8 +96,8 @@ static int lua_ip2region_memory_search(lua_State *L)
 /** ip2region_binary_search wrapper */
 static int lua_ip2region_binary_search(lua_State *L)
 {
-    ip2region_destroy *self;
-    char *addr;
+    ip2region_entry *self;
+    const char *addr;
     datablock_entry data, *rptr;
 
     /* Check and get the search parameters */
@@ -119,8 +118,8 @@ static int lua_ip2region_binary_search(lua_State *L)
 /** ip2region_btree_search wrapper */
 static int lua_ip2region_btree_search(lua_State *L)
 {
-    ip2region_destroy *self;
-    char *addr;
+    ip2region_entry *self;
+    const char *addr;
     datablock_entry data, *rptr;
 
     /* Check and get the search parameters */
@@ -142,10 +141,17 @@ static int lua_ip2region_btree_search(lua_State *L)
 /** ip2long wrapper */
 static int lua_ip2long(lua_State *L)
 {
-    char *addr;
+    int argc;
+    const char *addr;
     uint_t ipval;
 
-    addr = luaL_checkstring(L, 1);
+    argc = lua_gettop(L);
+    if ( argc == 1 ) {
+        addr = luaL_checkstring(L, 1);
+    } else {
+        luaL_checkudata(L, 1, L_METATABLE_NAME);
+        addr = luaL_checkstring(L, 2);
+    }
 
     if ( (ipval = ip2long(addr)) == 0 ) {
         lua_pushnil(L);
@@ -164,7 +170,7 @@ static int lua_ip2region_tostring(lua_State *L)
 
     /* Push the string to return to lua */
     lua_pushfstring(L, 
-        "dbFile=%s, headerLen=%d, fristIndexPtr=%d, lastIndexPtr=%d, totalBlocks=%d"
+        "dbFile=%s, headerLen=%d, fristIndexPtr=%d, lastIndexPtr=%d, totalBlocks=%d",
         self->dbFile, self->headerLen, self->firstIndexPtr,
         self->lastIndexPtr, self->totalBlocks
     );
@@ -179,9 +185,9 @@ static const struct luaL_Reg ip2region_methods[] = {
     { "ip2long",        lua_ip2long },
     { "memorySearch",   lua_ip2region_memory_search },
     { "binarySearch",   lua_ip2region_binary_search },
-    { "btreeSerach",    lua_ip2region_binary_search },
+    { "btreeSearch",    lua_ip2region_btree_search },
     { "__gc",           lua_ip2region_destroy },
-    { "__tostring",     ip2region_tostring },
+    { "__tostring",     lua_ip2region_tostring },
     { NULL, NULL },
 };
 
@@ -193,7 +199,7 @@ static const struct luaL_Reg ip2region_functions[] = {
 
 
 /** module open function interface */
-int luaopen_ip2region(lua_State *L)
+int luaopen_Ip2region(lua_State *L)
 {
     /* Create a metatable and push it onto the stack */
     luaL_newmetatable(L, L_METATABLE_NAME);
@@ -215,4 +221,6 @@ int luaopen_ip2region(lua_State *L)
     /* Finally register the object.func functions 
     * into the table witch at the top of the stack */
     luaL_newlib(L, ip2region_functions);
+
+    return 1;
 }
