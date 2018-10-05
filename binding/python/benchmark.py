@@ -6,11 +6,11 @@
 " Date : 2018-10-04
 """
 import threading
-import time
+import time, sys
 
 from ip2Region import Ip2Region
 
-class BeachmarkThread(threading.Thread):
+class BenchmarkThread(threading.Thread):
     __searcher = None
     __lock = None
 
@@ -25,17 +25,22 @@ class BeachmarkThread(threading.Thread):
             sTime = time.time() * 1000
             data = self.__searcher.memorySearch("49.220.138.233")
             eTime = time.time() * 1000
+            # @Note uncomment the print to make it more like the product environment
             print("%s|%s in %5f millseconds" % (data["city_id"], data["region"].decode('utf-8'), eTime - sTime))
         finally:
             self.__lock.release()
 
 if __name__ == "__main__":
+    dbFile = "./data/ip2region.db"
+    if ( len(sys.argv) > 2 ):
+        dbFile = sys.argv[1];
+
     threads = []
-    searcher = Ip2Region("/data/ip2region/data/ip2region.db")
+    searcher = Ip2Region(dbFile)
     lock = threading.Lock()
 
     for i in range(10000):
-        t = BeachmarkThread(searcher, lock)
+        t = BenchmarkThread(searcher, lock)
         threads.append(t)
 
     sTime = time.time() * 1000
@@ -46,4 +51,4 @@ if __name__ == "__main__":
         t.join()
     eTime = time.time() * 1000
 
-    print("Beachmark done: %5f" % (eTime - sTime))
+    print("Benchmark done: %5f" % (eTime - sTime))
