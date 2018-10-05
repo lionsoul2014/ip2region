@@ -12,15 +12,20 @@ Usage: lua testSearcher.lua [ip2region db file] [algorithm]
     os.exit();
 end
 
-local ip2region = require "Ip2region";
+require "Ip2region";
 -- local cjson = require "cjson";
 -- local socket = require "socket";
 
 
 -- check and parse the dbFile and the method algorithm
--- set the dbFile
+-- Create a new ip2region object by the new interface
+local ip2region = Ip2region:new({dbFile = arg[1]});
+
+-- reset the dbFile by the follow two ways:
 -- ip2region.dbFile = arg[1];
-ip2region:setDbFile(arg[1]);
+-- ip2region:setDbFile(arg[1]);
+
+
 local algorithm = "btree";
 if ( arg[2] ~= nil ) then
     local arg_2 = string.lower(arg[2]);
@@ -74,3 +79,7 @@ while ( true ) do
         end
     end
 end
+
+-- close the object
+-- print(ip2region);
+ip2region:close();

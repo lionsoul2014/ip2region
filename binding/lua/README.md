@@ -27,15 +27,20 @@ ip2region>>
 * 2, 通过如下流程在你的lua程序中使用
 ```lua
 -- 包含模块
-local ip2region = require "Ip2region";
+require "Ip2region";
 
 -- 创建查询对象
 -- 设置ip2region.db的文件地址，dbFile表示ip2region.db数据库文件的地址
--- 或者通过设置属性，ip2region.dbFile = "ip2region.db file path";
-ip2region:setDbFile("ip2region.db file path");
+local ip2region = Ip2region:new({dbFile = "ip2region.db file path"});
+
+-- 也可以通过如下方式设置dbFile
+-- ip2region.dbFile = "ip2region.db file path";
+-- ip2region.setDbFile("ip2region.db file path");
+
+
 local data;
 
--- 查询，备注请使用“:”调用方法，不要使用“.”
+-- 查询，备注，尽量请使用“:”调用方法，使用“.”需要主动传递ip2region对象参数
 -- 1，binary查询
 data = ip2region:binarySearch("101.233.153.103");
 

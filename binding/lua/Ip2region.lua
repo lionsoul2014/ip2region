@@ -11,10 +11,10 @@ local INDEX_BLOCK_LENGTH  = 12;
 local TOTAL_HEADER_LENGTH = 8192;
 local _M = {
     dbFile = "",
-    dbFileHandler = nil,
+    dbFileHandler = "",
     dbBinStr = "",
-    HeaderSip = nil, 
-    HeaderPtr = nil,
+    HeaderSip = "", 
+    HeaderPtr = "",
     headerLen = 0,
     firstIndexPtr = 0,
     lastIndexPtr = 0, 
@@ -22,12 +22,35 @@ local _M = {
 };
 
 _G["Ip2region"] = _M;
--- function _M:new(obj)
---     obj = obj or {};
---     setmetatable(obj, {__index = self});
---     return obj;
--- end
 
+-- set the __index to itself
+_M.__index = _M;
+
+-- set the print meta-method
+_M.__tostring = function(table)
+    local t = {
+        "dbFile=" .. table.dbFile,
+        "dbFileHandler=" .. table.dbFileHandler,
+        "headerLen=" .. table.headerLen,
+        "firstIndexPtr" .. table.firstIndexPtr,
+        "lastIndexPtr" .. table.lastIndexPtr,
+        "totalBlocks" .. table.totalBlocks
+    };
+
+    return table.concat(t, ",");
+end
+
+--[[
+construct method
+
+@param  obj
+@return Ip2region object
+--]]
+function _M:new(obj)
+    obj = obj or {};
+    setmetatable(obj, _M);
+    return obj;
+end
 
 
 --[[
@@ -203,11 +226,9 @@ function _M:binarySearch(ip)
 
     if ( self.totalBlocks == 0 ) then
         -- check and open the original db file
-        if ( self.dbFileHandler == nil ) then
-            self.dbFileHandler = io.open(self.dbFile, "r");
-            if ( not self.dbFileHandler ) then
-                return nil;
-            end
+        self.dbFileHandler = io.open(self.dbFile, "r");
+        if ( not self.dbFileHandler ) then
+            return nil;
         end
 
         self.dbFileHandler:seek("set", 0);
@@ -278,11 +299,9 @@ function _M:btreeSearch(ip)
     -- check and load the header
     if ( self.headerLen == 0 ) then
         -- check and open the original db file
-        if ( self.dbFileHandler == nil ) then
-            self.dbFileHandler = io.open(self.dbFile, 'r');
-            if ( not self.dbFileHandler ) then
-                return nil;
-            end
+        self.dbFileHandler = io.open(self.dbFile, 'r');
+        if ( not self.dbFileHandler ) then
+            return nil;
         end
 
         self.dbFileHandler:seek("set", 8);
@@ -397,6 +416,20 @@ function _M:btreeSearch(ip)
         city_id = getLong(data, 1),     -- 0 + 1
         region  = string.sub(data, 5)   -- 4 + 1
     };
+end
+
+
+--[[
+close the object and do the basic gc
+]]--
+function _M.close(self)
+    if ( self.dbFileHandler ~= "" ) then
+        self.dbFileHandler:close();
+    end
+
+    if ( self.dbBinStr ~= "" ) then
+        self.dbBinStr = nil;
+    end
 end
 
 
