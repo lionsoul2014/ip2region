@@ -12,14 +12,14 @@ Usage: lua testSearcher.lua [ip2region db file] [algorithm]
     os.exit();
 end
 
-require "Ip2region";
+local Ip2region = require "Ip2region";
 -- local cjson = require "cjson";
 -- local socket = require "socket";
 
 
 -- check and parse the dbFile and the method algorithm
 -- Create a new ip2region object by the new interface
-local ip2region = Ip2region:new({dbFile = arg[1]});
+local ip2region = Ip2region.new(arg[1]);
 
 -- reset the dbFile by the follow two ways:
 -- ip2region.dbFile = arg[1];
@@ -58,7 +58,7 @@ while ( true ) do
         break;
     elseif ( line == "quit" ) then
         break;
-    elseif ( ip2region:ip2long(line) == nil ) then
+    elseif ( ip2region.ip2long(line) == nil ) then
         print("Invalid ip address=", line);
     else
         local data;

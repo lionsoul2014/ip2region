@@ -27,11 +27,12 @@ ip2region>>
 * 2, 通过如下流程在你的lua程序中使用
 ```lua
 -- 包含模块
-require "Ip2region";
+local Ip2region = require "Ip2region";
 
 -- 创建查询对象
 -- 设置ip2region.db的文件地址，dbFile表示ip2region.db数据库文件的地址
-local ip2region = Ip2region:new({dbFile = "ip2region.db file path"});
+-- 注意new方法是通过“.”调用，而不是“:”
+local ip2region = Ip2region.new("ip2region.db file path");
 
 -- 也可以通过如下方式设置dbFile
 -- ip2region.dbFile = "ip2region.db file path";
