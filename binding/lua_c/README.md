@@ -1,7 +1,7 @@
 # Lua ip2region c module binding
 
 
-### 一，如果安装
+### 一，如何安装
 * 1, cd到ip2region/binding/lua_c/根目录
 * 2, 运行如下命令
 ```
@@ -70,4 +70,5 @@ print("city_id=", data.city_id, "region=", data.region);
 ```
 
 ### 四，备注
-* 1，Ip2region的c模块拥有和c模块几乎等同的性能，生产建议使用lua_c模块代替纯lua模块的使用。
+* 1，c模块的Ip2region以来binding/c/的实现，请保持binding/c/存在，并且和lua_c模块同目录。
+* 2，Ip2region的c模块拥有和c模块几乎等同的性能，生产建议使用lua_c模块代替纯lua模块的使用。
