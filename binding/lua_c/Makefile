@@ -20,7 +20,7 @@ install:
 	@if [ -d $(LIB_DIR) ];\
 	    then\
 	    sudo cp $(SO_FILE) $(LIB_DIR);\
-	    echo "install Ip2region successfully.";\
+	    echo "install Ip2region to $(LIB_DIR) successfully.";\
 	    else\
 	    echo "Sorry, $(LIB_DIR) seems not not exits.";\
 	fi
