@@ -75,7 +75,6 @@ while ( true ) do
         if ( data == nil ) then
             io.write("Failed for ip=", line, " is it a valid ip address ?");
         else
-            print(ip2region);
             io.write(string.format("%u|%s in %5f millseconds\n", data.city_id, data.region, cost_time));
         end
     end
