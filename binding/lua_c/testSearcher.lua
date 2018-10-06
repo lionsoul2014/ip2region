@@ -75,11 +75,13 @@ while ( true ) do
         if ( data == nil ) then
             io.write("Failed for ip=", line, " is it a valid ip address ?");
         else
+            print(ip2region);
             io.write(string.format("%u|%s in %5f millseconds\n", data.city_id, data.region, cost_time));
         end
     end
 end
 
 -- close the object
+-- Also the lua gc will invoke it automatically
 -- print(ip2region);
 ip2region:close();
