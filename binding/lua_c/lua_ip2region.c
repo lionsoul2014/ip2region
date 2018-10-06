@@ -51,18 +51,21 @@ static int lua_ip2region_destroy(lua_State *L)
 
 
 
-#define get_search_args(entry, ip) \
+#define get_search_args(L, entry, ip) \
 do {    \
+    luaL_argcheck(L, lua_gettop(L) == 2, 2, "Object and ip address needed"); \
     entry = (ip2region_entry *) luaL_checkudata(L, 1, L_METATABLE_NAME); \
     ip = luaL_checkstring(L, 2);  \
 } while (0); \
 
 
-#define set_search_result(data, rptr) \
+#define set_search_result(L, data) \
 do { \
-    rptr = (datablock_entry *) lua_newuserdata(L, sizeof(datablock_entry)); \
-    rptr->city_id = data.city_id;   \
-    memcpy(rptr->region, data.region, strlen(data.region)); \
+    lua_newtable(L); \
+    lua_pushinteger(L, data.city_id); \
+    lua_setfield(L, -2, "city_id"); \
+    lua_pushfstring(L, "%s", data.region); \
+    lua_setfield(L, -2, "region"); \
 } while (0); \
 
 
@@ -71,12 +74,13 @@ static int lua_ip2region_memory_search(lua_State *L)
 {
     ip2region_entry *self;
     const char *addr;
-    datablock_entry data, *rptr;
+    datablock_entry data;
 
+    // luaL_argcheck(L, lua_gettop(L) == 2, 2, "object and ip address needed");
     // self = (ip2region_entry *) luaL_checkudata(L, 1, L_METATABLE_NAME);
     // addr = luaL_checkstring(L, 2);
     /* Check and get the search parameters */
-    get_search_args(self, addr);
+    get_search_args(L, self, addr);
 
     /* do the memory search */
     if ( ip2region_memory_search(self, ip2long(addr), &data) == 0 ) {
@@ -84,11 +88,12 @@ static int lua_ip2region_memory_search(lua_State *L)
         return 1;
     }
     
-    // rptr = (datablock_entry *) lua_newuserdata(L, sizeof(datablock_entry));
-    // rptr->city_id = data.city_id;
-    // memcpy(rptr->data.region, data.region, strlen(data.region));
-    /* Set the return value */
-    set_search_result(data, rptr);
+    // lua_newtable(L);
+    // lua_pushinteger(L, data.city_id);
+    // lua_setfield(L, -2, "city_id");
+    // lua_pushfstring(L, "%s", data.region);
+    // lua_setfield(L, -2, "region");
+    set_search_result(L, data);
 
     return 1;
 }
@@ -98,10 +103,10 @@ static int lua_ip2region_binary_search(lua_State *L)
 {
     ip2region_entry *self;
     const char *addr;
-    datablock_entry data, *rptr;
+    datablock_entry data;
 
     /* Check and get the search parameters */
-    get_search_args(self, addr);
+    get_search_args(L, self, addr);
 
     /* Do the binary search */
     if ( ip2region_binary_search(self, ip2long(addr), &data) == 0 ) {
@@ -110,7 +115,7 @@ static int lua_ip2region_binary_search(lua_State *L)
     }
 
     /* Set the return value */
-    set_search_result(data, rptr);
+    set_search_result(L, data);
 
     return 1;
 }
@@ -120,10 +125,10 @@ static int lua_ip2region_btree_search(lua_State *L)
 {
     ip2region_entry *self;
     const char *addr;
-    datablock_entry data, *rptr;
+    datablock_entry data;
 
     /* Check and get the search parameters */
-    get_search_args(self, addr);
+    get_search_args(L, self, addr);
 
     /* Do the btree search */
     if ( ip2region_btree_search(self, ip2long(addr), &data) == 0 ) {
@@ -132,7 +137,7 @@ static int lua_ip2region_btree_search(lua_State *L)
     }
 
     /* Set the return value */
-    set_search_result(data, rptr);
+    set_search_result(L, data);
 
     return 1;
 }
@@ -179,24 +184,18 @@ static int lua_ip2region_tostring(lua_State *L)
 }
 
 
-
 /** module method array */
 static const struct luaL_Reg ip2region_methods[] = {
+    { "new", lua_ip2region_new },
     { "ip2long",        lua_ip2long },
     { "memorySearch",   lua_ip2region_memory_search },
     { "binarySearch",   lua_ip2region_binary_search },
     { "btreeSearch",    lua_ip2region_btree_search },
+    { "close",          lua_ip2region_destroy },
     { "__gc",           lua_ip2region_destroy },
     { "__tostring",     lua_ip2region_tostring },
     { NULL, NULL },
 };
-
-/** module function array */
-static const struct luaL_Reg ip2region_functions[] = {
-    { "new", lua_ip2region_new },
-    { NULL,  NULL }
-};
-
 
 /** module open function interface */
 int luaopen_Ip2region(lua_State *L)
@@ -217,10 +216,6 @@ int luaopen_Ip2region(lua_State *L)
      * access via object:func in lua block 
      */
     luaL_setfuncs(L, ip2region_methods, 0);
-
-    /* Finally register the object.func functions 
-    * into the table witch at the top of the stack */
-    luaL_newlib(L, ip2region_functions);
 
     return 1;
 }
