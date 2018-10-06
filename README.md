@@ -18,7 +18,7 @@ ip2region - 最自由的ip地址查询库，ip到地区的映射库，提供Bina
 
 ### 4. 多查询客户端的支持，0.0x毫秒级别的查询
 
-已经集成的客户端有：java、C#、php、c、python、nodejs、php扩展(php5和php7)、golang、rust、lua。
+已经集成的客户端有：java、C#、php、c、python、nodejs、php扩展(php5和php7)、golang、rust、lua、lua_c。
 
     提供了两种查询算法，响应时间如下：
     客户端/binary算法/b-tree算法/Memory算法：
@@ -28,6 +28,7 @@ ip2region - 最自由的ip地址查询库，ip到地区的映射库，提供Bina
     c/0.0x毫秒/0.0x毫秒/0.00x毫秒(b-tree算法基本稳定在0.02x毫秒级别)
     python/0.x毫秒/0.1x毫秒/未知
     lua/0.x毫秒/0.x毫秒/0.x毫秒
+    lua_c/0.0x毫秒/0.0x毫秒/0.00x毫秒
 
 任何客户端b-tree都比binary算法快，当然Memory算法固然是最快的！
 
@@ -45,7 +46,7 @@ Install-Package IP2Region
 ```
 
 ### 5. 测试程序：
-C#、Node.js、lua的测试请具体参考文件夹中README.md 说明。
+C#、Node.js、lua_c的测试请具体参考文件夹中README.md 说明。
 
 java: 
 ```shell
