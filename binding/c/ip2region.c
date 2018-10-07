@@ -1,8 +1,8 @@
 /**
  * default ip2region implementation
  *
- * @see        #ip2region.h
- * @author    chenxin<chenxin619315@gmail.com>
+ * @see     #ip2region.h
+ * @author  chenxin<chenxin619315@gmail.com>
  * @date    2015-10-30
 */
 
@@ -13,7 +13,7 @@
 /**
  * create a new ip2region object
  *
- * @param    dbFile path
+ * @param   dbFile path
 */
 IP2R_API uint_t ip2region_create(ip2region_t ip2rObj, const char *dbFile)
 {
@@ -51,7 +51,7 @@ IP2R_API uint_t ip2region_create(ip2region_t ip2rObj, const char *dbFile)
 /**
  * destroy the specifield ip2region object
  *
- * @param    ip2region_t
+ * @param   ip2region_t
 */
 IP2R_API uint_t ip2region_destroy(ip2region_t ip2rObj)
 {
@@ -162,10 +162,10 @@ IP2R_API uint_t ip2region_memory_search_string(ip2region_t ip2rObj, const char *
 /**
  * get the region associated with the specifield ip address with binary search algorithm
  *
- * @param    ip2rObj
- * @param    ip
- * @param    datablock
- * @return    uint_t
+ * @param   ip2rObj
+ * @param   ip
+ * @param   datablock
+ * @return  uint_t
 */
 IP2R_API uint_t ip2region_binary_search(ip2region_t ip2rObj, uint_t ip, datablock_t datablock)
 {
@@ -239,10 +239,10 @@ IP2R_API uint_t ip2region_binary_search_string(ip2region_t ip2rObj, const char *
 /**
  * get the region associated with the specifield ip address with b-tree algorithm
  *
- * @param    ip2rObj
- * @param    ip
- * @param    datablock
- * @return    uint_t
+ * @param   ip2rObj
+ * @param   ip
+ * @param   datablock
+ * @return  uint_t
 */
 IP2R_API uint_t ip2region_btree_search(ip2region_t ip2rObj, uint_t ip, datablock_t datablock)
 {
@@ -368,9 +368,9 @@ IP2R_API uint_t ip2region_btree_search_string(ip2region_t ip2rObj, const char *i
 /**
  * get a unsinged long(4bytes) from a specifield buffer start from the specifield offset
  *
- * @param    buffer
- * @param    offset
- * @return    uint_t
+ * @param   buffer
+ * @param   offset
+ * @return  uint_t
 */
 IP2R_API uint_t getUnsignedInt(const char *buffer, int offset)
 {
@@ -385,8 +385,8 @@ IP2R_API uint_t getUnsignedInt(const char *buffer, int offset)
 /**
  * string ip to long
  *
- * @param    ip
- * @return    uint_t
+ * @param   ip
+ * @return  uint_t
 */
 IP2R_API uint_t ip2long(const char *ip)
 {
@@ -396,6 +396,11 @@ IP2R_API uint_t ip2long(const char *ip)
     uint_t ipval = 0;
 
     while ( *cs != '\0' ) {
+        if ( *cs == ' ' ) {
+            cs++;
+            continue;
+        }
+
         if ( *cs == '.' ) {
             //single part length limit
             if ( i > 3 ) {
@@ -426,9 +431,9 @@ IP2R_API uint_t ip2long(const char *ip)
 /**
  * long to string ip
  *
- * @param    ip
- * @param    buffer
- * @return    uint_t(1 for success and 0 for failed)
+ * @param   ip
+ * @param   buffer
+ * @return  uint_t(1 for success and 0 for failed)
 */
 IP2R_API uint_t long2ip(uint_t ip, char *buffer)
 {
