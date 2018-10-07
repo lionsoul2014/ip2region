@@ -17,13 +17,9 @@ all: ../c/ip2region.c ../c/ip2region.h lua_ip2region.c
 	$(CC) $(FFLAGS) $(LIBS) ../c/ip2region.c lua_ip2region.c -fPIC -shared -o $(SO_FILE)
 
 install:
-	@if [ -d $(LIB_DIR) ];\
-	    then\
-	    sudo cp $(SO_FILE) $(LIB_DIR);\
-	    echo "install Ip2region to $(LIB_DIR) successfully.";\
-	    else\
-	    echo "Sorry, $(LIB_DIR) seems not not exits.";\
-	fi
+	sudo mkdir -p $(LIB_DIR); \
+	sudo cp $(SO_FILE) $(LIB_DIR);\
+	echo "install Ip2region to $(LIB_DIR) successfully.";\
 
 clean:
 	find . -name \*.so | xargs rm -f
