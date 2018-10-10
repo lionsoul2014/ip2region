@@ -11,8 +11,7 @@
 #include <lauxlib.h>
 #include "../c/ip2region.h"
 
-#define L_METATABLE_NAME "Ip2region"
-
+#define L_METATABLE_NAME "Ip2region_MT"
 
 /** create a new ip2region object with a specified dbFile */
 static int lua_ip2region_new(lua_State *L)
@@ -186,8 +185,8 @@ static int lua_ip2region_tostring(lua_State *L)
 
 /** module method array */
 static const struct luaL_Reg ip2region_methods[] = {
-    { "new", lua_ip2region_new },
-    { "ip2long",        lua_ip2long },
+    // { "new",            lua_ip2region_new },
+    // { "ip2long",        lua_ip2long },
     { "memorySearch",   lua_ip2region_memory_search },
     { "binarySearch",   lua_ip2region_binary_search },
     { "btreeSearch",    lua_ip2region_btree_search },
@@ -195,6 +194,13 @@ static const struct luaL_Reg ip2region_methods[] = {
     { "__gc",           lua_ip2region_destroy },
     { "__tostring",     lua_ip2region_tostring },
     { NULL, NULL },
+};
+
+/** module function array */
+static const struct luaL_Reg ip2region_functions[] = {
+    { "new",        lua_ip2region_new },
+    { "ip2long",    lua_ip2long },
+    { NULL, NULL }
 };
 
 /** module open function interface */
@@ -216,6 +222,11 @@ int luaopen_Ip2region(lua_State *L)
      * access via object:func in lua block 
      */
     luaL_setfuncs(L, ip2region_methods, 0);
+    luaL_setfuncs(L, ip2region_functions, 0);
+
+    /* Finally register the object.func functions
+     * into the table witch at the top of the stack */
+    // luaL_newlib(L, ip2region_functions);
 
     return 1;
 }
