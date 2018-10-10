@@ -58,7 +58,7 @@ while ( true ) do
         break;
     elseif ( line == "quit" ) then
         break;
-    elseif ( ip2region.ip2long(line) == nil ) then
+    elseif ( Ip2region.ip2long(line) == nil ) then
         print("Invalid ip address=", line);
     else
         local data;
