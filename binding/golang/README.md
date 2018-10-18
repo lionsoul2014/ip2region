@@ -3,7 +3,7 @@
 #### 获取
 
 ```
-go get github.com/mohong122/ip2region/binding/golang
+go get github.com/lionsoul2014/ip2region/binding/golang
 ```
 
 
@@ -17,7 +17,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/mohong122/ip2region/binding/golang/ip2region"
+	"github.com/lionsoul2014/ip2region/binding/golang/ip2region"
 )
 
 func main() {
