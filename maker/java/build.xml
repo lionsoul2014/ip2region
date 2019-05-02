@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="ip2region" default="usage" basedir=".">
+	<!--Initialize-->
+	<target name="init">
+		<echo message="------------------------------------------------------------"/>
+		<echo message="----------BUILDING JCSEG PACKAGE----------------------------"/>
+		<echo message=""/>
+		<property name="bottom" value="ip2region 2015-2019"/>
+		<property name="jars" value="${basedir}"/>
+		<property name="sources" value="${basedir}/src"/>
+		<property name="classes" value="${basedir}/classes"/>
+		<property name="version" value="1.2.2"/>
+		<property name="api" value="${basedir}/doc"/>
+		<mkdir dir="${classes}"/>
+		<mkdir dir="${api}"/>
+	</target>
+	
+	<path id="classpath">
+		<fileset dir="${lib.dir}" includes="**/*.jar"/>
+	</path>
+	
+	<!--Build-->
+	<target name="build" depends="init">
+		<echo message="-------------Compiling Application--------------"/>
+		<javac srcdir="${sources}" destdir="${classes}"></javac>
+	</target>
+	
+	<!--Archive-->
+	<target name="dist" depends="build">
+		<jar jarfile="${jars}/ip2region-${version}.jar" basedir="${classes}">
+			<!--class fileter-->
+			<include name="**/*"/>
+			<!--manifest information setting-->
+			<manifest>
+				<attribute name="Main-Class" value="org.lionsoul.ip2region.test.TestSearcher"/>
+				<attribute name="Class-Path" value=""/>
+			</manifest>
+		</jar>
+		<jar jarfile="${jars}/dbMaker-${version}.jar" basedir="${classes}" includes="org/lionsoul/ip2region/*">
+            <!--manifest information setting-->
+            <manifest>
+                <attribute name="Main-Class" value="org.lionsoul.ip2region.DbMaker"/>
+                <attribute name="Class-Path" value=""/>
+            </manifest>
+        </jar>
+	</target>
+	
+	<!--Java document-->
+	<target name="all" depends="dist">
+		<echo message="------------Making Java Document------------------"/>
+		<javadoc packagenames="org.*"
+				sourcepath="${sources}"
+				destdir="${api}"
+				bottom="${bottom}"
+				charset="UTF-8"
+				author="false">
+			<classpath>
+				<pathelement location="${classes}"/>
+			</classpath>
+		</javadoc>
+		<jar jarfile="${jars}/ip2region-${version}-javadoc.jar" basedir="${api}" includes="**/*"></jar>
+		
+		<!--do the data clean up-->
+		<delete dir="${classes}"/>
+		<delete dir="${api}"/>
+	</target>
+	
+	<target name="usage">
+		<echo message="*** ip2region ANT Build Script ***"/>
+		<echo message="Usage: "/>
+		<echo message=" ant [target]"/>
+		<echo message=""/>     
+		<echo message=" target : "/>
+		<echo message="     build : Build Application"/>     
+		<echo message="     dist  : Build Application + Archive (JAR)"/>     
+		<echo message="     all   : Build Application + Archive + JavaDoc"/>       
+	</target>
+	
+</project>
