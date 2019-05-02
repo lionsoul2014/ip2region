@@ -97,9 +97,12 @@ p2region>> 101.105.35.57
 
 ### 6. 如何生成ip2region.db文件
 
+从1.8版本开始，ip2region开源了ip2region.db生成程序的java实现，提供了ant编译支持，编译后会得到以下提到的dbMaker-{version}.jar，对于需要研究生成程序的或者更改自定义生成配置的请参考${ip2region_root}/maker/java内的java源码。
+
+
 从ip2region 1.2.2版本开始里面提交了一个dbMaker-{version}.jar的可以执行jar文件，用它来完成这个工作：
 * 1, 确保你安装好了java环境（不玩Java的童鞋就自己谷歌找找拉，临时用一用，几分钟的事情）
-* 2, cd到ip2region的根目录，然后运行如下命令：
+* 2, cd到${ip2region_root}/maker/java，然后运行如下命令：
 
 ```shell
 java -jar dbMaker-{version}.jar -src 文本数据文件 -region 地域csv文件 [-dst 生成的ip2region.db文件的目录]
@@ -113,7 +116,7 @@ java -jar dbMaker-{version}.jar -src 文本数据文件 -region 地域csv文件 
 * 4, 默认的ip2region.db文件生成命令:
 
 ```shell
-cd ip2region项目根目录
+cd ${ip2region_root}/java/
 java -jar dbMaker-1.2.2.jar -src ./data/ip.merge.txt -region ./data/global_region.csv
 
 # 会看到一大片的输出
