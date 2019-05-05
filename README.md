@@ -6,8 +6,8 @@ ip2region - 最自由的ip地址查询库，ip到地区的映射库，提供Bina
 每次聚合一下数据需要1-2天，会不定时更新。<br /><br />
 ip2region的数据聚合自以下服务商的开放API或者数据(升级程序每秒请求次数2到4次): <br />
 01, &gt;80%, 淘宝IP地址库, [http://ip.taobao.com/](http://ip.taobao.com/) <br />
-02, ~10%, GeoIP, [https://geoip.com/](https://geoip.com/) <br />
-03, ~2%, 纯真IP库, [http://www.cz88.net/](http://www.cz88.net/) <br />
+02, ≈10%, GeoIP, [https://geoip.com/](https://geoip.com/) <br />
+03, ≈2%, 纯真IP库, [http://www.cz88.net/](http://www.cz88.net/) <br />
 <b>备注：</b>如果上述开放API或者数据都不给开发时ip2region将停止数据的更新服务，目前是2~3个月更新一次。
 
 
