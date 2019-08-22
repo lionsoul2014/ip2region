@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-#include "../../binding/c/ip2region.h"
+#include "../c/ip2region.h"
 
 typedef struct ngx_ip2region_conf_s {
     ngx_str_t   db_file;
