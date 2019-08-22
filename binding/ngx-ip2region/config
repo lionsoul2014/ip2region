@@ -1,0 +1,44 @@
+ngx_addon_name="ngx_ip2region_module"
+
+IP2REGION_CORE_MODULES="                                         \
+                ngx_ip2region_module                             \
+                "
+
+IP2REGION_DEPS="                                                 \
+                $ngx_addon_dir/ip2region.h			\
+		$ngx_addon_dir/ngx_ip2region.h			\
+                "
+
+IP2REGION_CORE_SRCS="                                            \
+                $ngx_addon_dir/ip2region.c                   \
+                $ngx_addon_dir/ngx_ip2region_module.c              \
+                "
+
+
+
+if [ -f auto/module ] ; then
+    ngx_module_incs=$ngx_addon_dir
+    ngx_module_deps=$IP2REGION_DEPS
+
+    if [ $ngx_module_link = DYNAMIC ] ; then
+        ngx_module_name="$IP2REGION_CORE_MODULES"
+        ngx_module_srcs="$IP2REGION_CORE_SRCS"
+
+        . auto/module
+
+    else
+        ngx_module_type=CORE
+        ngx_module_name=$IP2REGION_CORE_MODULES
+        ngx_module_srcs=$IP2REGION_CORE_SRCS
+
+        . auto/module      
+    fi
+
+else
+    CORE_MODULES="$CORE_MODULES $IP2REGION_CORE_MODULES"
+   
+    NGX_ADDON_DEPS="$NGX_ADDON_DEPS $IP2REGION_DEPS"
+    NGX_ADDON_SRCS="$NGX_ADDON_SRCS $IP2REGION_CORE_SRCS"
+
+    CFLAGS="$CFLAGS -I$ngx_addon_dir "
+fi   
