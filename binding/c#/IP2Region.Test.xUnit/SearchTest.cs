@@ -7,7 +7,15 @@ namespace IP2Region.Test.xUnit
     public class SearchTest : IDisposable
     {
         private readonly DbSearcher _search;
-        
+
+        public String GetRandomIP()
+        {
+            return new Random(Guid.NewGuid().GetHashCode()).Next(0, 255).ToString() + "."
+                + new Random(Guid.NewGuid().GetHashCode()).Next(0, 255).ToString() + "."
+                  + new Random(Guid.NewGuid().GetHashCode()).Next(0, 255).ToString() + "."
+                    + new Random(Guid.NewGuid().GetHashCode()).Next(0, 255).ToString();
+        }
+
         public SearchTest()
         {
             _search = new DbSearcher(Environment.CurrentDirectory + @"\DB\ip2region.db");
@@ -15,9 +23,9 @@ namespace IP2Region.Test.xUnit
         [Fact]
         public void Search_Test()
         {
-            string memResult = _search.MemorySearch("183.192.62.65").Region;
-            string binarySearchResult = _search.BinarySearch("183.192.62.65").Region;
-            string binaryTreeSearchResult = _search.BtreeSearch("183.192.62.65").Region;
+            string memResult = _search.MemorySearch("223.104.246.20").Region;
+            string binarySearchResult = _search.BinarySearch("223.104.246.20").Region;
+            string binaryTreeSearchResult = _search.BtreeSearch("223.104.246.20").Region;
 
             Assert.NotNull(memResult);
             Assert.NotNull(binarySearchResult);
@@ -25,6 +33,21 @@ namespace IP2Region.Test.xUnit
 
             Assert.Equal(memResult, binarySearchResult);
             Assert.Equal(binaryTreeSearchResult, memResult);
+        }
+
+        [Fact]
+        public void Search_Correct_Test()
+        {
+            for (int i = 0; i < 1000000; i++)
+            {
+                var newIp=GetRandomIP();
+                string memResult = _search.MemorySearch(newIp).Region;
+                string binarySearchResult = _search.BinarySearch(newIp).Region;
+                string binaryTreeSearchResult = _search.BtreeSearch(newIp).Region;
+
+                Assert.True(memResult == binarySearchResult && memResult == binaryTreeSearchResult);
+            }
+
         }
 
         [Fact]
