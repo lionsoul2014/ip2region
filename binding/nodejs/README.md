@@ -1,14 +1,16 @@
 # nodejs 客户端
 
+官方维护的 ip2region, 每次数据更新后会更新到 npm 
+
 ## Install
 ```
-npm install lionsoul-ip2region --save 
+npm install node-ip2region --save 
 ```
 
 ## Example
 
 ```
-const searcher = require('lionsoul-ip2region').create();
+const searcher = require('node-ip2region').create();
 searcher.btreeSearchSync('xxx.xxx.xxx.xxx')
 // => { city: 2163, region: '中国|0|广东省|深圳市|联通' }
 ```
