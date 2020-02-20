@@ -2,10 +2,25 @@
 
 官方维护的 ip2region, 每次数据更新后会更新到 npm 
 
+
 ## Install
+
+**node 版本 : >= 6.0.0**
+
 ```
 npm install node-ip2region --save 
 ```
+
+## 已测试通过的 node 版本列表
+
+```
+6.0.0
+6.11.2
+8.0.0
+10.0.0
+12.0.0
+```
+
 
 ## Example
 
