@@ -1,7 +1,7 @@
 {
-  "name": "lionsoul-ip2region",
-  "version": "0.0.1",
-  "description": "ip database ",
+  "name": "node-ip2region",
+  "version": "1.0.2",
+  "description": "official nodejs client of ip2region",
   "main": "ip2region.js",
   "scripts": {
     "test": "jest",
@@ -10,7 +10,7 @@
   "files": ["data/"],
   "repository": {
     "type": "git",
-    "url": "https://github.com/lionsoul2016/ip2region"
+    "url": "https://github.com/lionsoul2014/ip2region"
   },
   "keywords": [
     "ip2region",
@@ -20,11 +20,14 @@
   "author": "dongyado",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/lionsoul2016/ip2region/issues"
+    "url": "https://github.com/lionsoul2014/ip2region/issues"
   },
-  "homepage": "https://github.com/lionsoul2016/ip2region",
+  "homepage": "https://github.com/lionsoul2014/ip2region",
   "devDependencies": {
     "jest": "^19.0.2",
     "benchmark": "^2.1.4"
+  },
+  "engines": {
+    "node" : ">=6.0.0"
   }
 }
