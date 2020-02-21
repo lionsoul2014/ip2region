@@ -58,8 +58,8 @@ binding | 描述 | 开发状态 | binary查询耗时 | b-tree查询耗时 | memo
 [nginx](binding/nginx) | nginx的c扩展 | 已完成 | 0.0x毫秒 | 0.0x毫秒 | 0.00x毫秒
 [nodejs](binding/nodejs) | nodejs | 已完成 | 0.x毫秒 | 0.x毫秒 | 0.1x毫秒
 [php](binding/php) | php实现的binding | 已完成 | 0.x毫秒 | 0.1x毫秒 | 0.1x毫秒
-[php5_ext](binding/php_ext/php5) | php5的c扩展 | 已完成 | 0.0x毫秒 | 0.0x毫秒 | 0.00x毫秒
-[php7_ext](binding/php_ext/php7) | php7的c扩展 | 已完成 | 0.0毫秒 | 0.0x毫秒 | 0.00x毫秒
+[php5_ext](binding/php5_ext) | php5的c扩展 | 已完成 | 0.0x毫秒 | 0.0x毫秒 | 0.00x毫秒
+[php7_ext](binding/php7_ext) | php7的c扩展 | 已完成 | 0.0毫秒 | 0.0x毫秒 | 0.00x毫秒
 [python](binding/python) | python bindng | 已完成 | 0.x毫秒 | 0.x毫秒 | 0.x毫秒
 [rust](binding/rust) | rust binding | 已完成 | 0.x毫秒 | 0.x毫秒 | 0.x毫秒
 
