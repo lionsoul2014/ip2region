@@ -47,21 +47,21 @@ _城市Id|国家|区域|省份|城市|ISP_
 
 已经集成的客户端有：java、C#、php、c、python、nodejs、php扩展(php5和php7)、golang、rust、lua、lua_c, nginx。
 
-语言 | 描述 | 开发状态 | binary查询耗时 | b-tree查询耗时 | memory查询耗时
+binding | 描述 | 开发状态 | binary查询耗时 | b-tree查询耗时 | memory查询耗时
 :-: | :-: | :-: | :-: | :-: | :-:
-[c](binding/c) | ANSC c | 已完成 | 0.0x毫秒 | 0.0x毫秒 | 0.00x毫秒
-[c#](binding/c#) | c# | 已完成 | 0.x毫秒 | 0.x毫秒 | 0.1x毫秒
-[golang](binding/golang) | golang | 已完成 | 0.x毫秒 | 0.x毫秒 | 0.1x毫秒
-[java](binding/java) | java | 已完成 | 0.x毫秒 | 0.x毫秒 | 0.1x毫秒
-[lua](binding/lua) | lua | 已完成 | 0.x毫秒 | 0.x毫秒 | 0.x毫秒
-[lua](binding/lua_c) | lua c扩展      | 已完成 | 0.0x毫秒 | 0.0x毫秒 | 0.00x毫秒
-[nginx](binding/nginx) | nginx c扩展 | 已完成 | 0.0x毫秒 | 0.0x毫秒 | 0.00x毫秒
+[c](binding/c) | ANSC c binding | 已完成 | 0.0x毫秒 | 0.0x毫秒 | 0.00x毫秒
+[c#](binding/c#) | c# binding | 已完成 | 0.x毫秒 | 0.x毫秒 | 0.1x毫秒
+[golang](binding/golang) | golang binding | 已完成 | 0.x毫秒 | 0.x毫秒 | 0.1x毫秒
+[java](binding/java) | java binding | 已完成 | 0.x毫秒 | 0.x毫秒 | 0.1x毫秒
+[lua](binding/lua) | lua实现的binding | 已完成 | 0.x毫秒 | 0.x毫秒 | 0.x毫秒
+[lua_c](binding/lua_c) | lua的c扩展      | 已完成 | 0.0x毫秒 | 0.0x毫秒 | 0.00x毫秒
+[nginx](binding/nginx) | nginx的c扩展 | 已完成 | 0.0x毫秒 | 0.0x毫秒 | 0.00x毫秒
 [nodejs](binding/nodejs) | nodejs | 已完成 | 0.x毫秒 | 0.x毫秒 | 0.1x毫秒
-[php](binding/php) | php | 已完成 | 0.x毫秒 | 0.1x毫秒 | 0.1x毫秒
-[php](binding/php_ext/php5) | php c扩展 | 已完成 | 0.0x毫秒 | 0.0x毫秒 | 0.00x毫秒
-[php](binding/php_ext/php7) | php c扩展 | 已完成 | 0.0毫秒 | 0.0x毫秒 | 0.00x毫秒
-[python](binding/c) | python | 已完成 | 0.x毫秒 | 0.x毫秒 | 0.x毫秒
-[rust](binding/c) | rust | 已完成 | 0.x毫秒 | 0.x毫秒 | 0.x毫秒
+[php](binding/php) | php实现的binding | 已完成 | 0.x毫秒 | 0.1x毫秒 | 0.1x毫秒
+[php5_ext](binding/php_ext/php5) | php5的c扩展 | 已完成 | 0.0x毫秒 | 0.0x毫秒 | 0.00x毫秒
+[php7_ext](binding/php_ext/php7) | php7的c扩展 | 已完成 | 0.0毫秒 | 0.0x毫秒 | 0.00x毫秒
+[python](binding/c) | python bindng | 已完成 | 0.x毫秒 | 0.x毫秒 | 0.x毫秒
+[rust](binding/c) | rust binding | 已完成 | 0.x毫秒 | 0.x毫秒 | 0.x毫秒
 
 
 
