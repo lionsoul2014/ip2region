@@ -94,7 +94,7 @@ p2region>> 101.105.35.57
 
 # ip2region安装
 
-具体请参考每个binding下的README文档，以下是一些可用的快捷安装方式：
+具体请参考每个binding下的README文档和测试demo，以下是一些可用的快捷安装方式：
 
 ### maven仓库地址
 ```xml
