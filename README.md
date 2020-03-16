@@ -169,5 +169,5 @@ java -jar dbMaker-1.2.2.jar -src ./data/ip.merge.txt -region ./data/global_regio
 ip2region重点在于<b>研究IP数据的存储设计和各种语言的查询实现</b>，并没有原始IP数据的支撑，数据来源请参考上面的描述，升级数据需要很多IP的支撑并且会对原始平台造成一定量的请求压力，本项目不保证及时的数据更新，没有也不会有商用版本，你可以使用自定义的数据导入ip2region进行自定义查询的实现。
 
 ### 技术交流
-1. 数据库文件的结构和原理请阅读 @冬芽 的blog：[“ip2region数据库文件的结构和原理”](http://dongyado.com/tool/2016/08/18/structure-of-ip2region-database-file/)
+1. 数据库文件的结构和原理请阅读 @冬芽 的blog：[“ip2region数据库文件的结构和原理”](https://github.com/dongyado/dongyado.github.io/blob/master/_posts/2016-08-18-structure-of-ip2region-database-file.md)
 2. ip2region交流分享，微信：lionsoul2014(请备注ip2region)，QQ：1187582057(很少关注)
