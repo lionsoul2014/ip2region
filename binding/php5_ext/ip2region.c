@@ -50,7 +50,7 @@ static zend_class_entry *ip2region_class_entry_ptr;
 //}
 
 
-void search(
+static void search(
 		ip2region_t g_resouce_ptr, 
 		uint_t (*func_ptr) (ip2region_t, uint_t, datablock_t), 
 		long ip, 
