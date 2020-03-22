@@ -50,7 +50,7 @@ static zend_class_entry *ip2region_class_entry_ptr;
 //}
 
 
-void search(
+static void search(
 		ip2region_t g_resouce_ptr, 
 		uint_t (*func_ptr) (ip2region_t, uint_t, datablock_t), 
 		long ip, 
@@ -188,7 +188,7 @@ PHP_METHOD(ip2region_class_entry_ptr,  binarySearch)
 PHP_MSHUTDOWN_FUNCTION(ip2region)
 {
 	UNREGISTER_INI_ENTRIES();
-	ip2region_destroy(&g_resource);
+	if( g_resource_ptr != NULL ) ip2region_destroy(&g_resource);
 	return SUCCESS;
 }
 /* }}} */
@@ -262,8 +262,8 @@ PHP_MINIT_FUNCTION(ip2region)
 	ZEND_INIT_MODULE_GLOBALS(ip2region, php_ip2region_init_globals, NULL);  
 	REGISTER_INI_ENTRIES();
 
-
-	if (ip2region_create( &g_resource, IP2REGION_G(db_file)) == 0)
+	char* _db_file = IP2REGION_G(db_file);
+	if ( _db_file == NULL || ip2region_create( &g_resource, _db_file) == 0)
 	{
 		g_resource_ptr = NULL;
 	} else {
