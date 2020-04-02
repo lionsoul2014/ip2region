@@ -65,7 +65,6 @@ static void php_ip2region_init_globals(zend_ip2region_globals *);
 #define le_ip2region_name "Ip2region"
 
 
-void search( ip2region_t, uint_t (*func_ptr) (ip2region_t, uint_t, datablock_t), long , zval **, datablock_t);
 
 #endif	/* PHP_IP2REGION_H */
 /*
