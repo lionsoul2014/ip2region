@@ -95,10 +95,14 @@ namespace DbMaker
         */
         public static long ip2long(String ip)
         {
-            IPAddress ipaddress = IPAddress.Parse(ip);
-            byte[] addbuffer = ipaddress.GetAddressBytes();
-            Array.Reverse(addbuffer);
-            return BitConverter.ToInt64(addbuffer, 0);
+            ip = ip.Trim();
+            String[] ips = ip.Split('.');
+            long ip1 = Int64.Parse(ips[0]);
+            long ip2 = Int64.Parse(ips[1]);
+            long ip3 = Int64.Parse(ips[2]);
+            long ip4 = Int64.Parse(ips[3]);
+            long ip2long = 1L * ip1 * 256 * 256 * 256 + ip2 * 256 * 256 + ip3 * 256 + ip4;
+            return ip2long;
         }
 
         /**

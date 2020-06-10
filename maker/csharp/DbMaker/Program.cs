@@ -6,7 +6,6 @@ namespace DbMaker
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
         }
     }
 }
