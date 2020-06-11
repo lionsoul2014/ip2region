@@ -98,16 +98,14 @@ namespace DbMaker
         */
         public static long ip2long(String ip)
         {
-            throw new NotImplementedException();
-            //String[] p = ip.Split("\\.");
-            //if ( p.Length != 4 ) return 0;
-
-            //int p1 = ((Convert.ToInt32(p[0]) << 24) & 0xFF000000);
-            //int p2 = ((Integer.valueOf(p[1]) << 16) & 0x00FF0000);
-            //int p3 = ((Integer.valueOf(p[2]) <<  8) & 0x0000FF00);
-            //int p4 = ((Integer.valueOf(p[3]) <<  0) & 0x000000FF);
-
-            //return ((p1 | p2 | p3 | p4) & 0xFFFFFFFFL);
+            ip = ip.Trim();
+            String[] ips = ip.Split('.');
+            long ip1 = Int64.Parse(ips[0]);
+            long ip2 = Int64.Parse(ips[1]);
+            long ip3 = Int64.Parse(ips[2]);
+            long ip4 = Int64.Parse(ips[3]);
+            long ip2long = 1L * ip1 * 256 * 256 * 256 + ip2 * 256 * 256 + ip3 * 256 + ip4;
+            return ip2long;
         }
 
         /**
