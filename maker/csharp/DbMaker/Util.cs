@@ -1,28 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net;
+using System;
 using System.Text;
 
 namespace DbMaker
 {
-    /// <summary>
-    /// util class 
-    /// </summary>
-    public static class Util
+
+
+    /**
+     * util class 
+     * 
+     * @author chenxin<chenxin619315@gmail.com>
+    */
+    public class Util
     {
         /**
-     * write specfield bytes to a byte array start from offset
-     * 
-     * @param    b
-     * @param    offset
-     * @param    v
-     * @param    bytes
-    */
+         * write specfield bytes to a byte array start from offset
+         * 
+         * @param    b
+         * @param    offset
+         * @param    v
+         * @param    bytes
+        */
         public static void write(byte[] b, int offset, long v, int bytes)
         {
             for (int i = 0; i < bytes; i++)
             {
-                b[offset++] = (byte)((v >> (8 * i)) & 0xFF);
+                //b[offset++] = (byte)((v >>> (8 * i)) & 0xFF);
+                b[offset++] = (byte) ((v >> (8 * i)) & 0xFF);
             }
         }
 
@@ -35,10 +38,10 @@ namespace DbMaker
         */
         public static void writeIntLong(byte[] b, int offset, long v)
         {
-            b[offset++] = (byte)((v >> 0) & 0xFF);
-            b[offset++] = (byte)((v >> 8) & 0xFF);
-            b[offset++] = (byte)((v >> 16) & 0xFF);
-            b[offset] = (byte)((v >> 24) & 0xFF);
+            b[offset++] = (byte) ((v >> 0) & 0xFF);
+            b[offset++] = (byte) ((v >> 8) & 0xFF);
+            b[offset++] = (byte) ((v >> 16) & 0xFF);
+            b[offset] = (byte) ((v >> 24) & 0xFF);
         }
 
         /**
@@ -95,14 +98,16 @@ namespace DbMaker
         */
         public static long ip2long(String ip)
         {
-            ip = ip.Trim();
-            String[] ips = ip.Split('.');
-            long ip1 = Int64.Parse(ips[0]);
-            long ip2 = Int64.Parse(ips[1]);
-            long ip3 = Int64.Parse(ips[2]);
-            long ip4 = Int64.Parse(ips[3]);
-            long ip2long = 1L * ip1 * 256 * 256 * 256 + ip2 * 256 * 256 + ip3 * 256 + ip4;
-            return ip2long;
+            throw new NotImplementedException();
+            //String[] p = ip.Split("\\.");
+            //if ( p.Length != 4 ) return 0;
+
+            //int p1 = ((Convert.ToInt32(p[0]) << 24) & 0xFF000000);
+            //int p2 = ((Integer.valueOf(p[1]) << 16) & 0x00FF0000);
+            //int p3 = ((Integer.valueOf(p[2]) <<  8) & 0x0000FF00);
+            //int p4 = ((Integer.valueOf(p[3]) <<  0) & 0x000000FF);
+
+            //return ((p1 | p2 | p3 | p4) & 0xFFFFFFFFL);
         }
 
         /**
@@ -116,10 +121,10 @@ namespace DbMaker
             StringBuilder sb = new StringBuilder();
 
             sb
-            .Append((ip >> 24) & 0xFF).Append('.')
-            .Append((ip >> 16) & 0xFF).Append('.')
-            .Append((ip >> 8) & 0xFF).Append('.')
-            .Append((ip >> 0) & 0xFF);
+                .Append((ip >> 24) & 0xFF).Append('.')
+                .Append((ip >> 16) & 0xFF).Append('.')
+                .Append((ip >> 8) & 0xFF).Append('.')
+                .Append((ip >> 0) & 0xFF);
 
             return sb.ToString();
         }
@@ -135,12 +140,15 @@ namespace DbMaker
             String[] p = ip.Split("\\.");
             if (p.Length != 4) return false;
 
+            //for ( String pp : p ) {
+            //for ( String pp : p ) {
             foreach (var pp in p)
             {
                 if (pp.Length > 3) return false;
-                int val = Convert.ToInt32(pp); //Integer.valueOf(pp);
+                int val = Int32.Parse(pp); //Integer.valueOf(pp);
                 if (val > 255) return false;
             }
+
             return true;
         }
     }
