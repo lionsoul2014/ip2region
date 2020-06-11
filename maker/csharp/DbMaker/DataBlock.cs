@@ -1,47 +1,89 @@
-﻿using System;
+using System;
+using System.Text;
 
 namespace DbMaker
 {
-    /// <summary>
-    ///     data block class
-    /// </summary>
+
+    /**
+     * data block class
+     * 
+     * @author	chenxin<chenxin619315@gmail.com>
+    */
     public class DataBlock
     {
-        /// <summary>
-        ///     construct method
-        /// </summary>
-        /// <param name="cityId"></param>
-        /// <param name="region"></param>
-        /// <param name="dataPtr"></param>
-        public DataBlock(int cityId, string region, int dataPtr)
+        /**
+	 * city id 
+	*/
+        private int city_id;
+
+        /**
+	 * region address
+	*/
+        private String region;
+
+        /**
+	 * region ptr in the db file
+	*/
+        private int dataPtr;
+
+        /**
+	 * construct method
+	 * 
+	 * @param  city_id
+	 * @param  region  region string
+	 * @param  dataPtr data ptr
+	*/
+        public DataBlock(int city_id, String region, int dataPtr)
         {
-            CityId = cityId;
-            Region = region;
-            DataPtr = dataPtr;
+            this.city_id = city_id;
+            this.region = region;
+            this.dataPtr = dataPtr;
         }
 
-        public DataBlock(int cityId, string region) : this(cityId, region, 0)
+        public DataBlock(int city_id, String region) : this(city_id, region, 0)
         {
+            //this(city_id, region, 0);
         }
 
-        /// <summary>
-        ///     city id
-        /// </summary>
-        public int CityId { get; set; }
-
-        /// <summary>
-        ///     region address
-        /// </summary>
-        public string Region { get; set; }
-
-        /// <summary>
-        ///     region ptr in the db file
-        /// </summary>
-        public int DataPtr { get; set; }
-
-        public override string ToString()
+        public int getCityId()
         {
-            return String.Join("|", this.CityId, this.Region, this.DataPtr);
+            return city_id;
+        }
+
+        public DataBlock setCityId(int city_id)
+        {
+            this.city_id = city_id;
+            return this;
+        }
+
+        public String getRegion()
+        {
+            return region;
+        }
+
+        public DataBlock setRegion(String region)
+        {
+            this.region = region;
+            return this;
+        }
+
+        public int getDataPtr()
+        {
+            return dataPtr;
+        }
+
+        public DataBlock setDataPtr(int dataPtr)
+        {
+            this.dataPtr = dataPtr;
+            return this;
+        }
+
+        public override String ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append(city_id).Append('|').Append(region).Append('|').Append(dataPtr);
+            return sb.ToString();
         }
     }
 }

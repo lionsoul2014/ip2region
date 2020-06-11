@@ -1,65 +1,88 @@
-﻿namespace DbMaker
+namespace DbMaker
 {
-    /// <summary>
-    ///     item index class
-    /// </summary>
+
+    /**
+     * item index class
+     * 
+     * @author chenxin<chenxin619315@gmail.com>
+    */
     public class IndexBlock
     {
         private static int LENGTH = 12;
 
+        /**
+         * start ip address 
+        */
+        private long startIp;
+
+        /**
+         * end ip address 
+        */
+        private long endIp;
+
+        /**
+         * data ptr and data length 
+        */
+        private int dataPtr;
+
+        /**
+         * data length 
+        */
+        private int dataLen;
+
         public IndexBlock(long startIp, long endIp, int dataPtr, int dataLen)
         {
-            StartIp = startIp;
-            EndIp = endIp;
-            DataPtr = dataPtr;
-            DataLen = dataLen;
+            this.startIp = startIp;
+            this.endIp = endIp;
+            this.dataPtr = dataPtr;
+            this.dataLen = dataLen;
         }
 
-        /**
-         * start ip address
-         */
-        public long StartIp { get; set; }
-
-        /**
-         * end ip address
-         */
-        public long EndIp { get; set; }
-
-        /**
-         * data ptr and data length
-         */
-        public int DataPtr { get; set; }
-
-        /**
-         * data length
-         */
-        public int DataLen { get; set; }
-
-        public IndexBlock SetStartIp(long startIp)
+        public long getStartIp()
         {
-            StartIp = startIp;
+            return startIp;
+        }
+
+        public IndexBlock setStartIp(long startIp)
+        {
+            this.startIp = startIp;
             return this;
         }
 
-        public IndexBlock SetEndIp(long endIp)
+        public long getEndIp()
         {
-            EndIp = endIp;
+            return endIp;
+        }
+
+        public IndexBlock setEndIp(long endIp)
+        {
+            this.endIp = endIp;
             return this;
         }
 
-        public IndexBlock SetDataPtr(int dataPtr)
+        public int getDataPtr()
         {
-            DataPtr = dataPtr;
+            return dataPtr;
+        }
+
+        public IndexBlock setDataPtr(int dataPtr)
+        {
+            this.dataPtr = dataPtr;
             return this;
         }
 
-        public IndexBlock SetDataLen(int dataLen)
+        public int getDataLen()
         {
-            DataLen = dataLen;
+            return dataLen;
+        }
+
+        public IndexBlock setDataLen(int dataLen)
+        {
+            this.dataLen = dataLen;
             return this;
         }
 
-        public static int GetIndexBlockLength()
+        public static int getIndexBlockLength()
         {
             return LENGTH;
         }
@@ -69,7 +92,7 @@
      * 
      * @return    byte[]
     */
-        public byte[] GetBytes()
+        public byte[] getBytes()
         {
             /*
              * +------------+-----------+-----------+
@@ -77,13 +100,13 @@
              * +------------+-----------+-----------+
              *  start ip      end ip      data ptr + len 
             */
-            var b = new byte[12];
+            byte[] b = new byte[12];
 
-            Util.writeIntLong(b, 0, StartIp); //start ip
-            Util.writeIntLong(b, 4, EndIp); //end ip
+            Util.writeIntLong(b, 0, startIp); //start ip
+            Util.writeIntLong(b, 4, endIp); //end ip
 
             //write the data ptr and the length
-            var mix = DataPtr | DataLen << 24 & 0xFF000000L;
+            long mix = dataPtr | ((dataLen << 24) & 0xFF000000L);
             Util.writeIntLong(b, 8, mix);
 
             return b;

@@ -1,49 +1,67 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace DbMaker
 {
-    /// <summary>
-    /// database configuration class
-    /// </summary>
+
+    /**
+     * database configuration class
+     * 
+     * @author chenxin<chenxin619315@gmail.com>
+    */
     public class DbConfig
     {
+        /**
+     * total header data block size
+    */
+        private int totalHeaderSize;
+
+        /**
+     * max index data block size
+     * u should always choice the fastest read block size 
+    */
+        private int indexBlockSize;
+
+        /**
+     * construct method
+     * 
+     * @param   totalHeaderSize
+     * @throws  DbMakerConfigException 
+    */
         public DbConfig(int totalHeaderSize)
         {
-            if (totalHeaderSize % 8 != 0)
+            if ((totalHeaderSize % 8) != 0)
             {
                 throw new DbMakerConfigException("totalHeaderSize must be times of 8");
             }
 
-            TotalHeaderSize = totalHeaderSize;
-            IndexBlockSize = 8192; //4*2048
+            this.totalHeaderSize = totalHeaderSize;
+            this.indexBlockSize = 8192; //4 * 2048
         }
 
         public DbConfig() : this(8 * 2048)
         {
-
+            //this(8 * 2048);
         }
 
-        /// <summary>
-        /// total header data block size
-        /// </summary>
-        public int TotalHeaderSize { get; set; }
-        /// <summary>
-        ///  max index data block size
-        /// u should always choice the fastest read block size 
-        /// </summary>
-        public int IndexBlockSize { get; set; }
-        
-        public DbConfig SetTotalHeaderSize(int totalHeaderSize)
+        public int getTotalHeaderSize()
         {
-            this.TotalHeaderSize = totalHeaderSize;
+            return totalHeaderSize;
+        }
+
+        public DbConfig setTotalHeaderSize(int totalHeaderSize)
+        {
+            this.totalHeaderSize = totalHeaderSize;
             return this;
         }
-        public DbConfig SetIndexBlockSize(int dataBlockSize)
+
+        public int getIndexBlockSize()
         {
-            this.IndexBlockSize = dataBlockSize;
+            return indexBlockSize;
+        }
+
+        public DbConfig setIndexBlockSize(int dataBlockSize)
+        {
+            this.indexBlockSize = dataBlockSize;
             return this;
         }
     }
+
 }

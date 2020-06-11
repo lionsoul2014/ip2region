@@ -1,43 +1,57 @@
-﻿namespace DbMaker
+namespace DbMaker
 {
-    /// <summary>
-    ///     header block class
-    /// </summary>
+
+    /**
+ * header block class
+ * 
+ * @author chenxin<chenxin619315@gmail.com>
+*/
     public class HeaderBlock
     {
+        /**
+     * index block start ip address
+    */
+        private long indexStartIp;
+
+        /**
+     * ip address 
+    */
+        private int indexPtr;
+
         public HeaderBlock(long indexStartIp, int indexPtr)
         {
-            IndexStartIp = indexStartIp;
-            IndexPtr = indexPtr;
+            this.indexStartIp = indexStartIp;
+            this.indexPtr = indexPtr;
         }
 
-        /// <summary>
-        ///     index block start ip address
-        /// </summary>
-        public long IndexStartIp { get; set; }
-
-        /// <summary>
-        ///     ip address
-        /// </summary>
-        public int IndexPtr { get; set; }
-
-        public HeaderBlock SetIndexStartIp(long indexStartIp)
+        public long getIndexStartIp()
         {
-            IndexStartIp = indexStartIp;
+            return indexStartIp;
+        }
+
+        public HeaderBlock setIndexStartIp(long indexStartIp)
+        {
+            this.indexStartIp = indexStartIp;
             return this;
         }
 
-        public HeaderBlock SetIndexPtr(int indexPtr)
+        public int getIndexPtr()
         {
-            IndexPtr = indexPtr;
+            return indexPtr;
+        }
+
+        public HeaderBlock setIndexPtr(int indexPtr)
+        {
+            this.indexPtr = indexPtr;
             return this;
         }
 
-        /// <summary>
-        ///     get the bytes for db storage
-        /// </summary>
-        /// <returns></returns>
-        public byte[] GetBytes()
+        /**
+     * get the bytes for db storage
+     * 
+     * @return    byte[]
+    */
+        public byte[] getBytes()
         {
             /*
              * +------------+-----------+
@@ -45,11 +59,10 @@
              * +------------+-----------+
              *  start ip      index ptr
             */
+            byte[] b = new byte[8];
 
-            var b = new byte[8];
-
-            Util.writeIntLong(b, 0, IndexStartIp);
-            Util.writeIntLong(b, 4, IndexPtr);
+            Util.writeIntLong(b, 0, indexStartIp);
+            Util.writeIntLong(b, 4, indexPtr);
 
             return b;
         }
