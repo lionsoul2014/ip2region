@@ -45,5 +45,20 @@ namespace DbMaker
         {
             _stream.Dispose();
         }
+
+        public void write(byte[] bytes)
+        {
+            _stream.Write(bytes);
+        }
+
+        public void write(int i)
+        {
+            
+        }
+
+        public long getFilePointer()
+        {
+            return _stream.Position;
+        }
     }
 }
