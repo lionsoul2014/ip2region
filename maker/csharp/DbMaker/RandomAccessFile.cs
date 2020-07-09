@@ -7,7 +7,7 @@ namespace DbMaker
     {
         private readonly Stream _stream;
 
-        public RandomAccessFile(String file) : this(File.OpenRead(file))
+        public RandomAccessFile(String file) : this(File.Open(file, FileMode.OpenOrCreate))
         {
 
         }
