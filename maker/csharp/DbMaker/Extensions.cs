@@ -23,7 +23,8 @@ namespace DbMaker
 
         public static void put<TKey, TValue>(this IDictionary<TKey, TValue> dic, TKey key, TValue value)
         {
-            dic.Add(key,value);
+            //dic.Add(key,value);
+            dic[key] = value;
         }
 
         public static void add<TItem>(this IList<TItem> list, TItem item)
