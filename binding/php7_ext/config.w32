@@ -1,0 +1,12 @@
+// $Id$
+//
+// If your extension references something external, use ARG_WITH
+// ARG_WITH("ip2region", "for ip2region support", "no");
+
+// Otherwise, use ARG_ENABLE
+// ARG_ENABLE("ip2region", "enable ip2region support", "no");
+
+if (PHP_IP2REGION != "no") {
+	EXTENSION("ip2region", "ip2region.c");
+}
+

@@ -28,7 +28,7 @@ version = "*"
 
 取消上面 toml 的 `# features = ["lazy"]` 行的注释即可使用，其 api 是 `memory_search` 和  `memory_search_ip`。
 
-只是目前 DB 足有3.2M，还是有些感人的。
+只是目前 DB 只有3.2M，还是有些感人的。
 
 关键的一行是 `features = ["lazy"]` ，不需要则可以注释或者删掉。
 
