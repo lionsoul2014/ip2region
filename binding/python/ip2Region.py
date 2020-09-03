@@ -8,19 +8,18 @@
 import struct, io, socket, sys
 
 class Ip2Region(object):
-    __INDEX_BLOCK_LENGTH  = 12
-    __TOTAL_HEADER_LENGTH = 8192
-
-    __f          = None
-    __headerSip  = []
-    __headerPtr  = []
-    __headerLen  = 0
-    __indexSPtr  = 0
-    __indexLPtr  = 0
-    __indexCount = 0
-    __dbBinStr   = ''
 
     def __init__(self, dbfile):
+        self.__INDEX_BLOCK_LENGTH  = 12
+        self.__TOTAL_HEADER_LENGTH = 8192
+        self.__f          = None
+        self.__headerSip  = []
+        self.__headerPtr  = []
+        self.__headerLen  = 0
+        self.__indexSPtr  = 0
+        self.__indexLPtr  = 0
+        self.__indexCount = 0
+        self.__dbBinStr   = ''
         self.initDatabase(dbfile)
 
     def memorySearch(self, ip):
