@@ -401,12 +401,12 @@ IP2R_API uint_t ip2long(const char *ip)
             continue;
         }
 
+       if ( i > 3 ) {
+            ipval = 0;
+            break;
+        }
         if ( *cs == '.' ) {
             //single part length limit
-            if ( i > 3 ) {
-                ipval = 0;
-                break;
-            }
 
             if ( p < 0 ) break;
             buffer[i] = '\0';
