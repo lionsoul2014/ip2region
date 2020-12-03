@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "DbMaker": {
-      "commandName": "Project",
-      "commandLineArgs": " -src ip.merge.txt -region global_region.csv"
-    }
-  }
-}
