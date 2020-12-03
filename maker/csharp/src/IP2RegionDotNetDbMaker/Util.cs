@@ -1,15 +1,14 @@
-using System;
-using System.Text;
+﻿using System;
 
-namespace DbMaker
+
+namespace IP2RegionDotNetDbMaker
 {
-
 
     /**
      * util class 
      * 
      * @author chenxin<chenxin619315@gmail.com>
-    */
+*/
     public class Util
     {
         /**
@@ -24,8 +23,7 @@ namespace DbMaker
         {
             for (int i = 0; i < bytes; i++)
             {
-                //b[offset++] = (byte)((v >>> (8 * i)) & 0xFF);
-                b[offset++] = (byte) ((v >> (8 * i)) & 0xFF);
+                b[offset++] = (byte)((v >> (8 * i)) & 0xFF);
             }
         }
 
@@ -38,10 +36,10 @@ namespace DbMaker
         */
         public static void writeIntLong(byte[] b, int offset, long v)
         {
-            b[offset++] = (byte) ((v >> 0) & 0xFF);
-            b[offset++] = (byte) ((v >> 8) & 0xFF);
-            b[offset++] = (byte) ((v >> 16) & 0xFF);
-            b[offset] = (byte) ((v >> 24) & 0xFF);
+            b[offset++] = (byte)((v >> 0) & 0xFF);
+            b[offset++] = (byte)((v >> 8) & 0xFF);
+            b[offset++] = (byte)((v >> 16) & 0xFF);
+            b[offset] = (byte)((v >> 24) & 0xFF);
         }
 
         /**
@@ -119,12 +117,12 @@ namespace DbMaker
             StringBuilder sb = new StringBuilder();
 
             sb
-                .Append((ip >> 24) & 0xFF).Append('.')
-                .Append((ip >> 16) & 0xFF).Append('.')
-                .Append((ip >> 8) & 0xFF).Append('.')
-                .Append((ip >> 0) & 0xFF);
+            .append((ip >> 24) & 0xFF).append('.')
+            .append((ip >> 16) & 0xFF).append('.')
+            .append((ip >> 8) & 0xFF).append('.')
+            .append((ip >> 0) & 0xFF);
 
-            return sb.ToString();
+            return sb.toString();
         }
 
         /**
@@ -133,17 +131,14 @@ namespace DbMaker
          * @param    ip
          * @return    boolean
         */
-        public static Boolean isIpAddress(String ip)
+        public static bool isIpAddress(String ip)
         {
-            String[] p = ip.Split("\\.");
+            String[] p = ip.split(".");
             if (p.Length != 4) return false;
-
-            //for ( String pp : p ) {
-            //for ( String pp : p ) {
             foreach (var pp in p)
             {
                 if (pp.Length > 3) return false;
-                int val = Int32.Parse(pp); //Integer.valueOf(pp);
+                var val = Int32.Parse(pp);
                 if (val > 255) return false;
             }
 
