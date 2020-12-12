@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net452;net5.0</TargetFrameworks>
+    <AssemblyName>dbMaker</AssemblyName>
+  </PropertyGroup>
+
+</Project>

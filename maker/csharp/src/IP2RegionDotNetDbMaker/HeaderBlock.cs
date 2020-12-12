@@ -1,21 +1,22 @@
-namespace DbMaker
+﻿using System;
+namespace IP2RegionDotNetDbMaker
 {
 
     /**
- * header block class
- * 
- * @author chenxin<chenxin619315@gmail.com>
+     * header block class
+     * 
+     * @author chenxin<chenxin619315@gmail.com>
 */
     public class HeaderBlock
     {
         /**
-     * index block start ip address
-    */
+         * index block start ip address
+        */
         private long indexStartIp;
 
         /**
-     * ip address 
-    */
+         * ip address 
+        */
         private int indexPtr;
 
         public HeaderBlock(long indexStartIp, int indexPtr)
@@ -47,10 +48,10 @@ namespace DbMaker
         }
 
         /**
-     * get the bytes for db storage
-     * 
-     * @return    byte[]
-    */
+         * get the bytes for db storage
+         * 
+         * @return    byte[]
+        */
         public byte[] getBytes()
         {
             /*

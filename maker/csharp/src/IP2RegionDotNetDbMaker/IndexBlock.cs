@@ -1,11 +1,12 @@
-namespace DbMaker
+﻿using System;
+namespace IP2RegionDotNetDbMaker
 {
 
     /**
      * item index class
      * 
      * @author chenxin<chenxin619315@gmail.com>
-    */
+*/
     public class IndexBlock
     {
         private static int LENGTH = 12;
@@ -88,10 +89,10 @@ namespace DbMaker
         }
 
         /**
-     * get the bytes for storage
-     * 
-     * @return    byte[]
-    */
+         * get the bytes for storage
+         * 
+         * @return    byte[]
+        */
         public byte[] getBytes()
         {
             /*
@@ -102,8 +103,8 @@ namespace DbMaker
             */
             byte[] b = new byte[12];
 
-            Util.writeIntLong(b, 0, startIp); //start ip
-            Util.writeIntLong(b, 4, endIp); //end ip
+            Util.writeIntLong(b, 0, startIp);    //start ip
+            Util.writeIntLong(b, 4, endIp);        //end ip
 
             //write the data ptr and the length
             long mix = dataPtr | ((dataLen << 24) & 0xFF000000L);
