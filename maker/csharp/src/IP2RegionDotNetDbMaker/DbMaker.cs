@@ -1,13 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Text;
-using DbMaker;
+﻿using System;
 
-namespace DbMaker
+namespace IP2RegionDotNetDbMaker
 {
+
 
     /**
      * fast ip db maker
@@ -50,24 +45,24 @@ namespace DbMaker
         /**
          * ip source file path
         */
-        private FileStream ipSrcFile;
+        private File ipSrcFile;
 
         /**
          * buffer 
         */
-        private List<IndexBlock> indexPool;
-        private List<HeaderBlock> headerPool;
+        private LinkedList<IndexBlock> indexPool;
+        private LinkedList<HeaderBlock> headerPool;
 
         /**
          * global region Id mapping data 
         */
-        private FileStream globalRegionFile = null;
-        private Dictionary<String, int> globalRegionMap = null;
+        private File globalRegionFile = null;
+        private HashMap<String, int?> globalRegionMap = null;
 
         /**
          * region and data ptr mapping data 
         */
-        private Dictionary<String, DataBlock> regionPtrPool = null;
+        private HashMap<String, DataBlock> regionPtrPool = null;
 
         /**
          * construct method
@@ -84,18 +79,17 @@ namespace DbMaker
                 String globalRegionFile)
         {
             this.dbConfig = config;
-            this.ipSrcFile = File.OpenRead(ipSrcFile); //new File(ipSrcFile);
-            this.globalRegionMap = new Dictionary<string, int>(); //new HashMap<String, Integer>();
-            this.regionPtrPool = new Dictionary<string, DataBlock>(); //new HashMap<String, DataBlock>();
+            this.ipSrcFile = new File(ipSrcFile);
+            this.globalRegionMap = new HashMap<String, int?>();
+            this.regionPtrPool = new HashMap<String, DataBlock>();
             if (globalRegionFile != null)
             {
-                this.globalRegionFile = File.OpenRead(globalRegionFile); //new File(globalRegionFile);
+                this.globalRegionFile = new File(globalRegionFile);
             }
 
-            //if ( this.ipSrcFile.exists() == false ) {
-            if (!File.Exists(ipSrcFile))
+            if (this.ipSrcFile.exists() == false)
             {
-                throw new IOException("Error: Invalid file path " + ipSrcFile);
+                throw new Exception("Error: Invalid file path " + ipSrcFile);
             }
         }
 
@@ -103,7 +97,7 @@ namespace DbMaker
          * initialize the db file 
          * 
          * @param	raf
-         * @throws IOException 
+         * @ 
         */
         private void initDbFile(RandomAccessFile raf)
         {
@@ -112,15 +106,15 @@ namespace DbMaker
             raf.write(new byte[8]);     //super block
             raf.write(new byte[dbConfig.getTotalHeaderSize()]);     //header block
 
-            headerPool = new List<HeaderBlock>(); //new LinkedList<HeaderBlock>();
-            indexPool = new List<IndexBlock>(); //new LinkedList<IndexBlock>();
+            headerPool = new LinkedList<HeaderBlock>();
+            indexPool = new LinkedList<IndexBlock>();
         }
 
         /**
          * make the Db file 
          * 
          * @param	dbFile target output file path
-         * @throws IOException 
+         * @ 
         */
         public void make(String dbFile)
         {
@@ -128,30 +122,24 @@ namespace DbMaker
             if (globalRegionFile != null)
             {
                 Console.WriteLine("+-Try to load the global region data ...");
-                StreamReader greader = new StreamReader((globalRegionFile));
+                BufferedReader greader = new BufferedReader(new FileReader(globalRegionFile));
                 String gline = null;
-                while (!greader.EndOfStream)
+                while ((gline = greader.readLine()) != null)
                 {
-                    gline = greader.ReadLine();// != null 
-                    if (String.IsNullOrWhiteSpace(gline))
-                    {
-                        continue;
-                    }
-
-                    String[] p = gline.Split(",");
+                    String[] p = gline.split(",");
                     if (p.Length != 5) continue;
 
                     //push the mapping
                     globalRegionMap.put(p[2], Int32.Parse(p[0]));
                 }
 
-                greader.Close();
+                greader.close();
                 Console.WriteLine("|--[Ok]");
             }
 
             //alloc the header size
-            StreamReader reader = new StreamReader(this.ipSrcFile);
-            RandomAccessFile raf = new RandomAccessFile(dbFile);
+            BufferedReader reader = new BufferedReader(new FileReader(this.ipSrcFile));
+            RandomAccessFile raf = new RandomAccessFile(dbFile, "rw");
 
             //init the db file
             initDbFile(raf);
@@ -160,31 +148,25 @@ namespace DbMaker
             //analysis main loop
             Console.WriteLine("+-Try to write the data blocks ... ");
             String line = null;
-            while (!reader.EndOfStream)
+            while ((line = reader.readLine()) != null)
             {
-                //line = reader.ReadLine()
-                line = reader.ReadLine();
-                if (String.IsNullOrWhiteSpace(line))
-                {
-                    continue;
-                }
-                line = line.Trim();
-                if (line.Length == 0) continue;
-                if (line[0] == '#') continue;
+                line = line.trim();
+                if (line.length() == 0) continue;
+                if (line.charAt(0) == '#') continue;
 
                 //1. get the start ip
                 int sIdx = 0, eIdx = 0;
-                if ((eIdx = line.IndexOf('|', sIdx + 1)) == -1) continue;
-                String startIp = line.Substring(sIdx, eIdx);
+                if ((eIdx = line.indexOf('|', sIdx + 1)) == -1) continue;
+                String startIp = line.substring(sIdx, eIdx);
 
                 //2. get the end ip
                 sIdx = eIdx + 1;
-                if ((eIdx = line.IndexOf('|', sIdx + 1)) == -1) continue;
-                String endIp = line.Substring(sIdx, eIdx - sIdx);
+                if ((eIdx = line.indexOf('|', sIdx + 1)) == -1) continue;
+                String endIp = line.substring(sIdx, eIdx);
 
                 //3. get the region
                 sIdx = eIdx + 1;
-                String region = line.Substring(sIdx);
+                String region = line.substring(sIdx);
 
                 Console.WriteLine("+-Try to process item " + line);
                 addDataBlock(raf, startIp, endIp, region);
@@ -199,21 +181,22 @@ namespace DbMaker
             //record the start block
             IndexBlock indexBlock = null;
             HeaderBlock hb = null;
-            indexBlock = indexPool.First();
+            indexBlock = indexPool.getFirst();
             long indexStartIp = indexBlock.getStartIp(),
                         indexStratPtr = raf.getFilePointer(), indexEndPtr;
             headerPool.add(new HeaderBlock(indexStartIp, (int)(indexStratPtr)));
 
             int blockLength = IndexBlock.getIndexBlockLength();
             int counter = 0, shotCounter = (dbConfig.getIndexBlockSize() / blockLength) - 1;
-            //Iterator<IndexBlock> indexIt = indexPool.iterator();
-            //while ( indexIt.hasNext() ) {
-            foreach (var block in indexPool)
+            //var indexIt = indexPool.iterator();
+            //while (indexIt.hasNext())
+            foreach (var indexIt in indexPool.iterator())
             {
+                indexBlock = indexIt;
                 if (++counter >= shotCounter)
                 {
                     hb = new HeaderBlock(
-                        block.getStartIp(),
+                        indexBlock.getStartIp(),
                         (int)raf.getFilePointer()
                     );
 
@@ -222,13 +205,13 @@ namespace DbMaker
                 }
 
                 //write the buffer
-                raf.write(block.getBytes());
+                raf.write(indexBlock.getBytes());
             }
 
             //record the end block
             if (counter > 0)
             {
-                indexBlock = indexPool.Last();
+                indexBlock = indexPool.getLast();
                 hb = new HeaderBlock(
                     indexBlock.getStartIp(),
                     ((int)raf.getFilePointer()) - IndexBlock.getIndexBlockLength()
@@ -251,12 +234,13 @@ namespace DbMaker
 
             //write the header blocks
             Console.WriteLine("+-Try to write the header blocks ... ");
-            //Iterator<HeaderBlock> headerIt = headerPool.iterator();
-            //while ( headerIt.hasNext() ) {
-            //	HeaderBlock headerBlock = headerIt.next();
-            //	raf.write(headerBlock.getBytes());
+            //var headerIt = headerPool.iterator();
+            //while (headerIt.hasNext())
+            //{
+            //    HeaderBlock headerBlock = headerIt.next();
+            //    raf.write(headerBlock.getBytes());
             //}
-            foreach (var headerBlock in headerPool)
+            foreach (var headerBlock in headerPool.iterator())
             {
                 raf.write(headerBlock.getBytes());
             }
@@ -266,14 +250,13 @@ namespace DbMaker
             raf.seek(raf.length());
             //Calendar cal = Calendar.getInstance();
             //SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
-            var date = DateTime.Now;
-            String copyright = "Created by lionsoul at " + date.ToString("yyyy/MM/dd");
-            var timespan = new DateTimeOffset(date).ToUnixTimeSeconds();
-            raf.write((int)(timespan)); //the unix timestamp
-            raf.write(copyright.getBytes("UTF-8"));
+            String copyright = "Created by lionsoul at " + DateTime.Now.ToString("yyyy/MM/dd"); //dateFormat.format(cal.getTime());
+            var timestamp = (DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000000;
+            raf.write((Int32)timestamp);   //the unix timestamp
+            raf.write(copyright.getBytes());
             Console.WriteLine("|--[Ok]");
 
-            reader.Close();
+            reader.close();
             raf.close();
         }
 
@@ -289,44 +272,50 @@ namespace DbMaker
                 RandomAccessFile raf,
                 String startIp, String endIp, String region)
         {
-
-            byte[] data = region.getBytes("UTF-8");
-            int dataPtr = 0;
-
-            /*byte[] city = new byte[4];
-            int city_id = getCityId(region);
-            Util.writeIntLong(city, 0, city_id);
-            dataPtr = (int)raf.getFilePointer();
-            raf.write(city);
-            raf.write(data);*/
-
-            //check region ptr pool first
-            if (regionPtrPool.containsKey(region))
+            try
             {
-                DataBlock dataBlock = regionPtrPool.get(region);
-                dataPtr = dataBlock.getDataPtr();
-                Console.WriteLine("dataPtr: " + dataPtr + ", region: " + region);
-            }
-            else
-            {
-                byte[] city = new byte[4];
+                byte[] data = region.getBytes("UTF-8");
+                int dataPtr = 0;
+
+                /*byte[] city = new byte[4];
                 int city_id = getCityId(region);
                 Util.writeIntLong(city, 0, city_id);
                 dataPtr = (int)raf.getFilePointer();
                 raf.write(city);
-                raf.write(data);
+                raf.write(data);*/
 
-                regionPtrPool.put(region, new DataBlock(city_id, region, dataPtr));
+                //check region ptr pool first
+                if (regionPtrPool.containsKey(region))
+                {
+                    DataBlock dataBlock = regionPtrPool.get(region);
+                    dataPtr = dataBlock.getDataPtr();
+                    Console.WriteLine("dataPtr: " + dataPtr + ", region: " + region);
+                }
+                else
+                {
+                    byte[] city = new byte[4];
+                    int city_id = getCityId(region);
+                    Util.writeIntLong(city, 0, city_id);
+                    dataPtr = (int)raf.getFilePointer();
+                    raf.write(city);
+                    raf.write(data);
+
+                    regionPtrPool.put(region, new DataBlock(city_id, region, dataPtr));
+                }
+
+                //add the data index blocks
+                IndexBlock ib = new IndexBlock(
+                    Util.ip2long(startIp),
+                    Util.ip2long(endIp),
+                    dataPtr,
+                    data.Length + 4     //4 bytes for the city id
+                );
+                indexPool.add(ib);
             }
-
-            //add the data index blocks
-            IndexBlock ib = new IndexBlock(
-                Util.ip2long(startIp),
-                Util.ip2long(endIp),
-                dataPtr,
-                data.Length + 4     //4 bytes for the city id
-            );
-            indexPool.add(ib);
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
         }
 
         /**
@@ -337,16 +326,16 @@ namespace DbMaker
         */
         public int getCityId(String region)
         {
-            String[] p = region.Split("|");
+            String[] p = region.split("|");
             if (p.Length != 5) return 0;
 
             String key = null;
-            int? intv = null;
+            Int32? intv = null;
             for (int i = 3; i >= 0; i--)
             {
-                if (p[i].Equals("0")) continue;
+                if (p[i].equals("0")) continue;
                 if (i == 3
-                    && p[i].IndexOf("省直辖县级") > -1)
+                    && p[i].indexOf("省直辖县级") > -1)
                 {
                     key = p[2] + p[3];
                 }
@@ -355,12 +344,8 @@ namespace DbMaker
                     key = p[i];
                 }
 
-                if (!globalRegionMap.ContainsKey(key))
-                {
-                    return 0;
-                }
                 intv = globalRegionMap.get(key);
-                //if (intv == null) return 0;
+                if (intv == null) return 0;
                 return intv.Value;
             }
 
@@ -378,12 +363,12 @@ namespace DbMaker
             return this;
         }
 
-        public FileStream getIpSrcFile()
+        public File getIpSrcFile()
         {
             return ipSrcFile;
         }
 
-        public DbMaker setIpSrcFile(FileStream ipSrcFile)
+        public DbMaker setIpSrcFile(File ipSrcFile)
         {
             this.ipSrcFile = ipSrcFile;
             return this;
@@ -399,15 +384,15 @@ namespace DbMaker
             String[] path = new String[] { null, null };
             for (int i = 0; i < args.Length; i++)
             {
-                if (args[i].Equals("-src"))
+                if (args[i].equals("-src"))
                 {
                     path[0] = args[++i];
                 }
-                else if (args[i].Equals("-region"))
+                else if (args[i].equals("-region"))
                 {
                     path[1] = args[++i];
                 }
-                else if (args[i].Equals("-dst"))
+                else if (args[i].equals("-dst"))
                 {
                     dstDir = args[++i];
                 }
@@ -417,41 +402,31 @@ namespace DbMaker
             {
                 if (path[i] == null)
                 {
-                    Console.WriteLine("Usage: DbMaker "
+                    Console.WriteLine("Usage: dbMaker "
                             + "-src [source text file path] "
                             + "-region [global region file path]");
-                    Console.WriteLine("eg: DbMaker "
+                    Console.WriteLine("eg: dbMaker "
                             + "-src ./data/ip.merge.txt -region ./data/origin/global_region.csv");
-                    //System.exit(0);
                     Environment.Exit(0);
+                    return;
                 }
             }
 
             //check and stdlize the destination directory
-            if (!dstDir.EndsWith("/"))
+            if (!dstDir.endsWith("/"))
             {
                 dstDir = dstDir + "/";
             }
 
             try
             {
-                if (!Directory.Exists(dstDir))
-                {
-                    Directory.CreateDirectory(dstDir);
-                }
                 DbConfig config = new DbConfig();
                 DbMaker dbMaker = new DbMaker(config, path[0], path[1]);
                 dbMaker.make(dstDir + "ip2region.db");
             }
-            catch (DbMakerConfigException e)
+            catch (Exception e)
             {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            catch (IOException e)
-            {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                Console.WriteLine(e);
             }
         }
     }
