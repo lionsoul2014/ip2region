@@ -1,30 +1,31 @@
-namespace DbMaker
+﻿using System;
+namespace IP2RegionDotNetDbMaker
 {
 
     /**
      * database configuration class
      * 
      * @author chenxin<chenxin619315@gmail.com>
-    */
+*/
     public class DbConfig
     {
         /**
-     * total header data block size
-    */
+         * total header data block size
+        */
         private int totalHeaderSize;
 
         /**
-     * max index data block size
-     * u should always choice the fastest read block size 
-    */
+         * max index data block size
+         * u should always choice the fastest read block size 
+        */
         private int indexBlockSize;
 
         /**
-     * construct method
-     * 
-     * @param   totalHeaderSize
-     * @throws  DbMakerConfigException 
-    */
+         * construct method
+         * 
+         * @param   totalHeaderSize
+         * @ 
+        */
         public DbConfig(int totalHeaderSize)
         {
             if ((totalHeaderSize % 8) != 0)
@@ -38,7 +39,6 @@ namespace DbMaker
 
         public DbConfig() : this(8 * 2048)
         {
-            //this(8 * 2048);
         }
 
         public int getTotalHeaderSize()
@@ -63,5 +63,4 @@ namespace DbMaker
             return this;
         }
     }
-
 }
