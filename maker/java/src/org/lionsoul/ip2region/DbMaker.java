@@ -2,7 +2,9 @@ package org.lionsoul.ip2region;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
+import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
@@ -127,7 +129,7 @@ public class DbMaker
 		//check and load the gloabl region
 		if ( globalRegionFile != null ) {
 			System.out.println("+-Try to load the global region data ...");
-			BufferedReader greader = new BufferedReader(new FileReader(globalRegionFile));
+			BufferedReader greader = new BufferedReader(new InputStreamReader(new FileInputStream(this.globalRegionFile), "UTF-8"));
 			String gline = null;
 			while ( (gline = greader.readLine()) != null ) {
 				String[] p = gline.split(",");
@@ -142,7 +144,7 @@ public class DbMaker
 		}
 		
 		//alloc the header size
-		BufferedReader reader = new BufferedReader(new FileReader(this.ipSrcFile));
+		BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(this.ipSrcFile), "UTF-8"));
 		RandomAccessFile raf  = new RandomAccessFile(dbFile, "rw");
 		
 		//init the db file
