@@ -5,7 +5,7 @@ import (
 )
 
 func BenchmarkBtreeSearch(B *testing.B) {
-	region, err := New("../../data/ip2region.db ")
+	region, err := New("../../../data/ip2region.db")
 	if err != nil {
 		B.Error(err)
 	}
@@ -16,7 +16,7 @@ func BenchmarkBtreeSearch(B *testing.B) {
 }
 
 func BenchmarkMemorySearch(B *testing.B) {
-	region, err := New("../../data/ip2region.db ")
+	region, err := New("../../../data/ip2region.db")
 	if err != nil {
 		B.Error(err)
 	}
@@ -27,7 +27,7 @@ func BenchmarkMemorySearch(B *testing.B) {
 }
 
 func BenchmarkBinarySearch(B *testing.B) {
-	region, err := New("../../data/ip2region.db ")
+	region, err := New("../../../data/ip2region.db")
 	if err != nil {
 		B.Error(err)
 	}
