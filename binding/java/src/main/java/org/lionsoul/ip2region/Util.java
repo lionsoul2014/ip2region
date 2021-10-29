@@ -140,4 +140,19 @@ public class Util
         
         return true;
     }
+
+    /**
+     * Returns the arithmetic mean of {@code x} and {@code y}, rounded towards
+     * negative infinity. This method is overflow resilient.
+     *
+     * code from guava 14.0
+     * com.google.common.math.IntMath.mean(int x, int y)
+     *
+     */
+    public static int mean(int x, int y) {
+        // Efficient method for computing the arithmetic mean.
+        // The alternative (x + y) / 2 fails for large values.
+        // The alternative (x + y) >>> 1 fails for negative values.
+        return (x & y) + ((x ^ y) >> 1);
+    }
 }
