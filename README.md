@@ -50,7 +50,7 @@ _城市Id|国家|区域|省份|城市|ISP_
 binding | 描述 | 开发状态 | binary查询耗时 | b-tree查询耗时 | memory查询耗时
 :-: | :-: | :-: | :-: | :-: | :-:
 [c](binding/c) | ANSC c binding | 已完成 | 0.0x毫秒 | 0.0x毫秒 | 0.00x毫秒
-[c#](binding/c#) | c# binding | 已完成 | 0.x毫秒 | 0.x毫秒 | 0.1x毫秒
+[c#](binding/c%23) | c# binding | 已完成 | 0.x毫秒 | 0.x毫秒 | 0.1x毫秒
 [golang](binding/golang) | golang binding | 已完成 | 0.x毫秒 | 0.x毫秒 | 0.1x毫秒
 [java](binding/java) | java binding | 已完成 | 0.x毫秒 | 0.x毫秒 | 0.1x毫秒
 [lua](binding/lua) | lua实现的binding | 已完成 | 0.x毫秒 | 0.x毫秒 | 0.x毫秒
