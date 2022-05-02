@@ -40,9 +40,9 @@ class Ip2Region
     /**
      * construct method
      *
-     * @param    ip2regionFile
+     * @param   ip2regionFile
     */
-    public function __construct( $ip2regionFile )
+    public function __construct( $ip2regionFile)
     {
         $this->dbFile = $ip2regionFile;
     }
@@ -266,7 +266,7 @@ class Ip2Region
         fseek($this->dbFileHandler, $sptr);
         $index = fread($this->dbFileHandler, $blockLen + INDEX_BLOCK_LENGTH);
         
-        $dataptr = 0;
+        $dataPtr = 0;
         $l = 0; $h = $blockLen / INDEX_BLOCK_LENGTH;
         while ( $l <= $h ) {
             $m = (($l + $h) >> 1);
@@ -279,18 +279,18 @@ class Ip2Region
                 if ( $ip > $eip ) {
                     $l = $m + 1;
                 } else {
-                    $dataptr = self::getLong($index, $p + 8);
+                    $dataPtr = self::getLong($index, $p + 8);
                     break;
                 }
             }
         }
         
         //not matched
-        if ( $dataptr == 0 ) return NULL;
+        if ( $dataPtr == 0 ) return NULL;
         
         //3. get the data
-        $dataLen = (($dataptr >> 24) & 0xFF);
-        $dataPtr = ($dataptr & 0x00FFFFFF);
+        $dataLen = (($dataPtr >> 24) & 0xFF);
+        $dataPtr = ($dataPtr & 0x00FFFFFF);
         
         fseek($this->dbFileHandler, $dataPtr);
         $data = fread($this->dbFileHandler, $dataLen);
@@ -358,4 +358,3 @@ class Ip2Region
         $this->HeaderPtr = NULL;
     }
 }
-?>

@@ -1,7 +1,7 @@
 /**
  * test ip2region searcher program
  *
- * @author    chenxin<chenxin619315@gmail.com>
+ * @author  chenxin<chenxin619315@gmail.com>
  * @date    2015-10-30
 */
 
@@ -49,7 +49,7 @@ int main( int argc, char **argv )
     datablock_entry datablock;
     char *dbFile = NULL, *algorithm = NULL;
     char line[256];
-    uint_t (*func_ptr)(ip2region_t, char *, datablock_t);
+    uint_t (*func_ptr)(ip2region_t, const char *, datablock_t);
     double s_time, c_time;
     memset(&datablock, 0x00, sizeof(datablock_entry));
 
@@ -95,7 +95,7 @@ int main( int argc, char **argv )
         printf("%d|%s in %.5f millseconds\n", datablock.city_id, datablock.region, c_time);
     }
 
-    //destory the ip2rObj
+    // destory the ip2rObj
     ip2region_destroy(&ip2rEntry);
 
     return 0;

@@ -8,7 +8,7 @@
 if ( $argc < 2 ) {
     $usage = <<<EOF
 Usage: php Test.php [ip2region db file] [alrogrithm]
-+-Algorithm: binary or b-tree\n
++-Optional Algorithm: binary, b-tree, memory\n
 EOF;
     exit($usage);
 }

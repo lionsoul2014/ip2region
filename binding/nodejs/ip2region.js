@@ -8,6 +8,8 @@
  * @author dongwei<maledong_github@outlook.com>
  */
 const fs = require('fs');
+const path = require('path');
+const DEFAULT_DB_PATH  = path.join(__dirname,'./data/ip2region.db') ;
 
 //#region Private Functions
 /**
@@ -70,7 +72,7 @@ class IP2Region {
     //#region Private Functions
 
     [CalTotalBlocks]() {
-        const superBlock = new Buffer(8);
+        const superBlock = Buffer.alloc(8);
         fs.readSync(this.dbFd, superBlock, 0, 8, 0);
         this.firstIndexPtr = _getLong(superBlock, 0);
         this.lastIndexPtr = _getLong(superBlock, 4);
@@ -99,10 +101,10 @@ class IP2Region {
     }
 
     [ReadData](dataPos, callBack) {
-        if (dataPos == 0) return callBack(null,null);
+        if (dataPos == 0) return callBack(null, null);
         const dataLen = (dataPos >> 24) & 0xff;
         dataPos = dataPos & 0x00ffffff;
-        const dataBuffer = new Buffer(dataLen);
+        const dataBuffer = Buffer.alloc(dataLen);
 
         fs.read(this.dbFd, dataBuffer, 0, dataLen, dataPos, (err, result) => {
             if (err) {
@@ -120,7 +122,7 @@ class IP2Region {
         if (dataPos == 0) return null;
         const dataLen = (dataPos >> 24) & 0xff;
         dataPos = dataPos & 0x00ffffff;
-        const dataBuffer = new Buffer(dataLen);
+        const dataBuffer = Buffer.alloc(dataLen);
 
         fs.readSync(this.dbFd, dataBuffer, 0, dataLen, dataPos);
 
@@ -134,7 +136,7 @@ class IP2Region {
     //#region Static Functions
 
     // Single Instance
-    static create(dbPath) {
+    static create(dbPath = DEFAULT_DB_PATH) {
         let existInstance = _globalInstances.get(dbPath);
         if (existInstance == null) {
             existInstance = new IP2Region({ dbPath: dbPath });
@@ -157,6 +159,10 @@ class IP2Region {
 
         const { dbPath } = options;
 
+        // Keep for MemorySearch
+        this.totalInMemoryBytesSize = fs.statSync(dbPath).size;
+        this.totalInMemoryBytes = null;
+
         this.dbFd = fs.openSync(dbPath, 'r');
 
         this.dbPath = dbPath;
@@ -166,7 +172,7 @@ class IP2Region {
         this.totalBlocks = this.firstIndexPtr = this.lastIndexPtr = 0;
         this[CalTotalBlocks]();
 
-        this.headerIndexBuffer = new Buffer(TOTAL_HEADER_LENGTH);
+        this.headerIndexBuffer = Buffer.alloc(TOTAL_HEADER_LENGTH);
         this.headerSip = [];
         this.headerPtr = [];
         this.headerLen = 0;
@@ -196,7 +202,7 @@ class IP2Region {
         let high = this.totalBlocks;
         let pos = 0;
         let sip = 0;
-        const indexBuffer = new Buffer(12);
+        const indexBuffer = Buffer.alloc(12);
 
         // binary search
         while (low <= high) {
@@ -235,7 +241,7 @@ class IP2Region {
         let high = this.totalBlocks;
         let pos = 0;
         let sip = 0;
-        const indexBuffer = new Buffer(12);
+        const indexBuffer = Buffer.alloc(12);
         const _self = this;
 
         // Because `while` is a sync method, we have to convert this to a recursive loop
@@ -338,7 +344,7 @@ class IP2Region {
 
         // second search (in index)
         const blockLen = eptr - sptr;
-        const blockBuffer = new Buffer(blockLen + INDEX_BLOCK_LENGTH);
+        const blockBuffer = Buffer.alloc(blockLen + INDEX_BLOCK_LENGTH);
         fs.readSync(
             this.dbFd,
             blockBuffer,
@@ -436,7 +442,7 @@ class IP2Region {
 
         // second search (in index)
         const blockLen = eptr - sptr;
-        const blockBuffer = new Buffer(blockLen + INDEX_BLOCK_LENGTH);
+        const blockBuffer = Buffer.alloc(blockLen + INDEX_BLOCK_LENGTH);
         low = 0;
         high = blockLen / INDEX_BLOCK_LENGTH;
 
@@ -488,7 +494,141 @@ class IP2Region {
         _innerAsyncWhile();
     }
 
-    //#endregion
+    /**
+     * Sync of MemorySearch.
+     * @param {String} ip 
+     */
+    memorySearchSync(ip) {
+
+        ip = _ip2long(ip);
+
+        if (this.totalInMemoryBytes === null) {
+
+            this.totalInMemoryBytes = Buffer.alloc(this.totalInMemoryBytesSize);
+            fs.readSync(this.dbFd, this.totalInMemoryBytes, 0, this.totalInMemoryBytesSize, 0);
+
+            this.firstIndexPtr = _getLong(this.totalInMemoryBytes, 0);
+            this.lastIndexPtr = _getLong(this.totalInMemoryBytes, 4);
+            this.totalBlocks = ((this.lastIndexPtr - this.firstIndexPtr) / INDEX_BLOCK_LENGTH) | 0 + 1;
+        }
+
+        let l = 0, h = this.totalBlocks;
+        let sip = 0;
+        let m = 0, p = 0;
+
+        while (l <= h) {
+            m = (l + h) >> 1;
+            p = (this.firstIndexPtr + m * INDEX_BLOCK_LENGTH) | 0;
+
+            sip = _getLong(this.totalInMemoryBytes, p);
+
+            if (ip < sip) {
+                h = m - 1;
+            }
+            else {
+                sip = _getLong(this.totalInMemoryBytes, p + 4);
+                if (ip > sip) {
+                    l = m + 1;
+                }
+                else {
+                    sip = _getLong(this.totalInMemoryBytes, p + 8);
+                    //not matched
+                    if (sip === 0) return null;
+
+                    //get the data
+                    let dataLen = ((sip >> 24) & 0xFF) | 0;
+                    let dataPtr = ((sip & 0x00FFFFFF)) | 0;
+                    let city = _getLong(this.totalInMemoryBytes, dataPtr);
+
+                    const bufArray = new Array();
+                    for (let startPos = dataPtr + 4, i = startPos; i < startPos + dataLen - 4; ++i) {
+                        bufArray.push(this.totalInMemoryBytes[i]);
+                    }
+                    const region = Buffer.from(bufArray, 0).toString();
+                    return { city, region };
+                }
+            }
+        }
+    }
+
+    /**
+     * Async of MemorySearch.
+     * @param {String} ip 
+     */
+    memorySearch(ip, callBack) {
+
+        let _ip = _ip2long(ip);
+        let l = 0, h = this.totalBlocks;
+        let sip = 0;
+        let m = 0, p = 0;
+        let self = this;
+
+        function _innerMemorySearchLoop() {
+
+            if (l <= h) {
+
+                m = (l + h) >> 1;
+                p = (self.firstIndexPtr + m * INDEX_BLOCK_LENGTH) | 0;
+
+                sip = _getLong(self.totalInMemoryBytes, p);
+
+                if (_ip < sip) {
+                    h = m - 1;
+                    setImmediate(_innerMemorySearchLoop);
+                }
+                else {
+                    sip = _getLong(self.totalInMemoryBytes, p + 4);
+
+                    if (_ip > sip) {
+                        l = m + 1;
+                        setImmediate(_innerMemorySearchLoop);
+                    }
+                    else {
+                        sip = _getLong(self.totalInMemoryBytes, p + 8);
+                        //not matched
+                        if (sip === 0) return callBack(null, null);
+
+                        //get the data
+                        let dataLen = ((sip >> 24) & 0xFF) | 0;
+                        let dataPtr = ((sip & 0x00FFFFFF)) | 0;
+                        let city = _getLong(self.totalInMemoryBytes, dataPtr);
+
+                        const bufArray = new Array();
+                        for (let startPos = dataPtr + 4, i = startPos; i < startPos + dataLen - 4; ++i) {
+                            bufArray.push(self.totalInMemoryBytes[i]);
+                        }
+                        const region = Buffer.from(bufArray).toString();
+                        callBack(null, { city, region });
+                    }
+                }
+            }
+            else {
+                callBack(null, null);
+            }
+        }
+
+        if (this.totalInMemoryBytes === null) {
+
+            this.totalInMemoryBytes = Buffer.alloc(this.totalInMemoryBytesSize);
+
+            fs.read(this.dbFd, this.totalInMemoryBytes, 0, this.totalInMemoryBytesSize, 0, (err) => {
+                if (err) {
+                    callBack(err, null);
+                }
+                else {
+                    this.firstIndexPtr = _getLong(this.totalInMemoryBytes, 0);
+                    this.lastIndexPtr = _getLong(this.totalInMemoryBytes, 4);
+                    this.totalBlocks = ((this.lastIndexPtr - this.firstIndexPtr) / INDEX_BLOCK_LENGTH) | 0 + 1;
+
+                    _innerMemorySearchLoop();
+                }
+            });
+        }
+        else {
+            _innerMemorySearchLoop();
+        }
+    }
 }
+//#endregion
 
 module.exports = IP2Region;

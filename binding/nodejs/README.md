@@ -1,5 +1,35 @@
 # nodejs 客户端
 
+官方维护的 ip2region, 每次数据更新后会更新到 npm 
+
+
+## Install
+
+**node 版本 : >= 6.0.0**
+
+```
+npm install node-ip2region --save 
+```
+
+## 已测试通过的 node 版本列表
+
+```
+6.0.0
+6.11.2
+8.0.0
+10.0.0
+12.0.0
+```
+
+
+## Example
+
+```
+const searcher = require('node-ip2region').create();
+searcher.btreeSearchSync('xxx.xxx.xxx.xxx')
+// => { city: 2163, region: '中国|0|广东省|深圳市|联通' }
+```
+
 ## 实现情况：
 
 现已实现同步和异步查询，具体使用方法可以参考 `nodejs\tests\constructorTest.spec.js` 和`nodejs\tests\createTest.spec.js`。
@@ -9,7 +39,7 @@
 你可以任意修改代码，但必须确保通过全部的单元测试。要保证通过全部的单元测试，请在 Nodejs 控制台下切换到 nodejs 目录：
 
 1）在此之前，请先运行 `npm i` 确保你已经安装了各类初始化第三方工具。
-2）然后运行 `npm run coverage` 确保你的代码可以通过全部测试（必要时可以添加测试），同时保证代码覆盖率都是绿色（80%以上）。
+2）然后运行 `npm run coverage` 确保你的代码可以通过全部测试（必要时可以添加测试）。
 
 ```bash
 D:\Projects\ip2region\binding\nodejs>npm run coverage
@@ -53,4 +83,21 @@ Tests:       14 passed, 14 total
 Snapshots:   168 passed, 168 total
 Time:        1.792s
 Ran all test suites.
+```
+3）使用benchmark测试，结果如下：
+```bash
+D:\Projects\ip2region\binding\nodejs>node D:\Projects\ip2region\binding\nodejs\tests\benchmarkTests\main.js
+MemorySearchSync x 55,969 ops/sec ±2.22% (90 runs sampled)
+BinarySearchSync x 610 ops/sec ±5.41% (77 runs sampled)
+BtreeSearchSync x 2,439 ops/sec ±6.93% (69 runs sampled)
+MemorySearch x 2,924 ops/sec ±0.67% (85 runs sampled)
+BinarySearch x 154 ops/sec ±2.20% (69 runs sampled)
+BtreeSearch x 294 ops/sec ±2.58% (76 runs sampled)
+Rand    Name                Time (in milliseconds)
+1       MemorySearchSync    0.018
+2       MemorySearch        0.342
+3       BtreeSearchSync     0.410
+4       BinarySearchSync    1.639
+5       BtreeSearch         3.407
+6       BinarySearch        6.497
 ```

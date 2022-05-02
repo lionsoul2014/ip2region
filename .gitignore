@@ -3,6 +3,9 @@
 *.o
 *.pyc
 *~
+*.log
+*.la
+*.so
 META-INF/
 
 # Binary Files #
@@ -37,3 +40,7 @@ target
 /binding/c#/**/packages
 /binding/c#/**/bin
 /binding/c#/**/obj
+
+# Nodejs
+/binding/nodejs/tests/unitTests/__snapshots__
+/binding/nodejs/coverage

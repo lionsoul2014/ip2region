@@ -1,8 +1,8 @@
 /**
  * default ip2region implementation
  *
- * @see        #ip2region.h
- * @author    chenxin<chenxin619315@gmail.com>
+ * @see     #ip2region.h
+ * @author  chenxin<chenxin619315@gmail.com>
  * @date    2015-10-30
 */
 
@@ -13,9 +13,9 @@
 /**
  * create a new ip2region object
  *
- * @param    dbFile path
+ * @param   dbFile path
 */
-IP2R_API uint_t ip2region_create(ip2region_t ip2rObj, char *dbFile)
+IP2R_API uint_t ip2region_create(ip2region_t ip2rObj, const char *dbFile)
 {
     memset(ip2rObj, 0x00, sizeof(ip2region_entry));
     ip2rObj->headerLen = 0;
@@ -51,22 +51,27 @@ IP2R_API uint_t ip2region_create(ip2region_t ip2rObj, char *dbFile)
 /**
  * destroy the specifield ip2region object
  *
- * @param    ip2region_t
+ * @param   ip2region_t
 */
 IP2R_API uint_t ip2region_destroy(ip2region_t ip2rObj)
 {
-    IP2R_FREE(ip2rObj->HeaderSip);
-    ip2rObj->HeaderSip = NULL;
-    IP2R_FREE(ip2rObj->HeaderPtr);
-    ip2rObj->HeaderPtr = NULL;
+    if ( ip2rObj->HeaderSip != NULL ) {
+        IP2R_FREE(ip2rObj->HeaderSip);
+        ip2rObj->HeaderSip = NULL;
+    }
 
-    //close the db file resource
+    if ( ip2rObj->HeaderPtr != NULL ) {
+        IP2R_FREE(ip2rObj->HeaderPtr);
+        ip2rObj->HeaderPtr = NULL;
+    }
+
+    // close the db file resource
     if ( ip2rObj->dbHandler != NULL ) {
         fclose(ip2rObj->dbHandler);
         ip2rObj->dbHandler = NULL;
     }
 
-    //free the db binary string
+    // free the db binary string
     if ( ip2rObj->dbBinStr != NULL ) {
         IP2R_FREE(ip2rObj->dbBinStr);
         ip2rObj->dbBinStr = NULL;
@@ -149,7 +154,7 @@ IP2R_API uint_t ip2region_memory_search(ip2region_t ip2rObj, uint_t ip, databloc
     return 1;
 }
 
-IP2R_API uint_t ip2region_memory_search_string(ip2region_t ip2rObj, char *ip, datablock_t datablock)
+IP2R_API uint_t ip2region_memory_search_string(ip2region_t ip2rObj, const char *ip, datablock_t datablock)
 {
     return ip2region_memory_search(ip2rObj, ip2long(ip), datablock);
 }
@@ -157,10 +162,10 @@ IP2R_API uint_t ip2region_memory_search_string(ip2region_t ip2rObj, char *ip, da
 /**
  * get the region associated with the specifield ip address with binary search algorithm
  *
- * @param    ip2rObj
- * @param    ip
- * @param    datablock
- * @return    uint_t
+ * @param   ip2rObj
+ * @param   ip
+ * @param   datablock
+ * @return  uint_t
 */
 IP2R_API uint_t ip2region_binary_search(ip2region_t ip2rObj, uint_t ip, datablock_t datablock)
 {
@@ -226,7 +231,7 @@ IP2R_API uint_t ip2region_binary_search(ip2region_t ip2rObj, uint_t ip, databloc
     return 1;
 }
 
-IP2R_API uint_t ip2region_binary_search_string(ip2region_t ip2rObj, char *ip, datablock_t datablock)
+IP2R_API uint_t ip2region_binary_search_string(ip2region_t ip2rObj, const char *ip, datablock_t datablock)
 {
     return ip2region_binary_search(ip2rObj, ip2long(ip), datablock);
 }
@@ -234,10 +239,10 @@ IP2R_API uint_t ip2region_binary_search_string(ip2region_t ip2rObj, char *ip, da
 /**
  * get the region associated with the specifield ip address with b-tree algorithm
  *
- * @param    ip2rObj
- * @param    ip
- * @param    datablock
- * @return    uint_t
+ * @param   ip2rObj
+ * @param   ip
+ * @param   datablock
+ * @return  uint_t
 */
 IP2R_API uint_t ip2region_btree_search(ip2region_t ip2rObj, uint_t ip, datablock_t datablock)
 {
@@ -355,7 +360,7 @@ IP2R_API uint_t ip2region_btree_search(ip2region_t ip2rObj, uint_t ip, datablock
     return 1;
 }
 
-IP2R_API uint_t ip2region_btree_search_string(ip2region_t ip2rObj, char *ip, datablock_t datablock)
+IP2R_API uint_t ip2region_btree_search_string(ip2region_t ip2rObj, const char *ip, datablock_t datablock)
 {
     return ip2region_btree_search(ip2rObj, ip2long(ip), datablock);
 }
@@ -363,11 +368,11 @@ IP2R_API uint_t ip2region_btree_search_string(ip2region_t ip2rObj, char *ip, dat
 /**
  * get a unsinged long(4bytes) from a specifield buffer start from the specifield offset
  *
- * @param    buffer
- * @param    offset
- * @return    uint_t
+ * @param   buffer
+ * @param   offset
+ * @return  uint_t
 */
-IP2R_API uint_t getUnsignedInt(char *buffer, int offset)
+IP2R_API uint_t getUnsignedInt(const char *buffer, int offset)
 {
     return (
         ((buffer[offset  ]) & 0x000000FF) | 
@@ -380,22 +385,28 @@ IP2R_API uint_t getUnsignedInt(char *buffer, int offset)
 /**
  * string ip to long
  *
- * @param    ip
- * @return    uint_t
+ * @param   ip
+ * @return  uint_t
 */
-IP2R_API uint_t ip2long(char *ip)
+IP2R_API uint_t ip2long(const char *ip)
 {
     int i = 0, p = 24;
-    char buffer[4], *cs = ip;
+    char buffer[4];
+    const char *cs = ip;
     uint_t ipval = 0;
 
     while ( *cs != '\0' ) {
+        if ( *cs == ' ' ) {
+            cs++;
+            continue;
+        }
+
+       if ( i > 3 ) {
+            ipval = 0;
+            break;
+        }
         if ( *cs == '.' ) {
             //single part length limit
-            if ( i > 3 ) {
-                ipval = 0;
-                break;
-            }
 
             if ( p < 0 ) break;
             buffer[i] = '\0';
@@ -420,9 +431,9 @@ IP2R_API uint_t ip2long(char *ip)
 /**
  * long to string ip
  *
- * @param    ip
- * @param    buffer
- * @return    uint_t(1 for success and 0 for failed)
+ * @param   ip
+ * @param   buffer
+ * @return  uint_t(1 for success and 0 for failed)
 */
 IP2R_API uint_t long2ip(uint_t ip, char *buffer)
 {

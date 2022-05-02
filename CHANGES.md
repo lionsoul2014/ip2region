@@ -1,3 +1,26 @@
+### 1.8
+1. 数据升级至2018/12/31的版本，国外的也增加了大量的城市数据。
+2. Java的binding的Searcher类增加了如下的接口和实现：
+```java
+DbSearcher(DbConfig dbConfig, string dbBinStr);
+```
+
+maven坐标：
+```xml
+<dependency>
+    <groupId>org.lionsoul</groupId>
+    <artifactId>ip2region</artifactId>
+    <version>1.7.2</version>
+</dependency>
+```
+
+3. Javascript的pacakge上传到了npm。
+4. 增加纯lua实现的lua binding (lua 5.2版本依赖bit模块，对5.3的支持将使用lua自带的bit操作)。
+5. 增加C实现的lua_c binding (和c的性能等同，建议使用)。
+6. 优化部分binding的demo运行和使用文档。
+7. 修复python binding的benchmark的部分错误。
+
+
 ### 1.2.4
 1, 花了近两周的时间重写了数据的升级算法，再次提高准确率，升级过程如下（此处应该有掌声）：
 
