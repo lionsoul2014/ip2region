@@ -1,6 +1,10 @@
 ### 数据更新方式
 
-### 数据更新视频录制，请关注我的微信视频号。
+### 数据更新视频录制:
+```
+part1: https://www.bilibili.com/video/BV1934y1E7Q5/
+part2: https://www.bilibili.com/video/BV1pF411j7Aw/
+```
 
 
 ### 1、选择一个数据源
