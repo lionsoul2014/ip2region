@@ -171,3 +171,4 @@ ip2region重点在于<b>研究IP数据的存储设计和各种语言的查询实
 ### 技术交流
 1. 数据库文件的结构和原理请阅读 @冬芽 的blog：[“ip2region数据库文件的结构和原理”](https://github.com/dongyado/dongyado.github.io/blob/master/_posts/2016-08-18-structure-of-ip2region-database-file.md)
 2. ip2region交流分享，微信：lionsoul2014(请备注ip2region)，QQ：1187582057(很少关注)
+3. 基于检测算法的数据更新方式视频分享：[数据更新实现视频分享part1](https://www.bilibili.com/video/BV1934y1E7Q5/)，[数据更新实现视频分享part2](https://www.bilibili.com/video/BV1pF411j7Aw/)
