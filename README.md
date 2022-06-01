@@ -180,8 +180,8 @@ researching IP data storage design and query implementation in various languages
 ### Technical Communication
 1. the structure and principle of the database file, please read @冬芽's blog:
 
-- [ip2region database file structure and principle](https://github.com/dongyado/dongyado.github.io/blob/master/_posts/2016-08-18-structure-of-ip2region-database-file.md) 
-- [ip2region data structure design and implementation video share](https://www.bilibili.com/video/BV1wv4y1N7SD)
+- [ip2region Database File Structure and Principle](https://github.com/dongyado/dongyado.github.io/blob/master/_posts/2016-08-18-structure-of-ip2region-database-file.md) 
+- [ip2region Data Structure Design and Implementation Video share](https://www.bilibili.com/video/BV1wv4y1N7SD)
 
 2. ip2region exchange and sharing
 
