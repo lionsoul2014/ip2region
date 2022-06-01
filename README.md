@@ -1,19 +1,26 @@
 # What is Ip2region?
 
-ip2region - offline IP address location library with 99.9% accuracy, 0.0x millisecond queries, ip2region.db database is only a few MB, provides query bindings for java,php,c,python,nodejs,golang,c# and three query algorithms for Binary,B-tree,memory.
-
-
-
-
+ip2region - offline IP address location library with 99.9% accuracy, 0.0x millisecond queries, ip2region.db database is only a few MB, provides query bindings for 
+```
+java|php|c|python|nodejs|golang|c#
+```
+and three query algorithms for 
+```
+Binary|B-tree|memory
+```
 # Ip2region features
 
 ### 99.9% accuracy rate
 
-The data is aggregated from some well-known ip to place name lookup providers, these are their official accuracy rates, tested to be actually a bit more accurate than the classic pure IP location. <br
-The data of ip2region is aggregated from the open API or data of the following service providers (2 to 4 requests per second for the upgrade program): <br />
-01, &gt;80%, Taobao IP address database, [http://ip.taobao.com/](http://ip.taobao.com/) <br />
-02, ≈10%, GeoIP, [https://geoip.com/](https://geoip.com/) <br />
-03, ≈2%, Pure IP Library, [http://www.cz88.net/](http://www.cz88.net/) <br />
+The data is aggregated from some well-known ip to place name lookup providers, these are their official accuracy rates, tested to be actually a bit more accurate than the classic pure IP location. 
+
+The data of ip2region is aggregated from the open API or data of the following service providers (2 to 4 requests per second for the upgrade program): 
+
+
+01. &gt;80% - [Taobao IP address database](http://ip.taobao.com/) <br />
+02. ≈10% - [GeoIP](https://geoip.com/) <br />
+03. ≈2% - [Pure IP Library](http://www.cz88.net/) <br />
+
 <b>Remarks:</b> If none of the above open APIs or data give open data ip2region will stop the update service for the data.
 
 
@@ -45,8 +52,10 @@ Any client b-tree is faster than binary algorithm, of course memory algorithm is
 
 ### Multi-query client support
 
-Clients already integrated are: java, C#, php, c, python, nodejs, php extensions (php5 and php7), golang, rust, lua, lua_c, nginx.
-
+Clients already integrated are:
+```
+java, C#, php, c, python, nodejs, php extensions (php5 and php7), golang, rust, lua, lua_c, nginx.
+```
 binding | description | development status | binary query time consuming | b-tree query time consuming | memory query time consuming
 :-: | :-: | :-: | :-: | :-: | :-:
 [c](binding/c) | ANSC c binding | completed | 0.0x ms | 0.0x ms | 0.00x ms
@@ -76,7 +85,7 @@ gcc -g -O2 testSearcher.c ip2region.c
 ```
 
 You will see the following cli interface.
-```shell
+```
 initializing B-tree ...
 +----------------------------------+
 | ip2region test script |
@@ -112,7 +121,7 @@ npm install node-ip2region --save
 
 ### nuget install
 ```shell
-Install-Package IP2Region
+NuGet install IP2Region
 ```
 
 ### php composer
@@ -140,8 +149,7 @@ Starting from version 1.8, ip2region has open sourced the java implementation of
 Starting with ip2region version 1.2.2 there is an executable jar file dbMaker-{version}.jar committed inside, which is used to do this.
 
 1. make sure you have the java environment installed (kids who don't play with Java will Google themselves to find a pull, temporary use, a matter of minutes)
-2. cd to ${ip2region_root}/maker/java and run the following command.
-
+2. cd to `${ip2region_root}/maker/java` and run the following command.
 ```shell
 java -jar dbMaker-{version}.jar -src text data file -region geographic csv file [-dst directory of the generated ip2region.db file]
 
@@ -166,10 +174,21 @@ java -jar dbMaker-1.2.2.jar -src . /data/ip.merge.txt -region . /data/global_reg
 # Related remarks
 
 ### Declaration
-ip2region focuses on <b>researching IP data storage design and query implementation in various languages</b>, there is no original IP data support, please refer to the description above for data sources, upgrading data requires a lot of IP support and will cause a certain amount of request pressure on the original platform, this project does not guarantee timely data updates, there is no and will not be a commercial version, you can use You can use the custom data import ip2region for custom query implementation.
+ip2region focuses on <b>
+researching IP data storage design and query implementation in various languages</b>, there is no original IP data support, please refer to the description above for data sources, upgrading data requires a lot of IP support and will cause a certain amount of request pressure on the original platform, this project does not guarantee timely data updates, there is no and will not be a commercial version, you can use You can use the custom data import ip2region for custom query implementation.
 
 ### Technical Communication
-1. the structure and principle of the database file please read @冬芽's blog: ["ip2region database file structure and principle"](https://github.com/dongyado/dongyado.github.io/blob/ master/_posts/2016-08-18-structure-of-ip2region-database-file.md), [ip2region data structure design and implementation video share](https://www.bilibili.com/video/ BV1wv4y1N7SD)
-2. ip2region exchange and sharing, WeChat: lionsoul2014 (please note ip2region), QQ: 1187582057 (little attention)
-3. based on the detection algorithm of the data update way video sharing: [data update to achieve video sharing part1](https://www.bilibili.com/video/BV1934y1E7Q5/), [data update to achieve video sharing part2](https://www.bilibili.com/ video/BV1pF411j7Aw/)
-Translated with DeepL https://www.deepl.com/app/?utm_medium=android-share
+1. the structure and principle of the database file, please read @冬芽's blog:
+
+- [ip2region database file structure and principle](https://github.com/dongyado/dongyado.github.io/blob/master/_posts/2016-08-18-structure-of-ip2region-database-file.md) 
+- [ip2region data structure design and implementation video share](https://www.bilibili.com/video/BV1wv4y1N7SD)
+
+2. ip2region exchange and sharing
+
+- WeChat: lionsoul2014 (please note ip2region)
+- QQ: 1187582057 (little attention)
+
+3. based on the detection algorithm of the data update way video sharing: 
+
+- [Data Update to Achieve Video Sharing Part1](https://www.bilibili.com/video/BV1934y1E7Q5/)
+- [Data Update to Achieve Video Sharing part2](https://www.bilibili.com/video/BV1pF411j7Aw/)
