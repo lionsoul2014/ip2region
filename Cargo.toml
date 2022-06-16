@@ -1,2 +1,0 @@
-[workspace]
-members = ["binding/rust", "binding/rust/example"]
