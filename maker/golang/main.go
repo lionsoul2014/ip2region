@@ -15,12 +15,12 @@ import (
 )
 
 func printHelp() {
-	fmt.Printf("ip2region dbmaker 2.0\n")
-	fmt.Printf("dbmaker [command] [command options]\n")
+	fmt.Printf("ip2region xdb maker\n")
+	fmt.Printf("%s [command] [command options]\n", os.Args[0])
 	fmt.Printf("Command: \n")
 	fmt.Printf("  gen      generate the binary db file\n")
-	fmt.Printf("  search   binary db search test\n")
-	fmt.Printf("  bench    binary db bench test\n")
+	fmt.Printf("  search   binary xdb search test\n")
+	fmt.Printf("  bench    binary xdb bench test\n")
 }
 
 func genDb() {
@@ -58,10 +58,10 @@ func genDb() {
 	}
 
 	if srcFile == "" || dstFile == "" {
-		fmt.Printf("dbmaker gen [command options]\n")
+		fmt.Printf("%s gen [command options]\n", os.Args[0])
 		fmt.Printf("options:\n")
 		fmt.Printf(" --src string    source ip text file path\n")
-		fmt.Printf(" --dst string    destination binary db file path\n")
+		fmt.Printf(" --dst string    destination binary xdb file path\n")
 		return
 	}
 
@@ -116,9 +116,9 @@ func testSearch() {
 	}
 
 	if dbFile == "" {
-		fmt.Printf("dbmaker test [command options]\n")
+		fmt.Printf("%s search [command options]\n", os.Args[0])
 		fmt.Printf("options:\n")
-		fmt.Printf(" --db string    ip2region binary db file path\n")
+		fmt.Printf(" --db string    ip2region binary xdb file path\n")
 		return
 	}
 
@@ -131,7 +131,7 @@ func testSearch() {
 		fmt.Printf("test program exited, thanks for trying\n")
 	}()
 
-	fmt.Println(`ip2region 2.0 test program, commands:
+	fmt.Println(`ip2region xdb search test program, commands:
 loadIndex : load the vector index for search speedup.
 clearIndex: clear the vector index.
 quit      : exit the test program`)
@@ -219,7 +219,7 @@ func testBench() {
 	}
 
 	if dbFile == "" || srcFile == "" {
-		fmt.Printf("dbmaker bench [command options]\n")
+		fmt.Printf("%s bench [command options]\n", os.Args[0])
 		fmt.Printf("options:\n")
 		fmt.Printf(" --db string            ip2region binary xdb file path\n")
 		fmt.Printf(" --src string           source ip text file path\n")
