@@ -12,8 +12,8 @@ import (
 )
 
 func printHelp() {
-	fmt.Printf("ip2region searcher 2.0\n")
-	fmt.Printf("searcher [command] [command options]\n")
+	fmt.Printf("ip2region xdb searcher\n")
+	fmt.Printf("%s [command] [command options]\n", os.Args[0])
 	fmt.Printf("Command: \n")
 	fmt.Printf("  search    search input test\n")
 	fmt.Printf("  bench     search bench test\n")
@@ -45,7 +45,7 @@ func testSearch() {
 	}
 
 	if dbFile == "" {
-		fmt.Printf("dbmaker test [command options]\n")
+		fmt.Printf("%s search [command options]\n", os.Args[0])
 		fmt.Printf("options:\n")
 		fmt.Printf(" --db string    ip2region binary xdb file path\n")
 		return
@@ -66,7 +66,7 @@ func testSearch() {
 		fmt.Printf("searcher test program exited, thanks for trying\n")
 	}()
 
-	fmt.Println("ip2region 2.0 searcher test program, type `quit` to exit")
+	fmt.Println("ip2region xdb searcher test program, type `quit` to exit")
 	reader := bufio.NewReader(os.Stdin)
 	for {
 		fmt.Print("ip2region>> ")
@@ -122,7 +122,7 @@ func testBench() {
 	}
 
 	if dbFile == "" || srcFile == "" {
-		fmt.Printf("searcher bench [command options]\n")
+		fmt.Printf("%s bench [command options]\n", os.Args[0])
 		fmt.Printf("options:\n")
 		fmt.Printf(" --db string     ip2region binary xdb file path\n")
 		fmt.Printf(" --src string    source ip text file path\n")

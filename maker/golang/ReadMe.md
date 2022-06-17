@@ -14,7 +14,7 @@ go build -o xdb_maker
 通过 `xdb_maker gen` 命令生成 ip2region.xdb 二进制文件:
 ```
 ➜  golang git:(v2.0_xdb) ✗ ./xdb_maker gen
-xdb_maker gen [command options]
+./xdb_maker gen [command options]
 options:
  --src string    source ip text file path
  --dst string    destination binary xdb file path
@@ -33,7 +33,8 @@ options:
 
 通过 `xdb_maker search` 命令来测试查询输入的 ip：
 ```
-xdb_maker search [command options]
+➜  golang git:(v2.0_xdb) ✗ ./xdb_maker search
+./xdb_maker search [command options]
 options:
  --db string    ip2region binary xdb file path
 ```
@@ -61,7 +62,7 @@ ip2region>>
 如果你自主生成了 xdb 文件，请确保运行如下的 `xdb_maker bench` 命令来确保生成的的 xdb 文件的正确性：
 ```
 ➜  golang git:(v2.0_xdb) ✗ ./xdb_maker bench
-xdb_maker bench [command options]
+./xdb_maker bench [command options]
 options:
  --db string            ip2region binary xdb file path
  --src string           source ip text file path
@@ -81,5 +82,5 @@ try to bench segment: `224.0.0.0|255.255.255.255|0|0|0|内网IP|内网IP`
 |-try to bench ip '255.255.255.255' ...  --[Ok]
 Bench finished, {count: 3417955, failed: 0, took: 52.200116397s}
 ```
-*请注意 bench 测试使用的 `src` 文件需要是对应的生成 ip2region.xdb 的源文件*。
+*请注意 bench 测试使用的 `src` 文件需要是对应的生成 ip2region.xdb 的源文件相同*。
 如果运行过程中有错误会立马停止运行，也可以执行 --ignore-error=true 参数来忽略错误，在最后看 failed 的统计结果。
