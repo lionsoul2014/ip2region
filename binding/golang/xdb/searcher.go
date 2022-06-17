@@ -6,7 +6,7 @@
 // ip2region database v2.0 searcher.
 // @Note this is a Not thread safe implementation.
 
-package ip2region
+package xdb
 
 import (
 	"encoding/binary"
@@ -100,7 +100,17 @@ func (s *Searcher) ClearVectorIndex() {
 	s.vectorIndex = nil
 }
 
-// Search find the region for the specified ip address
+// SearchByStr find the region for the specified ip string
+func (s *Searcher) SearchByStr(str string) (string, error) {
+	ip, err := CheckIP(str)
+	if err != nil {
+		return "", err
+	}
+
+	return s.Search(ip)
+}
+
+// Search find the region for the specified long ip
 func (s *Searcher) Search(ip uint32) (string, error) {
 	// locate the segment index block based on the vector index
 	var vIndex *VectorIndexBlock
