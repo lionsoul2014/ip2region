@@ -4,7 +4,6 @@
 通过如下方式编译得到 dbmaker 可执行程序:
 ```
 # 切换到golang maker 根目录
-cd ./
 go build
 ```
 编译成功后会在当前目录生成一个 dbmaker 的可执行文件
