@@ -38,6 +38,11 @@ META-INF/
 
 /binding/c/testSearcher
 
+# golang
+/binding/golang/searcher
+/binding/golang/dbsearcher
+/binding/golang/golang
+
 # rust
 Cargo.lock
 target
