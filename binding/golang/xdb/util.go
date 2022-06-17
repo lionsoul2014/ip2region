@@ -1,4 +1,4 @@
-package ip2region
+package xdb
 
 import (
 	"encoding/binary"

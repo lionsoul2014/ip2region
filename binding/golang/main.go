@@ -3,7 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"github.com/lionsoul2014/ip2region/binding/golang/ip2region"
+	"github.com/lionsoul2014/ip2region/binding/golang/xdb"
 	"github.com/mitchellh/go-homedir"
 	"log"
 	"os"
@@ -57,7 +57,7 @@ func testSearch() {
 		return
 	}
 
-	searcher, err := ip2region.New(dbPath)
+	searcher, err := xdb.New(dbPath)
 	if err != nil {
 		log.Fatalf("failed to create searcher: %s", err.Error())
 	}
@@ -84,14 +84,8 @@ func testSearch() {
 			break
 		}
 
-		ip, err := ip2region.CheckIP(line)
-		if err != nil {
-			fmt.Printf("invalid ip address `%s`\n", line)
-			continue
-		}
-
 		tStart := time.Now()
-		region, err := searcher.Search(ip)
+		region, err := searcher.SearchByStr(line)
 		if err != nil {
 			fmt.Printf("\x1b[0;31merr:%s\x1b[0m\n", err.Error())
 		} else {
@@ -141,7 +135,7 @@ func testBench() {
 		return
 	}
 
-	searcher, err := ip2region.New(dbPath)
+	searcher, err := xdb.New(dbPath)
 	defer func() {
 		searcher.Close()
 	}()
@@ -163,13 +157,13 @@ func testBench() {
 			return
 		}
 
-		sip, err := ip2region.CheckIP(ps[0])
+		sip, err := xdb.CheckIP(ps[0])
 		if err != nil {
 			fmt.Printf("check start ip `%s`: %s\n", ps[0], err)
 			return
 		}
 
-		eip, err := ip2region.CheckIP(ps[1])
+		eip, err := xdb.CheckIP(ps[1])
 		if err != nil {
 			fmt.Printf("check end ip `%s`: %s\n", ps[1], err)
 			return
@@ -180,17 +174,17 @@ func testBench() {
 			return
 		}
 
-		mip := ip2region.MidIP(sip, eip)
-		for _, ip := range []uint32{sip, ip2region.MidIP(sip, mip), mip, ip2region.MidIP(mip, eip), eip} {
+		mip := xdb.MidIP(sip, eip)
+		for _, ip := range []uint32{sip, xdb.MidIP(sip, mip), mip, xdb.MidIP(mip, eip), eip} {
 			region, err := searcher.Search(ip)
 			if err != nil {
-				fmt.Printf("failed to search ip '%s': %s\n", ip2region.Long2IP(ip), err)
+				fmt.Printf("failed to search ip '%s': %s\n", xdb.Long2IP(ip), err)
 				return
 			}
 
 			// check the region info
 			if region != ps[2] {
-				fmt.Printf("failed Search(%s) with (%s != %s)\n", ip2region.Long2IP(ip), region, ps[2])
+				fmt.Printf("failed Search(%s) with (%s != %s)\n", xdb.Long2IP(ip), region, ps[2])
 				return
 			}
 
