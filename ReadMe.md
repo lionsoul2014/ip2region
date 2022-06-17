@@ -1,6 +1,6 @@
 # Ip2region 是什么
 
-ip2region v2.0 - 是一个离线IP地址定位库和IP定位数据管理框架，10微秒级别的查询效率，提供了众多主流编程语言的xdb数据生成和查询客户端实现。v1.0 旧版本: [v1.0版本入口](v1.0)
+ip2region v2.0 - 是一个离线IP地址定位库和IP定位数据管理框架，10微秒级别的查询效率，提供了众多主流编程语言的 `xdb` 数据生成和查询客户端实现。v1.0 旧版本: [v1.0版本入口](v1.0)
 
 
 
@@ -32,7 +32,7 @@ v2.0 格式的 `xdb` 支持亿级别的 IP 数据段行数，region 信息也可
 
 使用文档和测试程序请参考各个查询客户端下的 ReadMe 介绍，全部查询 binding 实现情况如下：
 
-| 编程语言 | 描述 | 开发状态 | 作者 |
+| 编程语言 | 描述 | 开发状态 | 贡献者 |
 | :--- | :--- | :--- | :--- |
 | [golang](binding/golang) | golang 查询客户端实现 | 已完成 | [Lion](https://github.com/lionsoul2014) |
 | [php](binding/php) | php 查询客户端实现 | 开发中... | [Lion](https://github.com/lionsoul2014) |
@@ -54,7 +54,7 @@ v2.0 格式的 `xdb` 支持亿级别的 IP 数据段行数，region 信息也可
 
 使用文档和测试程序请参考不同生成程序下的 ReadMe 介绍，全部生成 maker 实现情况如下：
 
-| 编程语言 | 描述 | 开发状态 | 作者 |
+| 编程语言 | 描述 | 开发状态 | 贡献者 |
 | :--- | :--- | :--- | :--- |
 | [golang](maker/golang) | golang xdb 生成程序实现 | 已完成 | [Lion](https://github.com/lionsoul2014) |
 | [java](maker/java) | java xdb 生成程序实现 | 开发中... | [Lion](https://github.com/lionsoul2014) |
