@@ -47,7 +47,7 @@
 // +------------+-----------+---------------+------------+
 //  start ip 	  end ip	  data length     data ptr
 
-package main
+package xdb
 
 import (
 	"bufio"

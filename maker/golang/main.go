@@ -7,6 +7,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"github.com/lionsoul2014/ip2region/maker/golang/xdb"
 	"log"
 	"os"
 	"strings"
@@ -25,7 +26,7 @@ func printHelp() {
 func genDb() {
 	var err error
 	var srcFile, dstFile = "", ""
-	var indexPolicy = VectorIndexPolicy
+	var indexPolicy = xdb.VectorIndexPolicy
 	for i := 2; i < len(os.Args); i++ {
 		r := os.Args[i]
 		if len(r) < 5 {
@@ -48,7 +49,7 @@ func genDb() {
 		case "dst":
 			dstFile = r[eIdx+1:]
 		case "index":
-			indexPolicy, err = IndexPolicyFromString(r[eIdx+1:])
+			indexPolicy, err = xdb.IndexPolicyFromString(r[eIdx+1:])
 			if err != nil {
 				fmt.Printf("parse policy: %s", err.Error())
 				return
@@ -66,7 +67,7 @@ func genDb() {
 
 	// make the binary file
 	tStart := time.Now()
-	maker, err := NewMaker(indexPolicy, srcFile, dstFile)
+	maker, err := xdb.NewMaker(indexPolicy, srcFile, dstFile)
 	if err != nil {
 		log.Fatalf("failed to create maker: %s", err)
 	}
@@ -121,7 +122,7 @@ func testSearch() {
 		return
 	}
 
-	searcher, err := NewSearcher(dbFile)
+	searcher, err := xdb.NewSearcher(dbFile)
 	if err != nil {
 		log.Fatalf("failed to create searcher: %s", err.Error())
 	}
@@ -163,7 +164,7 @@ quit      : exit the test program`)
 			break
 		}
 
-		ip, err := CheckIP(line)
+		ip, err := xdb.CheckIP(line)
 		if err != nil {
 			fmt.Printf("invalid ip address `%s`\n", line)
 			continue
@@ -226,7 +227,7 @@ func testBench() {
 		return
 	}
 
-	searcher, err := NewSearcher(dbFile)
+	searcher, err := xdb.NewSearcher(dbFile)
 	defer func() {
 		searcher.Close()
 	}()
@@ -248,13 +249,13 @@ func testBench() {
 			return
 		}
 
-		sip, err := CheckIP(ps[0])
+		sip, err := xdb.CheckIP(ps[0])
 		if err != nil {
 			fmt.Printf("check start ip `%s`: %s\n", ps[0], err)
 			return
 		}
 
-		eip, err := CheckIP(ps[1])
+		eip, err := xdb.CheckIP(ps[1])
 		if err != nil {
 			fmt.Printf("check end ip `%s`: %s\n", ps[1], err)
 			return
@@ -266,12 +267,12 @@ func testBench() {
 		}
 
 		fmt.Printf("try to bench segment: `%s`\n", l)
-		mip := MidIP(sip, eip)
-		for _, ip := range []uint32{sip, MidIP(sip, mip), mip, MidIP(mip, eip), eip} {
-			fmt.Printf("|-try to bench ip '%s' ... ", Long2IP(ip))
+		mip := xdb.MidIP(sip, eip)
+		for _, ip := range []uint32{sip, xdb.MidIP(sip, mip), mip, xdb.MidIP(mip, eip), eip} {
+			fmt.Printf("|-try to bench ip '%s' ... ", xdb.Long2IP(ip))
 			region, _, err := searcher.Search(ip)
 			if err != nil {
-				fmt.Printf("failed to search ip '%s': %s\n", Long2IP(ip), err)
+				fmt.Printf("failed to search ip '%s': %s\n", xdb.Long2IP(ip), err)
 				return
 			}
 
