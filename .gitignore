@@ -40,7 +40,7 @@ META-INF/
 
 # golang
 /binding/golang/searcher
-/binding/golang/dbsearcher
+/binding/golang/xdb_searcher
 /binding/golang/golang
 
 # rust
@@ -50,10 +50,10 @@ target
 
 # VS ignore cases
 /**/*.sln
-/v1.0//binding/c#/**/.vs/
-/v1.0//binding/c#/**/packages
-/v1.0//binding/c#/**/bin
-/v1.0//binding/c#/**/obj
+/v1.0/binding/c#/**/.vs/
+/v1.0/binding/c#/**/packages
+/v1.0/binding/c#/**/bin
+/v1.0/binding/c#/**/obj
 /binding/c#/**/.vs/
 /binding/c#/**/packages
 /binding/c#/**/bin
@@ -68,3 +68,5 @@ target
 # maker
 ## golang
 /maker/golang/dbmaker
+/maker/golang/xdb_maker
+/maker/golang/golang

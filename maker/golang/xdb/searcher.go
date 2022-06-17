@@ -8,7 +8,7 @@
 // please use the searcher in binding/golang for production use.
 // And this is a Not thread safe implementation.
 
-package main
+package xdb
 
 import (
 	"encoding/binary"
