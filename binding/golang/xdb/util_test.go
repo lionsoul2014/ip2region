@@ -23,6 +23,17 @@ func TestLoadContent(t *testing.T) {
 	buff, err := LoadContentFromFile("../../../data/ip2region.xdb")
 	if err != nil {
 		fmt.Printf("failed to load xdb content: %s\n", err)
+		return
+	}
+
+	fmt.Printf("buff length: %d\n", len(buff))
+}
+
+func TestLoadHeader(t *testing.T) {
+	buff, err := LoadHeaderFromFile("../../../data/ip2region.xdb")
+	if err != nil {
+		fmt.Printf("failed to load xdb header info: %s\n", err)
+		return
 	}
 
 	fmt.Printf("buff length: %d\n", len(buff))
