@@ -54,52 +54,6 @@ func (s *Searcher) Close() {
 	}
 }
 
-// LoadVectorIndex load and cache the vector index for search speedup.
-// this will take up VectorIndexRows x VectorIndexCols x VectorIndexSize bytes memory.
-func (s *Searcher) LoadVectorIndex() error {
-	// loaded already
-	if s.vectorIndex != nil {
-		return nil
-	}
-
-	// load all the vector index block
-	_, err := s.handle.Seek(HeaderInfoLength, 0)
-	if err != nil {
-		return fmt.Errorf("seek to vector index: %w", err)
-	}
-
-	var buff = make([]byte, VectorIndexRows*VectorIndexCols*VectorIndexSize)
-	rLen, err := s.handle.Read(buff)
-	if err != nil {
-		return err
-	}
-
-	if rLen != len(buff) {
-		return fmt.Errorf("incomplete read: readed bytes should be %d", len(buff))
-	}
-
-	// decode the vector index blocks
-	var vectorIndex = make([][]*VectorIndexBlock, VectorIndexRows)
-	for r := 0; r < VectorIndexRows; r++ {
-		vectorIndex[r] = make([]*VectorIndexBlock, VectorIndexCols)
-		for c := 0; c < VectorIndexCols; c++ {
-			offset := r*VectorIndexCols*VectorIndexSize + c*VectorIndexSize
-			vectorIndex[r][c], err = VectorIndexBlockDecode(buff[offset:])
-			if err != nil {
-				return fmt.Errorf("decode vector index at [%d][%d]: %w", r, c, err)
-			}
-		}
-	}
-
-	s.vectorIndex = vectorIndex
-	return nil
-}
-
-// ClearVectorIndex clear preloaded vector index cache
-func (s *Searcher) ClearVectorIndex() {
-	s.vectorIndex = nil
-}
-
 // SearchByStr find the region for the specified ip string
 func (s *Searcher) SearchByStr(str string) (string, error) {
 	ip, err := CheckIP(str)
