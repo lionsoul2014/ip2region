@@ -89,6 +89,36 @@ func LoadVectorIndexFromFile(dbFile string) ([][]*VectorIndexBlock, error) {
 	return LoadVectorIndex(handle)
 }
 
+// LoadHeader load the header info from the specified handle
+func LoadHeader(handle *os.File) ([]byte, error) {
+	_, err := handle.Seek(0, 0)
+	if err != nil {
+		return nil, fmt.Errorf("seek to the header: %w", err)
+	}
+
+	var buff = make([]byte, HeaderInfoLength)
+	rLen, err := handle.Read(buff)
+	if err != nil {
+		return nil, err
+	}
+
+	if rLen != len(buff) {
+		return nil, fmt.Errorf("incomplete read: readed bytes should be %d", len(buff))
+	}
+
+	return buff, nil
+}
+
+// LoadHeaderFromFile load header info from the specified db file path
+func LoadHeaderFromFile(dbFile string) ([]byte, error) {
+	handle, err := os.OpenFile(dbFile, os.O_RDONLY, 0600)
+	if err != nil {
+		return nil, fmt.Errorf("open xdb file `%s`: %w", dbFile, err)
+	}
+
+	return LoadHeader(handle)
+}
+
 // LoadContent load the whole xdb content from the specified file handle
 func LoadContent(handle *os.File) ([]byte, error) {
 	// get file size
