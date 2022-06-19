@@ -5,7 +5,7 @@
 通过如下方式编译得到 xdb_maker 可执行程序:
 ```
 # 切换到golang maker 根目录
-go build -o xdb_maker
+make
 ```
 编译成功后会在当前目录生成一个 xdb_maker 的可执行文件
 
