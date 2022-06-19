@@ -43,7 +43,7 @@ func main() {
 通过如下方式编译得到 xdb_searcher 可执行程序：
 ```bash
 # 切换到 golang binding 根目录
-go build -o xdb_searcher
+make
 ```
 
 
