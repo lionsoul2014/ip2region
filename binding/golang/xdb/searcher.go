@@ -25,33 +25,79 @@ type Searcher struct {
 	handle *os.File
 
 	// header info
-	header []byte
+	header  []byte
+	ioCount int
 
 	// use it only when this feature enabled.
 	// Preload the vector index will reduce the number of IO operations
 	// thus speedup the search process
 	vectorIndex [][]*VectorIndexBlock
+
+	// content buffer.
+	// running with the whole xdb file cached
+	contentBuff []byte
 }
 
-func New(dbFile string) (*Searcher, error) {
+func baseNew(dbFile string, vIndex [][]*VectorIndexBlock, cBuff []byte) (*Searcher, error) {
+	var err error
+
+	// content buff first
+	if cBuff != nil {
+		// check and autoload the vector index
+		if vIndex == nil {
+			vIndex, err = LoadVectorIndexFromBuff(cBuff)
+			if err != nil {
+				return nil, fmt.Errorf("load vector index from buff: %w", err)
+			}
+		}
+
+		return &Searcher{
+			vectorIndex: vIndex,
+			contentBuff: cBuff,
+		}, nil
+	}
+
+	// open the xdb binary file
 	handle, err := os.OpenFile(dbFile, os.O_RDONLY, 0600)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Searcher{
-		handle: handle,
-		header: nil,
-
-		vectorIndex: nil,
+		handle:      handle,
+		vectorIndex: vIndex,
 	}, nil
 }
 
-func (s *Searcher) Close() {
-	err := s.handle.Close()
+func NewWithFileOnly(dbFile string) (*Searcher, error) {
+	return baseNew(dbFile, nil, nil)
+}
+
+func NewWithVectorIndex(dbFile string, vIndex [][]*VectorIndexBlock) (*Searcher, error) {
+	return baseNew(dbFile, vIndex, nil)
+}
+
+func NewWithBuffer(cBuff []byte) (*Searcher, error) {
+	vIndex, err := LoadVectorIndexFromBuff(cBuff)
 	if err != nil {
-		return
+		return nil, fmt.Errorf("load vector index from buff: %w", err)
 	}
+
+	return baseNew("", vIndex, cBuff)
+}
+
+func (s *Searcher) Close() {
+	if s.handle != nil {
+		err := s.handle.Close()
+		if err != nil {
+			return
+		}
+	}
+}
+
+// GetIOCount return the global io count for the last search
+func (s *Searcher) GetIOCount() int {
+	return s.ioCount
 }
 
 // SearchByStr find the region for the specified ip string
@@ -66,31 +112,23 @@ func (s *Searcher) SearchByStr(str string) (string, error) {
 
 // Search find the region for the specified long ip
 func (s *Searcher) Search(ip uint32) (string, error) {
+	// reset the global ioCount
+	s.ioCount = 0
+
 	// locate the segment index block based on the vector index
 	var vIndex *VectorIndexBlock
 	if s.vectorIndex != nil {
 		vIndex = s.vectorIndex[(ip>>24)&0xFF][(ip>>16)&0xFF]
 	} else {
 		l0, l1 := (ip>>24)&0xFF, (ip>>16)&0xFF
-		offset := l0*VectorIndexCols*VectorIndexSize + l1*VectorIndexSize
-		pos, err := s.handle.Seek(int64(HeaderInfoLength+offset), 0)
-		if err != nil {
-			return "", fmt.Errorf("seek to vector index[%d][%d]: %w", l0, l1, err)
-		}
+		offset := HeaderInfoLength + l0*VectorIndexCols*VectorIndexSize + l1*VectorIndexSize
 
-		var buff = make([]byte, 8)
-		rLen, err := s.handle.Read(buff)
+		// read the vector index block
+		var vIndexBuff = make([]byte, 8)
+		err := s.read(int64(offset), vIndexBuff)
+		vIndex, err = VectorIndexBlockDecode(vIndexBuff)
 		if err != nil {
-			return "", fmt.Errorf("read vector index at %d: %w", pos, err)
-		}
-
-		if rLen != len(buff) {
-			return "", fmt.Errorf("incomplete read: readed bytes should be %d", len(buff))
-		}
-
-		vIndex, err = VectorIndexBlockDecode(buff)
-		if err != nil {
-			return "", fmt.Errorf("invalid vector index block at %d: %w", pos, err)
+			return "", fmt.Errorf("read vector index block at %d: %w", offset, err)
 		}
 	}
 
@@ -102,25 +140,12 @@ func (s *Searcher) Search(ip uint32) (string, error) {
 	for l <= h {
 		m := (l + h) >> 1
 		p := vIndex.FirstPtr + uint32(m*SegmentIndexBlockSize)
-		_, err := s.handle.Seek(int64(p), 0)
-		if err != nil {
-			return "", fmt.Errorf("seek to segment block at %d: %w", p, err)
-		}
-
-		rLen, err := s.handle.Read(buff)
+		err := s.read(int64(p), buff)
 		if err != nil {
 			return "", fmt.Errorf("read segment index at %d: %w", p, err)
 		}
 
-		if rLen != len(buff) {
-			return "", fmt.Errorf("incomplete read: readed bytes should be %d", len(buff))
-		}
-
-		// segIndex, err := SegmentIndexDecode(buff)
-		// if err != nil {
-		// 	return "", fmt.Errorf("invalid segment index block at %d: %w", p, err)
-		// }
-		// decode the data step by step to reduce the unnecessary calculations
+		// decode the data step by step to reduce the unnecessary operations
 		sip := binary.LittleEndian.Uint32(buff)
 		if ip < sip {
 			h = m - 1
@@ -141,20 +166,40 @@ func (s *Searcher) Search(ip uint32) (string, error) {
 	}
 
 	// load and return the region data
-	_, err := s.handle.Seek(int64(dataPtr), 0)
-	if err != nil {
-		return "", fmt.Errorf("seek to data block at %d: %w", dataPtr, err)
-	}
-
 	var regionBuff = make([]byte, dataLen)
-	rLen, err := s.handle.Read(regionBuff)
+	err := s.read(int64(dataPtr), regionBuff)
 	if err != nil {
-		return "", fmt.Errorf("read region data at %d: %w", dataPtr, err)
-	}
-
-	if rLen != dataLen {
-		return "", fmt.Errorf("incomplete read: readed bytes should be %d", dataLen)
+		return "", fmt.Errorf("read region at %d: %w", dataPtr, err)
 	}
 
 	return string(regionBuff), nil
+}
+
+// do the data read operation based on the setting.
+// content buffer first or will read from the file.
+// this operation will invoke the Seek for file based read.
+func (s *Searcher) read(offset int64, buff []byte) error {
+	if s.contentBuff != nil {
+		cLen := copy(buff, s.contentBuff[offset:])
+		if cLen != len(buff) {
+			return fmt.Errorf("incomplete read: readed bytes should be %d", len(buff))
+		}
+	} else {
+		_, err := s.handle.Seek(offset, 0)
+		if err != nil {
+			return fmt.Errorf("seek to %d: %w", offset, err)
+		}
+
+		s.ioCount++
+		rLen, err := s.handle.Read(buff)
+		if err != nil {
+			return fmt.Errorf("handle read: %w", err)
+		}
+
+		if rLen != len(buff) {
+			return fmt.Errorf("incomplete read: readed bytes should be %d", len(buff))
+		}
+	}
+
+	return nil
 }
