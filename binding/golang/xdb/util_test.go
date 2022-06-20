@@ -29,6 +29,22 @@ func TestLoadContent(t *testing.T) {
 	fmt.Printf("buff length: %d\n", len(buff))
 }
 
+func TestLoadVectorIndexFromBuff(t *testing.T) {
+	buff, err := LoadContentFromFile("../../../data/ip2region.xdb")
+	if err != nil {
+		fmt.Printf("failed to load xdb content: %s\n", err)
+		return
+	}
+
+	vIndex, err := LoadVectorIndexFromBuff(buff)
+	if err != nil {
+		fmt.Printf("failed to load vector index from buff: %s\n", err)
+		return
+	}
+
+	fmt.Printf("buff length: %d, vIndex length: %d\n", len(buff), len(vIndex))
+}
+
 func TestLoadHeader(t *testing.T) {
 	buff, err := LoadHeaderFromFile("../../../data/ip2region.xdb")
 	if err != nil {

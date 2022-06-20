@@ -21,7 +21,7 @@ func printHelp() {
 
 func testSearch() {
 	var err error
-	var dbFile = ""
+	var dbFile, cachePolicy = "", "vectorIndex"
 	for i := 2; i < len(os.Args); i++ {
 		r := os.Args[i]
 		if len(r) < 5 {
@@ -41,13 +41,16 @@ func testSearch() {
 		switch r[2:eIdx] {
 		case "db":
 			dbFile = r[eIdx+1:]
+		case "cache-policy":
+			cachePolicy = r[eIdx+1:]
 		}
 	}
 
 	if dbFile == "" {
 		fmt.Printf("%s search [command options]\n", os.Args[0])
 		fmt.Printf("options:\n")
-		fmt.Printf(" --db string    ip2region binary xdb file path\n")
+		fmt.Printf(" --db string              ip2region binary xdb file path\n")
+		fmt.Printf(" --cache-policy string    cache policy: file/vectorIndex/content\n")
 		return
 	}
 
@@ -57,16 +60,20 @@ func testSearch() {
 		return
 	}
 
-	searcher, err := xdb.New(dbPath)
+	// create the searcher with the cache policy setting
+	searcher, err := createSearcher(dbPath, cachePolicy)
 	if err != nil {
-		log.Fatalf("failed to create searcher: %s", err.Error())
+		fmt.Printf("failed to create searcher: %s\n", err.Error())
+		return
 	}
 	defer func() {
 		searcher.Close()
 		fmt.Printf("searcher test program exited, thanks for trying\n")
 	}()
 
-	fmt.Println("ip2region xdb searcher test program, type `quit` to exit")
+	fmt.Printf(`ip2region xdb searcher test program, cachePolicy: %s
+type 'quit' to exit
+`, cachePolicy)
 	reader := bufio.NewReader(os.Stdin)
 	for {
 		fmt.Print("ip2region>> ")
@@ -87,16 +94,16 @@ func testSearch() {
 		tStart := time.Now()
 		region, err := searcher.SearchByStr(line)
 		if err != nil {
-			fmt.Printf("\x1b[0;31merr:%s\x1b[0m\n", err.Error())
+			fmt.Printf("\x1b[0;31m{err: %s, ioCount: %d}\x1b[0m\n", err.Error(), searcher.GetIOCount())
 		} else {
-			fmt.Printf("\x1b[0;32m{region:%s, took:%s}\x1b[0m\n", region, time.Since(tStart))
+			fmt.Printf("\x1b[0;32m{region: %s, ioCount: %d, took: %s}\x1b[0m\n", region, searcher.GetIOCount(), time.Since(tStart))
 		}
 	}
 }
 
 func testBench() {
 	var err error
-	var dbFile, srcFile = "", ""
+	var dbFile, srcFile, cachePolicy = "", "", "vectorIndex"
 	for i := 2; i < len(os.Args); i++ {
 		r := os.Args[i]
 		if len(r) < 5 {
@@ -118,14 +125,17 @@ func testBench() {
 			dbFile = r[eIdx+1:]
 		case "src":
 			srcFile = r[eIdx+1:]
+		case "cache-policy":
+			cachePolicy = r[eIdx+1:]
 		}
 	}
 
 	if dbFile == "" || srcFile == "" {
 		fmt.Printf("%s bench [command options]\n", os.Args[0])
 		fmt.Printf("options:\n")
-		fmt.Printf(" --db string     ip2region binary xdb file path\n")
-		fmt.Printf(" --src string    source ip text file path\n")
+		fmt.Printf(" --db string              ip2region binary xdb file path\n")
+		fmt.Printf(" --src string             source ip text file path\n")
+		fmt.Printf(" --cache-policy string    cache policy: file/vectorIndex/content\n")
 		return
 	}
 
@@ -135,7 +145,11 @@ func testBench() {
 		return
 	}
 
-	searcher, err := xdb.New(dbPath)
+	searcher, err := createSearcher(dbPath, cachePolicy)
+	if err != nil {
+		fmt.Printf("failed to create searcher: %s\n", err.Error())
+		return
+	}
 	defer func() {
 		searcher.Close()
 	}()
@@ -194,6 +208,29 @@ func testBench() {
 
 	cost := time.Since(tStart)
 	fmt.Printf("Bench finished, {total: %d, took: %s, cost: %d ns/op}\n", count, cost, cost.Nanoseconds()/int64(count))
+}
+
+func createSearcher(dbPath string, cachePolicy string) (*xdb.Searcher, error) {
+	switch cachePolicy {
+	case "nil", "file":
+		return xdb.NewWithFileOnly(dbPath)
+	case "vectorIndex":
+		vIndex, err := xdb.LoadVectorIndexFromFile(dbPath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to load vector index from `%s`: %w", dbPath, err)
+		}
+
+		return xdb.NewWithVectorIndex(dbPath, vIndex)
+	case "content":
+		cBuff, err := xdb.LoadContentFromFile(dbPath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to load content from '%s': %w", dbPath, err)
+		}
+
+		return xdb.NewWithBuffer(cBuff)
+	default:
+		return nil, fmt.Errorf("invalid cache policy `%s`, options: file/vectorIndex/content", cachePolicy)
+	}
 }
 
 func main() {

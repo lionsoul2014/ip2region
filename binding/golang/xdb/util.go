@@ -89,6 +89,24 @@ func LoadVectorIndexFromFile(dbFile string) ([][]*VectorIndexBlock, error) {
 	return LoadVectorIndex(handle)
 }
 
+// LoadVectorIndexFromBuff load vector index from content buffer
+func LoadVectorIndexFromBuff(cBuff []byte) ([][]*VectorIndexBlock, error) {
+	var err error
+	var vectorIndex = make([][]*VectorIndexBlock, VectorIndexRows)
+	for r := 0; r < VectorIndexRows; r++ {
+		vectorIndex[r] = make([]*VectorIndexBlock, VectorIndexCols)
+		for c := 0; c < VectorIndexCols; c++ {
+			offset := HeaderInfoLength + r*VectorIndexCols*VectorIndexSize + c*VectorIndexSize
+			vectorIndex[r][c], err = VectorIndexBlockDecode(cBuff[offset:])
+			if err != nil {
+				return nil, fmt.Errorf("decode vector index at [%d][%d]: %w", r, c, err)
+			}
+		}
+	}
+
+	return vectorIndex, nil
+}
+
 // LoadHeader load the header info from the specified handle
 func LoadHeader(handle *os.File) ([]byte, error) {
 	_, err := handle.Seek(0, 0)
