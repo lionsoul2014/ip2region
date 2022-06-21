@@ -40,17 +40,20 @@ func testSearch() {
 			continue
 		}
 
-		var eIdx = strings.Index(r, "=")
-		if eIdx < 0 {
+		var sIdx = strings.Index(r, "=")
+		if sIdx < 0 {
 			fmt.Printf("missing = for args pair '%s'\n", r)
 			return
 		}
 
-		switch r[2:eIdx] {
+		switch r[2:sIdx] {
 		case "db":
-			dbFile = r[eIdx+1:]
+			dbFile = r[sIdx+1:]
 		case "cache-policy":
-			cachePolicy = r[eIdx+1:]
+			cachePolicy = r[sIdx+1:]
+		default:
+			fmt.Printf("undefined option `%s`\n", r)
+			return
 		}
 	}
 
@@ -122,19 +125,22 @@ func testBench() {
 			continue
 		}
 
-		var eIdx = strings.Index(r, "=")
-		if eIdx < 0 {
+		var sIdx = strings.Index(r, "=")
+		if sIdx < 0 {
 			fmt.Printf("missing = for args pair '%s'\n", r)
 			return
 		}
 
-		switch r[2:eIdx] {
+		switch r[2:sIdx] {
 		case "db":
-			dbFile = r[eIdx+1:]
+			dbFile = r[sIdx+1:]
 		case "src":
-			srcFile = r[eIdx+1:]
+			srcFile = r[sIdx+1:]
 		case "cache-policy":
-			cachePolicy = r[eIdx+1:]
+			cachePolicy = r[sIdx+1:]
+		default:
+			fmt.Printf("undefined option `%s`\n", r)
+			return
 		}
 	}
 
