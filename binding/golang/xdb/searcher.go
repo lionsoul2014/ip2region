@@ -5,6 +5,9 @@
 // ---
 // ip2region database v2.0 searcher.
 // @Note this is a Not thread safe implementation.
+//
+// @Author Lion <chenxin619315@gmail.com>
+// @Date   2022/06/16
 
 package xdb
 
