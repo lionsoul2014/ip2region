@@ -28,7 +28,7 @@ type Searcher struct {
 	handle *os.File
 
 	// header info
-	header  []byte
+	header  *Header
 	ioCount int
 
 	// use it only when this feature enabled.
