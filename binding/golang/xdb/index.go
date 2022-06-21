@@ -105,3 +105,29 @@ func (v VectorIndexBlock) Encode() []byte {
 func (v VectorIndexBlock) String() string {
 	return fmt.Sprintf("{FristPtr: %d, LastPtr: %d}", v.FirstPtr, v.LastPtr)
 }
+
+// ------------
+
+type Header struct {
+	data []byte
+}
+
+func (h *Header) Version() int {
+	return int(binary.LittleEndian.Uint16(h.data))
+}
+
+func (h *Header) IndexPolicy() IndexPolicy {
+	return IndexPolicy(binary.LittleEndian.Uint16(h.data[2:]))
+}
+
+func (h *Header) CreatedAt() uint32 {
+	return binary.LittleEndian.Uint32(h.data[4:])
+}
+
+func (h *Header) StartIndexPtr() uint32 {
+	return binary.LittleEndian.Uint32(h.data[8:])
+}
+
+func (h *Header) EndIndexPtr() uint32 {
+	return binary.LittleEndian.Uint32(h.data[12:])
+}

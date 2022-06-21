@@ -11,6 +11,7 @@ package xdb
 import (
 	"fmt"
 	"testing"
+	"time"
 )
 
 func TestLoadVectorIndex(t *testing.T) {
@@ -50,11 +51,15 @@ func TestLoadVectorIndexFromBuff(t *testing.T) {
 }
 
 func TestLoadHeader(t *testing.T) {
-	buff, err := LoadHeaderFromFile("../../../data/ip2region.xdb")
+	header, err := LoadHeaderFromFile("../../../data/ip2region.xdb")
 	if err != nil {
 		fmt.Printf("failed to load xdb header info: %s\n", err)
 		return
 	}
 
-	fmt.Printf("buff length: %d\n", len(buff))
+	fmt.Printf("Version        : %d\n", header.Version())
+	fmt.Printf("IndexPolicy    : %s\n", header.IndexPolicy().String())
+	fmt.Printf("CreatedAt      : %d(%s)\n", header.CreatedAt(), time.Unix(int64(header.CreatedAt()), 0).Format(time.RFC3339))
+	fmt.Printf("StartIndexPtr  : %d\n", header.StartIndexPtr())
+	fmt.Printf("EndIndexPtr    : %d\n", header.EndIndexPtr())
 }
