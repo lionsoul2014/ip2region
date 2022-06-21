@@ -116,7 +116,7 @@ func LoadVectorIndexFromBuff(cBuff []byte) ([][]*VectorIndexBlock, error) {
 }
 
 // LoadHeader load the header info from the specified handle
-func LoadHeader(handle *os.File) ([]byte, error) {
+func LoadHeader(handle *os.File) (*Header, error) {
 	_, err := handle.Seek(0, 0)
 	if err != nil {
 		return nil, fmt.Errorf("seek to the header: %w", err)
@@ -132,17 +132,26 @@ func LoadHeader(handle *os.File) ([]byte, error) {
 		return nil, fmt.Errorf("incomplete read: readed bytes should be %d", len(buff))
 	}
 
-	return buff, nil
+	return &Header{
+		data: buff,
+	}, nil
 }
 
 // LoadHeaderFromFile load header info from the specified db file path
-func LoadHeaderFromFile(dbFile string) ([]byte, error) {
+func LoadHeaderFromFile(dbFile string) (*Header, error) {
 	handle, err := os.OpenFile(dbFile, os.O_RDONLY, 0600)
 	if err != nil {
 		return nil, fmt.Errorf("open xdb file `%s`: %w", dbFile, err)
 	}
 
 	return LoadHeader(handle)
+}
+
+// LoadHeaderFromBuff wrap the header info from the content buffer
+func LoadHeaderFromBuff(cBuff []byte) (*Header, error) {
+	return &Header{
+		data: cBuff[0:256],
+	}, nil
 }
 
 // LoadContent load the whole xdb content from the specified file handle
