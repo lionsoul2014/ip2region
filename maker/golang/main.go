@@ -69,22 +69,25 @@ func genDb() {
 	tStart := time.Now()
 	maker, err := xdb.NewMaker(indexPolicy, srcFile, dstFile)
 	if err != nil {
-		log.Fatalf("failed to create maker: %s", err)
+		fmt.Printf("failed to create %s\n", err)
+		return
 	}
 
 	err = maker.Init()
 	if err != nil {
-		log.Fatalf("failed Init: %s", err)
+		fmt.Printf("failed Init: %s\n", err)
+		return
 	}
 
 	err = maker.Start()
 	if err != nil {
-		log.Fatalf("failed Start: %s", err)
+		fmt.Printf("failed Start: %s\n", err)
+		return
 	}
 
 	err = maker.End()
 	if err != nil {
-		log.Fatalf("failed End: %s", err)
+		fmt.Printf("failed End: %s\n", err)
 	}
 
 	log.Printf("Done, elapsed: %s\n", time.Since(tStart))
@@ -124,7 +127,8 @@ func testSearch() {
 
 	searcher, err := xdb.NewSearcher(dbFile)
 	if err != nil {
-		log.Fatalf("failed to create searcher: %s", err.Error())
+		fmt.Printf("failed to create searcher with `%s`: %s\n", dbFile, err.Error())
+		return
 	}
 	defer func() {
 		searcher.Close()
@@ -228,6 +232,10 @@ func testBench() {
 	}
 
 	searcher, err := xdb.NewSearcher(dbFile)
+	if err != nil {
+		fmt.Printf("failed to create searcher with `%s`: %s\n", dbFile, err)
+		return
+	}
 	defer func() {
 		searcher.Close()
 	}()

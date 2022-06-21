@@ -43,9 +43,11 @@ func NewSearcher(dbFile string) (*Searcher, error) {
 }
 
 func (s *Searcher) Close() {
-	err := s.handle.Close()
-	if err != nil {
-		return
+	if s.handle != nil {
+		err := s.handle.Close()
+		if err != nil {
+			return
+		}
 	}
 }
 

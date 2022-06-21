@@ -115,16 +115,16 @@ func (m *Maker) initDbHeader() error {
 	binary.LittleEndian.PutUint16(header, uint16(VersionNo))
 
 	// 2, index policy code
-	binary.LittleEndian.PutUint16(header, uint16(m.indexPolicy))
+	binary.LittleEndian.PutUint16(header[2:], uint16(m.indexPolicy))
 
 	// 3, generate unix timestamp
-	binary.LittleEndian.PutUint32(header[2:], uint32(time.Now().Unix()))
+	binary.LittleEndian.PutUint32(header[4:], uint32(time.Now().Unix()))
 
 	// 4, index block start ptr
-	binary.LittleEndian.PutUint32(header[6:], uint32(0))
+	binary.LittleEndian.PutUint32(header[8:], uint32(0))
 
 	// 5, index block end ptr
-	binary.LittleEndian.PutUint32(header[10:], uint32(0))
+	binary.LittleEndian.PutUint32(header[12:], uint32(0))
 
 	_, err = m.dstHandle.Write(header)
 	if err != nil {
