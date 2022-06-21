@@ -37,23 +37,26 @@ func genDb() {
 			continue
 		}
 
-		var eIdx = strings.Index(r, "=")
-		if eIdx < 0 {
+		var sIdx = strings.Index(r, "=")
+		if sIdx < 0 {
 			fmt.Printf("missing = for args pair '%s'\n", r)
 			return
 		}
 
-		switch r[2:eIdx] {
+		switch r[2:sIdx] {
 		case "src":
-			srcFile = r[eIdx+1:]
+			srcFile = r[sIdx+1:]
 		case "dst":
-			dstFile = r[eIdx+1:]
+			dstFile = r[sIdx+1:]
 		case "index":
-			indexPolicy, err = xdb.IndexPolicyFromString(r[eIdx+1:])
+			indexPolicy, err = xdb.IndexPolicyFromString(r[sIdx+1:])
 			if err != nil {
 				fmt.Printf("parse policy: %s", err.Error())
 				return
 			}
+		default:
+			fmt.Printf("undefine option `%s`\n", r)
+			return
 		}
 	}
 
@@ -115,6 +118,9 @@ func testSearch() {
 		switch r[2:eIdx] {
 		case "db":
 			dbFile = r[eIdx+1:]
+		default:
+			fmt.Printf("undefined option '%s'\n", r)
+			return
 		}
 	}
 
@@ -198,19 +204,19 @@ func testBench() {
 			continue
 		}
 
-		var eIdx = strings.Index(r, "=")
-		if eIdx < 0 {
+		var sIdx = strings.Index(r, "=")
+		if sIdx < 0 {
 			fmt.Printf("missing = for args pair '%s'\n", r)
 			return
 		}
 
-		switch r[2:eIdx] {
+		switch r[2:sIdx] {
 		case "db":
-			dbFile = r[eIdx+1:]
+			dbFile = r[sIdx+1:]
 		case "src":
-			srcFile = r[eIdx+1:]
+			srcFile = r[sIdx+1:]
 		case "ignore-error":
-			v := r[eIdx+1:]
+			v := r[sIdx+1:]
 			if v == "true" || v == "1" {
 				ignoreError = true
 			} else if v == "false" || v == "0" {
@@ -219,6 +225,9 @@ func testBench() {
 				fmt.Printf("invalid value for ignore-error option, could be false/0 or true/1\n")
 				return
 			}
+		default:
+			fmt.Printf("undefined option '%s'\n", r)
+			return
 		}
 	}
 

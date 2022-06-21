@@ -1,4 +1,4 @@
-# ip2region php 查询客户端实现
+# ip2region xdb php 查询客户端实现
 
 # 使用方式
 
