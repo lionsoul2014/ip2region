@@ -135,7 +135,7 @@ func (s *Searcher) Search(ip uint32) (string, error) {
 		}
 	}
 
-	//log.Printf("vIndex=%s", vIndex)
+	//fmt.Printf("vIndex=%s", vIndex)
 	// binary search the segment index to get the region
 	var dataLen, dataPtr = 0, uint32(0)
 	var buff = make([]byte, SegmentIndexBlockSize)
@@ -164,6 +164,7 @@ func (s *Searcher) Search(ip uint32) (string, error) {
 		}
 	}
 
+	//fmt.Printf("dataLen: %d, dataPtr: %d", dataLen, dataPtr)
 	if dataLen == 0 {
 		return "", nil
 	}
