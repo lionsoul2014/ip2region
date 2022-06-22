@@ -221,7 +221,7 @@ func testBench() {
 	}
 
 	cost := time.Since(tStart)
-	fmt.Printf("Bench finished, {total: %d, took: %s, cost: %d ns/op}\n", count, cost, cost.Nanoseconds()/int64(count))
+	fmt.Printf("Bench finished, {cachePolicy: %s, total: %d, took: %s, cost: %d ns/op}\n", cachePolicy, count, cost, cost.Nanoseconds()/int64(count))
 }
 
 func createSearcher(dbPath string, cachePolicy string) (*xdb.Searcher, error) {
