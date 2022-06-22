@@ -64,7 +64,10 @@ class XdbSearcher
             // check and autoload the vector index
             if ($vectorIndex != null) {
                 // load the vector index
-                $this->vectorIndex = null;
+                $this->vectorIndex = self::loadVectorIndexFromBuff($cBuff);
+                if ($this->vectorIndex == null) {
+                    throw new Exception("failed to load vector index from buffer");
+                }
             }
 
             $this->contentBuff = $cBuff;
@@ -301,6 +304,16 @@ class XdbSearcher
         return self::loadVectorIndex($handle);
     }
 
+    // load vector index from the specified buffer
+    public static function loadVectorIndexFromBuff($cBuff) {
+        $len = self::VectorIndexRows * self::VectorIndexCols * self::SegmentIndexSize;
+        if (strlen($cBuff) < (self::HeaderInfoLength + $len)) {
+            return null;
+        }
+
+        return substr($cBuff, self::HeaderInfoLength, $len);
+    }
+
     // load the xdb content from a file handle
     public static function loadContent($handle) {
         if (fseek($handle, 0, SEEK_END) == -1) {
@@ -338,6 +351,10 @@ class XdbSearcher
         } else {
             return $str;
         }
+    }
+
+    public static function now() {
+        return (microtime(true) * 1000);
     }
 
 }
