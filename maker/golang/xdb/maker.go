@@ -260,7 +260,7 @@ func (m *Maker) Start() error {
 
 	// 2, write the index block and cache the super index block
 	log.Printf("try to write the segment index block ... ")
-	var counter = 0
+	var counter, startIndexPtr, endIndexPtr = 0, int64(-1), int64(-1)
 	for _, seg := range m.segments {
 		dataPtr, has := m.regionPool[seg.Region]
 		if !has {
@@ -296,10 +296,18 @@ func (m *Maker) Start() error {
 			log.Printf("|-segment index: %d, ptr: %d, segment: %s\n", counter, pos, s.String())
 			m.setVectorIndex(s.StartIP, uint32(pos))
 			counter++
+
+			// check and record the start index ptr
+			if startIndexPtr == -1 {
+				startIndexPtr = pos
+			}
+
+			endIndexPtr = pos
 		}
 	}
 
 	// synchronized the vector index block
+	log.Printf("try to write the vector index block ... ")
 	_, err = m.dstHandle.Seek(int64(HeaderInfoLength), 0)
 	if err != nil {
 		return fmt.Errorf("seek vector index first ptr: %w", err)
@@ -314,7 +322,23 @@ func (m *Maker) Start() error {
 		}
 	}
 
-	log.Printf("write done, with %d data blocks and (%d, %d) index blocks", len(m.regionPool), len(m.segments), counter)
+	// synchronized the segment index info
+	log.Printf("try to write the segment index ptr ... ")
+	var buff = make([]byte, 8)
+	binary.LittleEndian.PutUint32(buff, uint32(startIndexPtr))
+	binary.LittleEndian.PutUint32(buff[4:], uint32(endIndexPtr))
+	_, err = m.dstHandle.Seek(8, 0)
+	if err != nil {
+		return fmt.Errorf("seek segment index ptr: %w", err)
+	}
+
+	_, err = m.dstHandle.Write(buff)
+	if err != nil {
+		return fmt.Errorf("write segment index ptr: %w", err)
+	}
+
+	log.Printf("write done, dataBlocks: %d, indexBlocks: (%d, %d), indexPtr: (%d, %d)",
+		len(m.regionPool), len(m.segments), counter, startIndexPtr, endIndexPtr)
 
 	return nil
 }
