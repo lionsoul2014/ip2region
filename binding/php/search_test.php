@@ -8,16 +8,20 @@
 
 require dirname(__FILE__) . '/XdbSearcher.class.php';
 
-if($argc < 2) {
+function printHelp($argv) {
     printf("php %s [command options]\n", $argv[0]);
     printf("options: \n");
     printf(" --db string             ip2region binary xdb file path\n");
     printf(" --cache-policy string   cache policy: file/vectorIndex/content\n");
+}
+
+if($argc < 2) {
+    printHelp($argv);
     return;
 }
 
 $dbFile = "";
-$cachePolicy = isset($argv[2]) ? $argv[2] : 'vectorIndex';
+$cachePolicy = 'vectorIndex';
 array_shift($argv);
 foreach ($argv as $r) {
     if (strlen($r) < 5) {
@@ -46,9 +50,13 @@ foreach ($argv as $r) {
     }
 }
 
+if (strlen($dbFile) < 1) {
+    printHelp($argv);
+    return;
+}
+
 // printf("debug: dbFile: %s, cachePolicy: %s\n", $dbFile, $cachePolicy);
 // create the xdb searcher by the cache-policy
-$searcher = null;
 switch ( $cachePolicy ) {
 case 'file':
     try {
@@ -103,12 +111,12 @@ while ( true ) {
         break;
     }
 
-    if (XdbSearcher::ip2long($line) === false) {
+    if (XdbSearcher::ip2long($line) === null) {
         echo "Error: invalid ip address\n";
         continue;
     }
 
-    $sTime = getTime();
+    $sTime = XdbSearcher::now();
     try {
         $region = $searcher->search($line);
     } catch (Exception $e) {
@@ -116,14 +124,10 @@ while ( true ) {
         continue;
     }
 
-    printf("{region: %s, ioCount: %d, took: %.5f ms}\n", $region, $searcher->getIOCount(), getTime() - $sTime);
+    printf("{region: %s, ioCount: %d, took: %.5f ms}\n",
+        $region, $searcher->getIOCount(), XdbSearcher::now() - $sTime);
 }
 
 // close the searcher at last
 $searcher->close();
 printf("searcher test program exited, thanks for trying\n");
-
-function getTime()
-{
-    return (microtime(true) * 1000);
-}

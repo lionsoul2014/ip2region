@@ -100,7 +100,7 @@ class XdbSearcher
         // check and convert the sting ip to a 4-bytes long
         if (is_string($ip)) {
             $t = self::ip2long($ip);
-            if ($t === false) {
+            if ($t === null) {
                 throw new Exception("invalid ip address `$ip`");
             }
             $ip = $t;
@@ -208,7 +208,7 @@ class XdbSearcher
     {
         $ip = ip2long($ip);
         if ($ip === false) {
-            return false;
+            return null;
         }
 
         // convert signed int to unsigned int if on 32 bit operating system
