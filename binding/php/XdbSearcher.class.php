@@ -28,6 +28,32 @@ class XdbSearcher
     // xdb content buffer
     private $contentBuff = null;
 
+    // ---
+    // static function to create searcher
+
+    /**
+     * @throws Exception
+     */
+    public static function newWithFileOnly($dbFile) {
+        return new XdbSearcher($dbFile, null, null);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public static function newWithVectorIndex($dbFile, $vIndex) {
+        return new XdbSearcher($dbFile, $vIndex);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public static function newWithBuffer($cBuff) {
+        return new XdbSearcher(null, null, $cBuff);
+    }
+
+    // --- End of static creator
+
     /**
      * initialize the xdb searcher
      * @throws Exception
@@ -84,7 +110,6 @@ class XdbSearcher
         $il0 = ($ip >> 24) & 0xFF;
         $il1 = ($ip >> 16) & 0xFF;
         $idx = $il0 * self::VectorIndexRows * self::VectorIndexSize + $il1 * self::VectorIndexSize;
-        printf("il0: %d, il1: %d, idx: %d\n", $il0, $il1, $idx);
         if ($this->vectorIndex != null) {
             $sPtr = self::getLong($this->vectorIndex, $idx);
             $ePtr = self::getLong($this->vectorIndex, $idx + 4);
@@ -99,7 +124,7 @@ class XdbSearcher
             $ePtr = self::getLong($buff, 4);
         }
 
-        printf("sPtr: %d, ePtr: %d\n", $sPtr, $ePtr);
+        // printf("sPtr: %d, ePtr: %d\n", $sPtr, $ePtr);
 
         // binary search the segment index to get the region info
         $dataLen = 0;
@@ -125,7 +150,7 @@ class XdbSearcher
                     $l = $m + 1;
                 } else {
                     $dataLen = self::getShort($buff, 8);
-                    $dataPtr = self::getShort($buff, 10);
+                    $dataPtr = self::getLong($buff, 10);
                     break;
                 }
             }
@@ -133,7 +158,7 @@ class XdbSearcher
 
         // match nothing interception.
         // @TODO: could this even be a case ?
-        printf("dataLen: %d, dataPtr: %d\n", $dataLen, $dataPtr);
+        // printf("dataLen: %d, dataPtr: %d\n", $dataLen, $dataPtr);
         if ($dataPtr == null) {
             return null;
         }
@@ -144,12 +169,7 @@ class XdbSearcher
             return null;
         }
 
-        $str = [];
-        foreach (unpack("C*", $buff) as $chr) {
-            $str[] = chr($chr);
-        }
-
-        return implode($str);
+        return $buff;
     }
 
     // read specified bytes from the specified index
@@ -177,6 +197,8 @@ class XdbSearcher
 
         return $buff;
     }
+
+    // --- static util functions ----
 
     // convert a string ip to long
     public static function ip2long($ip)
@@ -212,6 +234,110 @@ class XdbSearcher
     public static function getShort($b, $idx)
     {
         return ((ord($b[$idx])) | (ord($b[$idx+1]) << 8));
+    }
+
+    // load header info from a specified file handle
+    public static function loadHeader($handle) {
+        if (fseek($handle, 0) == -1) {
+            return null;
+        }
+
+        $buff = fread($handle, self::HeaderInfoLength);
+        if ($buff === false) {
+            return null;
+        }
+
+        // read bytes length checking
+        if (strlen($buff) != self::HeaderInfoLength) {
+            return null;
+        }
+
+        // return the decoded header info
+        return array(
+            'version'       => self::getShort($buff, 0),
+            'indexPolicy'   => self::getShort($buff, 2),
+            'createdAt'     => self::getLong($buff, 4),
+            'startIndexPtr' => self::getLong($buff, 8),
+            'endIndexPtr'   => self::getLong($buff, 12)
+        );
+    }
+
+    // load header info from the specified xdb file path
+    public static function loadHeaderFromFile($dbFile) {
+        $handle = fopen($dbFile, 'r');
+        if ($handle === false) {
+            return null;
+        }
+
+        return self::loadHeader($handle);
+    }
+
+    // load vector index from a file handle
+    public static function loadVectorIndex($handle) {
+        if (fseek($handle, self::HeaderInfoLength) == -1) {
+            return null;
+        }
+
+        $rLen = self::VectorIndexRows * self::VectorIndexCols * self::SegmentIndexSize;
+        $buff = fread($handle, $rLen);
+        if ($buff === false) {
+            return null;
+        }
+
+        if (strlen($buff) != $rLen) {
+            return null;
+        }
+
+        return $buff;
+    }
+
+    // load vector index from a specified xdb file path
+    public static function loadVectorIndexFromFile($dbFile) {
+        $handle = fopen($dbFile, 'r');
+        if ($handle === false) {
+            return null;
+        }
+
+        return self::loadVectorIndex($handle);
+    }
+
+    // load the xdb content from a file handle
+    public static function loadContent($handle) {
+        if (fseek($handle, 0, SEEK_END) == -1) {
+            return null;
+        }
+
+        $size = ftell($handle);
+        if ($size === false) {
+            return null;
+        }
+
+        // seek to the head for reading
+        if (fseek($handle, 0) == -1) {
+            return null;
+        }
+
+        $buff = fread($handle, $size);
+        if ($buff === false) {
+            return null;
+        }
+
+        // read length checking
+        if (strlen($buff) != $size) {
+            return null;
+        }
+
+        return $buff;
+    }
+
+    // load the xdb content from a file path
+    public static function loadContentFromFile($dbFile) {
+        $str = file_get_contents($dbFile, false);
+        if ($str === false) {
+            return null;
+        } else {
+            return $str;
+        }
     }
 
 }
