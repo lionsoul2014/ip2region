@@ -46,28 +46,52 @@ foreach ($argv as $r) {
     }
 }
 
-printf("debug: dbFile: %s, cachePolicy: %s\n", $dbFile, $cachePolicy);
-
+// printf("debug: dbFile: %s, cachePolicy: %s\n", $dbFile, $cachePolicy);
 // create the xdb searcher by the cache-policy
 $searcher = null;
 switch ( $cachePolicy ) {
 case 'file':
     try {
-        $searcher = new XdbSearcher($dbFile);
+        $searcher = XdbSearcher::newWithFileOnly($dbFile);
     } catch (Exception $e) {
         printf("failed to create searcher with '%s': %s\n", $dbFile, $e);
         return;
     }
     break;
 case 'vectorIndex':
+    $vIndex = XdbSearcher::loadVectorIndexFromFile($dbFile);
+    if ($vIndex == null) {
+        printf("failed to load vector index from '%s'\n", $dbFile);
+        return;
+    }
+
+    try {
+        $searcher = XdbSearcher::newWithVectorIndex($dbFile, $vIndex);
+    } catch (Exception $e) {
+        printf("failed to create vector index cached searcher with '%s': %s\n", $dbFile, $e);
+        return;
+    }
     break;
 case 'content':
+    $cBuff = XdbSearcher::loadContentFromFile($dbFile);
+    if ($cBuff == null) {
+        printf("failed to load xdb content from '%s'\n", $dbFile);
+        return;
+    }
+
+    try {
+        $searcher = XdbSearcher::newWithBuffer($cBuff);
+    } catch (Exception $e) {
+        printf("failed to create content cached searcher: %s", $e);
+        return;
+    }
     break;
 default:
     printf("undefined cache-policy `%s`\n", $cachePolicy);
     return;
 }
 
+printf("ip2region xdb searcher test program, cachePolicy: ${cachePolicy}\ntype 'quit' to exit\n");
 while ( true ) {
     echo "ip2region>> ";
     $line = trim(fgets(STDIN));
@@ -92,11 +116,12 @@ while ( true ) {
         continue;
     }
 
-    printf("{region: %s, took: %.5f ms}\n", $region, getTime() - $sTime);
+    printf("{region: %s, ioCount: %d, took: %.5f ms}\n", $region, $searcher->getIOCount(), getTime() - $sTime);
 }
 
 // close the searcher at last
 $searcher->close();
+printf("searcher test program exited, thanks for trying\n");
 
 function getTime()
 {
