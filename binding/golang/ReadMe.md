@@ -113,7 +113,7 @@ ip2region>> 1.2.3.4
 {region:美国|0|华盛顿|0|谷歌, took:101.57µs}
 ```
 
-输入 ip 地址进行查询即可，输入 quit 退出测试程序。可以设置 `cache-policy` 为 vectorIndex 来测试缓存 VectorIndex 的查询，设置为 content 可以测试完全基于内存的查询方式。
+输入 ip 地址进行查询即可，输入 quit 退出测试程序。可以设置 `cache-policy` 为 file/vectorIndex/content 来测试不同的查询缓存机制。
 
 
 # bench 测试
@@ -134,6 +134,6 @@ options:
 Bench finished, {total: 3417955, took: 28.211578339s, cost: 8253 ns/op}
 ```
 
-可以设置 `cache-policy` 参数来测试 VectorIndex 和 content 缓存查询方式。
+可以设置 `cache-policy` 参数来分别测试 file/vectorIndex/content 不同缓存机制的实现。
 
 *请注意 bench 使用的 src 文件需要是生成对应的 xdb 文件的相同的源文件*。bench 程序会逐行读取 `src` 指定的源IP文件，然后每个 IP 段选取 5 个固定位置的 IP 进行测试，以确保查询的 region 信息和原始的 region 信息是相同。测试途中没有调试信息的输出，有错误会打印错误信息并且终止运行，所以看到 `Bench finished` 就表示 bench 成功了，cost 是表示每次查询操作的平均时间(ns)。
