@@ -53,68 +53,6 @@ func MidIP(sip uint32, eip uint32) uint32 {
 	return uint32((uint64(sip) + uint64(eip)) >> 1)
 }
 
-// LoadVectorIndex util function to load the vector index from the specified file handle
-func LoadVectorIndex(handle *os.File) ([][]*VectorIndexBlock, error) {
-	// load all the vector index block
-	_, err := handle.Seek(HeaderInfoLength, 0)
-	if err != nil {
-		return nil, fmt.Errorf("seek to vector index: %w", err)
-	}
-
-	var buff = make([]byte, VectorIndexRows*VectorIndexCols*VectorIndexSize)
-	rLen, err := handle.Read(buff)
-	if err != nil {
-		return nil, err
-	}
-
-	if rLen != len(buff) {
-		return nil, fmt.Errorf("incomplete read: readed bytes should be %d", len(buff))
-	}
-
-	// decode the vector index blocks
-	var vectorIndex = make([][]*VectorIndexBlock, VectorIndexRows)
-	for r := 0; r < VectorIndexRows; r++ {
-		vectorIndex[r] = make([]*VectorIndexBlock, VectorIndexCols)
-		for c := 0; c < VectorIndexCols; c++ {
-			offset := r*VectorIndexCols*VectorIndexSize + c*VectorIndexSize
-			vectorIndex[r][c], err = VectorIndexBlockDecode(buff[offset:])
-			if err != nil {
-				return nil, fmt.Errorf("decode vector index at [%d][%d]: %w", r, c, err)
-			}
-		}
-	}
-
-	return vectorIndex, nil
-}
-
-// LoadVectorIndexFromFile load vector index from a specified file path
-func LoadVectorIndexFromFile(dbFile string) ([][]*VectorIndexBlock, error) {
-	handle, err := os.OpenFile(dbFile, os.O_RDONLY, 0600)
-	if err != nil {
-		return nil, fmt.Errorf("open xdb file `%s`: %w", dbFile, err)
-	}
-
-	return LoadVectorIndex(handle)
-}
-
-// LoadVectorIndexFromBuff load vector index from content buffer
-func LoadVectorIndexFromBuff(cBuff []byte) ([][]*VectorIndexBlock, error) {
-	var err error
-	var vectorIndex = make([][]*VectorIndexBlock, VectorIndexRows)
-	for r := 0; r < VectorIndexRows; r++ {
-		vectorIndex[r] = make([]*VectorIndexBlock, VectorIndexCols)
-		for c := 0; c < VectorIndexCols; c++ {
-			offset := HeaderInfoLength + r*VectorIndexCols*VectorIndexSize + c*VectorIndexSize
-			vectorIndex[r][c], err = VectorIndexBlockDecode(cBuff[offset:])
-			if err != nil {
-				return nil, fmt.Errorf("decode vector index at [%d][%d]: %w", r, c, err)
-			}
-		}
-	}
-
-	return vectorIndex, nil
-}
-
 // LoadHeader load the header info from the specified handle
 func LoadHeader(handle *os.File) (*Header, error) {
 	_, err := handle.Seek(0, 0)
@@ -132,9 +70,7 @@ func LoadHeader(handle *os.File) (*Header, error) {
 		return nil, fmt.Errorf("incomplete read: readed bytes should be %d", len(buff))
 	}
 
-	return &Header{
-		data: buff,
-	}, nil
+	return NewHeader(buff)
 }
 
 // LoadHeaderFromFile load header info from the specified db file path
@@ -149,9 +85,38 @@ func LoadHeaderFromFile(dbFile string) (*Header, error) {
 
 // LoadHeaderFromBuff wrap the header info from the content buffer
 func LoadHeaderFromBuff(cBuff []byte) (*Header, error) {
-	return &Header{
-		data: cBuff[0:256],
-	}, nil
+	return NewHeader(cBuff[0:256])
+}
+
+// LoadVectorIndex util function to load the vector index from the specified file handle
+func LoadVectorIndex(handle *os.File) ([]byte, error) {
+	// load all the vector index block
+	_, err := handle.Seek(HeaderInfoLength, 0)
+	if err != nil {
+		return nil, fmt.Errorf("seek to vector index: %w", err)
+	}
+
+	var buff = make([]byte, VectorIndexRows*VectorIndexCols*VectorIndexSize)
+	rLen, err := handle.Read(buff)
+	if err != nil {
+		return nil, err
+	}
+
+	if rLen != len(buff) {
+		return nil, fmt.Errorf("incomplete read: readed bytes should be %d", len(buff))
+	}
+
+	return buff, nil
+}
+
+// LoadVectorIndexFromFile load vector index from a specified file path
+func LoadVectorIndexFromFile(dbFile string) ([]byte, error) {
+	handle, err := os.OpenFile(dbFile, os.O_RDONLY, 0600)
+	if err != nil {
+		return nil, fmt.Errorf("open xdb file `%s`: %w", dbFile, err)
+	}
+
+	return LoadVectorIndex(handle)
 }
 
 // LoadContent load the whole xdb content from the specified file handle

@@ -174,7 +174,7 @@ func testBench() {
 		return
 	}
 
-	var count, tStart = 0, time.Now()
+	var count, tStart, costs = int64(0), time.Now(), int64(0)
 	var scanner = bufio.NewScanner(handle)
 	scanner.Split(bufio.ScanLines)
 	for scanner.Scan() {
@@ -204,11 +204,14 @@ func testBench() {
 
 		mip := xdb.MidIP(sip, eip)
 		for _, ip := range []uint32{sip, xdb.MidIP(sip, mip), mip, xdb.MidIP(mip, eip), eip} {
+			sTime := time.Now()
 			region, err := searcher.Search(ip)
 			if err != nil {
 				fmt.Printf("failed to search ip '%s': %s\n", xdb.Long2IP(ip), err)
 				return
 			}
+
+			costs += time.Since(sTime).Nanoseconds()
 
 			// check the region info
 			if region != ps[2] {
@@ -221,7 +224,8 @@ func testBench() {
 	}
 
 	cost := time.Since(tStart)
-	fmt.Printf("Bench finished, {cachePolicy: %s, total: %d, took: %s, cost: %d ns/op}\n", cachePolicy, count, cost, cost.Nanoseconds()/int64(count))
+	fmt.Printf("Bench finished, {cachePolicy: %s, total: %d, took: %s, cost: %d μs/op}\n",
+		cachePolicy, count, cost, costs/count/1000)
 }
 
 func createSearcher(dbPath string, cachePolicy string) (*xdb.Searcher, error) {

@@ -18,11 +18,30 @@ import (
 )
 
 const (
-	HeaderInfoLength = 256
-	VectorIndexRows  = 256
-	VectorIndexCols  = 256
-	VectorIndexSize  = 8
+	HeaderInfoLength      = 256
+	VectorIndexRows       = 256
+	VectorIndexCols       = 256
+	VectorIndexSize       = 8
+	SegmentIndexBlockSize = 14
 )
+
+type IndexPolicy int
+
+const (
+	VectorIndexPolicy IndexPolicy = 1
+	BTreeIndexPolicy  IndexPolicy = 2
+)
+
+func (i IndexPolicy) String() string {
+	switch i {
+	case VectorIndexPolicy:
+		return "VectorIndex"
+	case BTreeIndexPolicy:
+		return "BtreeIndex"
+	default:
+		return "unknown"
+	}
+}
 
 type Searcher struct {
 	handle *os.File
@@ -34,28 +53,20 @@ type Searcher struct {
 	// use it only when this feature enabled.
 	// Preload the vector index will reduce the number of IO operations
 	// thus speedup the search process
-	vectorIndex [][]*VectorIndexBlock
+	vectorIndex []byte
 
 	// content buffer.
 	// running with the whole xdb file cached
 	contentBuff []byte
 }
 
-func baseNew(dbFile string, vIndex [][]*VectorIndexBlock, cBuff []byte) (*Searcher, error) {
+func baseNew(dbFile string, vIndex []byte, cBuff []byte) (*Searcher, error) {
 	var err error
 
 	// content buff first
 	if cBuff != nil {
-		// check and autoload the vector index
-		if vIndex == nil {
-			vIndex, err = LoadVectorIndexFromBuff(cBuff)
-			if err != nil {
-				return nil, fmt.Errorf("load vector index from buff: %w", err)
-			}
-		}
-
 		return &Searcher{
-			vectorIndex: vIndex,
+			vectorIndex: nil,
 			contentBuff: cBuff,
 		}, nil
 	}
@@ -76,17 +87,12 @@ func NewWithFileOnly(dbFile string) (*Searcher, error) {
 	return baseNew(dbFile, nil, nil)
 }
 
-func NewWithVectorIndex(dbFile string, vIndex [][]*VectorIndexBlock) (*Searcher, error) {
+func NewWithVectorIndex(dbFile string, vIndex []byte) (*Searcher, error) {
 	return baseNew(dbFile, vIndex, nil)
 }
 
 func NewWithBuffer(cBuff []byte) (*Searcher, error) {
-	vIndex, err := LoadVectorIndexFromBuff(cBuff)
-	if err != nil {
-		return nil, fmt.Errorf("load vector index from buff: %w", err)
-	}
-
-	return baseNew("", vIndex, cBuff)
+	return baseNew("", nil, cBuff)
 }
 
 func (s *Searcher) Close() {
@@ -119,30 +125,37 @@ func (s *Searcher) Search(ip uint32) (string, error) {
 	s.ioCount = 0
 
 	// locate the segment index block based on the vector index
-	var vIndex *VectorIndexBlock
+	var il0 = (ip >> 24) & 0xFF
+	var il1 = (ip >> 16) & 0xFF
+	var idx = il0*VectorIndexCols*VectorIndexSize + il1*VectorIndexSize
+	var sPtr, ePtr = uint32(0), uint32(0)
 	if s.vectorIndex != nil {
-		vIndex = s.vectorIndex[(ip>>24)&0xFF][(ip>>16)&0xFF]
+		sPtr = binary.LittleEndian.Uint32(s.vectorIndex[idx:])
+		ePtr = binary.LittleEndian.Uint32(s.vectorIndex[idx+4:])
+	} else if s.contentBuff != nil {
+		sPtr = binary.LittleEndian.Uint32(s.contentBuff[HeaderInfoLength+idx:])
+		ePtr = binary.LittleEndian.Uint32(s.contentBuff[HeaderInfoLength+idx+4:])
 	} else {
-		l0, l1 := (ip>>24)&0xFF, (ip>>16)&0xFF
-		offset := HeaderInfoLength + l0*VectorIndexCols*VectorIndexSize + l1*VectorIndexSize
-
 		// read the vector index block
-		var vIndexBuff = make([]byte, 8)
-		err := s.read(int64(offset), vIndexBuff)
-		vIndex, err = VectorIndexBlockDecode(vIndexBuff)
+		var buff = make([]byte, 8)
+		err := s.read(int64(HeaderInfoLength+idx), buff)
 		if err != nil {
-			return "", fmt.Errorf("read vector index block at %d: %w", offset, err)
+			return "", fmt.Errorf("read vector index block at %d: %w", HeaderInfoLength+idx, err)
 		}
+
+		sPtr = binary.LittleEndian.Uint32(buff)
+		ePtr = binary.LittleEndian.Uint32(buff[4:])
 	}
 
-	//fmt.Printf("vIndex=%s", vIndex)
+	// fmt.Printf("sPtr=%d, ePtr=%d", sPtr, ePtr)
+
 	// binary search the segment index to get the region
 	var dataLen, dataPtr = 0, uint32(0)
 	var buff = make([]byte, SegmentIndexBlockSize)
-	var l, h = 0, int((vIndex.LastPtr - vIndex.FirstPtr) / SegmentIndexBlockSize)
+	var l, h = 0, int((ePtr - sPtr) / SegmentIndexBlockSize)
 	for l <= h {
 		m := (l + h) >> 1
-		p := vIndex.FirstPtr + uint32(m*SegmentIndexBlockSize)
+		p := sPtr + uint32(m*SegmentIndexBlockSize)
 		err := s.read(int64(p), buff)
 		if err != nil {
 			return "", fmt.Errorf("read segment index at %d: %w", p, err)
