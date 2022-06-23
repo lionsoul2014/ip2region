@@ -29,22 +29,6 @@ function testLoadVectorIndex() {
     printf("vector index loaded: length=%d\n", strlen($vIndex));
 }
 
-function testLoadVectorIndexFromBuff() {
-    $cBuff = XdbSearcher::loadContentFromFile('../../data/ip2region.xdb');
-    if ($cBuff == null) {
-        printf("failed to load content from file\n");
-        return;
-    }
-
-    $vIndex = XdbSearcher::loadVectorIndexFromBuff($cBuff);
-    if ($vIndex == null) {
-        printf("failed to load content from file\n");
-        return;
-    }
-
-    printf("vector index loaded, length=%d\n", strlen($vIndex));
-}
-
 function testLoadContent() {
     $cBuff = XdbSearcher::loadContentFromFile('../../data/ip2region.xdb');
     if ($cBuff == null) {
@@ -64,12 +48,6 @@ printf("done, cost: %0.5f ms\n\n", XdbSearcher::now() - $now);
 printf("testing loadVectorIndex ... \n");
 $now = XdbSearcher::now();
 testLoadVectorIndex();
-printf("done, cost: %0.5f ms\n\n", XdbSearcher::now() - $now);
-
-
-printf("testing loadVectorIndexFromBuff ... \n");
-$now = XdbSearcher::now();
-testLoadVectorIndexFromBuff();
 printf("done, cost: %0.5f ms\n\n", XdbSearcher::now() - $now);
 
 
