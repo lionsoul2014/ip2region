@@ -104,7 +104,7 @@ class XdbSearcher
         // locate the segment index block based on the vector index
         $il0 = ($ip >> 24) & 0xFF;
         $il1 = ($ip >> 16) & 0xFF;
-        $idx = $il0 * self::VectorIndexRows * self::VectorIndexSize + $il1 * self::VectorIndexSize;
+        $idx = $il0 * self::VectorIndexCols * self::VectorIndexSize + $il1 * self::VectorIndexSize;
         if ($this->vectorIndex != null) {
             $sPtr = self::getLong($this->vectorIndex, $idx);
             $ePtr = self::getLong($this->vectorIndex, $idx + 4);
