@@ -133,7 +133,7 @@ class XdbSearcher
             // read the segment index
             $buff = $this->read($p, self::SegmentIndexSize);
             if ($buff == null) {
-                throw new Exception("failed to read segment index at ${$p}");
+                throw new Exception("failed to read segment index at ${p}");
             }
 
             $sip = self::getLong($buff, 0);
@@ -294,16 +294,6 @@ class XdbSearcher
         }
 
         return self::loadVectorIndex($handle);
-    }
-
-    // load vector index from the specified buffer
-    public static function loadVectorIndexFromBuff($cBuff) {
-        $len = self::VectorIndexRows * self::VectorIndexCols * self::SegmentIndexSize;
-        if (strlen($cBuff) < (self::HeaderInfoLength + $len)) {
-            return null;
-        }
-
-        return substr($cBuff, self::HeaderInfoLength, $len);
     }
 
     // load the xdb content from a file handle
