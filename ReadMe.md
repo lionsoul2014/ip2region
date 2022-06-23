@@ -35,7 +35,7 @@ v2.0 格式的 `xdb` 支持亿级别的 IP 数据段行数，region 信息也可
 | 编程语言 | 描述 | 开发状态 | 贡献者 |
 | :--- | :--- | :--- | :--- |
 | [golang](binding/golang) | golang 查询客户端实现 | 已完成 | [Lion](https://github.com/lionsoul2014) |
-| [php](binding/php) | php 查询客户端实现 | 开发中... | [Lion](https://github.com/lionsoul2014) |
+| [php](binding/php) | php 查询客户端实现 | 已完成 | [Lion](https://github.com/lionsoul2014) |
 | [java](binding/java) | java 查询客户端实现 | 开发中... | [Lion](https://github.com/lionsoul2014) |
 | [lua](binding/lua) | lua 查询客户端实现 | 开发中... | [Lion](https://github.com/lionsoul2014) |
 | [c](binding/c) | ANSC c 查询客户端实现 | 开发中... | [Lion](https://github.com/lionsoul2014) |
