@@ -112,6 +112,7 @@ if ($handle === false) {
 }
 
 $count = 0;
+$costs = 0;
 $sTime = XdbSearcher::now();
 while (!feof($handle)) {
     $line = trim(fgets($handle, 1024));
@@ -145,7 +146,9 @@ while (!feof($handle)) {
     $mip = ($sip + $eip) >> 1;
     foreach ([$sip, ($sip + $mip) >> 1, $mip, ($mip + $eip) >> 1, $eip] as $ip) {
         try {
+            $cTime = XdbSearcher::now();
             $region = $searcher->search($ip);
+            $costs += XdbSearcher::now() - $cTime;
         } catch (Exception $e) {
             printf("failed to search ip `%s`\n", long2ip($ip));
             return;
@@ -169,6 +172,5 @@ while (!feof($handle)) {
 // close the searcher at last
 fclose($handle);
 $searcher->close();
-$cost = XdbSearcher::now() - $sTime;
 printf("Bench finished, {cachePolicy: %s, total: %d, took: %ds, cost: %.3f ms/op}\n",
-    $cachePolicy, $count, $cost/1000, $cost/$count);
+    $cachePolicy, $count, (XdbSearcher::now() - $sTime)/1000, $costs/$count);
