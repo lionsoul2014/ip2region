@@ -61,15 +61,7 @@ class XdbSearcher
     function __construct($dbFile, $vectorIndex=null, $cBuff=null) {
         // check the content buffer first
         if ($cBuff != null) {
-            // check and autoload the vector index
-            if ($vectorIndex != null) {
-                // load the vector index
-                $this->vectorIndex = self::loadVectorIndexFromBuff($cBuff);
-                if ($this->vectorIndex == null) {
-                    throw new Exception("failed to load vector index from buffer");
-                }
-            }
-
+            $this->vectorIndex = null;
             $this->contentBuff = $cBuff;
         } else {
             // open the xdb binary file
