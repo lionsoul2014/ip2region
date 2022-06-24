@@ -32,21 +32,21 @@ v2.0 格式的 `xdb` 支持亿级别的 IP 数据段行数，region 信息也可
 
 使用文档和测试程序请参考各个查询客户端下的 ReadMe 介绍，全部查询 binding 实现情况如下：
 
-| 编程语言 | 描述 | 开发状态 | 贡献者 |
-| :--- | :--- | :--- | :--- |
-| [golang](binding/golang) | golang 查询客户端实现 | 已完成 | [Lion](https://github.com/lionsoul2014) |
-| [php](binding/php) | php 查询客户端实现 | 已完成 | [Lion](https://github.com/lionsoul2014) |
-| [java](binding/java) | java 查询客户端实现 | 开发中... | [Lion](https://github.com/lionsoul2014) |
+| 编程语言 | 描述 | 开发状态   | 贡献者 |
+| :--- | :--- |:-------| :--- |
+| [golang](binding/golang) | golang 查询客户端实现 | 已完成    | [Lion](https://github.com/lionsoul2014) |
+| [php](binding/php) | php 查询客户端实现 | 已完成    | [Lion](https://github.com/lionsoul2014) |
+| [java](binding/java) | java 查询客户端实现 | 已完成 | [Lion](https://github.com/lionsoul2014) |
 | [lua](binding/lua) | lua 查询客户端实现 | 开发中... | [Lion](https://github.com/lionsoul2014) |
 | [c](binding/c) | ANSC c 查询客户端实现 | 开发中... | [Lion](https://github.com/lionsoul2014) |
 | [lua_c](binding/lua_c) | lua 查询客户端实现 | 开发中... | [Lion](https://github.com/lionsoul2014) |
 | [rust](binding/rust) | rust 查询客户端实现 | 开发中... | [Lion](https://github.com/lionsoul2014) |
-| [python](binding/python) | python 查询客户端实现 | 待开始 | 待确定 |
-| [nodejs](binding/nodejs) | nodejs 查询客户端实现 | 待开始 | 待确定 |
-| [php5_ext](binding/php5_ext) | php5 c 扩展查询客户端实现 | 待开始 | 待确定 |
-| [php7_ext](binding/php7_ext) | php7 c 扩展查询客户端实现 | 待开始 | 待确定 |
-| [nginx](binding/nginx) | nginx的扩展查询客户端实现 | 待开始 | 待确定 |
-| [csharp](binding/csharp) | c# 查询客户端实现 | 待开始 | 待确定 |
+| [python](binding/python) | python 查询客户端实现 | 待开始    | 待确定 |
+| [nodejs](binding/nodejs) | nodejs 查询客户端实现 | 待开始    | 待确定 |
+| [php5_ext](binding/php5_ext) | php5 c 扩展查询客户端实现 | 待开始    | 待确定 |
+| [php7_ext](binding/php7_ext) | php7 c 扩展查询客户端实现 | 待开始    | 待确定 |
+| [nginx](binding/nginx) | nginx的扩展查询客户端实现 | 待开始    | 待确定 |
+| [csharp](binding/csharp) | c# 查询客户端实现 | 待开始    | 待确定 |
 
 
 
