@@ -87,7 +87,7 @@ if ($region === null) {
 
 printf("{region: %s, took: %.5f ms}\n", $region, XdbSearcher::now() - $sTime);
 
-/ 备注：并发使用，用整个 xdb 缓存创建的 searcher 对象可以安全用于并发。
+// 备注：并发使用，用整个 xdb 缓存创建的 searcher 对象可以安全用于并发。
 ```
 
 # 查询测试
