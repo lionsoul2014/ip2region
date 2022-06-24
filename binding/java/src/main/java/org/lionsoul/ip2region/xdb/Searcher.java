@@ -48,7 +48,7 @@ public class Searcher {
         return new Searcher(null, null, cBuff);
     }
 
-    // ---
+    // --- End of creator
 
     public Searcher(String dbFile, byte[] vectorIndex, byte[] cBuff) throws IOException {
         if (cBuff != null) {
