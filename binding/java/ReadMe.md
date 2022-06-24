@@ -146,7 +146,7 @@ public class SearcherTest {
 
 通过 maven 来编译测试程序。
 ```bash
-// cd 到 java binding 的根目录
+# cd 到 java binding 的根目录
 cd binding/java/
 mvn compile package
 ```
