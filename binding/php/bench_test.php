@@ -173,4 +173,4 @@ while (!feof($handle)) {
 fclose($handle);
 $searcher->close();
 printf("Bench finished, {cachePolicy: %s, total: %d, took: %ds, cost: %.3f ms/op}\n",
-    $cachePolicy, $count, (XdbSearcher::now() - $sTime)/1000, $costs/$count);
+    $cachePolicy, $count, (XdbSearcher::now() - $sTime)/1000, $count == 0 ? 0 : $costs/$count);
