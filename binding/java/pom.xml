@@ -4,11 +4,11 @@
 
     <groupId>org.lionsoul</groupId>
     <artifactId>ip2region</artifactId>
-    <version>2.6.0</version>
+    <version>2.6.1</version>
     <packaging>jar</packaging>
 
     <name>ip2region</name>
-    <url>https://gitee.com/lionsoul/ip2region/</url>
+    <url>https://github.com/lionsoul2014/ip2region</url>
     <description>Open source offline internet address db manager framework and locator</description>
 
     <licenses>
@@ -20,9 +20,9 @@
     </licenses>
 
     <scm>
-        <url>git@gitee.com:lionsoul/ip2region.git</url>
-        <connection>scm:git:git@gitee.com:lionsoul/ip2region.git</connection>
-        <developerConnection>scm:git:git@gitee.com:lionsoul/ip2region.git</developerConnection>
+        <url>git@github.com:lionsoul2014/ip2region.git</url>
+        <connection>scm:git:git@github.com:lionsoul2014/ip2region.git</connection>
+        <developerConnection>scm:git:git@github.com:lionsoul2014/ip2region.git</developerConnection>
     </scm>
 
     <developers>
@@ -34,8 +34,8 @@
     </developers>
 
     <issueManagement>
-        <url>https://gitee.com/lionsoul/ip2region/issues</url>
-        <system>Gitee issues</system>
+        <url>https://github.com/lionsoul2014/ip2region/issues</url>
+        <system>Github issues</system>
     </issueManagement>
 
     <properties>
