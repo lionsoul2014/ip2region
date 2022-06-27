@@ -54,8 +54,14 @@ XDB_PUBLIC(int) xdb_search(unsigned int ip, char *buffer) {
     return 0;
 }
 
-XDB_PUBLIC(int) xdb_search_by_string(const char *ip, char *buffer) {
-    return 0;
+XDB_PUBLIC(int) xdb_search_by_string(const char *str_ip, char *buffer) {
+    unsigned int ip = 0;
+    int errcode = check_ip(str_ip, &ip);
+    if (errcode != 0) {
+        return 10 + errcode;
+    } else {
+        return xdb_search(ip, buffer);
+    }
 }
 
 // get unsigned long (4bytes) from a specified buffer start from the specified offset
