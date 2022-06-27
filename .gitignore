@@ -38,6 +38,7 @@ META-INF/
 /binding/java/*.jar
 
 /binding/c/testSearcher
+/binding/c/cmake-build-debug
 
 # golang
 /binding/golang/searcher
