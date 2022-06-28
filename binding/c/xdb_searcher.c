@@ -6,6 +6,7 @@
 // @Author Lion <chenxin619315@gmail.com>
 // @Date   2022/06/27
 
+#include "sys/time.h"
 #include "xdb_searcher.h"
 
 // internal function prototype define
@@ -92,8 +93,7 @@ XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, unsigned int ip, char *region_bu
         e_ptr = get_unsigned_int(vector_buffer, 4);
     }
 
-    printf("s_ptr=%u, e_ptr=%u", s_ptr, e_ptr);
-
+    // printf("s_ptr=%u, e_ptr=%u\n", s_ptr, e_ptr);
     // binary search to get the final region info
     data_len = 0, data_ptr = 0;
     l = 0, h = (e_ptr - s_ptr) / xdb_segment_index_size;
@@ -117,13 +117,13 @@ XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, unsigned int ip, char *region_bu
                 l = m + 1;
             } else {
                 data_len = get_unsigned_short(segment_buffer, 8);
-                data_ptr = get_unsigned_short(segment_buffer, 10);
+                data_ptr = get_unsigned_int(segment_buffer, 10);
                 break;
             }
         }
     }
 
-    printf("data_len=%u, data_ptr=%u\n", data_len, data_ptr);
+    // printf("data_len=%u, data_ptr=%u\n", data_len, data_ptr);
     if (data_len == 0) {
         region_buffer[0] = '\0';
         return 0;
@@ -156,7 +156,8 @@ XDB_PRIVATE(int) read(xdb_searcher_t *xdb, long offset, char *buffer, size_t len
         return 1;
     }
 
-    if (fread(buffer, 1, length, xdb->handle) != -1) {
+    xdb->io_count++;
+    if (fread(buffer, 1, length, xdb->handle) != length) {
         return 2;
     }
 
@@ -327,4 +328,10 @@ XDB_PUBLIC(int) check_ip(const char *src_ip, unsigned int *dst_ip) {
 // unsigned int ip to string ip
 XDB_PUBLIC(void) long2ip(unsigned int ip, char *buffer) {
     sprintf(buffer, "%d.%d.%d.%d", (ip >> 24) & 0xFF, (ip >> 16) & 0xFF, (ip >> 8) & 0xFF, ip & 0xFF);
+}
+
+XDB_PUBLIC(long) xdb_now() {
+    struct timeval c_time;
+    gettimeofday(&c_time, NULL);
+    return c_time.tv_sec * (int)1e6 + c_time.tv_usec;
 }
