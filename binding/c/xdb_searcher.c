@@ -147,7 +147,7 @@ XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, unsigned int ip, char *region_bu
 XDB_PRIVATE(int) read(xdb_searcher_t *xdb, long offset, char *buffer, size_t length) {
     // check the xdb content cache first
     if (xdb->content_buff != NULL) {
-        memcpy(buffer, xdb->content_buff, length);
+        memcpy(buffer, xdb->content_buff + offset, length);
         return 0;
     }
 
