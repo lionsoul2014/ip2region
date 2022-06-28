@@ -37,6 +37,15 @@ do { \
 #define field_size(type, field)        sizeof(((type *)0)->field)
 #define sf_field_size(type, field)     (sizeof(((type *)0)->field) - 1)
 
+
+// public constants define
+#define HeaderInfoLength 256
+#define VectorIndexRows  256
+#define VectorIndexCols  256
+#define VectorIndexSize  8
+#define SegmentIndexSize 14
+
+
 // xdb searcher structure
 struct xdb_searcher_entry {
     FILE *handle;
@@ -66,9 +75,28 @@ XDB_PUBLIC(int) xdb_new_with_buffer(xdb_searcher_t *, char *);
 XDB_PUBLIC(void) xdb_close(xdb_searcher_t *);
 
 // xdb searcher search api define
-XDB_PUBLIC(int) xdb_search(unsigned int, char *);
+XDB_PUBLIC(int) xdb_search_by_string(xdb_searcher_t *, const char *, char *, size_t);
 
-XDB_PUBLIC(int) xdb_search_by_string(const char *, char *);
+XDB_PUBLIC(int) xdb_search(xdb_searcher_t *, unsigned int, char *, size_t);
+
+XDB_PUBLIC(int) xdb_get_io_count(xdb_searcher_t *);
+
+
+// --- buffer load util functions
+
+XDB_PUBLIC(int) xdb_load_header(FILE *, char *, size_t);
+
+XDB_PUBLIC(int) xdb_load_header_from_file(char *, char *, size_t);
+
+XDB_PUBLIC(int) xdb_load_vector_index(FILE *, char *, size_t);
+
+XDB_PUBLIC(int) xdb_load_vector_index_from_file(char *, char *, size_t);
+
+XDB_PUBLIC(int) xdb_load_content(FILE *, char *, size_t);
+
+XDB_PUBLIC(int) xdb_load_content_from_file(char *, char *, size_t);
+
+// --- End buffer load
 
 
 // get unsigned long (4bytes) from a specified buffer start from the specified offset with little-endian
