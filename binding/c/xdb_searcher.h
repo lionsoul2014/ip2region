@@ -34,16 +34,16 @@ do { \
 #define xdb_calloc( _blocks, _bytes )  calloc( _blocks, _bytes )
 #define xdb_malloc( _bytes )           malloc( _bytes )
 #define xdb_free( _ptr )               free( _ptr )
-#define field_size(type, field)        sizeof(((type *)0)->field)
-#define sf_field_size(type, field)     (sizeof(((type *)0)->field) - 1)
-
 
 // public constants define
-#define HeaderInfoLength 256
-#define VectorIndexRows  256
-#define VectorIndexCols  256
-#define VectorIndexSize  8
-#define SegmentIndexSize 14
+#define xdb_header_info_length 256
+#define xdb_vector_index_rows  256
+#define xdb_vector_index_cols  256
+#define xdb_vector_index_size  8
+#define xdb_segment_index_size 14
+
+// cache of vector_index_row × vector_index_rows × vector_index_size
+#define xdb_vector_index_length 524288
 
 
 // xdb searcher structure
@@ -84,17 +84,26 @@ XDB_PUBLIC(int) xdb_get_io_count(xdb_searcher_t *);
 
 // --- buffer load util functions
 
-XDB_PUBLIC(int) xdb_load_header(FILE *, char *, size_t);
+struct xdb_header {
+    unsigned short version;
+    unsigned short index_policy;
+    unsigned int created_at;
+    unsigned int start_index_ptr;
+    unsigned int end_index_ptr;
+};
+typedef struct xdb_header xdb_header_t;
 
-XDB_PUBLIC(int) xdb_load_header_from_file(char *, char *, size_t);
+XDB_PUBLIC(int) xdb_load_header(FILE *, xdb_header_t *);
 
-XDB_PUBLIC(int) xdb_load_vector_index(FILE *, char *, size_t);
+XDB_PUBLIC(int) xdb_load_header_from_file(char *, xdb_header_t *);
 
-XDB_PUBLIC(int) xdb_load_vector_index_from_file(char *, char *, size_t);
+XDB_PUBLIC(char *) xdb_load_vector_index(FILE *);
 
-XDB_PUBLIC(int) xdb_load_content(FILE *, char *, size_t);
+XDB_PUBLIC(char *) xdb_load_vector_index_from_file(char *);
 
-XDB_PUBLIC(int) xdb_load_content_from_file(char *, char *, size_t);
+XDB_PUBLIC(char *) xdb_load_content(FILE *);
+
+XDB_PUBLIC(char *) xdb_load_content_from_file(char *);
 
 // --- End buffer load
 
