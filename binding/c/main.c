@@ -7,9 +7,23 @@
 // @Date   2022/06/28
 
 #include "stdio.h"
-#include "stdlib.h"
+#include "sys/time.h"
 #include "xdb_searcher.h"
 
+//read a line from a command line.
+static char *get_line(FILE *fp, char *__dst) {
+    register int c;
+    register char *cs;
+
+    cs = __dst;
+    while ( ( c = getc( fp ) ) != EOF ) {
+        if ( c == '\n' ) break;
+        *cs++ = c;
+    }
+    *cs = '\0';
+
+    return ( c == EOF && cs == __dst ) ? NULL : __dst;
+}
 
 void print_help(char *argv[]) {
     printf("ip2region xdb searcher\n");
@@ -20,9 +34,17 @@ void print_help(char *argv[]) {
 }
 
 void test_search(int argc, char *argv[]) {
-    int i, n;
+    int i, n, err;
+
+    // for args parse
     char *r, key[33] = {'\0'}, val[256] = {'\0'};
     char db_file[256] = {'\0'}, cache_policy[16] = {"vectorIndex"};
+
+    // for search
+    long s_time, c_time;
+    unsigned int ip;
+    char line[256] = {'\0'}, region[256] = {'\0'};
+
     for (i = 2; i < argc; i++) {
         r = argv[i];
         if (strlen(r) < 5) {
@@ -64,7 +86,81 @@ void test_search(int argc, char *argv[]) {
         return;
     }
 
-    printf("db_file=%s, cache_policy=%s\n", db_file, cache_policy);
+    // printf("db_file=%s, cache_policy=%s\n", db_file, cache_policy);
+
+    xdb_searcher_t searcher;
+    char *vIndex = NULL, *cBuffer = NULL;
+    if (strcmp(cache_policy, "file") == 0) {
+        err = xdb_new_with_file_only(&searcher, db_file);
+        if (err != 0) {
+            printf("failed to create searcher with errcode=%d", err);
+            return;
+        }
+    } else if (strcmp(cache_policy, "vectorIndex") == 0) {
+        vIndex = xdb_load_vector_index_from_file(db_file);
+        if (vIndex == NULL) {
+            printf("failed to load vector index from `%s`", db_file);
+            return;
+        }
+
+        err = xdb_new_with_vector_index(&searcher, db_file, vIndex);
+        if (err != 0) {
+            printf("failed to create vector index cached searcher with errcode=%d", err);
+            return;
+        }
+    } else if (strcmp(cache_policy, "content") == 0) {
+        cBuffer = xdb_load_content_from_file(db_file);
+        if (cBuffer == NULL) {
+            printf("failed to load xdb content from `%s`", db_file);
+            return;
+        }
+
+        err = xdb_new_with_buffer(&searcher, cBuffer);
+        if (err != 0) {
+            printf("failed to create content cached searcher with errcode=%d", err);
+            return;
+        }
+    } else {
+        printf("invalid cache policy `%s`, options: file/vectorIndex/content", cache_policy);
+        return;
+    }
+
+    printf("ip2region xdb searcher test program, "
+           "cache_policy: %s\ntype 'quit' to exit\n", cache_policy);
+    while ( 1 ) {
+        printf("ip2region>> ");
+        get_line(stdin, line);
+        if ( strlen(line) < 2 ) {
+            continue;
+        }
+
+        if (strcasecmp( line, "quit") == 0 ) {
+            break;
+        }
+
+        if (check_ip(line, &ip) != 0) {
+            printf("invalid ip address `%s`\n", line);
+            continue;
+        }
+
+        s_time = xdb_now();
+        err = xdb_search(&searcher, ip, region, sizeof(region));
+        if (err != 0) {
+            printf("{err: %d, io_count: %d}\n", err, xdb_get_io_count(&searcher));
+        } else {
+            c_time = xdb_now() - s_time;
+            printf("{region: %s, io_count: %d, took: %ld μs}\n", region, xdb_get_io_count(&searcher), c_time);
+        }
+    }
+
+    xdb_close(&searcher);
+    if (vIndex != NULL) {
+        xdb_free(vIndex);
+    }
+    if(cBuffer != NULL) {
+        xdb_free(cBuffer);
+    }
+    printf("searcher test program exited, thanks for trying\n");
 }
 
 void test_bench(int argc, char *argv[]) {

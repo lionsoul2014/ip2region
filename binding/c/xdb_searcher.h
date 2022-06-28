@@ -120,5 +120,8 @@ XDB_PUBLIC(int) check_ip(const char *, unsigned int *);
 // unsigned int ip to string ip
 XDB_PUBLIC(void) long2ip(unsigned int, char *);
 
+// get the current time in microseconds
+XDB_PUBLIC(long) xdb_now();
+
 
 #endif //C_XDB_SEARCHER_H
