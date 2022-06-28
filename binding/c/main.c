@@ -93,35 +93,35 @@ void test_search(int argc, char *argv[]) {
     if (strcmp(cache_policy, "file") == 0) {
         err = xdb_new_with_file_only(&searcher, db_file);
         if (err != 0) {
-            printf("failed to create searcher with errcode=%d", err);
+            printf("failed to create searcher with errcode=%d\n", err);
             return;
         }
     } else if (strcmp(cache_policy, "vectorIndex") == 0) {
         vIndex = xdb_load_vector_index_from_file(db_file);
         if (vIndex == NULL) {
-            printf("failed to load vector index from `%s`", db_file);
+            printf("failed to load vector index from `%s`\n", db_file);
             return;
         }
 
         err = xdb_new_with_vector_index(&searcher, db_file, vIndex);
         if (err != 0) {
-            printf("failed to create vector index cached searcher with errcode=%d", err);
+            printf("failed to create vector index cached searcher with errcode=%d\n", err);
             return;
         }
     } else if (strcmp(cache_policy, "content") == 0) {
         cBuffer = xdb_load_content_from_file(db_file);
         if (cBuffer == NULL) {
-            printf("failed to load xdb content from `%s`", db_file);
+            printf("failed to load xdb content from `%s`\n", db_file);
             return;
         }
 
         err = xdb_new_with_buffer(&searcher, cBuffer);
         if (err != 0) {
-            printf("failed to create content cached searcher with errcode=%d", err);
+            printf("failed to create content cached searcher with errcode=%d\n", err);
             return;
         }
     } else {
-        printf("invalid cache policy `%s`, options: file/vectorIndex/content", cache_policy);
+        printf("invalid cache policy `%s`, options: file/vectorIndex/content\n", cache_policy);
         return;
     }
 
