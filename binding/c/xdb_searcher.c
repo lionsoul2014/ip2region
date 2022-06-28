@@ -11,7 +11,7 @@
 // internal function prototype define
 XDB_PRIVATE(int) read(xdb_searcher_t *, long offset, char *, size_t length);
 
-XDB_PRIVATE(int) xdb_new_base(xdb_searcher_t *xdb, const char *dbPath, const char *vIndex, const char *cBuff) {
+XDB_PRIVATE(int) xdb_new_base(xdb_searcher_t *xdb, const char *db_path, const char *vIndex, const char *cBuff) {
     memset(xdb, 0x00, sizeof(xdb_searcher_t));
 
     // check the content buffer first
@@ -22,7 +22,7 @@ XDB_PRIVATE(int) xdb_new_base(xdb_searcher_t *xdb, const char *dbPath, const cha
     }
 
     // open the xdb binary file
-    FILE *handle = fopen(dbPath, "r");
+    FILE *handle = fopen(db_path, "r");
     if (handle == NULL) {
         return 1;
     }
@@ -34,16 +34,16 @@ XDB_PRIVATE(int) xdb_new_base(xdb_searcher_t *xdb, const char *dbPath, const cha
 }
 
 // xdb searcher new api define
-XDB_PUBLIC(int) xdb_new_with_file_only(xdb_searcher_t *xdb, char *dbPath) {
-    return xdb_new_base(xdb, dbPath, NULL, NULL);
+XDB_PUBLIC(int) xdb_new_with_file_only(xdb_searcher_t *xdb, char *db_path) {
+    return xdb_new_base(xdb, db_path, NULL, NULL);
 }
 
-XDB_PUBLIC(int) xdb_new_with_vector_index(xdb_searcher_t *xdb, char *dbPath, char *vIndex) {
-    return xdb_new_base(xdb, dbPath, vIndex, NULL);
+XDB_PUBLIC(int) xdb_new_with_vector_index(xdb_searcher_t *xdb, char *db_path, char *vIndex) {
+    return xdb_new_base(xdb, db_path, vIndex, NULL);
 }
 
-XDB_PUBLIC(int) xdb_new_with_buffer(xdb_searcher_t *xdb, char *cBuff) {
-    return xdb_new_base(xdb, NULL, NULL, cBuff);
+XDB_PUBLIC(int) xdb_new_with_buffer(xdb_searcher_t *xdb, char *c_buffer) {
+    return xdb_new_base(xdb, NULL, NULL, c_buffer);
 }
 
 XDB_PUBLIC(void) xdb_close(xdb_searcher_t *xdb) {
