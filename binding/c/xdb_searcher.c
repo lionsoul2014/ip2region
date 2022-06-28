@@ -67,7 +67,7 @@ XDB_PUBLIC(int) xdb_search_by_string(xdb_searcher_t *xdb, const char *str_ip, ch
 XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, unsigned int ip, char *region_buffer, size_t length) {
     int il0, il1, idx, err, l, h, m, data_len;
     unsigned int s_ptr, e_ptr, p, sip, eip, data_ptr;
-    char vector_buffer[VectorIndexSize], segment_buffer[SegmentIndexSize];
+    char vector_buffer[xdb_vector_index_size], segment_buffer[xdb_segment_index_size];
 
     // reset the io counter
     xdb->io_count = 0;
@@ -75,15 +75,15 @@ XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, unsigned int ip, char *region_bu
     // locate the segment index block based on the vector index
     il0 = (ip >> 24) & 0xFF;
     il1 = (ip >> 16) & 0xFF;
-    idx = il0 * VectorIndexCols * VectorIndexSize + il1 * VectorIndexSize;
+    idx = il0 * xdb_vector_index_cols * xdb_vector_index_size + il1 * xdb_vector_index_size;
     if (xdb->vector_index != NULL) {
         s_ptr = get_unsigned_int(xdb->vector_index, idx);
         e_ptr = get_unsigned_int(xdb->vector_index, idx + 4);
     } else if (xdb->content_buff != NULL) {
-        s_ptr = get_unsigned_int(xdb->content_buff, HeaderInfoLength + idx);
-        e_ptr = get_unsigned_int(xdb->content_buff, HeaderInfoLength + idx + 4);
+        s_ptr = get_unsigned_int(xdb->content_buff, xdb_header_info_length + idx);
+        e_ptr = get_unsigned_int(xdb->content_buff, xdb_header_info_length + idx + 4);
     } else {
-        err = read(xdb, HeaderInfoLength + idx, vector_buffer, sizeof(vector_buffer));
+        err = read(xdb, xdb_header_info_length + idx, vector_buffer, sizeof(vector_buffer));
         if (err != 0) {
             return 10 + err;
         }
@@ -96,10 +96,10 @@ XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, unsigned int ip, char *region_bu
 
     // binary search to get the final region info
     data_len = 0, data_ptr = 0;
-    l = 0, h = (e_ptr - s_ptr) / SegmentIndexSize;
+    l = 0, h = (e_ptr - s_ptr) / xdb_segment_index_size;
     while (l <= h) {
         m = (l + h) >> 1;
-        p = s_ptr + m * SegmentIndexSize;
+        p = s_ptr + m * xdb_segment_index_size;
 
         // read the segment index item
         err = read(xdb, p, segment_buffer, sizeof(segment_buffer));
@@ -152,13 +152,11 @@ XDB_PRIVATE(int) read(xdb_searcher_t *xdb, long offset, char *buffer, size_t len
     }
 
     // seek to the offset
-    int errcode = fseek(xdb->handle, offset, SEEK_SET);
-    if (errcode == -1) {
+    if (fseek(xdb->handle, offset, SEEK_SET) == -1) {
         return 1;
     }
 
-    int r_size = fread(buffer, 1, length, xdb->handle);
-    if (r_size != 1) {
+    if (fread(buffer, 1, length, xdb->handle) != -1) {
         return 2;
     }
 
@@ -172,28 +170,104 @@ XDB_PUBLIC(int) xdb_get_io_count(xdb_searcher_t *xdb) {
 
 // --- buffer load util functions
 
-XDB_PUBLIC(int) xdb_load_header(FILE *handle, char *buffer, size_t length) {
+XDB_PUBLIC(int) xdb_load_header(FILE *handle, xdb_header_t *header) {
+    char buffer[256];
+
+    if (fseek(handle, 0, SEEK_SET) == -1) {
+        return 1;
+    }
+
+    if (fread(buffer, 1, 256, handle) != 256) {
+        return 2;
+    }
+
+    // fill the fields
+    header->version = (unsigned short) get_unsigned_short(buffer, 0);
+    header->index_policy = (unsigned short) get_unsigned_short(buffer, 2);
+    header->created_at = get_unsigned_int(buffer, 4);
+    header->start_index_ptr = get_unsigned_int(buffer, 8);
+    header->end_index_ptr = get_unsigned_int(buffer,12);
+
     return 0;
 }
 
-XDB_PUBLIC(int) xdb_load_header_from_file(char *dbPath, char *buffer, size_t length) {
-    return 0;
+XDB_PUBLIC(int) xdb_load_header_from_file(char *db_path, xdb_header_t *header) {
+    FILE *handle = fopen(db_path, "r");
+    if (handle == NULL) {
+        return 10;
+    }
+
+    return xdb_load_header(handle, header);
 }
 
-XDB_PUBLIC(int) xdb_load_vector_index(FILE *handle, char *buffer, size_t length) {
-    return 0;
+XDB_PUBLIC(char *) xdb_load_vector_index(FILE *handle) {
+    char *ptr = NULL;
+    int size = xdb_vector_index_length;
+
+    // seek to the vector index offset
+    if (fseek(handle, xdb_header_info_length, SEEK_SET) == -1) {
+        return NULL;
+    }
+
+    // do the buffer read
+    ptr = (char *) xdb_malloc(size);
+    if (ptr == NULL) {
+        return NULL;
+    }
+
+    if (fread(ptr, 1, size, handle) != size) {
+        xdb_free(ptr);
+        return NULL;
+    }
+
+    return ptr;
 }
 
-XDB_PUBLIC(int) xdb_load_vector_index_from_file(char *dbPath, char *buffer, size_t length) {
-    return 0;
+XDB_PUBLIC(char *) xdb_load_vector_index_from_file(char *db_path) {
+    FILE *handle = fopen(db_path, "r");
+    if (handle == NULL) {
+        return NULL;
+    }
+
+    return xdb_load_vector_index(handle);
 }
 
-XDB_PUBLIC(int) xdb_load_content(FILE *handle, char *buffer, size_t length) {
-    return 0;
+XDB_PUBLIC(char *) xdb_load_content(FILE *handle) {
+    long filesize;
+    char *ptr = NULL;
+
+    // determine the file size
+    if (fseek(handle, 0, SEEK_END) == -1) {
+        return NULL;
+    }
+
+    filesize = ftell(handle);
+    if (fseek(handle, 0, SEEK_SET) == -1) {
+        return NULL;
+    }
+
+    // do the file read
+    ptr = (char *) xdb_malloc(filesize);
+    if (ptr == NULL) {
+        return NULL;
+    }
+
+    // read the content into the buffer
+    if (fread(ptr, 1, filesize, handle) != filesize) {
+        xdb_free(ptr);
+        return NULL;
+    }
+
+    return ptr;
 }
 
-XDB_PUBLIC(int) xdb_load_content_from_file(char *handle, char *buffer, size_t length) {
-    return 0;
+XDB_PUBLIC(char *) xdb_load_content_from_file(char *db_path) {
+    FILE *handle = fopen(db_path, "r");
+    if (handle == NULL) {
+        return NULL;
+    }
+
+    return xdb_load_content(handle);
 }
 
 // --- End
