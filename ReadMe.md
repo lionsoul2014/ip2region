@@ -28,9 +28,9 @@ v2.0 格式的 `xdb` 支持亿级别的 IP 数据段行数，region 信息也可
 
 
 
-# 查询客户端
+# `xdb` 数据查询
 
-使用文档和测试程序请参考各个查询客户端下的 ReadMe 介绍，全部查询 binding 实现情况如下：
+API 介绍，使用文档和测试程序请参考对应 `searcher` 查询客户端下的 ReadMe 介绍，全部查询 binding 实现情况如下：
 
 | 编程语言 | 描述 | 开发状态   | 贡献者 |
 | :--- | :--- |:-------| :--- |
@@ -38,7 +38,7 @@ v2.0 格式的 `xdb` 支持亿级别的 IP 数据段行数，region 信息也可
 | [php](binding/php) | php 查询客户端实现 | 已完成    | [Lion](https://github.com/lionsoul2014) |
 | [java](binding/java) | java 查询客户端实现 | 已完成 | [Lion](https://github.com/lionsoul2014) |
 | [lua](binding/lua) | lua 查询客户端实现 | 开发中... | [Lion](https://github.com/lionsoul2014) |
-| [c](binding/c) | ANSC c 查询客户端实现 | 开发中... | [Lion](https://github.com/lionsoul2014) |
+| [c](binding/c) | ANSC c 查询客户端实现 | 已完成 | [Lion](https://github.com/lionsoul2014) |
 | [lua_c](binding/lua_c) | lua 查询客户端实现 | 开发中... | [Lion](https://github.com/lionsoul2014) |
 | [rust](binding/rust) | rust 查询客户端实现 | 开发中... | [Lion](https://github.com/lionsoul2014) |
 | [python](binding/python) | python 查询客户端实现 | 待开始    | 待确定 |
@@ -50,9 +50,9 @@ v2.0 格式的 `xdb` 支持亿级别的 IP 数据段行数，region 信息也可
 
 
 
-# xdb数据生成
+# `xdb` 数据生成
 
-使用文档和测试程序请参考不同生成程序下的 ReadMe 介绍，全部生成 maker 实现情况如下：
+API 介绍，使用文档和测试程序请参考对应 `maker` 生成程序下的 ReadMe 介绍，全部生成 maker 实现情况如下：
 
 | 编程语言 | 描述 | 开发状态 | 贡献者 |
 | :--- | :--- | :--- | :--- |
