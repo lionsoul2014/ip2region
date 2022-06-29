@@ -25,6 +25,8 @@ const (
 	SegmentIndexBlockSize = 14
 )
 
+// --- Index policy define
+
 type IndexPolicy int
 
 const (
@@ -42,6 +44,33 @@ func (i IndexPolicy) String() string {
 		return "unknown"
 	}
 }
+
+// --- Header define
+
+type Header struct {
+	// data []byte
+	Version       uint16
+	IndexPolicy   IndexPolicy
+	CreatedAt     uint32
+	StartIndexPtr uint32
+	EndIndexPtr   uint32
+}
+
+func NewHeader(input []byte) (*Header, error) {
+	if len(input) < 16 {
+		return nil, fmt.Errorf("invalid input buffer")
+	}
+
+	return &Header{
+		Version:       binary.LittleEndian.Uint16(input),
+		IndexPolicy:   IndexPolicy(binary.LittleEndian.Uint16(input[2:])),
+		CreatedAt:     binary.LittleEndian.Uint32(input[4:]),
+		StartIndexPtr: binary.LittleEndian.Uint32(input[8:]),
+		EndIndexPtr:   binary.LittleEndian.Uint32(input[12:]),
+	}, nil
+}
+
+// --- searcher implementation
 
 type Searcher struct {
 	handle *os.File
@@ -137,7 +166,7 @@ func (s *Searcher) Search(ip uint32) (string, error) {
 		ePtr = binary.LittleEndian.Uint32(s.contentBuff[HeaderInfoLength+idx+4:])
 	} else {
 		// read the vector index block
-		var buff = make([]byte, 8)
+		var buff = make([]byte, VectorIndexSize)
 		err := s.read(int64(HeaderInfoLength+idx), buff)
 		if err != nil {
 			return "", fmt.Errorf("read vector index block at %d: %w", HeaderInfoLength+idx, err)
