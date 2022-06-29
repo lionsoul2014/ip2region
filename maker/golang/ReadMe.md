@@ -1,5 +1,6 @@
 # ip2region xdb golang 生成实现
 
+
 # 程序编译
 
 通过如下方式编译得到 xdb_maker 可执行程序:
@@ -9,7 +10,8 @@ make
 ```
 编译成功后会在当前目录生成一个 xdb_maker 的可执行文件
 
-# 数据生成
+
+# `xdb` 数据生成
 
 通过 `xdb_maker gen` 命令生成 ip2region.xdb 二进制文件:
 ```
@@ -29,7 +31,8 @@ options:
 2022/06/16 16:38:48 main.go:89: Done, elapsed: 33.615278847s
 ```
 
-# 数据查询
+
+# `xdb` 数据查询
 
 通过 `xdb_maker search` 命令来测试查询输入的 ip：
 ```
@@ -59,7 +62,7 @@ ip2region>>
 
 # bench 测试
 
-如果你自主生成了 xdb 文件，请确保运行如下的 `xdb_maker bench` 命令来确保生成的的 xdb 文件的正确性：
+如果你自主生成了 `xdb` 文件，请确保运行如下的 `xdb_maker bench` 命令来确保生成的的 `xdb` 文件的正确性：
 ```
 ➜  golang git:(v2.0_xdb) ✗ ./xdb_maker bench
 ./xdb_maker bench [command options]
