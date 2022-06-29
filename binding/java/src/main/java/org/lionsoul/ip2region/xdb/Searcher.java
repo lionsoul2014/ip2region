@@ -11,7 +11,6 @@ package org.lionsoul.ip2region.xdb;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.Arrays;
 
 public class Searcher {
     // constant defined copied from the xdb maker
@@ -72,9 +71,9 @@ public class Searcher {
         return ioCount;
     }
 
-    public String searchByStr(String ip) throws Exception {
-        long ipAddr = checkIpAddr(ip);
-        return search(ipAddr);
+    public String searchByStr(String ipStr) throws Exception {
+        long ip = checkIP(ipStr);
+        return search(ip);
     }
 
     public String search(long ip) throws IOException {
@@ -94,7 +93,7 @@ public class Searcher {
             sPtr = getInt(contentBuff, HeaderInfoLength + idx);
             ePtr = getInt(contentBuff, HeaderInfoLength + idx + 4);
         } else {
-            final byte[] buff = new byte[8];
+            final byte[] buff = new byte[VectorIndexSize];
             read(HeaderInfoLength + idx, buff);
             sPtr = getInt(buff, 0);
             ePtr = getInt(buff, 4);
@@ -245,23 +244,23 @@ public class Searcher {
     public static final byte[] shiftIndex = {24, 16, 8, 0};
 
     /* check the specified ip address */
-    public static long checkIpAddr(String ip) throws Exception {
+    public static long checkIP(String ip) throws Exception {
         String[] ps = ip.split("\\.");
         if (ps.length != 4) {
             throw new Exception("invalid ip address `" + ip + "`");
         }
 
-        long ipAddr = 0;
+        long ipDst = 0;
         for (int i = 0; i < ps.length; i++) {
             int val = Integer.parseInt(ps[i]);
             if (val > 255) {
                 throw new Exception("ip part `"+ps[i]+"` should be less then 256");
             }
 
-            ipAddr |= ((long) val << shiftIndex[i]);
+            ipDst |= ((long) val << shiftIndex[i]);
         }
 
-        return ipAddr & 0xFFFFFFFFL;
+        return ipDst & 0xFFFFFFFFL;
     }
 
 }

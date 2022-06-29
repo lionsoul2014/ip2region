@@ -8,15 +8,13 @@ package org.lionsoul.ip2region;
 
 import org.lionsoul.ip2region.xdb.Searcher;
 
-import java.io.IOException;
-
 public class UtilTest {
 
     public static void testIP2Long() {
         String ip = "1.2.3.4";
         long ipAddr = 0;
         try {
-            ipAddr = Searcher.checkIpAddr(ip);
+            ipAddr = Searcher.checkIP(ip);
         } catch (Exception e) {
             System.out.printf("failed to check ip: %s\n", e);
             return;

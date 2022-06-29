@@ -156,7 +156,7 @@ public class SearchTest {
 
             long sip;
             try {
-                sip = Searcher.checkIpAddr(ps[0]);
+                sip = Searcher.checkIP(ps[0]);
             } catch (Exception e) {
                 System.out.printf("check start ip `%s`: %s\n", ps[0], e);
                 return;
@@ -164,7 +164,7 @@ public class SearchTest {
 
             long eip;
             try {
-                eip = Searcher.checkIpAddr(ps[1]);
+                eip = Searcher.checkIP(ps[1]);
             } catch (Exception e) {
                 System.out.printf("check end ip `%s`: %s\n", ps[1], e);
                 return;
