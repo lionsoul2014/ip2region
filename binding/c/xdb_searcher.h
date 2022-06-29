@@ -101,16 +101,19 @@ XDB_PUBLIC(char *) xdb_load_content_from_file(char *);
 
 
 // get unsigned long (4bytes) from a specified buffer start from the specified offset with little-endian
-XDB_PUBLIC(unsigned int) get_unsigned_int(const char *, int);
+XDB_PUBLIC(unsigned int) xdb_get_uint(const char *, int);
 
 // get unsigned short (2bytes) from a specified buffer start from the specified offset with little-endian
-XDB_PUBLIC(int) get_unsigned_short(const char *, int);
+XDB_PUBLIC(int) xdb_get_ushort(const char *, int);
 
 // check the specified string ip and convert it to an unsigned int
-XDB_PUBLIC(int) check_ip(const char *, unsigned int *);
+XDB_PUBLIC(int) xdb_check_ip(const char *, unsigned int *);
 
 // unsigned int ip to string ip
-XDB_PUBLIC(void) long2ip(unsigned int, char *);
+XDB_PUBLIC(void) xdb_long2ip(unsigned int, char *);
+
+// get the middle ip of a and b
+XDB_PUBLIC(unsigned int) xdb_mip(unsigned long, unsigned long);
 
 // get the current time in microseconds
 XDB_PUBLIC(long) xdb_now();

@@ -57,7 +57,7 @@ XDB_PUBLIC(void) xdb_close(xdb_searcher_t *xdb) {
 
 XDB_PUBLIC(int) xdb_search_by_string(xdb_searcher_t *xdb, const char *str_ip, char *region_buffer, size_t length) {
     unsigned int ip = 0;
-    int errcode = check_ip(str_ip, &ip);
+    int errcode = xdb_check_ip(str_ip, &ip);
     if (errcode != 0) {
         return 10 + errcode;
     } else {
@@ -78,19 +78,19 @@ XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, unsigned int ip, char *region_bu
     il1 = ((int) (ip >> 16)) & 0xFF;
     idx = il0 * xdb_vector_index_cols * xdb_vector_index_size + il1 * xdb_vector_index_size;
     if (xdb->vector_index != NULL) {
-        s_ptr = get_unsigned_int(xdb->vector_index, idx);
-        e_ptr = get_unsigned_int(xdb->vector_index, idx + 4);
+        s_ptr = xdb_get_uint(xdb->vector_index, idx);
+        e_ptr = xdb_get_uint(xdb->vector_index, idx + 4);
     } else if (xdb->content_buff != NULL) {
-        s_ptr = get_unsigned_int(xdb->content_buff, xdb_header_info_length + idx);
-        e_ptr = get_unsigned_int(xdb->content_buff, xdb_header_info_length + idx + 4);
+        s_ptr = xdb_get_uint(xdb->content_buff, xdb_header_info_length + idx);
+        e_ptr = xdb_get_uint(xdb->content_buff, xdb_header_info_length + idx + 4);
     } else {
         err = read(xdb, xdb_header_info_length + idx, vector_buffer, sizeof(vector_buffer));
         if (err != 0) {
             return 10 + err;
         }
 
-        s_ptr = get_unsigned_int(vector_buffer, 0);
-        e_ptr = get_unsigned_int(vector_buffer, 4);
+        s_ptr = xdb_get_uint(vector_buffer, 0);
+        e_ptr = xdb_get_uint(vector_buffer, 4);
     }
 
     // printf("s_ptr=%u, e_ptr=%u\n", s_ptr, e_ptr);
@@ -108,16 +108,16 @@ XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, unsigned int ip, char *region_bu
         }
 
         // decode the data fields as needed
-        sip = get_unsigned_int(segment_buffer, 0);
+        sip = xdb_get_uint(segment_buffer, 0);
         if (ip < sip) {
             h = m - 1;
         } else {
-            eip = get_unsigned_int(segment_buffer, 4);
+            eip = xdb_get_uint(segment_buffer, 4);
             if (ip > eip) {
                 l = m + 1;
             } else {
-                data_len = get_unsigned_short(segment_buffer, 8);
-                data_ptr = get_unsigned_int(segment_buffer, 10);
+                data_len = xdb_get_ushort(segment_buffer, 8);
+                data_ptr = xdb_get_uint(segment_buffer, 10);
                 break;
             }
         }
@@ -183,11 +183,11 @@ XDB_PUBLIC(int) xdb_load_header(FILE *handle, xdb_header_t *header) {
     }
 
     // fill the fields
-    header->version = (unsigned short) get_unsigned_short(buffer, 0);
-    header->index_policy = (unsigned short) get_unsigned_short(buffer, 2);
-    header->created_at = get_unsigned_int(buffer, 4);
-    header->start_index_ptr = get_unsigned_int(buffer, 8);
-    header->end_index_ptr = get_unsigned_int(buffer,12);
+    header->version = (unsigned short) xdb_get_ushort(buffer, 0);
+    header->index_policy = (unsigned short) xdb_get_ushort(buffer, 2);
+    header->created_at = xdb_get_uint(buffer, 4);
+    header->start_index_ptr = xdb_get_uint(buffer, 8);
+    header->end_index_ptr = xdb_get_uint(buffer,12);
 
     return 0;
 }
@@ -274,7 +274,7 @@ XDB_PUBLIC(char *) xdb_load_content_from_file(char *db_path) {
 // --- End
 
 // get unsigned long (4bytes) from a specified buffer start from the specified offset
-XDB_PUBLIC(unsigned int) get_unsigned_int(const char *buffer, int offset) {
+XDB_PUBLIC(unsigned int) xdb_get_uint(const char *buffer, int offset) {
     return (
         ((buffer[offset  ]) & 0x000000FF) |
         ((buffer[offset+1] <<  8) & 0x0000FF00) |
@@ -284,7 +284,7 @@ XDB_PUBLIC(unsigned int) get_unsigned_int(const char *buffer, int offset) {
 }
 
 // get unsigned short (2bytes) from a specified buffer start from the specified offset
-XDB_PUBLIC(int) get_unsigned_short(const char *buffer, int offset) {
+XDB_PUBLIC(int) xdb_get_ushort(const char *buffer, int offset) {
     return (
         ((buffer[offset  ]) & 0x000000FF) |
         ((buffer[offset+1] << 8) & 0x0000FF00)
@@ -293,7 +293,7 @@ XDB_PUBLIC(int) get_unsigned_short(const char *buffer, int offset) {
 
 // string ip to unsigned int
 static int shiftIndex[4] = {24, 16, 8, 0};
-XDB_PUBLIC(int) check_ip(const char *src_ip, unsigned int *dst_ip) {
+XDB_PUBLIC(int) xdb_check_ip(const char *src_ip, unsigned int *dst_ip) {
     char c;
     int i, n, ip = 0;
     const char *ptr = src_ip;
@@ -326,8 +326,13 @@ XDB_PUBLIC(int) check_ip(const char *src_ip, unsigned int *dst_ip) {
 }
 
 // unsigned int ip to string ip
-XDB_PUBLIC(void) long2ip(unsigned int ip, char *buffer) {
+XDB_PUBLIC(void) xdb_long2ip(unsigned int ip, char *buffer) {
     sprintf(buffer, "%d.%d.%d.%d", (ip >> 24) & 0xFF, (ip >> 16) & 0xFF, (ip >> 8) & 0xFF, ip & 0xFF);
+}
+
+// get the middle ip of a and b
+XDB_PUBLIC(unsigned int) xdb_mip(unsigned long a, unsigned long b) {
+    return (unsigned int) ((a + b) >> 1);
 }
 
 XDB_PUBLIC(long) xdb_now() {
