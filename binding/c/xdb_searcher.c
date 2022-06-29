@@ -74,8 +74,8 @@ XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, unsigned int ip, char *region_bu
     xdb->io_count = 0;
 
     // locate the segment index block based on the vector index
-    il0 = (ip >> 24) & 0xFF;
-    il1 = (ip >> 16) & 0xFF;
+    il0 = ((int) (ip >> 24)) & 0xFF;
+    il1 = ((int) (ip >> 16)) & 0xFF;
     idx = il0 * xdb_vector_index_cols * xdb_vector_index_size + il1 * xdb_vector_index_size;
     if (xdb->vector_index != NULL) {
         s_ptr = get_unsigned_int(xdb->vector_index, idx);
@@ -96,7 +96,7 @@ XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, unsigned int ip, char *region_bu
     // printf("s_ptr=%u, e_ptr=%u\n", s_ptr, e_ptr);
     // binary search to get the final region info
     data_len = 0, data_ptr = 0;
-    l = 0, h = (e_ptr - s_ptr) / xdb_segment_index_size;
+    l = 0, h = ((int) (e_ptr - s_ptr)) / xdb_segment_index_size;
     while (l <= h) {
         m = (l + h) >> 1;
         p = s_ptr + m * xdb_segment_index_size;
@@ -284,7 +284,7 @@ XDB_PUBLIC(unsigned int) get_unsigned_int(const char *buffer, int offset) {
 }
 
 // get unsigned short (2bytes) from a specified buffer start from the specified offset
-XDB_PUBLIC(unsigned int) get_unsigned_short(const char *buffer, int offset) {
+XDB_PUBLIC(int) get_unsigned_short(const char *buffer, int offset) {
     return (
         ((buffer[offset  ]) & 0x000000FF) |
         ((buffer[offset+1] << 8) & 0x0000FF00)
