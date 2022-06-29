@@ -23,14 +23,6 @@
 #   define XDB_LINUX
 #endif
 
-// memory allocation error
-#define XDB_ALLOCATE_ERROR(func, bytes)    \
-do { \
-    printf("<XDB>: Allocate Error In Function <%s> For %lu Bytes.\n", func, (unsigned long int) bytes);    \
-    return NULL; \
-} while (0);
-
-
 #define xdb_calloc( _blocks, _bytes )  calloc( _blocks, _bytes )
 #define xdb_malloc( _bytes )           malloc( _bytes )
 #define xdb_free( _ptr )               free( _ptr )
@@ -112,7 +104,7 @@ XDB_PUBLIC(char *) xdb_load_content_from_file(char *);
 XDB_PUBLIC(unsigned int) get_unsigned_int(const char *, int);
 
 // get unsigned short (2bytes) from a specified buffer start from the specified offset with little-endian
-XDB_PUBLIC(unsigned int) get_unsigned_short(const char *, int);
+XDB_PUBLIC(int) get_unsigned_short(const char *, int);
 
 // check the specified string ip and convert it to an unsigned int
 XDB_PUBLIC(int) check_ip(const char *, unsigned int *);
