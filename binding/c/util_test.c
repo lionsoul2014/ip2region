@@ -20,13 +20,13 @@ void test_check_ip() {
     unsigned int ip;
     char ip_buff[16] = {'\0'};
     for (i = 0; i < 11; i++) {
-        errcode = check_ip(ip_list[i], &ip);
+        errcode = xdb_check_ip(ip_list[i], &ip);
         if (errcode != 0) {
             printf("invalid ip address `%s`\n", ip_list[i]);
             continue;
         }
 
-        long2ip(ip, ip_buff);
+        xdb_long2ip(ip, ip_buff);
         printf("long(%-15s)=%-10u, long2ip(%-10u)=%-15s", ip_list[i], ip, ip, ip_buff);
         if (strcmp(ip_list[i], ip_buff) != 0) {
             printf(" --[Failed]\n");
