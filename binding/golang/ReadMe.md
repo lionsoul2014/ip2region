@@ -43,7 +43,7 @@ func main() {
 
 ### 缓存 `VetorIndex` 索引
 
-可以预先加载 vecotorIndex 缓存，然后做成全局变量，每次创建 searcher 的时候使用全局的 vectorIndex，可以减少一次固定的 IO 操作从而加速查询，减少系统 io 压力。
+可以预先加载 `vecotorIndex` 缓存，然后做成全局变量，每次创建 searcher 的时候使用全局的 `vectorIndex`，可以减少一次固定的 IO 操作从而加速查询，减少系统 io 压力。
 ```golang
 // 1、从 dbPath 加载 VectorIndex 缓存，把下述 vIndex 变量全局到内存里面。
 vIndex, err := LoadVectorIndexFromFile(dbPath)
@@ -62,7 +62,7 @@ if err != nil {
 // 备注：并发使用，全部 goroutine 共享全局的只读 vIndex 缓存，每个 goroutine 创建一个独立的 searcher 对象
 ```
 
-### 缓存整个 xdb 数据
+### 缓存整个 `xdb` 数据
 
 可以预先加载整个 ip2region.xdb 到内存，完全基于内存查询，类似于之前的 memory search 查询。
 ```golang
@@ -118,7 +118,7 @@ ip2region>> 1.2.3.4
 
 # bench 测试
 
-通过 `xdb_searcher bench` 命令来进行自动 bench 测试，一方面确保程序和xdb文件都没有错误，一方面通过大量的查询得到平均查询性能：
+通过 `xdb_searcher bench` 命令来进行自动 bench 测试，一方面确保程序和 `xdb` 文件都没有错误，另一方面通过大量的查询得到平均查询性能：
 ```bash
 ➜  golang git:(v2.0_xdb) ./xdb_searcher bench
 ./xdb_searcher bench [command options]
@@ -134,6 +134,8 @@ options:
 Bench finished, {total: 3417955, took: 28.211578339s, cost: 8253 ns/op}
 ```
 
-可以设置 `cache-policy` 参数来分别测试 file/vectorIndex/content 不同缓存机制的实现。
+可以设置 `cache-policy` 参数来分别测试 file/vectorIndex/content 不同缓存实现机制的效率。
 
-*请注意 bench 使用的 src 文件需要是生成对应的 xdb 文件的相同的源文件*。bench 程序会逐行读取 `src` 指定的源IP文件，然后每个 IP 段选取 5 个固定位置的 IP 进行测试，以确保查询的 region 信息和原始的 region 信息是相同。测试途中没有调试信息的输出，有错误会打印错误信息并且终止运行，所以看到 `Bench finished` 就表示 bench 成功了，cost 是表示每次查询操作的平均时间(ns)。
+*请注意 bench 使用的 src 文件需要是生成对应的 xdb 文件的相同的源文件*。
+
+bench 程序会逐行读取 `src` 指定的源IP文件，然后每个 IP 段选取 5 个固定位置的 IP 进行测试，以确保查询的 region 信息和原始的 region 信息是相同。测试途中没有调试信息的输出，有错误会打印错误信息并且终止运行，所以看到 `Bench finished` 就表示 bench 成功了，cost 是表示每次查询操作的平均时间(ns)。
