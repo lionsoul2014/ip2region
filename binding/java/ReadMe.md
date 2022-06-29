@@ -7,7 +7,7 @@
 <dependency>
     <groupId>org.lionsoul</groupId>
     <artifactId>ip2region</artifactId>
-    <version>2.6.1</version>
+    <version>2.6.2</version>
 </dependency>
 ```
 
@@ -39,7 +39,6 @@ public class SearcherTest {
             System.out.printf("{region: %s, ioCount: %d, took: %d μs}\n", region, searcher.getIOCount(), cost);
         } catch (Exception e) {
             System.out.printf("failed to search(%s): %s\n", ip, e);
-            return;
         }
 
         // 3、备注：并发使用，每个线程需要创建一个独立的 searcher 对象单独使用。
@@ -86,7 +85,6 @@ public class SearcherTest {
             System.out.printf("{region: %s, ioCount: %d, took: %d μs}\n", region, searcher.getIOCount(), cost);
         } catch (Exception e) {
             System.out.printf("failed to search(%s): %s\n", ip, e);
-            return;
         }
 
         // 备注：每个线程需要单独创建一个独立的 Searcher 对象，但是都共享全局的制度 vIndex 缓存。
@@ -133,7 +131,6 @@ public class SearcherTest {
             System.out.printf("{region: %s, ioCount: %d, took: %d μs}\n", region, searcher.getIOCount(), cost);
         } catch (Exception e) {
             System.out.printf("failed to search(%s): %s\n", ip, e);
-            return;
         }
 
         // 备注：并发使用，用整个 xdb 数据缓存创建的查询对象可以安全的用于并发，也就是你可以把这个 searcher 对象做成全局对象去垮线程访问。
