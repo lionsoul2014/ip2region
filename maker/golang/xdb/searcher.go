@@ -113,7 +113,7 @@ func (s *Searcher) Search(ip uint32) (string, int, error) {
 		}
 
 		ioCount++
-		var buff = make([]byte, 8)
+		var buff = make([]byte, VectorIndexSize)
 		rLen, err := s.handle.Read(buff)
 		if err != nil {
 			return "", ioCount, fmt.Errorf("read vector index at %d: %w", pos, err)
