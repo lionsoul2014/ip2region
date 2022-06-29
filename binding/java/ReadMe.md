@@ -49,7 +49,7 @@ public class SearcherTest {
 
 ### 缓存 `VectorIndex` 索引
 
-我们可以提前从 xdb 文件中加载出来 VectorIndex 数据，然后全局缓存，每次创建 Searcher 对象的时候使用全局的 VectorIndex 缓存可以减少一次固定的 IO 操作，从而加速查询，减少 IO 压力。
+我们可以提前从 `xdb` 文件中加载出来 `VectorIndex` 数据，然后全局缓存，每次创建 Searcher 对象的时候使用全局的 VectorIndex 缓存可以减少一次固定的 IO 操作，从而加速查询，减少 IO 压力。
 ```java
 import org.lionsoul.ip2region.xdb.Searcher;
 import java.io.*;
@@ -94,7 +94,7 @@ public class SearcherTest {
 }
 ```
 
-### 缓存整个 xdb 数据
+### 缓存整个 `xdb` 数据
 
 我们也可以预先加载整个 ip2region.xdb 的数据到内存，然后基于这个数据创建查询对象来实现完全基于文件的查询，类似之前的 memory search。
 ```java
@@ -176,7 +176,7 @@ ip2region>> 1.2.3.4
 ip2region>>
 ```
 
-输入 ip 即可进行查询测试，也可以设置 `cache-policy` 来分别测试 file/vectorIndex/content 三种不同缓存方式的查询效果。
+输入 ip 即可进行查询测试，也可以分别设置 `cache-policy` 为 file/vectorIndex/content 来测试三种不同缓存实现的查询效果。
 
 
 # bench 测试
@@ -197,5 +197,5 @@ options:
 Bench finished, {cachePolicy: vectorIndex, total: 3417955, took: 8s, cost: 2 μs/op}
 ```
 
-可以通过设置 `cache-policy` 参数来分别测试 file/vectorIndex/content 三种不同缓存方式的性能。
+可以通过分别设置 `cache-policy` 为 file/vectorIndex/content 来测试三种不同缓存实现的效果。
 @Note: 注意 bench 使用的 src 文件要是生成对应 xdb 文件相同的源文件。
