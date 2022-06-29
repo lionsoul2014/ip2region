@@ -58,7 +58,7 @@ printf("{region: %s, took: %.5f ms}\n", $region, XdbSearcher::now() - $sTime);
 // 备注：并发使用，每个线程或者协程需要创建一个独立的 searcher 对象，但是都共享统一的只读 vectorIndex。
 ```
 
-### 缓存整个 xdb 数据
+### 缓存整个 `xdb` 数据
 
 如果你的 PHP 目环境支持，可以预先加载整个 `xdb` 的数据到内存，这样可以实现完全基于内存的查询，类似之前的 memory search 查询。
 ```php
@@ -111,11 +111,11 @@ ip2region>> 1.2.3.4
 ip2region>> 
 ```
 
-输入 ip 即可进行查询测试。也可以设置 `cache-policy` 来分别测试 file/vectorIndex/content 三种不同缓存类型的查询。
+输入 ip 即可进行查询测试。也可以分别设置 `cache-policy` 为 file/vectorIndex/content 来测试三种不同缓存实现的效率。
 
 # bench 测试
 
-通过 `bench_test.php` 脚本来进行自动 bench 测试，一方面确保 `xdb` 文件没有错误，一方面通过大量的查询测试平均查询性能：
+通过 `bench_test.php` 脚本来进行自动 bench 测试，一方面确保 `xdb` 文件没有错误，另一方面通过大量的查询测试平均查询性能：
 ```bash
 ➜  php git:(v2.0_xdb) ✗ php ./bench_test.php
 php ./bench_test.php [command options]
@@ -131,5 +131,5 @@ options:
 Bench finished, {cachePolicy: vectorIndex, total: 3417955, took: 15s, cost: 0.005 ms/op}
 ```
 
-可以通过设置 `cache-policy` 参数来分别测试 file/vectorIndex/content 三种不同的缓存类型的性能。
+可以通过设置 `cache-policy` 参数来分别测试 file/vectorIndex/content 三种不同的缓存实现的的性能。
 @Note：请注意 bench 使用的 src 文件需要是生成对应的 xdb 文件的相同的源文件。
