@@ -8,8 +8,10 @@
 
 require dirname(__FILE__) . '/XdbSearcher.class.php';
 
+const XDB_PATH = '../../data/ip2region.xdb';
+
 function testLoadHeader() {
-    $header = XdbSearcher::loadHeaderFromFile('../../data/ip2region.xdb');
+    $header = XdbSearcher::loadHeaderFromFile(XDB_PATH);
     if ($header == null) {
         printf("failed to load header from file\n");
         return;
@@ -20,17 +22,17 @@ function testLoadHeader() {
 }
 
 function testLoadVectorIndex() {
-    $vIndex = XdbSearcher::loadVectorIndexFromFile('../../data/ip2region.xdb');
+    $vIndex = XdbSearcher::loadVectorIndexFromFile(XDB_PATH);
     if ($vIndex == null) {
         printf("failed to load vector index from file\n");
         return;
     }
 
-    printf("vector index loaded: length=%d\n", strlen($vIndex));
+    printf("vector index loaded, length=%d\n", strlen($vIndex));
 }
 
 function testLoadContent() {
-    $cBuff = XdbSearcher::loadContentFromFile('../../data/ip2region.xdb');
+    $cBuff = XdbSearcher::loadContentFromFile(XDB_PATH);
     if ($cBuff == null) {
         printf("failed to load content from file\n");
         return;
