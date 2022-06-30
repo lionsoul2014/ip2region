@@ -35,15 +35,15 @@ XDB_PRIVATE(int) xdb_new_base(xdb_searcher_t *xdb, const char *db_path, const ch
 }
 
 // xdb searcher new api define
-XDB_PUBLIC(int) xdb_new_with_file_only(xdb_searcher_t *xdb, char *db_path) {
+XDB_PUBLIC(int) xdb_new_with_file_only(xdb_searcher_t *xdb, const char *db_path) {
     return xdb_new_base(xdb, db_path, NULL, NULL);
 }
 
-XDB_PUBLIC(int) xdb_new_with_vector_index(xdb_searcher_t *xdb, char *db_path, char *vIndex) {
+XDB_PUBLIC(int) xdb_new_with_vector_index(xdb_searcher_t *xdb, const char *db_path, const char *vIndex) {
     return xdb_new_base(xdb, db_path, vIndex, NULL);
 }
 
-XDB_PUBLIC(int) xdb_new_with_buffer(xdb_searcher_t *xdb, char *c_buffer) {
+XDB_PUBLIC(int) xdb_new_with_buffer(xdb_searcher_t *xdb, const char *c_buffer) {
     return xdb_new_base(xdb, NULL, NULL, c_buffer);
 }
 
@@ -192,7 +192,7 @@ XDB_PUBLIC(int) xdb_load_header(FILE *handle, xdb_header_t *header) {
     return 0;
 }
 
-XDB_PUBLIC(int) xdb_load_header_from_file(char *db_path, xdb_header_t *header) {
+XDB_PUBLIC(int) xdb_load_header_from_file(const char *db_path, xdb_header_t *header) {
     FILE *handle = fopen(db_path, "r");
     if (handle == NULL) {
         return 10;
@@ -224,7 +224,7 @@ XDB_PUBLIC(char *) xdb_load_vector_index(FILE *handle) {
     return ptr;
 }
 
-XDB_PUBLIC(char *) xdb_load_vector_index_from_file(char *db_path) {
+XDB_PUBLIC(char *) xdb_load_vector_index_from_file(const char *db_path) {
     FILE *handle = fopen(db_path, "r");
     if (handle == NULL) {
         return NULL;
@@ -262,7 +262,7 @@ XDB_PUBLIC(char *) xdb_load_content(FILE *handle) {
     return ptr;
 }
 
-XDB_PUBLIC(char *) xdb_load_content_from_file(char *db_path) {
+XDB_PUBLIC(char *) xdb_load_content_from_file(const char *db_path) {
     FILE *handle = fopen(db_path, "r");
     if (handle == NULL) {
         return NULL;
