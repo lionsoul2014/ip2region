@@ -37,9 +37,13 @@ META-INF/
 /binding/java/target/
 /binding/java/*.jar
 
+# clang
 /binding/c/xdb_searcher
 /binding/c/util_test
 /binding/c/cmake-build-debug
+
+# lua/luc_c
+/binding/lua_c/cmake-build-debug
 
 # golang
 /binding/golang/searcher
