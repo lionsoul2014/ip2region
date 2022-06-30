@@ -56,7 +56,7 @@ static int lua_xdb_new_with_vector_index(lua_State *L) {
     // check the db path and vector index buffer
     db_path = luaL_checkstring(L, 1);
     if (db_path == NULL) {
-        return luaL_error(L, "ip2region.xdb file path expected");
+        return luaL_error(L, "xdb file path expected");
     }
 
     v_index = luaL_checkstring(L, 2);
@@ -140,7 +140,7 @@ static int lua_xdb_search(lua_State *L) {
     // get the searcher
     searcher = (xdb_searcher_t *) luaL_checkudata(L, 1, XDB_METATABLE_NAME);
     if (searcher == NULL) {
-        return luaL_error(L, "call via ':' or broken xdb searcher instance");
+        return luaL_error(L, "call via ':' or xdb searcher was broken");
     }
 
     // input ip type checking
@@ -174,7 +174,7 @@ static int lua_xdb_get_io_count(lua_State *L) {
 
     searcher = (xdb_searcher_t *) luaL_checkudata(L, 1, XDB_METATABLE_NAME);
     if (searcher == NULL) {
-        return luaL_error(L, "broken xdb searcher instance");
+        return luaL_error(L, "call method via ':' or xdb searcher was broken");
     }
 
     lua_pushinteger(L, xdb_get_io_count(searcher));
