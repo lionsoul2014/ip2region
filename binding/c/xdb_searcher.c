@@ -50,6 +50,7 @@ XDB_PUBLIC(int) xdb_new_with_buffer(xdb_searcher_t *xdb, const char *c_buffer) {
 XDB_PUBLIC(void) xdb_close(xdb_searcher_t *xdb) {
     if (xdb->handle != NULL) {
         fclose(xdb->handle);
+        xdb->handle = NULL;
     }
 }
 
