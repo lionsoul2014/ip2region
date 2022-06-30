@@ -58,11 +58,11 @@ struct xdb_searcher_entry {
 typedef struct xdb_searcher_entry xdb_searcher_t;
 
 // xdb searcher new api define
-XDB_PUBLIC(int) xdb_new_with_file_only(xdb_searcher_t *, char *);
+XDB_PUBLIC(int) xdb_new_with_file_only(xdb_searcher_t *, const char *);
 
-XDB_PUBLIC(int) xdb_new_with_vector_index(xdb_searcher_t *, char *, char *);
+XDB_PUBLIC(int) xdb_new_with_vector_index(xdb_searcher_t *, const char *, const char *);
 
-XDB_PUBLIC(int) xdb_new_with_buffer(xdb_searcher_t *, char *);
+XDB_PUBLIC(int) xdb_new_with_buffer(xdb_searcher_t *, const char *);
 
 XDB_PUBLIC(void) xdb_close(xdb_searcher_t *);
 
@@ -87,15 +87,15 @@ typedef struct xdb_header xdb_header_t;
 
 XDB_PUBLIC(int) xdb_load_header(FILE *, xdb_header_t *);
 
-XDB_PUBLIC(int) xdb_load_header_from_file(char *, xdb_header_t *);
+XDB_PUBLIC(int) xdb_load_header_from_file(const char *, xdb_header_t *);
 
 XDB_PUBLIC(char *) xdb_load_vector_index(FILE *);
 
-XDB_PUBLIC(char *) xdb_load_vector_index_from_file(char *);
+XDB_PUBLIC(char *) xdb_load_vector_index_from_file(const char *);
 
 XDB_PUBLIC(char *) xdb_load_content(FILE *);
 
-XDB_PUBLIC(char *) xdb_load_content_from_file(char *);
+XDB_PUBLIC(char *) xdb_load_content_from_file(const char *);
 
 // --- End buffer load
 
