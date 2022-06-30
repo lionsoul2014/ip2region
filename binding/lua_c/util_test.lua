@@ -76,8 +76,11 @@ local ip_str = "1.2.3.4"
 searcher, err = xdb.new_with_file_only("../../data/ip2region.xdb")
 local t_start = xdb.now()
 region, err = searcher:search(ip_str)
+local c_time = xdb.now() - t_start
 print(string.format("search(%s): {region=%s, io_count: %d, took: %dμs, err=%s}",
-        ip_str, region, searcher:get_io_count(), xdb.now() - t_start, err))
+        ip_str, region, searcher:get_io_count(), c_time, err))
+print(string.format("searcher.tostring=%s", searcher))
+searcher:close()
 
 
 print("")
