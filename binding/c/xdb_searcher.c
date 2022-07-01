@@ -12,13 +12,13 @@
 // internal function prototype define
 XDB_PRIVATE(int) read(xdb_searcher_t *, long offset, char *, size_t length);
 
-XDB_PRIVATE(int) xdb_new_base(xdb_searcher_t *xdb, const char *db_path, const char *vIndex, const char *cBuff) {
+XDB_PRIVATE(int) xdb_new_base(xdb_searcher_t *xdb, const char *db_path, const xdb_vector_index_t *v_index, const xdb_content_t *c_buffer) {
     memset(xdb, 0x00, sizeof(xdb_searcher_t));
 
     // check the content buffer first
-    if (cBuff != NULL) {
-        xdb->vector_index = NULL;
-        xdb->content_buff = cBuff;
+    if (c_buffer != NULL) {
+        xdb->v_index = NULL;
+        xdb->content = c_buffer;
         return 0;
     }
 
@@ -29,7 +29,7 @@ XDB_PRIVATE(int) xdb_new_base(xdb_searcher_t *xdb, const char *db_path, const ch
     }
 
     xdb->handle = handle;
-    xdb->vector_index = vIndex;
+    xdb->v_index = v_index;
 
     return 0;
 }
@@ -39,11 +39,11 @@ XDB_PUBLIC(int) xdb_new_with_file_only(xdb_searcher_t *xdb, const char *db_path)
     return xdb_new_base(xdb, db_path, NULL, NULL);
 }
 
-XDB_PUBLIC(int) xdb_new_with_vector_index(xdb_searcher_t *xdb, const char *db_path, const char *vIndex) {
-    return xdb_new_base(xdb, db_path, vIndex, NULL);
+XDB_PUBLIC(int) xdb_new_with_vector_index(xdb_searcher_t *xdb, const char *db_path, const xdb_vector_index_t *v_index) {
+    return xdb_new_base(xdb, db_path, v_index, NULL);
 }
 
-XDB_PUBLIC(int) xdb_new_with_buffer(xdb_searcher_t *xdb, const char *c_buffer) {
+XDB_PUBLIC(int) xdb_new_with_buffer(xdb_searcher_t *xdb, const xdb_content_t *c_buffer) {
     return xdb_new_base(xdb, NULL, NULL, c_buffer);
 }
 
@@ -78,12 +78,12 @@ XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, unsigned int ip, char *region_bu
     il0 = ((int) (ip >> 24)) & 0xFF;
     il1 = ((int) (ip >> 16)) & 0xFF;
     idx = il0 * xdb_vector_index_cols * xdb_vector_index_size + il1 * xdb_vector_index_size;
-    if (xdb->vector_index != NULL) {
-        s_ptr = xdb_get_uint(xdb->vector_index, idx);
-        e_ptr = xdb_get_uint(xdb->vector_index, idx + 4);
-    } else if (xdb->content_buff != NULL) {
-        s_ptr = xdb_get_uint(xdb->content_buff, xdb_header_info_length + idx);
-        e_ptr = xdb_get_uint(xdb->content_buff, xdb_header_info_length + idx + 4);
+    if (xdb->v_index != NULL) {
+        s_ptr = xdb_get_uint(xdb->v_index->buffer, idx);
+        e_ptr = xdb_get_uint(xdb->v_index->buffer, idx + 4);
+    } else if (xdb->content != NULL) {
+        s_ptr = xdb_get_uint(xdb->content->buffer, xdb_header_info_length + idx);
+        e_ptr = xdb_get_uint(xdb->content->buffer, xdb_header_info_length + idx + 4);
     } else {
         err = read(xdb, xdb_header_info_length + idx, vector_buffer, sizeof(vector_buffer));
         if (err != 0) {
@@ -147,8 +147,8 @@ XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, unsigned int ip, char *region_bu
 
 XDB_PRIVATE(int) read(xdb_searcher_t *xdb, long offset, char *buffer, size_t length) {
     // check the xdb content cache first
-    if (xdb->content_buff != NULL) {
-        memcpy(buffer, xdb->content_buff + offset, length);
+    if (xdb->content != NULL) {
+        memcpy(buffer, xdb->content->buffer + offset, length);
         return 0;
     }
 
@@ -172,39 +172,58 @@ XDB_PUBLIC(int) xdb_get_io_count(xdb_searcher_t *xdb) {
 
 // --- buffer load util functions
 
-XDB_PUBLIC(int) xdb_load_header(FILE *handle, xdb_header_t *header) {
-    char buffer[256];
+XDB_PUBLIC(xdb_header_t *) xdb_load_header(FILE *handle) {
+    xdb_header_t *header;
+    unsigned int size = xdb_header_info_length;
 
-    if (fseek(handle, 0, SEEK_SET) == -1) {
-        return 1;
+    // entry alloc
+    header = (xdb_header_t *) xdb_malloc(sizeof(xdb_header_t));
+    if (header == NULL) {
+        return NULL;
     }
 
-    if (fread(buffer, 1, 256, handle) != 256) {
-        return 2;
+    if (fseek(handle, 0, SEEK_SET) == -1) {
+        xdb_free(header);
+        return NULL;
+    }
+
+    if (fread(header->buffer, 1,size, handle) != size) {
+        xdb_free(header);
+        return NULL;
     }
 
     // fill the fields
-    header->version = (unsigned short) xdb_get_ushort(buffer, 0);
-    header->index_policy = (unsigned short) xdb_get_ushort(buffer, 2);
-    header->created_at = xdb_get_uint(buffer, 4);
-    header->start_index_ptr = xdb_get_uint(buffer, 8);
-    header->end_index_ptr = xdb_get_uint(buffer,12);
+    header->length = size;
+    header->version = (unsigned short) xdb_get_ushort(header->buffer, 0);
+    header->index_policy = (unsigned short) xdb_get_ushort(header->buffer, 2);
+    header->created_at = xdb_get_uint(header->buffer, 4);
+    header->start_index_ptr = xdb_get_uint(header->buffer, 8);
+    header->end_index_ptr = xdb_get_uint(header->buffer,12);
 
-    return 0;
+    return header;
 }
 
-XDB_PUBLIC(int) xdb_load_header_from_file(const char *db_path, xdb_header_t *header) {
+XDB_PUBLIC(xdb_header_t *) xdb_load_header_from_file(const char *db_path) {
     FILE *handle = fopen(db_path, "r");
     if (handle == NULL) {
-        return 10;
+        return NULL;
     }
 
-    return xdb_load_header(handle, header);
+    return xdb_load_header(handle);
 }
 
-XDB_PUBLIC(char *) xdb_load_vector_index(FILE *handle) {
-    char *ptr = NULL;
-    int size = xdb_vector_index_length;
+XDB_PUBLIC(void) xdb_close_header(xdb_header_t *header) {
+    if (header->length > 0) {
+        header->length = 0;
+        xdb_free(header);
+    }
+}
+
+// --- vector index
+
+XDB_PUBLIC(xdb_vector_index_t *) xdb_load_vector_index(FILE *handle) {
+    xdb_vector_index_t *v_index;
+    unsigned int size = xdb_vector_index_length;
 
     // seek to the vector index offset
     if (fseek(handle, xdb_header_info_length, SEEK_SET) == -1) {
@@ -212,20 +231,21 @@ XDB_PUBLIC(char *) xdb_load_vector_index(FILE *handle) {
     }
 
     // do the buffer read
-    ptr = (char *) xdb_malloc(size);
-    if (ptr == NULL) {
+    v_index = (xdb_vector_index_t *) xdb_malloc(sizeof(xdb_vector_index_t));
+    if (v_index == NULL) {
         return NULL;
     }
 
-    if (fread(ptr, 1, size, handle) != size) {
-        xdb_free(ptr);
+    v_index->length = size;
+    if (fread(v_index->buffer, 1, size, handle) != size) {
+        xdb_free(v_index);
         return NULL;
     }
 
-    return ptr;
+    return v_index;
 }
 
-XDB_PUBLIC(char *) xdb_load_vector_index_from_file(const char *db_path) {
+XDB_PUBLIC(xdb_vector_index_t *) xdb_load_vector_index_from_file(const char *db_path) {
     FILE *handle = fopen(db_path, "r");
     if (handle == NULL) {
         return NULL;
@@ -234,42 +254,69 @@ XDB_PUBLIC(char *) xdb_load_vector_index_from_file(const char *db_path) {
     return xdb_load_vector_index(handle);
 }
 
-XDB_PUBLIC(char *) xdb_load_content(FILE *handle) {
-    long filesize;
-    char *ptr = NULL;
+XDB_PUBLIC(void) xdb_close_vector_index(xdb_vector_index_t *v_index) {
+    if (v_index->length > 0) {
+        v_index->length = 0;
+        xdb_free(v_index);
+    }
+}
+
+// --- content buffer
+
+XDB_PUBLIC(xdb_content_t *) xdb_load_content(FILE *handle) {
+    unsigned int size;
+    xdb_content_t *content;
+    char *ptr;
 
     // determine the file size
     if (fseek(handle, 0, SEEK_END) == -1) {
         return NULL;
     }
 
-    filesize = ftell(handle);
+    size = (unsigned int) ftell(handle);
     if (fseek(handle, 0, SEEK_SET) == -1) {
         return NULL;
     }
 
     // do the file read
-    ptr = (char *) xdb_malloc(filesize);
-    if (ptr == NULL) {
+    content = (xdb_content_t *) xdb_malloc(sizeof(xdb_content_t));
+    if (content == NULL) {
+        return NULL;
+    }
+
+    // do the buffer alloc
+    content->buffer = (char *) xdb_malloc(size);
+    if (content->buffer == NULL) {
+        xdb_free(content);
         return NULL;
     }
 
     // read the content into the buffer
-    if (fread(ptr, 1, filesize, handle) != filesize) {
+    content->length = size;
+    if (fread(content->buffer, 1, size, handle) != size) {
         xdb_free(ptr);
         return NULL;
     }
 
-    return ptr;
+    return content;
 }
 
-XDB_PUBLIC(char *) xdb_load_content_from_file(const char *db_path) {
+XDB_PUBLIC(xdb_content_t *) xdb_load_content_from_file(const char *db_path) {
     FILE *handle = fopen(db_path, "r");
     if (handle == NULL) {
         return NULL;
     }
 
     return xdb_load_content(handle);
+}
+
+XDB_PUBLIC(void) xdb_close_content(xdb_content_t *content) {
+    if (content->length > 0) {
+        content->length = 0;
+        xdb_free(content->buffer);
+        content->buffer = NULL;
+        xdb_free(content);
+    }
 }
 
 // --- End
