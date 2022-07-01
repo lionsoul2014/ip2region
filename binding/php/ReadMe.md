@@ -31,7 +31,7 @@ printf("{region: %s, took: %.5f ms}\n", $region, XdbSearcher::now() - $sTime);
 如果你的 php 母环境支持，可以预先加载 vectorIndex 缓存，然后做成全局变量，每次创建 Searcher 的时候使用全局的 vectorIndex，可以减少一次固定的 IO 操作从而加速查询，减少 io 压力。 
 ```php
 // 1、从 dbPath 加载 VectorIndex 缓存，把下述的 vIndex 变量缓存到内存里面。
-$vIndex = XdbSearcher::loadVectorFromFile($dbPath);
+$vIndex = XdbSearcher::loadVectorIndexFromFile($dbPath);
 if ($vIndex === null) {
     printf("failed to load vector index from '%s'\n", $dbPath);
     return;
@@ -60,7 +60,7 @@ printf("{region: %s, took: %.5f ms}\n", $region, XdbSearcher::now() - $sTime);
 
 ### 缓存整个 `xdb` 数据
 
-如果你的 PHP 目环境支持，可以预先加载整个 `xdb` 的数据到内存，这样可以实现完全基于内存的查询，类似之前的 memory search 查询。
+如果你的 PHP 母环境支持，可以预先加载整个 `xdb` 的数据到内存，这样可以实现完全基于内存的查询，类似之前的 memory search 查询。
 ```php
 // 1、从 dbPath 加载整个 xdb 到内存。
 $cBuff = XdbSearcher::loadContentFromFile($dbPath);
