@@ -37,10 +37,9 @@ void test_check_ip() {
 }
 
 void test_load_header() {
-    xdb_header_t header;
-    int err = xdb_load_header_from_file("../../data/ip2region.xdb", &header);
-    if (err != 0) {
-        printf("failed to load header with errcode=%d\n", err);
+    xdb_header_t *header = xdb_load_header_from_file("../../data/ip2region.xdb");
+    if (header == NULL) {
+        printf("failed to load header");
     } else {
         printf("header loaded: {\n"
            "    version: %d, \n"
@@ -48,33 +47,36 @@ void test_load_header() {
            "    created_at: %u, \n"
            "    start_index_ptr: %d, \n"
            "    end_index_ptr: %d\n"
+           "    length: %d\n"
            "}\n",
-           header.version, header.index_policy, header.created_at,
-           header.start_index_ptr, header.end_index_ptr
+           header->version, header->index_policy, header->created_at,
+           header->start_index_ptr, header->end_index_ptr, header->length
        );
     }
+
+    xdb_close_header(header);
 }
 
 void test_load_vector_index() {
-    char *ptr = xdb_load_vector_index_from_file("../../data/ip2region.xdb");
-    if (ptr == NULL) {
+    xdb_vector_index_t *v_index = xdb_load_vector_index_from_file("../../data/ip2region.xdb");
+    if (v_index == NULL) {
         printf("failed to load vector index from file\n");
     } else {
-        printf("vector index loaded from file\n");
+        printf("vector index loaded from file, length=%d\n", v_index->length);
     }
 
-    xdb_free(ptr);
+    xdb_close_vector_index(v_index);
 }
 
 void test_load_content() {
-    char *ptr = xdb_load_content_from_file("../../data/ip2region.xdb");
-    if (ptr == NULL) {
+    xdb_content_t *content = xdb_load_content_from_file("../../data/ip2region.xdb");
+    if (content == NULL) {
         printf("failed to load content from file\n");
     } else {
-        printf("content loaded from file\n");
+        printf("content loaded from file, length=%d\n", content->length);
     }
 
-    xdb_free(ptr);
+    xdb_close_content(content);
 }
 
 // valgrind --tool=memcheck --leak-check=full ./a.out
