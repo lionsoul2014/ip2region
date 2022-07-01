@@ -59,7 +59,7 @@ XDB_PUBLIC(xdb_header_t *) xdb_load_header(FILE *);
 
 XDB_PUBLIC(xdb_header_t *) xdb_load_header_from_file(const char *);
 
-XDB_PUBLIC(void) xdb_close_header(xdb_header_t *);
+XDB_PUBLIC(void) xdb_close_header(void *);
 
 
 // --- vector index buffer
@@ -73,7 +73,7 @@ XDB_PUBLIC(xdb_vector_index_t *) xdb_load_vector_index(FILE *);
 
 XDB_PUBLIC(xdb_vector_index_t *) xdb_load_vector_index_from_file(const char *);
 
-XDB_PUBLIC(void) xdb_close_vector_index(xdb_vector_index_t *);
+XDB_PUBLIC(void) xdb_close_vector_index(void *);
 
 
 // --- content buffer
@@ -87,7 +87,7 @@ XDB_PUBLIC(xdb_content_t *) xdb_load_content(FILE *);
 
 XDB_PUBLIC(xdb_content_t *) xdb_load_content_from_file(const char *);
 
-XDB_PUBLIC(void) xdb_close_content(xdb_content_t *);
+XDB_PUBLIC(void) xdb_close_content(void *);
 
 // --- End buffer load
 
@@ -117,7 +117,7 @@ XDB_PUBLIC(int) xdb_new_with_vector_index(xdb_searcher_t *, const char *, const 
 
 XDB_PUBLIC(int) xdb_new_with_buffer(xdb_searcher_t *, const xdb_content_t *);
 
-XDB_PUBLIC(void) xdb_close(xdb_searcher_t *);
+XDB_PUBLIC(void) xdb_close(void *);
 
 // xdb searcher search api define
 XDB_PUBLIC(int) xdb_search_by_string(xdb_searcher_t *, const char *, char *, size_t);

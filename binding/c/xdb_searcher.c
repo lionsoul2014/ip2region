@@ -47,7 +47,8 @@ XDB_PUBLIC(int) xdb_new_with_buffer(xdb_searcher_t *xdb, const xdb_content_t *c_
     return xdb_new_base(xdb, NULL, NULL, c_buffer);
 }
 
-XDB_PUBLIC(void) xdb_close(xdb_searcher_t *xdb) {
+XDB_PUBLIC(void) xdb_close(void *ptr) {
+    xdb_searcher_t *xdb = (xdb_searcher_t *) ptr;
     if (xdb->handle != NULL) {
         fclose(xdb->handle);
         xdb->handle = NULL;
@@ -212,7 +213,8 @@ XDB_PUBLIC(xdb_header_t *) xdb_load_header_from_file(const char *db_path) {
     return xdb_load_header(handle);
 }
 
-XDB_PUBLIC(void) xdb_close_header(xdb_header_t *header) {
+XDB_PUBLIC(void) xdb_close_header(void *ptr) {
+    xdb_header_t *header = (xdb_header_t *) ptr;
     if (header->length > 0) {
         header->length = 0;
         xdb_free(header);
@@ -254,7 +256,8 @@ XDB_PUBLIC(xdb_vector_index_t *) xdb_load_vector_index_from_file(const char *db_
     return xdb_load_vector_index(handle);
 }
 
-XDB_PUBLIC(void) xdb_close_vector_index(xdb_vector_index_t *v_index) {
+XDB_PUBLIC(void) xdb_close_vector_index(void *ptr) {
+    xdb_vector_index_t *v_index = (xdb_vector_index_t *) ptr;
     if (v_index->length > 0) {
         v_index->length = 0;
         xdb_free(v_index);
@@ -310,7 +313,8 @@ XDB_PUBLIC(xdb_content_t *) xdb_load_content_from_file(const char *db_path) {
     return xdb_load_content(handle);
 }
 
-XDB_PUBLIC(void) xdb_close_content(xdb_content_t *content) {
+XDB_PUBLIC(void) xdb_close_content(void *ptr) {
+    xdb_content_t *content = (xdb_content_t *) ptr;
     if (content->length > 0) {
         content->length = 0;
         xdb_free(content->buffer);
