@@ -38,6 +38,8 @@ header, err = xdb.load_header("../../data/ip2region.xdb")
 if err ~= nil then
     print("failed to load header: ", err)
 else
+    print(string.format("xdb header buffer `%s` loaded", header))
+
     local tpl = [[
 header: {
     version: %d
@@ -47,9 +49,9 @@ header: {
     end_index_ptr: %d
 }]]
 
+    local t = header:to_table()
     print(string.format(tpl,
-        header["version"], header["index_policy"],
-        header["created_at"], header["start_index_ptr"], header["end_index_ptr"])
+        t["version"], t["index_policy"], t["created_at"], t["start_index_ptr"], t["end_index_ptr"])
     )
 end
 
@@ -59,7 +61,7 @@ v_index, err = xdb.load_vector_index("../../data/ip2region.xdb")
 if err ~= nil then
     print("failed to load vector index: ", err)
 else
-    print("xdb vector index loaded")
+    print(string.format("xdb vector index buffer `%s` loaded", v_index))
 end
 
 
@@ -68,8 +70,9 @@ c_buffer, err = xdb.load_content("../../data/ip2region.xdb")
 if err ~= nil then
     print("failed to load content: ", err)
 else
-    print("xdb content loaded")
+    print(string.format("xdb content buffer `%s` loaded", c_buffer))
 end
+
 
 print("\n--- testing search ... ")
 local ip_str = "1.2.3.4"
