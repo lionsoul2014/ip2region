@@ -61,7 +61,9 @@ v_index, err = xdb.load_vector_index("../../data/ip2region.xdb")
 if err ~= nil then
     print("failed to load vector index: ", err)
 else
-    print(string.format("xdb vector index buffer `%s` loaded", v_index))
+    print(string.format("xdb vector index buffer `%s` loaded, info={name=%s, type=%d, length=%d}",
+            v_index, v_index:name(), v_index:type(), v_index:length()))
+    v_index:close()
 end
 
 
@@ -70,7 +72,9 @@ c_buffer, err = xdb.load_content("../../data/ip2region.xdb")
 if err ~= nil then
     print("failed to load content: ", err)
 else
-    print(string.format("xdb content buffer `%s` loaded", c_buffer))
+    print(string.format("xdb content buffer `%s` loaded, info={name=%s, type=%d, length=%d}",
+            c_buffer, c_buffer:name(), c_buffer:type(), c_buffer:length()))
+    c_buffer:close();
 end
 
 

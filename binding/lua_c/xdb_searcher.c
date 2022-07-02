@@ -40,6 +40,16 @@ static int lua_xdb_buffer_name(lua_State *L) {
     return 1;
 }
 
+static int lua_xdb_buffer_type(lua_State *L) {
+    xdb_buffer_t *buffer;
+
+    luaL_argcheck(L, lua_gettop(L) == 1, 1, "call via ':'");
+    buffer = (xdb_buffer_t *) luaL_checkudata(L, 1, XDB_BUFFER_METATABLE_NAME);
+
+    lua_pushinteger(L, buffer->type);
+    return 1;
+}
+
 static int lua_xdb_buffer_to_table(lua_State *L) {
     xdb_buffer_t *buffer;
     xdb_header_t *header;
@@ -109,6 +119,7 @@ static int lua_xdb_buffer_close(lua_State *L) {
     // check and call the closer
     if (buffer->closer != NULL) {
         buffer->closer(buffer->ptr);
+        buffer->closer = NULL;
     }
 
     return 0;
@@ -117,8 +128,9 @@ static int lua_xdb_buffer_close(lua_State *L) {
 // module method define, should be access via ':'
 static const struct luaL_Reg xdb_buffer_methods[] = {
     {"name",        lua_xdb_buffer_name},
-    {"to_table",    lua_xdb_buffer_to_table},
+    {"type",        lua_xdb_buffer_type},
     {"length",      lua_xdb_buffer_length},
+    {"to_table",    lua_xdb_buffer_to_table},
     {"close",       lua_xdb_buffer_close},
     {"__gc",        lua_xdb_buffer_close},
     {"__tostring",  lua_xdb_buffer_tostring},
@@ -459,6 +471,14 @@ static const struct luaL_Reg xdb_searcher_functions[] = {
 // module register function
 int luaopen_xdb_searcher(lua_State *L)
 {
+    // register the constants
+    lua_pushinteger(L, xdb_header_buffer);
+    lua_setglobal(L, "header_buffer");
+    lua_pushinteger(L, xdb_vector_index_buffer);
+    lua_setglobal(L, "v_index_buffer");
+    lua_pushinteger(L, xdb_content_buffer);
+    lua_setglobal(L, "content_buffer");
+
     // create a metatable for xdb buffer object
     luaL_newmetatable(L, XDB_BUFFER_METATABLE_NAME);
     lua_pushvalue(L, -1);
