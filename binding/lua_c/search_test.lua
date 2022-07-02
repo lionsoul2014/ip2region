@@ -125,11 +125,9 @@ end
 
 -- resource cleanup
 searcher:close()
-
 if v_index ~= nil then
     v_index:close()
 end
-
 if content ~= nil then
     content:close()
 end
