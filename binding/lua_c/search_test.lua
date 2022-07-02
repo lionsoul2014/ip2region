@@ -59,7 +59,11 @@ end
 -- create the searcher based on the cache-policy
 local searcher, v_index, content
 if cachePolicy == "file" then
-    searcher = xdb.new_with_file_only(dbFile)
+    searcher, err = xdb.new_with_file_only(dbFile)
+    if err ~= nil then
+        print(string.format("failed to create searcher: %s", err))
+        return
+    end
 elseif cachePolicy == "vectorIndex" then
     v_index = xdb.load_vector_index(dbFile)
     if v_index == nil then
