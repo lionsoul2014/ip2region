@@ -262,15 +262,18 @@ static int lua_xdb_new_with_file_only(lua_State *L) {
     // init the xdb searcher
     err = xdb_new_with_file_only(searcher, db_path);
     if (err != 0) {
-        return luaL_error(L, "failed to init xdb searcher on `%s`: errcode=%d", db_path, err);
+        lua_pushnil(L);
+        lua_pushfstring(L, "init xdb searcher on `%s`: errcode=%d", db_path, err);
+        return 2;
     }
 
     // push the metatable onto the stack and
     // set it as the metatable of the current searcher
     luaL_getmetatable(L, XDB_SEARCHER_METATABLE_NAME);
     lua_setmetatable(L, -2);
+    lua_pushnil(L);
 
-    return 1;
+    return 2;
 }
 
 static int lua_xdb_new_with_vector_index(lua_State *L) {
@@ -297,15 +300,18 @@ static int lua_xdb_new_with_vector_index(lua_State *L) {
     // init the xdb searcher
     err = xdb_new_with_vector_index(searcher, db_path, (xdb_vector_index_t *) xBuffer->ptr);
     if (err != 0) {
-        return luaL_error(L, "failed to init vector index cached xdb searcher on `%s` with errcode=%d", db_path, err);
+        lua_pushnil(L);
+        lua_pushfstring(L, "init vector index cached xdb searcher on `%s` with errcode=%d", db_path, err);
+        return 2;
     }
 
     // push the metatable onto the stack and
     // set it as the metatable of the current searcher
     luaL_getmetatable(L, XDB_SEARCHER_METATABLE_NAME);
     lua_setmetatable(L, -2);
+    lua_pushnil(L);
 
-    return 1;
+    return 2;
 }
 
 static int lua_xdb_new_with_buffer(lua_State *L) {
@@ -328,15 +334,18 @@ static int lua_xdb_new_with_buffer(lua_State *L) {
     // init the xdb searcher
     err = xdb_new_with_buffer(searcher, (xdb_content_t *) xBuffer->ptr);
     if (err != 0) {
-        return luaL_error(L, "failed to init content cached xdb searcher with errcode=%d", err);
+        lua_pushnil(L);
+        lua_pushfstring(L, "init content cached xdb searcher with errcode=%d", err);
+        return 2;
     }
 
     // push the metatable onto the stack and
     // set it as the metatable of the current searcher
     luaL_getmetatable(L, XDB_SEARCHER_METATABLE_NAME);
     lua_setmetatable(L, -2);
+    lua_pushnil(L);
 
-    return 1;
+    return 2;
 }
 
 static int lua_xdb_close(lua_State *L) {
@@ -371,7 +380,9 @@ static int lua_xdb_search(lua_State *L) {
         ip_str = lua_tostring(L, 2);
         err = xdb_check_ip(ip_str, &ip_int);
         if (err != 0) {
-            luaL_error(L, "invalid string ip `%s`: errcode=%d", ip_str, err);
+            lua_pushnil(L);
+            lua_pushfstring(L, "invalid string ip `%s`: errcode=%d", ip_str, err);
+            return 2;
         }
     } else {
         return luaL_error(L, "input ip not integer or string");
@@ -415,11 +426,11 @@ static int lua_xdb_check_ip(lua_State *L) {
     ip_str = luaL_checkstring(L, 1);
     err = xdb_check_ip(ip_str, &ip);
     if (err != 0) {
-        lua_pushinteger(L, err);
-        lua_pushboolean(L, 0);
+        lua_pushinteger(L, 0);
+        lua_pushfstring(L, "err=%d", err);
     } else {
         lua_pushinteger(L, ip);
-        lua_pushboolean(L, 1);
+        lua_pushnil(L);
     }
 
     return 2;
