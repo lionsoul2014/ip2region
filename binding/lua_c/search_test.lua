@@ -37,6 +37,9 @@ for _, r in ipairs(arg) do
             dbFile = v
         elseif k == "cache-policy" then
             cachePolicy = v
+        else
+            print(string.format("undefined option `%s`", r))
+            return
         end
 
         -- break the match iterate
