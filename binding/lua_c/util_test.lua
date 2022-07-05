@@ -6,6 +6,9 @@
 -- @Author Lion <chenxin619315@gmail.com>
 -- @Date   2022/06/30
 
+-- set the package to load the current xdb_searcher.so
+package.path = "./?.lua" .. package.path
+package.cpath = "./?.so" .. package.cpath
 local xdb = require("xdb_searcher")
 
 ---- ip checking testing
@@ -18,9 +21,9 @@ local ip_list = {
 
 local s_time = xdb.now()
 for _, ip_src in ipairs(ip_list) do
-    ip, ok = xdb.check_ip(ip_src)
-    if ok == false then
-        print(string.format("invalid ip address `%s`", ip_src))
+    ip, err = xdb.check_ip(ip_src)
+    if err ~= nil then
+        print(string.format("invalid ip address `%s`: %s", ip_src, err))
     else
         ip_dst = xdb.long2ip(ip)
         io.write(string.format("long(%-15s)=%10d, long2ip(%-10d)=%-15s", ip_src, ip, ip, ip_dst))
