@@ -34,7 +34,8 @@ _M.__tostring = function(self)
 end
 
 
--- --- construct functions
+-- construct functions
+
 function newBase(dbPath, vIndex, cBuffer)
     local obj = setmetatable({}, _M)
     if cBuffer ~= nil then
@@ -89,19 +90,90 @@ function _M:search(ip_src)
     -- locate the segment index based on the vector index
     local il0 = (ip >> 24) & 0xFF
     local il1 = (ip >> 16) & 0xFF
-    local idx = il0 * VectorIndexCols * SegmentIndexSize + il1 * SegmentIndexSize
+    local idx = il0 * VectorIndexCols * VectorIndexSize + il1 * VectorIndexSize
     local s_ptr, e_ptr = 0, 0
     if self.vector_index ~= nil then
-        s_ptr = getLong(self.vector_index, idx)
-        e_ptr = getLong(self.vector_index, idx + 4)
+        s_ptr = getLong(self.vector_index, idx + 1)
+        e_ptr = getLong(self.vector_index, idx + 5)
     elseif self.content_buff ~= nil then
-        s_ptr = getLong(self.content_buff, HeaderInfoLength + idx)
-        e_ptr = getLong(self.content_buff, HeaderInfoLength + idx + 4)
+        s_ptr = getLong(self.content_buff, HeaderInfoLength + idx + 1)
+        e_ptr = getLong(self.content_buff, HeaderInfoLength + idx + 5)
     else
         -- load from the file
+        buff, err = self:read(HeaderInfoLength + idx, SegmentIndexSize)
+        if err ~= nil then
+            return "", string.format("read buffer: %s", err)
+        end
+
+        s_ptr = getLong(buff, 1)
+        e_ptr = getLong(buff, 5)
     end
 
-    return "", "not implemented yet"
+    -- print(string.format("s_ptr: %d, e_ptr: %d", s_ptr, e_ptr))
+    -- binary search to get the data
+    local data_ptr, data_len, p = 0, 0, 0
+    local sip, eip, err, buff = 0, 0, ""
+    local l, m, h = 0, 0, (e_ptr - s_ptr) / SegmentIndexSize
+    while l <= h do
+        m = (l + h) >> 1
+        p = s_ptr + m * SegmentIndexSize
+
+        -- read the segment index
+        buff, err = self:read(p, SegmentIndexSize)
+        if err ~= nil then
+            return "", string.format("read segment index at %d", p)
+        end
+
+        sip = getLong(buff, 1)
+        if ip < sip then
+            h = m - 1
+        else
+            eip = getLong(buff, 5)
+            if ip > eip then
+                l = m + 1
+            else
+                data_len = getShort(buff, 9)
+                data_ptr = getLong(buff, 11)
+                break
+            end
+        end
+    end
+
+    -- matching nothing interception
+    -- print(string.format("data_len=%d, data_ptr=%d", data_len, data_ptr))
+    if data_len == 0 then
+        return "", nil
+    end
+
+    -- load and return the region data
+    buff, err = self:read(data_ptr, data_len)
+    if err ~= nil then
+        return "", string.format("read data at %d:%d", data_ptr, data_len)
+    end
+
+    return buff, nil
+end
+
+-- read specified bytes from the specified index
+function _M:read(offset, length)
+    -- check the in-memory buffer first
+    if self.content_buff ~= nil then
+        return string.sub(self.content_buff, offset + 1, offset + 1 + length), nil
+    end
+
+    -- read from the file
+    local r = self.handle:seek("set", offset)
+    if r == nil then
+        return nil, string.format("seek to offset %d", offset)
+    end
+
+    self.io_count = self.io_count + 1
+    local buff = self.handle:read(length)
+    if buff == nil then
+        return nil, string.format("read %d bytes", length)
+    end
+
+    return buff, nil
 end
 
 function _M:get_io_count()
@@ -130,7 +202,7 @@ function _M.load_content(dbPath)
 end
 
 function _M.check_ip(ip_str)
-    local ip, id = 0, 1
+    local ip, id, v = 0, 1, 0
     local offset_arr = {24, 16, 8, 0}
     for p in string.gmatch(ip_str..".", "([%d]+)%.") do
         -- match pattern checking
@@ -168,5 +240,20 @@ function _M.now()
     return 0
 end
 -- End of util functions
+
+--internal function to get a integer from a binary string
+function getLong(buff, idx)
+    local i1 = (string.byte(string.sub(buff, idx, idx)))
+    local i2 = (string.byte(string.sub(buff, idx+1, idx+1)) << 8)
+    local i3 = (string.byte(string.sub(buff, idx+2, idx+2)) << 16)
+    local i4 = (string.byte(string.sub(buff, idx+3, idx+3)) << 24)
+    return (i1 | i2 | i3 | i4)
+end
+
+function getShort(buff, idx)
+    local i1 = (string.byte(string.sub(buff, idx, idx)))
+    local i2 = (string.byte(string.sub(buff, idx+1, idx+1)) << 8)
+    return (i1 | i2)
+end
 
 return _M
