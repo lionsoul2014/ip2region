@@ -6,6 +6,9 @@
 -- @Author Lion <chenxin619315@gmail.com>
 -- @Date   2022/06/30
 
+-- set the package to load the current xdb_searcher.so
+package.path = "./?.lua" .. package.path
+package.cpath = "./?.so" .. package.cpath
 local xdb = require("xdb_searcher")
 
 function printHelp()
