@@ -12,6 +12,8 @@ local VectorIndexRows  = 256
 local VectorIndexCols  = 256
 local VectorIndexSize  = 8
 local SegmentIndexSize = 14
+local VectorIndexLength = 524288
+
 local _M = {
     -- xdb file handle
     handle = nil,
@@ -30,7 +32,7 @@ local _M = {
 -- index and to string attribute set
 _M.__index = _M
 _M.__tostring = function(self)
-    return "xdb searcher object"
+    return "xdb searcher object (lua)"
 end
 
 
@@ -68,8 +70,8 @@ end
 
 -- End of constructors
 
--- object api impl
--- must call via ':'
+-- object api impl, must call via ':'
+
 function _M:search(ip_src)
     -- check and convert string ip to long ip
     local t, ip = type(ip_src), 0
@@ -155,6 +157,7 @@ function _M:search(ip_src)
 end
 
 -- read specified bytes from the specified index
+
 function _M:read(offset, length)
     -- check the in-memory buffer first
     if self.content_buff ~= nil then
@@ -185,20 +188,76 @@ function _M:close()
         self.handle:close()
     end
 end
+
 -- End of search api
 
 
 -- static util functions
+
 function _M.load_header(dbPath)
-    return nil, "not implemented yet"
+    local handle = io.open(dbPath, "r")
+    if handle == nil then
+        return nil, string.format("failed to open xdb file `%s`", dbPath)
+    end
+
+    local r = handle:seek("set", 0)
+    if r == nil then
+        handle:close()
+        return nil, "failed to seek to 0"
+    end
+
+    local c = handle:read(HeaderInfoLength)
+    if c == nil then
+        handle:close()
+        return nil, string.format("failed to read %d bytes", HeaderInfoLength)
+    end
+
+    handle:close()
+    return {
+        ["version"] = getShort(c, 1),
+        ["index_policy"] = getShort(c, 3),
+        ["created_at"] = getLong(c, 5),
+        ["start_index_ptr"] = getLong(c, 9),
+        ["end_index_ptr"] = getLong(c, 13),
+        ["raw_data"] = c
+    }, nil
 end
 
 function _M.load_vector_index(dbPath)
-    return nil, "not implemented yet"
+    local handle = io.open(dbPath, "r")
+    if handle == nil then
+        return nil, string.format("failed to open xdb file `%s`", dbPath)
+    end
+
+    local r = handle:seek("set", HeaderInfoLength)
+    if r == nil then
+        handle:close()
+        return nil, string.format("failed to seek to %d", HeaderInfoLength)
+    end
+
+    local c = handle:read(VectorIndexLength)
+    if c == nil then
+        handle:close()
+        return nil, string.format("failed to read %d bytes", VectorIndexLength)
+    end
+
+    handle:close()
+    return c, nil
 end
 
 function _M.load_content(dbPath)
-    return nil, "not implemented yet"
+    local handle = io.open(dbPath, "r")
+    if handle == nil then
+        return nil, string.format("failed to open xdb file `%s`", dbPath)
+    end
+
+    local c = handle:read("*a")
+    if c == nil then
+        return nil, string.format("failed to read xdb content")
+    end
+
+    handle:close()
+    return c, nil
 end
 
 function _M.check_ip(ip_str)
@@ -239,9 +298,11 @@ end
 function _M.now()
     return 0
 end
+
 -- End of util functions
 
 --internal function to get a integer from a binary string
+
 function getLong(buff, idx)
     local i1 = (string.byte(string.sub(buff, idx, idx)))
     local i2 = (string.byte(string.sub(buff, idx+1, idx+1)) << 8)
