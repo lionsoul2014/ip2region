@@ -7,7 +7,7 @@
 <dependency>
     <groupId>org.lionsoul</groupId>
     <artifactId>ip2region</artifactId>
-    <version>2.6.3</version>
+    <version>2.6.4</version>
 </dependency>
 ```
 
@@ -34,7 +34,7 @@ public class SearcherTest {
         try {
             String ip = "1.2.3.4";
             long sTime = System.nanoTime();
-            String region = searcher.searchByStr(ip);
+            String region = searcher.search(ip);
             long cost = TimeUnit.NANOSECONDS.toMicros((long) (System.nanoTime() - sTime));
             System.out.printf("{region: %s, ioCount: %d, took: %d μs}\n", region, searcher.getIOCount(), cost);
         } catch (Exception e) {
@@ -80,7 +80,7 @@ public class SearcherTest {
         try {
             String ip = "1.2.3.4";
             long sTime = System.nanoTime();
-            String region = searcher.searchByStr(ip);
+            String region = searcher.search(ip);
             long cost = TimeUnit.NANOSECONDS.toMicros((long) (System.nanoTime() - sTime));
             System.out.printf("{region: %s, ioCount: %d, took: %d μs}\n", region, searcher.getIOCount(), cost);
         } catch (Exception e) {
@@ -126,7 +126,7 @@ public class SearcherTest {
         try {
             String ip = "1.2.3.4";
             long sTime = System.nanoTime();
-            String region = searcher.searchByStr(ip);
+            String region = searcher.search(ip);
             long cost = TimeUnit.NANOSECONDS.toMicros((long) (System.nanoTime() - sTime));
             System.out.printf("{region: %s, ioCount: %d, took: %d μs}\n", region, searcher.getIOCount(), cost);
         } catch (Exception e) {
