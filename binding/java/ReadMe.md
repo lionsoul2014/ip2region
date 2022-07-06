@@ -133,7 +133,7 @@ public class SearcherTest {
             System.out.printf("failed to search(%s): %s\n", ip, e);
         }
 
-        // 备注：并发使用，用整个 xdb 数据缓存创建的查询对象可以安全的用于并发，也就是你可以把这个 searcher 对象做成全局对象去垮线程访问。
+        // 备注：并发使用，用整个 xdb 数据缓存创建的查询对象可以安全的用于并发，也就是你可以把这个 searcher 对象做成全局对象去跨线程访问。
     }
 }
 ```
