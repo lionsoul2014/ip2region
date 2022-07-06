@@ -49,11 +49,11 @@ function newBase(dbPath, vIndex, cBuffer)
         obj.vector_index = vIndex
         obj.handle = io.open(dbPath, "r")
         if obj.handle == nil then
-            error(string.format("failed to open xdb file `%s`", dbPath), 2)
+            return nil, string.format("failed to open xdb file `%s`", dbPath)
         end
     end
 
-    return obj
+    return obj, nil
 end
 
 function _M.new_with_file_only(dbPath)
@@ -84,25 +84,32 @@ function _M:search(ip_src)
         end
     elseif t ~= "number" then
         return "", "invalid number or string ip"
+    else
+        -- use the original value
+        ip = ip_src
     end
 
     -- reset the global counter
+    -- and global resource local cache
     self.io_count = 0
+    local vector_index = self.vector_index
+    local content_buff = self.content_buff
+    local read_data = self.read
 
     -- locate the segment index based on the vector index
     local il0 = (ip >> 24) & 0xFF
     local il1 = (ip >> 16) & 0xFF
     local idx = il0 * VectorIndexCols * VectorIndexSize + il1 * VectorIndexSize
     local s_ptr, e_ptr = 0, 0
-    if self.vector_index ~= nil then
-        s_ptr = getLong(self.vector_index, idx + 1)
-        e_ptr = getLong(self.vector_index, idx + 5)
-    elseif self.content_buff ~= nil then
-        s_ptr = getLong(self.content_buff, HeaderInfoLength + idx + 1)
-        e_ptr = getLong(self.content_buff, HeaderInfoLength + idx + 5)
+    if vector_index ~= nil then
+        s_ptr = getLong(vector_index, idx + 1)
+        e_ptr = getLong(vector_index, idx + 5)
+    elseif content_buff ~= nil then
+        s_ptr = getLong(content_buff, HeaderInfoLength + idx + 1)
+        e_ptr = getLong(content_buff, HeaderInfoLength + idx + 5)
     else
         -- load from the file
-        buff, err = self:read(HeaderInfoLength + idx, SegmentIndexSize)
+        buff, err = read_data(self, HeaderInfoLength + idx, SegmentIndexSize)
         if err ~= nil then
             return "", string.format("read buffer: %s", err)
         end
@@ -121,7 +128,7 @@ function _M:search(ip_src)
         p = s_ptr + m * SegmentIndexSize
 
         -- read the segment index
-        buff, err = self:read(p, SegmentIndexSize)
+        buff, err = read_data(self, p, SegmentIndexSize)
         if err ~= nil then
             return "", string.format("read segment index at %d", p)
         end
@@ -148,7 +155,7 @@ function _M:search(ip_src)
     end
 
     -- load and return the region data
-    buff, err = self:read(data_ptr, data_len)
+    buff, err = read_data(self, data_ptr, data_len)
     if err ~= nil then
         return "", string.format("read data at %d:%d", data_ptr, data_len)
     end
@@ -156,22 +163,27 @@ function _M:search(ip_src)
     return buff, nil
 end
 
+
 -- read specified bytes from the specified index
 
 function _M:read(offset, length)
+    -- local cache
+    local content_buff = self.content_buff
+    local handle = self.handle
+
     -- check the in-memory buffer first
-    if self.content_buff ~= nil then
-        return string.sub(self.content_buff, offset + 1, offset + 1 + length), nil
+    if content_buff ~= nil then
+        return string.sub(content_buff, offset + 1, offset + length), nil
     end
 
     -- read from the file
-    local r = self.handle:seek("set", offset)
+    local r = handle:seek("set", offset)
     if r == nil then
         return nil, string.format("seek to offset %d", offset)
     end
 
     self.io_count = self.io_count + 1
-    local buff = self.handle:read(length)
+    local buff = handle:read(length)
     if buff == nil then
         return nil, string.format("read %d bytes", length)
     end
@@ -295,8 +307,9 @@ function _M.long2ip(ip)
     return string.format("%d.%d.%d.%d", (ip >> 24) & 0xFF, (ip >> 16) & 0xFF, (ip >> 8 ) & 0xFF, ip & 0xFF)
 end
 
+-- this is a bit weird, but we have to better choice for now
 function _M.now()
-    return 0
+    return os.time() * 1e6
 end
 
 -- End of util functions
