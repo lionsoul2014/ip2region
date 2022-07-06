@@ -71,7 +71,7 @@ public class Searcher {
         return ioCount;
     }
 
-    public String searchByStr(String ipStr) throws Exception {
+    public String search(String ipStr) throws Exception {
         long ip = checkIP(ipStr);
         return search(ip);
     }
@@ -135,7 +135,7 @@ public class Searcher {
         // load and return the region data
         final byte[] regionBuff = new byte[dataLen];
         read(dataPtr, regionBuff);
-        return new String(regionBuff);
+        return new String(regionBuff, "utf-8");
     }
 
     protected void read(int offset, byte[] buffer) throws IOException {

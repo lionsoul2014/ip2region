@@ -89,7 +89,7 @@ public class SearchTest {
 
             try {
                 double sTime = System.nanoTime();
-                String region = searcher.searchByStr(line);
+                String region = searcher.search(line);
                 long cost = TimeUnit.NANOSECONDS.toMicros((long) (System.nanoTime() - sTime));
                 System.out.printf("{region: %s, ioCount: %d, took: %d μs}\n", region, searcher.getIOCount(), cost);
             } catch (Exception e) {
