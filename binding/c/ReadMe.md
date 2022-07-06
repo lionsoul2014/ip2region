@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
 
 int main(int argc, char *argv[]) {
     char *db_path = "ip2region.xdb file path";
-    char *v_index;
+    xdb_vector_index_t *v_index;
     xdb_searcher_t searcher;
     char region_buffer[256], ip_buffer[16], *ip = "1.2.3.4";
     long s_time;
@@ -84,7 +84,7 @@ int main(int argc, char *argv[]) {
 
     // 4、关闭 xdb 查询器，如果是要关闭服务，也需要释放 v_index 的内存。
     xdb_close(&searcher);
-    xdb_free(v_index);
+    xdb_close_vector_index(v_index);
     return 0;
 }
 ```
@@ -98,7 +98,7 @@ int main(int argc, char *argv[]) {
 
 int main(int argc, char *argv[]) {
     char *db_path = "ip2region.xdb file path";
-    char *c_buffer;
+    xdb_content_t *c_buffer;
     xdb_searcher_t searcher;
     char region_buffer[256], ip_buffer[16], *ip = "1.2.3.4";
     long s_time;
@@ -132,7 +132,7 @@ int main(int argc, char *argv[]) {
 
     // 4、关闭 xdb 查询器，关闭服务的时候需要释放 c_buffer 的内存。
     xdb_close(&searcher);
-    xdb_free(c_buffer);
+    xdb_close_content(c_buffer);
     return 0;
 }
 ```
