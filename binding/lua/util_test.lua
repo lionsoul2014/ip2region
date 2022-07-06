@@ -42,7 +42,7 @@ header, err = xdb.load_header("../../data/ip2region.xdb")
 if err ~= nil then
     print("failed to load header: ", err)
 else
-    print(string.format("xdb header buffer `%s` loaded", header))
+    print("xdb header buffer loaded")
 
     local tpl = [[
 header: {
@@ -53,9 +53,9 @@ header: {
     end_index_ptr: %d
 }]]
 
-    local t = header:to_table()
     print(string.format(tpl,
-            t["version"], t["index_policy"], t["created_at"], t["start_index_ptr"], t["end_index_ptr"])
+        header["version"], header["index_policy"],
+        header["created_at"], header["start_index_ptr"], header["end_index_ptr"])
     )
 end
 
@@ -65,9 +65,7 @@ v_index, err = xdb.load_vector_index("../../data/ip2region.xdb")
 if err ~= nil then
     print("failed to load vector index: ", err)
 else
-    print(string.format("xdb vector index buffer `%s` loaded, info={name=%s, type=%d, length=%d}",
-            v_index, v_index:name(), v_index:type(), v_index:length()))
-    v_index:close()
+    print("xdb vector index buffer loaded")
 end
 
 
@@ -76,9 +74,7 @@ c_buffer, err = xdb.load_content("../../data/ip2region.xdb")
 if err ~= nil then
     print("failed to load content: ", err)
 else
-    print(string.format("xdb content buffer `%s` loaded, info={name=%s, type=%d, length=%d}",
-            c_buffer, c_buffer:name(), c_buffer:type(), c_buffer:length()))
-    c_buffer:close();
+    print("xdb content buffer loaded")
 end
 
 
