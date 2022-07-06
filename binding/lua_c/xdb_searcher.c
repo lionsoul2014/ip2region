@@ -152,13 +152,16 @@ static int lua_xdb_load_header_from_file(lua_State *L) {
     header = xdb_load_header_from_file(db_path);
     if (header == NULL) {
         lua_pushnil(L);
-        return 1;
+        lua_pushfstring(L, "load header from `%s`", db_path);
+        return 2;
     }
 
     // alloc the buffer.
     buffer = (xdb_buffer_t *) lua_newuserdata(L, sizeof(xdb_buffer_t));
     if (buffer == NULL) {
-        return luaL_error(L, "failed to alloc xdb buffer entry");
+        lua_pushnil(L);
+        lua_pushfstring(L, "failed to alloc xdb buffer entry");
+        return 2;
     }
 
     // init the buffer
@@ -170,8 +173,9 @@ static int lua_xdb_load_header_from_file(lua_State *L) {
     // set the metatable of the header buffer object and push onto the stack
     luaL_getmetatable(L, XDB_BUFFER_METATABLE_NAME);
     lua_setmetatable(L, -2);
+    lua_pushnil(L);
 
-    return 1;
+    return 2;
 }
 
 static int lua_xdb_load_vector_index_from_file(lua_State *L) {
@@ -184,13 +188,16 @@ static int lua_xdb_load_vector_index_from_file(lua_State *L) {
     v_index = xdb_load_vector_index_from_file(db_path);
     if (v_index == NULL) {
         lua_pushnil(L);
-        return 1;
+        lua_pushfstring(L, "load vector index from `%s`", db_path);
+        return 2;
     }
 
     // alloc the buffer.
     buffer = (xdb_buffer_t *) lua_newuserdata(L, sizeof(xdb_buffer_t));
     if (buffer == NULL) {
-        return luaL_error(L, "failed to alloc xdb buffer entry");
+        lua_pushnil(L);
+        lua_pushstring(L, "failed to alloc xdb buffer entry");
+        return 2;
     }
 
     // init the buffer
@@ -202,8 +209,9 @@ static int lua_xdb_load_vector_index_from_file(lua_State *L) {
     // set the metatable of the header buffer object and push onto the stack
     luaL_getmetatable(L, XDB_BUFFER_METATABLE_NAME);
     lua_setmetatable(L, -2);
+    lua_pushnil(L);
 
-    return 1;
+    return 2;
 }
 
 static int lua_xdb_load_content_from_file(lua_State *L) {
@@ -216,13 +224,16 @@ static int lua_xdb_load_content_from_file(lua_State *L) {
     content = xdb_load_content_from_file(db_path);
     if (content == NULL) {
         lua_pushnil(L);
-        return 1;
+        lua_pushfstring(L, "load xdb content from `%s`", db_path);
+        return 2;
     }
 
     // alloc the buffer.
     buffer = (xdb_buffer_t *) lua_newuserdata(L, sizeof(xdb_buffer_t));
     if (buffer == NULL) {
-        return luaL_error(L, "failed to alloc xdb buffer entry");
+        lua_pushnil(L);
+        lua_pushstring(L, "failed to alloc xdb buffer entry");
+        return 2;
     }
 
     // init the buffer
@@ -234,8 +245,9 @@ static int lua_xdb_load_content_from_file(lua_State *L) {
     // set the metatable of the header buffer object and push onto the stack
     luaL_getmetatable(L, XDB_BUFFER_METATABLE_NAME);
     lua_setmetatable(L, -2);
+    lua_pushnil(L);
 
-    return 1;
+    return 2;
 }
 
 // --- End of buffer api

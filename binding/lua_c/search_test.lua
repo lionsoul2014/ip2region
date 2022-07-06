@@ -68,9 +68,9 @@ if cachePolicy == "file" then
         return
     end
 elseif cachePolicy == "vectorIndex" then
-    v_index = xdb.load_vector_index(dbFile)
-    if v_index == nil then
-        print(string.format("failed to load vector index from '%s'", dbFile))
+    v_index, err = xdb.load_vector_index(dbFile)
+    if err ~= nil then
+        print(string.format("failed to load vector index: %s", err))
         return
     end
 
@@ -80,8 +80,8 @@ elseif cachePolicy == "vectorIndex" then
         return
     end
 elseif cachePolicy == "content" then
-    content = xdb.load_content(dbFile)
-    if content == nil then
+    content, err = xdb.load_content(dbFile)
+    if err ~= nil then
         print(string.format("failed to load xdb content from '%s'", dbFile))
         return
     end
