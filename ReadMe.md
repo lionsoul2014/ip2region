@@ -37,7 +37,7 @@ API 介绍，使用文档和测试程序请参考对应 `searcher` 查询客户�
 | [golang](binding/golang) | golang 查询客户端实现 | 已完成    | [Lion](https://github.com/lionsoul2014) |
 | [php](binding/php) | php 查询客户端实现 | 已完成    | [Lion](https://github.com/lionsoul2014) |
 | [java](binding/java) | java 查询客户端实现 | 已完成 | [Lion](https://github.com/lionsoul2014) |
-| [lua](binding/lua) | lua 查询客户端实现 | 开发中... | [Lion](https://github.com/lionsoul2014) |
+| [lua](binding/lua) | lua 查询客户端实现 | 已完成 | [Lion](https://github.com/lionsoul2014) |
 | [c](binding/c) | ANSC c 查询客户端实现 | 已完成 | [Lion](https://github.com/lionsoul2014) |
 | [lua_c](binding/lua_c) | lua 查询客户端实现 | 已完成 | [Lion](https://github.com/lionsoul2014) |
 | [rust](binding/rust) | rust 查询客户端实现 | 开发中... | [Lion](https://github.com/lionsoul2014) |
