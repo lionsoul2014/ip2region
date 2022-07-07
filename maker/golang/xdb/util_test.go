@@ -5,9 +5,36 @@
 package xdb
 
 import (
+	"encoding/binary"
 	"fmt"
+	"net"
 	"testing"
 )
+
+func TestCheckIP(t *testing.T) {
+	var str = "29.34.191.255"
+	ip, err := CheckIP(str)
+	if err != nil {
+		t.Errorf("check ip `%s`: %s\n", str, err)
+	}
+	netip := net.ParseIP(str).To4()
+	if netip == nil {
+		t.Fatalf("parse ip `%s` failed", str)
+	}
+	u32 := binary.BigEndian.Uint32(netip)
+	fmt.Printf("checkip: %d, parseip: %d, isequal: %v", ip, u32, ip == u32)
+}
+
+func TestLong2IP(t *testing.T) {
+	var str = "29.34.191.255"
+	netip := net.ParseIP(str).To4()
+	if netip == nil {
+		t.Fatalf("parse ip `%s` failed", str)
+	}
+	u32 := binary.BigEndian.Uint32(netip)
+	ipstr := Long2IP(u32)
+	fmt.Printf("originIP: %s, Long2IP: %s, isequal: %v", str, ipstr, ipstr == str)
+}
 
 func TestSplitSegment(t *testing.T) {
 	// var str = "1.1.0.0|1.3.3.24|中国|广东|深圳|电信"
