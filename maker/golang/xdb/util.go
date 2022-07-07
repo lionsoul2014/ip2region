@@ -12,6 +12,8 @@ import (
 
 // Util function
 
+var shiftIndex = []int{24, 16, 8, 0}
+
 func CheckIP(ip string) (uint32, error) {
 	var ps = strings.Split(ip, ".")
 	if len(ps) != 4 {
@@ -29,10 +31,8 @@ func CheckIP(ip string) (uint32, error) {
 			return 0, fmt.Errorf("the %dth part `%s` should be an integer bettween 0 and 255", i, s)
 		}
 
-		val |= uint32(d) << ((3 - i) * 8)
+		val |= uint32(d) << shiftIndex[i]
 	}
-
-	// convert the ip to integer
 
 	return val, nil
 }

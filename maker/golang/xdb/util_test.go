@@ -17,23 +17,26 @@ func TestCheckIP(t *testing.T) {
 	if err != nil {
 		t.Errorf("check ip `%s`: %s\n", str, err)
 	}
-	netip := net.ParseIP(str).To4()
-	if netip == nil {
+
+	netIP := net.ParseIP(str).To4()
+	if netIP == nil {
 		t.Fatalf("parse ip `%s` failed", str)
 	}
-	u32 := binary.BigEndian.Uint32(netip)
-	fmt.Printf("checkip: %d, parseip: %d, isequal: %v", ip, u32, ip == u32)
+
+	u32 := binary.BigEndian.Uint32(netIP)
+	fmt.Printf("checkip: %d, parseip: %d, isEqual: %v\n", ip, u32, ip == u32)
 }
 
 func TestLong2IP(t *testing.T) {
 	var str = "29.34.191.255"
-	netip := net.ParseIP(str).To4()
-	if netip == nil {
+	netIP := net.ParseIP(str).To4()
+	if netIP == nil {
 		t.Fatalf("parse ip `%s` failed", str)
 	}
-	u32 := binary.BigEndian.Uint32(netip)
-	ipstr := Long2IP(u32)
-	fmt.Printf("originIP: %s, Long2IP: %s, isequal: %v", str, ipstr, ipstr == str)
+
+	u32 := binary.BigEndian.Uint32(netIP)
+	ipStr := Long2IP(u32)
+	fmt.Printf("originIP: %s, Long2IP: %s, isEqual: %v\n", str, ipStr, ipStr == str)
 }
 
 func TestSplitSegment(t *testing.T) {
