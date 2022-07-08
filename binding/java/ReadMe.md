@@ -7,7 +7,7 @@
 <dependency>
     <groupId>org.lionsoul</groupId>
     <artifactId>ip2region</artifactId>
-    <version>2.6.2</version>
+    <version>2.6.4</version>
 </dependency>
 ```
 
@@ -34,7 +34,7 @@ public class SearcherTest {
         try {
             String ip = "1.2.3.4";
             long sTime = System.nanoTime();
-            String region = searcher.searchByStr(ip);
+            String region = searcher.search(ip);
             long cost = TimeUnit.NANOSECONDS.toMicros((long) (System.nanoTime() - sTime));
             System.out.printf("{region: %s, ioCount: %d, took: %d μs}\n", region, searcher.getIOCount(), cost);
         } catch (Exception e) {
@@ -80,7 +80,7 @@ public class SearcherTest {
         try {
             String ip = "1.2.3.4";
             long sTime = System.nanoTime();
-            String region = searcher.searchByStr(ip);
+            String region = searcher.search(ip);
             long cost = TimeUnit.NANOSECONDS.toMicros((long) (System.nanoTime() - sTime));
             System.out.printf("{region: %s, ioCount: %d, took: %d μs}\n", region, searcher.getIOCount(), cost);
         } catch (Exception e) {
@@ -126,14 +126,14 @@ public class SearcherTest {
         try {
             String ip = "1.2.3.4";
             long sTime = System.nanoTime();
-            String region = searcher.searchByStr(ip);
+            String region = searcher.search(ip);
             long cost = TimeUnit.NANOSECONDS.toMicros((long) (System.nanoTime() - sTime));
             System.out.printf("{region: %s, ioCount: %d, took: %d μs}\n", region, searcher.getIOCount(), cost);
         } catch (Exception e) {
             System.out.printf("failed to search(%s): %s\n", ip, e);
         }
 
-        // 备注：并发使用，用整个 xdb 数据缓存创建的查询对象可以安全的用于并发，也就是你可以把这个 searcher 对象做成全局对象去垮线程访问。
+        // 备注：并发使用，用整个 xdb 数据缓存创建的查询对象可以安全的用于并发，也就是你可以把这个 searcher 对象做成全局对象去跨线程访问。
     }
 }
 ```

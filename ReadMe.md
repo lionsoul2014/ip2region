@@ -37,9 +37,9 @@ API 介绍，使用文档和测试程序请参考对应 `searcher` 查询客户�
 | [golang](binding/golang) | golang 查询客户端实现 | 已完成    | [Lion](https://github.com/lionsoul2014) |
 | [php](binding/php) | php 查询客户端实现 | 已完成    | [Lion](https://github.com/lionsoul2014) |
 | [java](binding/java) | java 查询客户端实现 | 已完成 | [Lion](https://github.com/lionsoul2014) |
-| [lua](binding/lua) | lua 查询客户端实现 | 开发中... | [Lion](https://github.com/lionsoul2014) |
+| [lua](binding/lua) | lua 查询客户端实现 | 已完成 | [Lion](https://github.com/lionsoul2014) |
 | [c](binding/c) | ANSC c 查询客户端实现 | 已完成 | [Lion](https://github.com/lionsoul2014) |
-| [lua_c](binding/lua_c) | lua 查询客户端实现 | 开发中... | [Lion](https://github.com/lionsoul2014) |
+| [lua_c](binding/lua_c) | lua 查询客户端实现 | 已完成 | [Lion](https://github.com/lionsoul2014) |
 | [rust](binding/rust) | rust 查询客户端实现 | 开发中... | [Lion](https://github.com/lionsoul2014) |
 | [python](binding/python) | python 查询客户端实现 | 待开始    | 待确定 |
 | [nodejs](binding/nodejs) | nodejs 查询客户端实现 | 待开始    | 待确定 |
@@ -64,7 +64,7 @@ API 介绍，使用文档和测试程序请参考对应 `maker` 生成程序下�
 
 # 并发查询必读
 
-全部查询客户端的 search 接口都 <b>不是</b> 并发安全的实现，不同进程/线程/携程需要通过创建不同的查询对象来安全使用，并发量很大的情况下，基于文件查询的方式可能会导致打开文件数过多的错误，请修改内核的最大允许打开文件数(fs.file-max=一个更高的值)，或者将整个xdb加载到内存进行安全并发使用。
+全部查询客户端的 search 接口都 <b>不是</b> 并发安全的实现，不同进程/线程/协程需要通过创建不同的查询对象来安全使用，并发量很大的情况下，基于文件查询的方式可能会导致打开文件数过多的错误，请修改内核的最大允许打开文件数(fs.file-max=一个更高的值)，或者将整个xdb加载到内存进行安全并发使用。
 
 
 # 相关备注

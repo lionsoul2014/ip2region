@@ -11,8 +11,8 @@
 
 struct searcher_test_entry {
     xdb_searcher_t searcher;
-    char *v_index;
-    char *c_buffer;
+    xdb_vector_index_t *v_index;
+    xdb_content_t *c_buffer;
 };
 typedef struct searcher_test_entry searcher_test_t;
 
@@ -64,13 +64,13 @@ void destroy_searcher_test(searcher_test_t *test) {
 
     // check and free the vector index
     if (test->v_index != NULL) {
-        xdb_free(test->v_index);
+        xdb_close_vector_index(test->v_index);
         test->v_index = NULL;
     }
 
     // check and free the content buffer
     if (test->c_buffer != NULL) {
-        xdb_free(test->c_buffer);
+        xdb_close_content(test->c_buffer);
         test->c_buffer = NULL;
     }
 }

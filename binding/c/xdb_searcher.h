@@ -38,6 +38,59 @@
 #define xdb_vector_index_length 524288
 
 
+// --- buffer load util functions
+
+// use the following buffer struct to wrap the binary buffer data
+// since the buffer data could not be operated with the string API.
+struct xdb_header {
+    unsigned short version;
+    unsigned short index_policy;
+    unsigned int created_at;
+    unsigned int start_index_ptr;
+    unsigned int end_index_ptr;
+
+    // the original buffer
+    unsigned int length;
+    char buffer[xdb_header_info_length];
+};
+typedef struct xdb_header xdb_header_t;
+
+XDB_PUBLIC(xdb_header_t *) xdb_load_header(FILE *);
+
+XDB_PUBLIC(xdb_header_t *) xdb_load_header_from_file(const char *);
+
+XDB_PUBLIC(void) xdb_close_header(void *);
+
+
+// --- vector index buffer
+struct xdb_vector_index {
+    unsigned int length;
+    char buffer[xdb_vector_index_length];
+};
+typedef struct xdb_vector_index xdb_vector_index_t;
+
+XDB_PUBLIC(xdb_vector_index_t *) xdb_load_vector_index(FILE *);
+
+XDB_PUBLIC(xdb_vector_index_t *) xdb_load_vector_index_from_file(const char *);
+
+XDB_PUBLIC(void) xdb_close_vector_index(void *);
+
+
+// --- content buffer
+struct xdb_content {
+    unsigned int length;
+    char *buffer;
+};
+typedef struct xdb_content xdb_content_t;
+
+XDB_PUBLIC(xdb_content_t *) xdb_load_content(FILE *);
+
+XDB_PUBLIC(xdb_content_t *) xdb_load_content_from_file(const char *);
+
+XDB_PUBLIC(void) xdb_close_content(void *);
+
+// --- End buffer load
+
 // xdb searcher structure
 struct xdb_searcher_entry {
     FILE *handle;
@@ -49,22 +102,22 @@ struct xdb_searcher_entry {
     // vector index buffer cache.
     // preload the vector index will reduce the number of IO operations
     // thus speedup the search process.
-    const char *vector_index;
+    const xdb_vector_index_t *v_index;
 
     // content buffer.
     // cache the whole xdb content.
-    const char *content_buff;
+    const xdb_content_t *content;
 };
 typedef struct xdb_searcher_entry xdb_searcher_t;
 
 // xdb searcher new api define
-XDB_PUBLIC(int) xdb_new_with_file_only(xdb_searcher_t *, char *);
+XDB_PUBLIC(int) xdb_new_with_file_only(xdb_searcher_t *, const char *);
 
-XDB_PUBLIC(int) xdb_new_with_vector_index(xdb_searcher_t *, char *, char *);
+XDB_PUBLIC(int) xdb_new_with_vector_index(xdb_searcher_t *, const char *, const xdb_vector_index_t *);
 
-XDB_PUBLIC(int) xdb_new_with_buffer(xdb_searcher_t *, char *);
+XDB_PUBLIC(int) xdb_new_with_buffer(xdb_searcher_t *, const xdb_content_t *);
 
-XDB_PUBLIC(void) xdb_close(xdb_searcher_t *);
+XDB_PUBLIC(void) xdb_close(void *);
 
 // xdb searcher search api define
 XDB_PUBLIC(int) xdb_search_by_string(xdb_searcher_t *, const char *, char *, size_t);
@@ -72,32 +125,6 @@ XDB_PUBLIC(int) xdb_search_by_string(xdb_searcher_t *, const char *, char *, siz
 XDB_PUBLIC(int) xdb_search(xdb_searcher_t *, unsigned int, char *, size_t);
 
 XDB_PUBLIC(int) xdb_get_io_count(xdb_searcher_t *);
-
-
-// --- buffer load util functions
-
-struct xdb_header {
-    unsigned short version;
-    unsigned short index_policy;
-    unsigned int created_at;
-    unsigned int start_index_ptr;
-    unsigned int end_index_ptr;
-};
-typedef struct xdb_header xdb_header_t;
-
-XDB_PUBLIC(int) xdb_load_header(FILE *, xdb_header_t *);
-
-XDB_PUBLIC(int) xdb_load_header_from_file(char *, xdb_header_t *);
-
-XDB_PUBLIC(char *) xdb_load_vector_index(FILE *);
-
-XDB_PUBLIC(char *) xdb_load_vector_index_from_file(char *);
-
-XDB_PUBLIC(char *) xdb_load_content(FILE *);
-
-XDB_PUBLIC(char *) xdb_load_content_from_file(char *);
-
-// --- End buffer load
 
 
 // get unsigned long (4bytes) from a specified buffer start from the specified offset with little-endian
