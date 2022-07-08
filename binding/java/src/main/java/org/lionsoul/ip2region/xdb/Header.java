@@ -15,6 +15,7 @@ public class Header {
     public final int createdAt;
     public final int startIndexPtr;
     public final int endIndexPtr;
+    public final byte[] buffer;
 
     public Header(byte[] buff) {
         assert buff.length >= 16;
@@ -23,6 +24,7 @@ public class Header {
         createdAt = Searcher.getInt(buff, 4);
         startIndexPtr = Searcher.getInt(buff, 8);
         endIndexPtr = Searcher.getInt(buff, 12);
+        buffer = buff;
     }
 
     @Override public String toString() {

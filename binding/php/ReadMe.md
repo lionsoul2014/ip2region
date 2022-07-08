@@ -2,6 +2,8 @@
 
 # 使用方式
 
+第三方 composer 地址: [https://github.com/chinayin/ip2region-core-php](https://github.com/chinayin/ip2region-core-php)
+
 ### 完全基于文件的查询
 ```php
 $dbFile = "ip2region.xdb file path";
