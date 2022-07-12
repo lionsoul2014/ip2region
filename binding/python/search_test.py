@@ -77,7 +77,7 @@ def start_search(dbFile="", cachePolicy="vectorIndex"):
             print(error)
             return
 
-        print(f"region :{region_str} , took {round((time.time()-start)*1000.00, 4)} ms")
+        print(f"{{region: {region_str} , took: {round((time.time()-start)*1000.00, 4)} ms}}")
     # quit
     searcher.close()
     print("searcher test program exited, thanks for trying")
