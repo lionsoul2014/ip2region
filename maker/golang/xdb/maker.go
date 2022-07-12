@@ -240,7 +240,7 @@ func (m *Maker) Start() error {
 
 		var region = []byte(seg.Region)
 		if len(region) > 0xFFFF {
-			return fmt.Errorf("too long region info `%s`: shoul be less than %d bytes", seg.Region, 0xFFFF)
+			return fmt.Errorf("too long region info `%s`: should be less than %d bytes", seg.Region, 0xFFFF)
 		}
 
 		// get the first ptr of the next region
