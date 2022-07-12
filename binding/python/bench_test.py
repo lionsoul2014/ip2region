@@ -5,7 +5,7 @@
 #  Created by luckydog on 2022/7/1.
 #  Copyright © 2022年 luckydog. All rights reserved.
 #
-from ast import main
+# from ast import main
 import io
 
 from xdbSearcher import XdbSearcher
@@ -101,7 +101,7 @@ def start_bench(dbFile="", srcFile="", cachePolicy="vectorIndex"):
         # close the searcher at last
         f.close()
         searcher.close()
-        print(f"Bench finished, [cachePolicy: {cachePolicy}, total: {count}, took: {round(time.time() - sTime, 2)} s, cost: {round(costs/count*1000, 4)} ms/op]")
+        print(f"Bench finished, {{cachePolicy: {cachePolicy}, total: {count}, took: {round(time.time() - sTime, 2)} s, cost: {round(costs/count*1000, 4)} ms/op}}")
     except Exception as err:
         print(f"failed to open source text file :{err}")
         return
