@@ -20,7 +20,7 @@ VectorIndexSize = 8
 SegmentIndexSize = 14
 
 
-class Ip2Region(object):
+class XdbSearcher(object):
     __f = None
 
     # the minimal memory allocation.
@@ -53,9 +53,18 @@ class Ip2Region(object):
     def __init__(self, dbfile=None, vectorIndex=None, contentBuff=None):
         self.initDatabase(dbfile, vectorIndex, contentBuff)
 
+    def search(self, ip):
+        if isinstance(ip, str):
+            if not ip.isdigit(): ip = self.ip2long(ip)
+            return self.searchByIPLong(ip)
+        else:
+            return self.searchByIPLong(ip)
+       
     def searchByIPStr(self, ip):
         if not ip.isdigit(): ip = self.ip2long(ip)
-
+        return self.searchByIPLong(ip)
+         
+    def searchByIPLong(self, ip):
         # locate the segment index block based on the vector index
         sPtr = ePtr = 0
         il0 = (int)((ip >> 24) & 0xFF)
@@ -169,13 +178,13 @@ if __name__ == '__main__':
     ]
     # 1. 缓存
     dbPath = "./data/ip2region.xdb";
-    cb = Ip2Region.loadContentFromFile(dbfile=dbPath)
+    cb = Searcher.loadContentFromFile(dbfile=dbPath)
     
     # 2. 创建查询对象
-    searcher = Ip2Region(contentBuff=cb)
+    searcher = Searcher(contentBuff=cb)
     
     # 3. 执行查询
-    ip = "1.2.3.4"
+    # ip = "1.2.3.4"
     for ip in ip_array:
         region_str = searcher.searchByIPStr(ip)
         print(region_str)
