@@ -32,21 +32,21 @@ v2.0 格式的 `xdb` 支持亿级别的 IP 数据段行数，region 信息也可
 
 API 介绍，使用文档和测试程序请参考对应 `searcher` 查询客户端下的 ReadMe 介绍，全部查询 binding 实现情况如下：
 
-| 完成状态                  | 编程语言 | 描述                    | 贡献者                 |
-|:----------------------| :--- |:----------------------|:--------------------|
-| &check; 已完成           | [golang](binding/golang) | golang xdb 查询客户端实现    | [Lion](https://github.com/lionsoul2014) |
-| &check; 已完成           | [php](binding/php) | php xdb 查询客户端实现       | [Lion](https://github.com/lionsoul2014) |
-| &check; 已完成           | [java](binding/java) | java xdb 查询客户端实现      | [Lion](https://github.com/lionsoul2014) |
-| &check; 已完成           | [lua](binding/lua) | 纯 lua xdb 查询客户端实现     | [Lion](https://github.com/lionsoul2014) |
-| &check; 已完成           | [c](binding/c) | ANSC c xdb 查询客户端实现    | [Lion](https://github.com/lionsoul2014) |
-| &check; 已完成           | [lua_c](binding/lua_c) | lua c 扩展 xdb 查询客户端实现  | [Lion](https://github.com/lionsoul2014) |
-| &nbsp;&nbsp;&nbsp;待开始 | [rust](binding/rust) | rust xdb 查询客户端实现      | [Lion](https://github.com/lionsoul2014) |
-| &check; 已完成           | [python](binding/python) | python xdb 查询客户端实现    | [厉害的花花](https://github.com/luckydog6132) |
-| &nbsp;&nbsp;&nbsp;待开始 | [nodejs](binding/nodejs) | nodejs xdb 查询客户端实现    | 待确定 |
-| &nbsp;&nbsp;&nbsp;待开始 | [php5_ext](binding/php5_ext) | php5 c 扩展 xdb 查询客户端实现 | 待确定 |
-| &nbsp;&nbsp;&nbsp;待开始 | [php7_ext](binding/php7_ext) | php7 c 扩展 xdb 查询客户端实现 | 待确定 |
-| &nbsp;&nbsp;&nbsp;待开始 | [nginx](binding/nginx) | nginx 扩展 xdb 查询客户端实现  | 待确定 |
-| &nbsp;&nbsp;&nbsp;待开始 | [csharp](binding/csharp) | csharp xdb 查询客户端实现    | 待确定 |
+| 就绪状态               | 开发状态 | 编程语言 | 描述                    | 贡献者                 |
+|:-------------------|:-----| :--- |:----------------------|:--------------------|
+| :white_check_mark: | 已完成  | [golang](binding/golang) | golang xdb 查询客户端实现    | [Lion](https://github.com/lionsoul2014) |
+| :white_check_mark: | 已完成  | [php](binding/php) | php xdb 查询客户端实现       | [Lion](https://github.com/lionsoul2014) |
+| :white_check_mark: | 已完成  | [java](binding/java) | java xdb 查询客户端实现      | [Lion](https://github.com/lionsoul2014) |
+| :white_check_mark: | 已完成  | [lua](binding/lua) | 纯 lua xdb 查询客户端实现     | [Lion](https://github.com/lionsoul2014) |
+| :white_check_mark: | 已完成  | [c](binding/c) | ANSC c xdb 查询客户端实现    | [Lion](https://github.com/lionsoul2014) |
+| :white_check_mark: | 已完成  | [lua_c](binding/lua_c) | lua c 扩展 xdb 查询客户端实现  | [Lion](https://github.com/lionsoul2014) |
+| &nbsp;&nbsp;&nbsp; | 待开始  | [rust](binding/rust) | rust xdb 查询客户端实现      | [Lion](https://github.com/lionsoul2014) |
+| :white_check_mark: | 已完成  | [python](binding/python) | python xdb 查询客户端实现    | [厉害的花花](https://github.com/luckydog6132) |
+| &nbsp;&nbsp;&nbsp; | 待开始  | [nodejs](binding/nodejs) | nodejs xdb 查询客户端实现    | 待确定 |
+| &nbsp;&nbsp;&nbsp; | 待开始  | [php5_ext](binding/php5_ext) | php5 c 扩展 xdb 查询客户端实现 | 待确定 |
+| &nbsp;&nbsp;&nbsp; | 待开始  | [php7_ext](binding/php7_ext) | php7 c 扩展 xdb 查询客户端实现 | 待确定 |
+| &nbsp;&nbsp;&nbsp; | 待开始  | [nginx](binding/nginx) | nginx 扩展 xdb 查询客户端实现  | 待确定 |
+| &nbsp;&nbsp;&nbsp; | 待开始  | [csharp](binding/csharp) | csharp xdb 查询客户端实现    | 待确定 |
 
 
 
@@ -54,11 +54,11 @@ API 介绍，使用文档和测试程序请参考对应 `searcher` 查询客户�
 
 API 介绍，使用文档和测试程序请参考对应 `maker` 生成程序下的 ReadMe 介绍，全部生成 maker 实现情况如下：
 
-| 完成状态                   | 编程语言 | 描述 | 贡献者 |
-|:-----------------------| :--- | :--- | :--- |
-| :white_check_mark: 已完成            | [golang](maker/golang) | golang xdb 生成程序实现 | [Lion](https://github.com/lionsoul2014) |
-| &nbsp;&nbsp;&nbsp; 待开始 | [java](maker/java) | java xdb 生成程序实现 | [Lion](https://github.com/lionsoul2014) |
-| &nbsp;&nbsp;&nbsp; 待开始 | [c](maker/c) | ANSC c xdb 生成客户端实现 | [Lion](https://github.com/lionsoul2014) |
+| 就绪状态               | 开发状态 | 编程语言 | 描述 | 贡献者 |
+|:-------------------|:-----| :--- | :--- | :--- |
+| :white_check_mark: | 已完成  | [golang](maker/golang) | golang xdb 生成程序实现 | [Lion](https://github.com/lionsoul2014) |
+| &nbsp;&nbsp;&nbsp; | 待开始  | [java](maker/java) | java xdb 生成程序实现 | [Lion](https://github.com/lionsoul2014) |
+| &nbsp;&nbsp;&nbsp; | 待开始  | [c](maker/c) | ANSC c xdb 生成客户端实现 | [Lion](https://github.com/lionsoul2014) |
 
 
 
