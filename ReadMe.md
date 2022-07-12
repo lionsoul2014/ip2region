@@ -41,7 +41,7 @@ API 介绍，使用文档和测试程序请参考对应 `searcher` 查询客户�
 | [c](binding/c) | ANSC c 查询客户端实现 | 已完成 | [Lion](https://github.com/lionsoul2014) |
 | [lua_c](binding/lua_c) | lua 查询客户端实现 | 已完成 | [Lion](https://github.com/lionsoul2014) |
 | [rust](binding/rust) | rust 查询客户端实现 | 开发中... | [Lion](https://github.com/lionsoul2014) |
-| [python](binding/python) | python 查询客户端实现 | 待开始    | 待确定 |
+| [python](binding/python) | python 查询客户端实现 | 已完成 | [厉害的花花](https://github.com/luckydog6132) |
 | [nodejs](binding/nodejs) | nodejs 查询客户端实现 | 待开始    | 待确定 |
 | [php5_ext](binding/php5_ext) | php5 c 扩展查询客户端实现 | 待开始    | 待确定 |
 | [php7_ext](binding/php7_ext) | php7 c 扩展查询客户端实现 | 待开始    | 待确定 |
