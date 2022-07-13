@@ -8,4 +8,9 @@
 package org.lionsoul.ip2region;
 
 public class MakerTest {
+
+    public static void main(String[] args) {
+        System.out.println("xdb maker");
+    }
+
 }
