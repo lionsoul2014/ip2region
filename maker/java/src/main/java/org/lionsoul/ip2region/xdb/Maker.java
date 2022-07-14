@@ -51,6 +51,13 @@
 
 package org.lionsoul.ip2region.xdb;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.util.HashMap;
+import java.util.Map;
+
 public class Maker {
     // constants define
     public static final int VersionNo = 2;
@@ -60,7 +67,74 @@ public class Maker {
     public static final int VectorIndexSize = 8;
     public static final int SegmentIndexSize = 14;
 
-    public Maker() {
+    private static final Log log = Log.getLogger(Maker.class);
+
+    // source text file handle
+    private final File srcFile;
+
+    // destination binary file handle
+    private final RandomAccessFile dstHandle;
+
+    // index policy
+    private final int indexPolicy;
+
+    // region pool
+    private final Map<String, Long> regionPool;
+
+    // vector index raw bytes
+    private byte[] vectorIndex;
+
+    public Maker(int policy, String srcFile, String dstFile) throws FileNotFoundException {
+        this.srcFile = new File(srcFile);
+        if (!this.srcFile.exists()) {
+            throw new FileNotFoundException("source text file `" +srcFile+ "` not found");
+        }
+
+        this.dstHandle = new RandomAccessFile(dstFile, "r");
+        this.indexPolicy = policy;
+        this.regionPool = new HashMap<String, Long>();
+    }
+
+    // init the header of the target xdb binary file
+    private void initHeader() throws IOException {
+        log.infof("try to init the db header ... ");
+        dstHandle.seek(0);
+
+        // make and write the header space
+        final byte[] header = new byte[HeaderInfoLength];
+
+        // encode the data
+        Util.write(header, 0, VersionNo, 2);
+        Util.write(header, 2, indexPolicy, 2);
+        Util.write(header, 4, System.currentTimeMillis() / 1000, 4);
+        Util.write(header, 8, 0, 4);    // start index ptr
+        Util.write(header, 12, 0, 4);   // end index ptr
+
+        dstHandle.write(header);
+    }
+
+    // load all the segments
+    private void loadSegments() {
+
+    }
+
+    // init the maker
+    public void init() throws IOException {
+        // init the db header
+        initHeader();
+
+        // load all the segments
+        loadSegments();
+    }
+
+    // start to make the binary file
+    public void make() {
+
+    }
+
+    // end the make, do the resource clean up
+    public void end() throws IOException {
+        this.dstHandle.close();
     }
 
 }
