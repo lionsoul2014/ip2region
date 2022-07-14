@@ -42,7 +42,7 @@ func TestLong2IP(t *testing.T) {
 func TestSplitSegment(t *testing.T) {
 	// var str = "1.1.0.0|1.3.3.24|中国|广东|深圳|电信"
 	// var str = "0.0.0.0|1.255.225.254|0|0|0|内网IP|内网IP"
-	var str = "28.201.224.0|29.34.191.255|美国|0|0|0|0"
+	var str = "116.31.76.0|117.21.79.49|region"
 	seg, err := SegmentFrom(str)
 	if err != nil {
 		t.Fatalf("failed to parser segment '%s': %s", str, err)

@@ -1,6 +1,10 @@
-#  Created by leolin49 on 2022/7/7.
-#  Copyright (C) 2022 leolin49. All rights reserved.
-import util
+# Copyright 2022 The Ip2Region Authors. All rights reserved.
+# Use of this source code is governed by a Apache2.0-style
+# license that can be found in the LICENSE file.
+#
+# Author: leolin49 <leolin49@foxmail.com>
+#
+import xdb.util as util
 
 
 class Segment:
@@ -12,9 +16,30 @@ class Segment:
         self.start_ip, self.end_ip = sip, eip
         self.region = reg
 
+    def __str__(self):
+        return "{}|{}|{}".format(
+            util.long2ip(self.start_ip), util.long2ip(self.end_ip), self.region
+        )
+
     def split(self) -> list:
-        """Split the segment based on the pre-two bytes."""
-        # 1, split the segment with the first byte
+        """
+        Split the segment based on the pre-two bytes.
+        :return: the list of segment ofter split
+        """
+        # Example:
+        # split the segment "116.31.76.0|117.21.79.49|region"
+        #
+        # Return the list with segments:
+        # 116.31.76.0 | 116.31.255.255  | region
+        # 116.32.0.0  | 116.32.255.255  | region
+        # ...         | ...             | region
+        # 116.255.0.0 | 116.255.255.255 | region
+        # 117.0.0.0   | 117.0.255.255   | region
+        # 117.1.0.0   | 117.1.255.255   | region
+        # ...         | ...             | region
+        # 117.21.0.0  | 117.21.79.49    | region
+
+        # 1. Split the segment with the first byte
         t_list_1 = []
         s_byte_1, e_byte_1 = (self.start_ip >> 24) & 0xFF, (self.end_ip >> 24) & 0xFF
         n_sip = self.start_ip
@@ -25,11 +50,10 @@ class Segment:
                 n_sip = (i + 1) << 24
             else:
                 eip = self.end_ip
-
-            # append the new segment (maybe)
+            # Append the new segment (maybe)
             t_list_1.append(Segment(sip, eip))
 
-        # 2, split the segments with the second byte
+        # 2. Split the segments with the second byte
         t_list_2 = []
         for s in t_list_1:
             base = s.start_ip & 0xFF000000
@@ -42,28 +66,5 @@ class Segment:
                     n_sip = 0
                 else:
                     eip = self.end_ip
-
                 t_list_2.append(Segment(sip, eip, self.region))
-
         return t_list_2
-
-    def string(self) -> str:
-        return util.long2ip(self.start_ip) + "|" + util.long2ip(self.end_ip) + "|" + self.region
-
-
-def segment_from(seg: str) -> Segment:
-    segment = Segment()
-    ps = seg.split("|", 3)
-    if len(ps) != 3:
-        return segment
-
-    sip = util.checkip(ps[0])
-    if sip == -1:
-        return segment
-    eip = util.checkip(ps[1])
-    if eip == -1:
-        return segment
-
-    segment.start_ip, segment.end_ip = sip, eip
-    segment.region = ps[2]
-    return segment
