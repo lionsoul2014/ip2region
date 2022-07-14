@@ -2,7 +2,8 @@
 # Use of this source code is governed by a Apache2.0-style
 # license that can be found in the LICENSE file.
 #
-# Author: leolin49 <leolin49@foxmail.com>
+# Author: linyufeng <leolin49@foxmail.com>
+# Date  : 2022/7/14 17:00
 #
 _SHIFT_INDEX = (24, 16, 8, 0)
 
