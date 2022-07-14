@@ -1,21 +1,24 @@
-#  Created by leolin49 on 2022/7/7.
-#  Copyright (C) 2022 leolin49. All rights reserved.
+# Copyright 2022 The Ip2Region Authors. All rights reserved.
+# Use of this source code is governed by a Apache2.0-style
+# license that can be found in the LICENSE file.
+#
+# Author: leolin49 <leolin49@foxmail.com>
+#
 import struct
 
-VectorIndexPolicy = 1
-BTreeIndexPolicy = 2
-SegmentIndexBlockSize = 14
+Vector_Index_Policy = 1
+BTree_Index_Policy = 2
 
 
 def index_policy_from_string(s: str) -> int:
     sl = s.lower()
     if sl == "vector":
-        return VectorIndexPolicy
+        return Vector_Index_Policy
     elif sl == "btree":
-        return BTreeIndexPolicy
+        return BTree_Index_Policy
     else:
         print("invalid policy `{}`, used default vector index".format(s))
-        return VectorIndexPolicy
+        return Vector_Index_Policy
 
 
 class VectorIndexBlock:
@@ -26,11 +29,14 @@ class VectorIndexBlock:
         self.first_ptr = fp
         self.last_ptr = lp
 
+    def __str__(self):
+        return "FirstPtr: {}, LastPrt: {}".format(self.first_ptr, self.last_ptr)
+
     def encode(self) -> bytes:
         return struct.pack("<II", self.first_ptr, self.last_ptr)
 
-    def string(self) -> str:
-        return "FirstPtr: {}, LastPrt: {}".format(self.first_ptr, self.last_ptr)
+
+Segment_Index_Block_Size = 14
 
 
 class SegmentIndexBlock:
@@ -45,8 +51,12 @@ class SegmentIndexBlock:
         self.data_len = dl
         self.data_ptr = dp
 
-    def encode(self) -> bytes:
-        return struct.pack("<IIHI", self.start_ip, self.end_ip, self.data_len, self.data_ptr)
+    def __str__(self):
+        return "{sip: {}, eip: {}, len: {}, ptr: {}}".format(
+            self.start_ip, self.end_ip, self.data_len, self.data_ptr
+        )
 
-    def string(self) -> str:
-        return "{sip: {}, eip: {}, len: {}, ptr: {}}".format(self.start_ip, self.end_ip, self.data_len, self.data_ptr)
+    def encode(self) -> bytes:
+        return struct.pack(
+            "<IIHI", self.start_ip, self.end_ip, self.data_len, self.data_ptr
+        )

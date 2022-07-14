@@ -1,5 +1,8 @@
-#  Created by leolin49 on 2022/7/7.
-#  Copyright (C) 2022 leolin49. All rights reserved.
+# Copyright 2022 The Ip2Region Authors. All rights reserved.
+# Use of this source code is governed by a Apache2.0-style
+# license that can be found in the LICENSE file.
+#
+# Author: leolin49 <leolin49@foxmail.com>
 #
 # ----
 # ip2region database v2.0 structure
@@ -36,40 +39,39 @@
 #
 # data entry structure:
 # +--------------------+-----------------------+
-# | 2bytes (for desc)	| dynamic length		|
+# | 2bytes (for desc)  |  dynamic length	   |
 # +--------------------+-----------------------+
 #  data length   whatever in bytes
 #
 # index entry structure
 # +------------+-----------+---------------+------------+
-# | 4bytes		| 4bytes	| 2bytes		| 4 bytes    |
+# | 4bytes	   | 4bytes	   | 2bytes		   | 4 bytes    |
 # +------------+-----------+---------------+------------+
 #  start ip 	  end ip	  data length     data ptr
-import os
-import struct
-import sys
-sys.path.append(os.path.realpath(os.path.dirname(os.path.realpath(__file__))))
 import logging
+import struct
 import time
-import segment as seg
-import index as idx
-import util
+import sys
+
+import xdb.segment as seg
+import xdb.index as idx
+import xdb.util as util
 
 
-VersionNo = 2
-HeaderInfoLength = 256
-VectorIndexRows = 256
-VectorIndexCols = 256
-VectorIndexSize = 8
-VectorIndexLength = VectorIndexRows * VectorIndexCols * VectorIndexSize
+Version_No = 2
+Header_Info_Length = 256
+Vector_Index_Rows = 256
+Vector_Index_Cols = 256
+Vector_Index_Size = 8
+Vector_Index_Length = Vector_Index_Rows * Vector_Index_Cols * Vector_Index_Size
 
 
 class Maker:
     src_handle = None
     dst_handle = None
-    index_policy = 0
-    segments = []
-    region_pool = {}
+    index_policy = idx.Vector_Index_Policy
+    segments = None
+    region_pool = None
     vector_index = None
 
     def __init__(self, sh, dh, ip, sg, rp, vi):
@@ -83,30 +85,32 @@ class Maker:
     def init(self):
         """
         Init the `xdb` binary file.
-        1. init the file header
-        2. load all the segments
+        1. Init the file header
+        2. Load all the segments
         """
         self.init_db_header()
         self.load_segments()
 
     def init_db_header(self):
-        """Init and write the file header to the destination xdb file."""
+        """
+        Init and write the file header to the destination xdb file.
+        """
         logging.info("try to init the db header ... ")
         self.src_handle.seek(0, 0)
 
-        header = bytearray([0]*256)
-        # make and write the header space
-        # 1. version number
-        header[0:2] = VersionNo.to_bytes(2, byteorder="little")
-        # 2. index policy code
+        # Make and write the header space
+        header = bytearray([0] * 256)
+        # 1. Version number
+        header[0:2] = Version_No.to_bytes(2, byteorder="little")
+        # 2. Index policy code
         header[2:4] = int(self.index_policy).to_bytes(2, byteorder="little")
-        # 3. generate unix timestamp
+        # 3. Generate unix timestamp
         header[4:8] = int(time.time()).to_bytes(4, byteorder="little")
-        # 4. index block start ptr
+        # 4. Index block start ptr
         header[8:12] = int(0).to_bytes(4, byteorder="little")
-        # 5. index block end ptr
+        # 5. Index block end ptr
         header[12:16] = int(0).to_bytes(4, byteorder="little")
-        # write header buffer to file
+        # Write header buffer to file
         self.dst_handle.write(header)
 
     def load_segments(self) -> list:
@@ -125,122 +129,158 @@ class Maker:
             if len(ps) != 3:
                 logging.error("invalid ip segment line `{}`".format(line))
                 return []
-            sip = util.checkip(ps[0])
+            sip = util.check_ip(ps[0])
             if sip == -1:
-                logging.error("invalid ip address `{}`".format(line))
+                logging.error(
+                    "invalid ip address `{}` in line `{}`".format(ps[0], line)
+                )
                 return []
-            eip = util.checkip(ps[1])
+            eip = util.check_ip(ps[1])
             if eip == -1:
-                logging.error("invalid ip address `{}`".format(line))
+                logging.error(
+                    "invalid ip address `{}` in line `{}`".format(ps[1], line)
+                )
                 return []
             if sip > eip:
-                logging.error("start ip({}) should not be greater than end ip({})".format(ps[0], ps[1]))
+                logging.error(
+                    "start ip({}) should not be greater than end ip({})".format(
+                        ps[0], ps[1]
+                    )
+                )
                 return []
             if len(ps[2]) < 1:
                 logging.error("empty region info in segment line `{}`".format(line))
                 return []
-            segment = seg.Segment(sip=sip, eip=eip, reg=ps[2])
 
-            # check the continuity of data segment
+            segment = seg.Segment(sip=sip, eip=eip, reg=ps[2])
+            # Check the continuity of data segment
             if last is not None:
                 if last.end_ip + 1 != segment.start_ip:
-                    logging.error("discontinuous data segment: last.eip+1({})!=seg.sip({}, {})".format(sip, eip, ps[0]))
+                    logging.error(
+                        "discontinuous data segment: last.eip+1({})!=seg.sip({}, {})".format(
+                            sip, eip, ps[0]
+                        )
+                    )
                     return []
-
             self.segments.append(segment)
             last = segment
-        logging.info("all segments loaded, length: {}, elapsed: {}".format(len(self.segments), time.time() - s_tm))
+        logging.info(
+            "all segments loaded, length: {}, elapsed: {}".format(
+                len(self.segments), time.time() - s_tm
+            )
+        )
 
     def set_vector_index(self, ip, ptr):
+        """
+        Init and refresh the vector index based on the IP pre-two bytes.
+        """
         row, col = (ip >> 24) & 0xFF, (ip >> 16) & 0xFF
         vi_block = self.vector_index[row][col]
         if vi_block.first_ptr == 0:
             vi_block.first_ptr = ptr
-            vi_block.last_ptr = ptr + idx.SegmentIndexBlockSize
+            vi_block.last_ptr = ptr + idx.Segment_Index_Block_Size
         else:
-            vi_block.last_ptr = ptr + idx.SegmentIndexBlockSize
+            vi_block.last_ptr = ptr + idx.Segment_Index_Block_Size
         self.vector_index[row][col] = vi_block
 
     def start(self):
-        """Start to make the 'xdb' binary file."""
+        """
+        Start to make the 'xdb' binary file.
+        """
         if len(self.segments) < 1:
             logging.error("empty segment list")
             return
 
-        # 1. write all the region/data to the binary file
-        self.dst_handle.seek(HeaderInfoLength+VectorIndexLength, 0)
+        # 1. Write all the region/data to the binary file
+        self.dst_handle.seek(Header_Info_Length + Vector_Index_Length, 0)
 
         logging.info("try to write the data block ... ")
         for s in self.segments:
             logging.info("try to write region '{}'...".format(s.region))
             if s.region in self.region_pool:
-                logging.info(" --[Cached] with ptr={}".format(self.region_pool[s.region]))
+                logging.info(
+                    " --[Cached] with ptr={}".format(self.region_pool[s.region])
+                )
                 continue
             region = bytes(s.region, encoding="utf-8")
             if len(region) > 0xFFFF:
-                logging.error("too long region info `{}`: should be less than {} bytes".format(s.region, 0xFFFF))
+                logging.error(
+                    "too long region info `{}`: should be less than {} bytes".format(
+                        s.region, 0xFFFF
+                    )
+                )
                 return
-
-            # get the first ptr of the next region
+            # Get the first ptr of the next region
             pos = self.dst_handle.seek(0, 1)
             logging.info("{} {} {}".format(pos, region, s.region))
             self.dst_handle.write(region)
             self.region_pool[s.region] = pos
             logging.info(" --[Added] with ptr={}".format(pos))
-        # 2. write the index block and cache the super index block
+        # 2. Write the index block and cache the super index block
         logging.info("try to write the segment index block ... ")
         counter, start_index_ptr, end_index_ptr = 0, -1, -1
         for sg in self.segments:
-            data_ptr = -1
-            if sg.region in self.region_pool:
-                data_ptr = self.region_pool[sg.region]
-            else:
+            if sg.region not in self.region_pool:
                 logging.error("missing ptr cache for region `{}`".format(sg.region))
                 return
-
             data_len = len(bytes(sg.region, encoding="utf-8"))
             if data_len < 1:
                 logging.error("empty region info for segment '{}'".format(sg.region))
                 return
 
             seg_list = sg.split()
-            logging.info("try to index segment({} split) {} ...".format(len(seg_list), sg.string()))
+            logging.info(
+                "try to index segment({} split) {} ...".format(len(seg_list), sg)
+            )
             for s in seg_list:
                 pos = self.dst_handle.seek(0, 1)
 
                 s_index = idx.SegmentIndexBlock(
-                    sip=s.start_ip, eip=s.end_ip, dl=data_len, dp=data_ptr
+                    sip=s.start_ip,
+                    eip=s.end_ip,
+                    dl=data_len,
+                    dp=self.region_pool[sg.region],
                 )
                 self.dst_handle.write(s_index.encode())
-                logging.info("|-segment index: {}, ptr: {}, segment: {}".format(counter, pos, s.string()))
+                logging.info(
+                    "|-segment index: {}, ptr: {}, segment: {}".format(counter, pos, s)
+                )
                 self.set_vector_index(s.start_ip, pos)
                 counter += 1
 
-                # check and record the start index ptr
+                # Check and record the start index ptr
                 if start_index_ptr == -1:
                     start_index_ptr = pos
                 end_index_ptr = pos
 
-        # synchronized the vector index block
+        # 3. Synchronized the vector index block
         logging.info("try to write the vector index block ... ")
-        self.dst_handle.seek(HeaderInfoLength, 0)
+        self.dst_handle.seek(Header_Info_Length, 0)
         for i in range(0, len(self.vector_index)):
             for j in range(0, len(self.vector_index[i])):
                 vi = self.vector_index[i][j]
                 self.dst_handle.write(vi.encode())
 
-        # synchronized the segment index info
+        # 4. Synchronized the segment index info
         logging.info("try to write the segment index ptr ... ")
         buff = struct.pack("<II", start_index_ptr, end_index_ptr)
         self.dst_handle.seek(8, 0)
         self.dst_handle.write(buff)
 
-        logging.info("write done, dataBlocks: {}, indexBlocks: ({}, {}), indexPtr: ({}, {})".format(
-            len(self.region_pool), len(self.segments), counter, start_index_ptr, end_index_ptr
-        ))
+        logging.info(
+            "write done, dataBlocks: {}, indexBlocks: ({}, {}), indexPtr: ({}, {})".format(
+                len(self.region_pool),
+                len(self.segments),
+                counter,
+                start_index_ptr,
+                end_index_ptr,
+            )
+        )
 
     def end(self):
-        """End of make the 'xdb' binary file."""
+        """
+        End of make the 'xdb' binary file.
+        """
         try:
             self.src_handle.close()
             self.dst_handle.close()
@@ -250,20 +290,27 @@ class Maker:
 
 
 def new_maker(policy: int, srcfile: str, dstfile: str) -> Maker:
-    """Create a xdb Maker to make the xdb binary file
+    """
+    Create a xdb Maker to make the xdb binary file
     :param policy: index algorithm code 1:vector, 2:b-tree
     :param srcfile: source ip text file path
     :param dstfile: destination binary xdb file path
     :return: the 'xdb' Maker
     """
     try:
-        sh = open(srcfile, mode='r', encoding='utf-8')
-        dh = open(dstfile, mode='wb')
+        sh = open(srcfile, mode="r", encoding="utf-8")
+        dh = open(dstfile, mode="wb")
         return Maker(
-            sh=sh, dh=dh, ip=policy, sg=[], rp={},
-            vi=[[idx.VectorIndexBlock() for _ in range(VectorIndexRows)] for _ in range(VectorIndexCols)],
+            sh=sh,
+            dh=dh,
+            ip=policy,
+            sg=[],
+            rp={},
+            vi=[
+                [idx.VectorIndexBlock() for _ in range(Vector_Index_Rows)]
+                for _ in range(Vector_Index_Cols)
+            ],
         )
     except IOError as e:
         logging.error(e)
         sys.exit()
-
