@@ -71,7 +71,7 @@ public class MakerTest {
         maker.start();
         maker.end();
 
-        log.infof("Done, elapsed: %d s\n", (System.currentTimeMillis() - tStart) / 1000);
+        log.infof("Done, elapsed: %d s", (System.currentTimeMillis() - tStart) / 1000);
     }
 
     public static void main(String[] args) {
