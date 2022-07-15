@@ -72,7 +72,7 @@ public class Segment {
                     eip = seg.endIP;
                 }
 
-                segList.add(new Segment(sip, eip, seg.region));
+                segList.add(new Segment(sip, eip, region));
             }
         }
 
