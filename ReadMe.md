@@ -58,8 +58,8 @@ API 介绍，使用文档和测试程序请参考对应 `maker` 生成程序下�
 |:-------------------|:-----| :--- | :--- | :--- |
 | :white_check_mark: | 已完成  | [golang](maker/golang) | golang xdb 生成程序实现 | [Lion](https://github.com/lionsoul2014) |
 | &nbsp;&nbsp;&nbsp; | 开发中  | [java](maker/java) | java xdb 生成程序实现 | [Lion](https://github.com/lionsoul2014) |
-| &nbsp;&nbsp;&nbsp; | 待开始  | [c](maker/c) | ANSC c xdb 生成客户端实现 | [Lion](https://github.com/lionsoul2014) |
-| :white_check_mark: | 已完成  | [python](maker/python) | python xdb 生成客户端实现 | [leolin49](https://github.com/leolin49) |
+| &nbsp;&nbsp;&nbsp; | 待开始  | [c](maker/c) | ANSC c xdb 生成程序实现 | [Lion](https://github.com/lionsoul2014) |
+| :white_check_mark: | 已完成  | [python](maker/python) | python xdb 生成程序实现 | [leolin49](https://github.com/leolin49) |
 
 
 
