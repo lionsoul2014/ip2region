@@ -12,7 +12,7 @@ import (
 
 // Util function
 
-var shiftIndex = []int{24, 16, 8, 0}
+var shiftIndex = []uint32{24, 16, 8, 0}
 
 func CheckIP(ip string) (uint32, error) {
 	var ps = strings.Split(ip, ".")
