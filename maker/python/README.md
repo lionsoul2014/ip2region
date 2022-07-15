@@ -35,4 +35,4 @@ options:
 
 # `xdb` 数据查询 和 bench 测试
 
-基于xdb格式的查询功能和测试见 [ip2region binding](https://github.com/lionsoul2014/ip2region/tree/master/binding)
+基于xdb 格式的查询功能和测试见 [ip2region binding](../../binding)
