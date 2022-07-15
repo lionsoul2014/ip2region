@@ -35,6 +35,8 @@ public class SearcherTest {
             String ip = "1.2.3.4";
             long sTime = System.nanoTime();
             String region = searcher.search(ip);
+            //一定关闭
+            searcher.close();
             long cost = TimeUnit.NANOSECONDS.toMicros((long) (System.nanoTime() - sTime));
             System.out.printf("{region: %s, ioCount: %d, took: %d μs}\n", region, searcher.getIOCount(), cost);
         } catch (Exception e) {
@@ -81,6 +83,7 @@ public class SearcherTest {
             String ip = "1.2.3.4";
             long sTime = System.nanoTime();
             String region = searcher.search(ip);
+            searcher.close();
             long cost = TimeUnit.NANOSECONDS.toMicros((long) (System.nanoTime() - sTime));
             System.out.printf("{region: %s, ioCount: %d, took: %d μs}\n", region, searcher.getIOCount(), cost);
         } catch (Exception e) {
@@ -127,6 +130,7 @@ public class SearcherTest {
             String ip = "1.2.3.4";
             long sTime = System.nanoTime();
             String region = searcher.search(ip);
+            //此处可以不调用 searcher.close() 因为使用了newWithBuffer没有打开文件
             long cost = TimeUnit.NANOSECONDS.toMicros((long) (System.nanoTime() - sTime));
             System.out.printf("{region: %s, ioCount: %d, took: %d μs}\n", region, searcher.getIOCount(), cost);
         } catch (Exception e) {

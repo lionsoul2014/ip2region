@@ -163,6 +163,7 @@ public class Searcher {
         handle.seek(0);
         final byte[] buff = new byte[HeaderInfoLength];
         handle.read(buff);
+        handle.close();
         return new Header(buff);
     }
 
@@ -177,8 +178,10 @@ public class Searcher {
         final byte[] buff = new byte[len];
         int rLen = handle.read(buff);
         if (rLen != len) {
+            handle.close();
             throw new IOException("incomplete read: read bytes should be " + len);
         }
+        handle.close();
 
         return buff;
     }
@@ -193,9 +196,10 @@ public class Searcher {
         final byte[] buff =  new byte[(int) handle.length()];
         int rLen = handle.read(buff);
         if (rLen != buff.length) {
+            handle.close();
             throw new IOException("incomplete read: read bytes should be " + buff.length);
         }
-
+        handle.close();
         return buff;
     }
 
