@@ -25,7 +25,7 @@ type Searcher struct {
 	// use it only when this feature enabled.
 	// Preload the vector index will reduce the number of IO operations
 	// thus speedup the search process
-	vectorIndex [][]*VectorIndexBlock
+	vectorIndex []byte
 }
 
 func NewSearcher(dbFile string) (*Searcher, error) {
@@ -65,7 +65,7 @@ func (s *Searcher) LoadVectorIndex() error {
 		return fmt.Errorf("seek to vector index: %w", err)
 	}
 
-	var buff = make([]byte, VectorIndexRows*VectorIndexCols*VectorIndexSize)
+	var buff = make([]byte, VectorIndexLength)
 	rLen, err := s.handle.Read(buff)
 	if err != nil {
 		return err
@@ -75,20 +75,7 @@ func (s *Searcher) LoadVectorIndex() error {
 		return fmt.Errorf("incomplete read: readed bytes should be %d", len(buff))
 	}
 
-	// decode the vector index blocks
-	var vectorIndex = make([][]*VectorIndexBlock, VectorIndexRows)
-	for r := 0; r < VectorIndexRows; r++ {
-		vectorIndex[r] = make([]*VectorIndexBlock, VectorIndexCols)
-		for c := 0; c < VectorIndexCols; c++ {
-			offset := r*VectorIndexCols*VectorIndexSize + c*VectorIndexSize
-			vectorIndex[r][c], err = VectorIndexBlockDecode(buff[offset:])
-			if err != nil {
-				return fmt.Errorf("decode vector index at [%d][%d]: %w", r, c, err)
-			}
-		}
-	}
-
-	s.vectorIndex = vectorIndex
+	s.vectorIndex = buff
 	return nil
 }
 
@@ -101,15 +88,17 @@ func (s *Searcher) ClearVectorIndex() {
 func (s *Searcher) Search(ip uint32) (string, int, error) {
 	// locate the segment index block based on the vector index
 	var ioCount = 0
-	var vIndex *VectorIndexBlock
+	var il0 = (ip >> 24) & 0xFF
+	var il1 = (ip >> 16) & 0xFF
+	var idx = il0*VectorIndexCols*VectorIndexSize + il1*VectorIndexSize
+	var sPtr, ePtr = uint32(0), uint32(0)
 	if s.vectorIndex != nil {
-		vIndex = s.vectorIndex[(ip>>24)&0xFF][(ip>>16)&0xFF]
+		sPtr = binary.LittleEndian.Uint32(s.vectorIndex[idx:])
+		ePtr = binary.LittleEndian.Uint32(s.vectorIndex[idx+4:])
 	} else {
-		l0, l1 := (ip>>24)&0xFF, (ip>>16)&0xFF
-		offset := l0*VectorIndexCols*VectorIndexSize + l1*VectorIndexSize
-		pos, err := s.handle.Seek(int64(HeaderInfoLength+offset), 0)
+		pos, err := s.handle.Seek(int64(HeaderInfoLength+idx), 0)
 		if err != nil {
-			return "", ioCount, fmt.Errorf("seek to vector index[%d][%d]: %w", l0, l1, err)
+			return "", ioCount, fmt.Errorf("seek to vector index %d: %w", HeaderInfoLength+idx, err)
 		}
 
 		ioCount++
@@ -123,21 +112,19 @@ func (s *Searcher) Search(ip uint32) (string, int, error) {
 			return "", ioCount, fmt.Errorf("incomplete read: readed bytes should be %d", len(buff))
 		}
 
-		vIndex, err = VectorIndexBlockDecode(buff)
-		if err != nil {
-			return "", ioCount, fmt.Errorf("invalid vector index block at %d: %w", pos, err)
-		}
+		sPtr = binary.LittleEndian.Uint32(buff)
+		ePtr = binary.LittleEndian.Uint32(buff[4:])
 	}
 
 	//log.Printf("vIndex=%s", vIndex)
 	// binary search the segment index to get the region
 	var dataLen, dataPtr = 0, uint32(0)
-	var buff = make([]byte, SegmentIndexBlockSize)
-	var l, h = 0, int((vIndex.LastPtr - vIndex.FirstPtr) / SegmentIndexBlockSize)
+	var buff = make([]byte, SegmentIndexSize)
+	var l, h = 0, int((ePtr - sPtr) / SegmentIndexSize)
 	for l <= h {
 		// log.Printf("l=%d, h=%d", l, h)
 		m := (l + h) >> 1
-		p := vIndex.FirstPtr + uint32(m*SegmentIndexBlockSize)
+		p := sPtr + uint32(m*SegmentIndexSize)
 		// log.Printf("m=%d, p=%d", m, p)
 		_, err := s.handle.Seek(int64(p), 0)
 		if err != nil {
@@ -154,10 +141,6 @@ func (s *Searcher) Search(ip uint32) (string, int, error) {
 			return "", ioCount, fmt.Errorf("incomplete read: readed bytes should be %d", len(buff))
 		}
 
-		// segIndex, err := SegmentIndexDecode(buff)
-		// if err != nil {
-		// 	return "", fmt.Errorf("invalid segment index block at %d: %w", p, err)
-		// }
 		// decode the data step by step to reduce the unnecessary calculations
 		sip := binary.LittleEndian.Uint32(buff)
 		if ip < sip {
