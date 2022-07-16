@@ -183,9 +183,9 @@ public class Maker {
         long sPtr = Util.getIntLong(vectorIndex, idx);
         if (sPtr == 0) {
             Util.write(vectorIndex, idx, ptr, 4);
-            Util.write(vectorIndex, idx + 4, ptr, 4);
+            Util.write(vectorIndex, idx + 4, ptr + SegmentIndexSize, 4);
         } else {
-            Util.write(vectorIndex, idx + 4, ptr, 4);
+            Util.write(vectorIndex, idx + 4, ptr + SegmentIndexSize, 4);
         }
     }
 
