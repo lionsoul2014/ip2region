@@ -64,6 +64,7 @@ const HeaderInfoLength = 256
 const VectorIndexRows = 256
 const VectorIndexCols = 256
 const VectorIndexSize = 8
+const SegmentIndexSize = 14
 const VectorIndexLength = VectorIndexRows * VectorIndexCols * VectorIndexSize
 
 type Maker struct {
@@ -73,7 +74,7 @@ type Maker struct {
 	indexPolicy IndexPolicy
 	segments    []*Segment
 	regionPool  map[string]uint32
-	vectorIndex [VectorIndexCols][VectorIndexRows]VectorIndexBlock
+	vectorIndex []byte
 }
 
 func NewMaker(policy IndexPolicy, srcFile string, dstFile string) (*Maker, error) {
@@ -96,7 +97,7 @@ func NewMaker(policy IndexPolicy, srcFile string, dstFile string) (*Maker, error
 		indexPolicy: policy,
 		segments:    []*Segment{},
 		regionPool:  map[string]uint32{},
-		vectorIndex: [VectorIndexCols][VectorIndexRows]VectorIndexBlock{},
+		vectorIndex: make([]byte, VectorIndexLength),
 	}, nil
 }
 
@@ -208,12 +209,15 @@ func (m *Maker) Init() error {
 
 // refresh the vector index of the specified ip
 func (m *Maker) setVectorIndex(ip uint32, ptr uint32) {
-	var viBlock = &m.vectorIndex[(ip>>24)&0xFF][(ip>>16)&0xFF]
-	if viBlock.FirstPtr == 0 {
-		viBlock.FirstPtr = ptr
-		viBlock.LastPtr = ptr + SegmentIndexBlockSize
+	var il0 = (ip >> 24) & 0xFF
+	var il1 = (ip >> 16) & 0xFF
+	var idx = il0*VectorIndexCols*VectorIndexSize + il1*VectorIndexSize
+	var sPtr = binary.LittleEndian.Uint32(m.vectorIndex[idx:])
+	if sPtr == 0 {
+		binary.LittleEndian.PutUint32(m.vectorIndex[idx:], ptr)
+		binary.LittleEndian.PutUint32(m.vectorIndex[idx+4:], ptr+SegmentIndexSize)
 	} else {
-		viBlock.LastPtr = ptr + SegmentIndexBlockSize
+		binary.LittleEndian.PutUint32(m.vectorIndex[idx+4:], ptr+SegmentIndexSize)
 	}
 }
 
@@ -260,6 +264,7 @@ func (m *Maker) Start() error {
 
 	// 2, write the index block and cache the super index block
 	log.Printf("try to write the segment index block ... ")
+	var indexBuff = make([]byte, SegmentIndexSize)
 	var counter, startIndexPtr, endIndexPtr = 0, int64(-1), int64(-1)
 	for _, seg := range m.segments {
 		dataPtr, has := m.regionPool[seg.Region]
@@ -267,6 +272,8 @@ func (m *Maker) Start() error {
 			return fmt.Errorf("missing ptr cache for region `%s`", seg.Region)
 		}
 
+		// @Note: data length should be the length of bytes.
+		// this works find cuz of the string feature (byte sequence) of golang.
 		var dataLen = len(seg.Region)
 		if dataLen < 1 {
 			// @TODO: could this even be a case ?
@@ -281,14 +288,12 @@ func (m *Maker) Start() error {
 				return fmt.Errorf("seek to segment index block: %w", err)
 			}
 
-			var sIndex = &SegmentIndexBlock{
-				StartIP: s.StartIP,
-				EndIP:   s.EndIP,
-				DataLen: uint16(dataLen),
-				DataPtr: dataPtr,
-			}
-
-			_, err = m.dstHandle.Write(sIndex.Encode())
+			// encode the segment index
+			binary.LittleEndian.PutUint32(indexBuff, s.StartIP)
+			binary.LittleEndian.PutUint32(indexBuff[4:], s.EndIP)
+			binary.LittleEndian.PutUint16(indexBuff[8:], uint16(dataLen))
+			binary.LittleEndian.PutUint32(indexBuff[10:], dataPtr)
+			_, err = m.dstHandle.Write(indexBuff)
 			if err != nil {
 				return fmt.Errorf("write segment index for '%s': %w", s.String(), err)
 			}
@@ -312,27 +317,21 @@ func (m *Maker) Start() error {
 	if err != nil {
 		return fmt.Errorf("seek vector index first ptr: %w", err)
 	}
-
-	for i, l := range m.vectorIndex {
-		for j, c := range l {
-			_, err = m.dstHandle.Write(c.Encode())
-			if err != nil {
-				return fmt.Errorf("write vector index [%d][%d]: %w", i, j, err)
-			}
-		}
+	_, err = m.dstHandle.Write(m.vectorIndex)
+	if err != nil {
+		return fmt.Errorf("write vector index: %w", err)
 	}
 
 	// synchronized the segment index info
 	log.Printf("try to write the segment index ptr ... ")
-	var buff = make([]byte, 8)
-	binary.LittleEndian.PutUint32(buff, uint32(startIndexPtr))
-	binary.LittleEndian.PutUint32(buff[4:], uint32(endIndexPtr))
+	binary.LittleEndian.PutUint32(indexBuff, uint32(startIndexPtr))
+	binary.LittleEndian.PutUint32(indexBuff[4:], uint32(endIndexPtr))
 	_, err = m.dstHandle.Seek(8, 0)
 	if err != nil {
 		return fmt.Errorf("seek segment index ptr: %w", err)
 	}
 
-	_, err = m.dstHandle.Write(buff)
+	_, err = m.dstHandle.Write(indexBuff[:8])
 	if err != nil {
 		return fmt.Errorf("write segment index ptr: %w", err)
 	}
