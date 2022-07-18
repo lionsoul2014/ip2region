@@ -248,7 +248,7 @@ namespace IP2Region.xdb
         public static long checkIP(String ip)
         {
             String[]
-            ps = ip.Split(".");
+            ps = ip.Split('.');
             if (ps.Length != 4) throw new Exception("invalid ip address `" + ip + "`");
 
             long ipDst = 0;
