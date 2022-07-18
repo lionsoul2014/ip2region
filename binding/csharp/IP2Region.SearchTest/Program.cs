@@ -11,7 +11,7 @@ namespace IP2Region.SearchTest
         public static void PrintHelp(String[] args)
         {
             Console.WriteLine("ip2region xdb searcher");
-            Console.WriteLine("SearchTest.exe [command] [command options]");
+            Console.WriteLine("IP2Region.SearchTest.exe [command] [command options]");
             Console.WriteLine("Command: ");
             Console.WriteLine("  search    search input test");
             Console.WriteLine("  bench     search bench test");
@@ -80,7 +80,7 @@ namespace IP2Region.SearchTest
 
             if (dbPath.Length < 1)
             {
-                Console.WriteLine("SearchTest.exe search [command options]");
+                Console.WriteLine("IP2Region.SearchTest.exe search [command options]");
                 Console.WriteLine("options:");
                 Console.WriteLine(" --db string              ip2region binary xdb file path");
                 Console.WriteLine(" --cache-policy string    cache policy: file/vectorIndex/content");
@@ -89,7 +89,7 @@ namespace IP2Region.SearchTest
 
             Searcher searcher = CreateSearcher(dbPath, cachePolicy);
 
-            Console.WriteLine("ip2region xdb searcher test program, cachePolicy: %s\ntype 'quit' to exit", cachePolicy);
+            Console.WriteLine("ip2region xdb searcher test program, cachePolicy: {0}\ntype 'quit' to exit", cachePolicy);
             while (true)
             {
                 Console.Write("ip2region>> ");
@@ -158,7 +158,7 @@ namespace IP2Region.SearchTest
 
             if (dbPath.Length < 1 || srcPath.Length < 1)
             {
-                Console.WriteLine("SearchTest.exe bench [command options]");
+                Console.WriteLine("IP2Region.SearchTest.exe bench [command options]");
                 Console.WriteLine("options:");
                 Console.WriteLine(" --db string              ip2region binary xdb file path");
                 Console.WriteLine(" --src string             source ip text file path");
