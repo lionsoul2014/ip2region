@@ -43,7 +43,7 @@ API 介绍，使用文档和测试程序请参考对应 `searcher` 查询客户�
 | &nbsp;&nbsp;&nbsp; | 待开始  | [rust](binding/rust) | rust xdb 查询客户端实现      | [Lion](https://github.com/lionsoul2014) |
 | :white_check_mark: | 已完成  | [python](binding/python) | python xdb 查询客户端实现    | [厉害的花花](https://github.com/luckydog6132) |
 | &nbsp;&nbsp;&nbsp; | 待开始  | [nodejs](binding/nodejs) | nodejs xdb 查询客户端实现    | 待确定 |
-| &nbsp;&nbsp;&nbsp; | 待开始  | [csharp](binding/csharp) | csharp xdb 查询客户端实现   | 待确定 |
+| :white_check_mark: | 待开始  | [csharp](binding/csharp) | csharp xdb 查询客户端实现   | [Soar360](https://gitee.com/Soar360) |
 | &nbsp;&nbsp;&nbsp; | 待开始  | [php_ext](binding/php7_ext) | php c 扩展 xdb 查询客户端实现 | 待确定 |
 | &nbsp;&nbsp;&nbsp; | 待开始  | [nginx](binding/nginx) | nginx 扩展 xdb 查询客户端实现  | 待确定 |
 
