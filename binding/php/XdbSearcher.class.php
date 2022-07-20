@@ -267,7 +267,9 @@ class XdbSearcher
             return null;
         }
 
-        return self::loadHeader($handle);
+        $header = self::loadHeader($handle);
+        fclose($handle);
+        return $header;
     }
 
     // load vector index from a file handle
@@ -296,7 +298,9 @@ class XdbSearcher
             return null;
         }
 
-        return self::loadVectorIndex($handle);
+        $vIndex = self::loadVectorIndex($handle);
+        fclose($handle);
+        return $vIndex;
     }
 
     // load the xdb content from a file handle
