@@ -79,5 +79,5 @@ ip2region 微信交流群，请先加微信：lionsoul2014 (请备注 ip2region)
 基于检测算法的数据更新方式视频分享：[数据更新实现视频分享 - part1](https://www.bilibili.com/video/BV1934y1E7Q5/)，[数据更新实现视频分享 - part2](https://www.bilibili.com/video/BV1pF411j7Aw/)
 
 ### 4、数据结构
-1. v1.0数据库文件的结构和原理 blog：[“ip2region 数据库文件的结构和原理”](https://github.com/dongyado/dongyado.github.io/blob/master/_posts/2016-08-18-structure-of-ip2region-database-file.md)
-2. v1.0素据库文件的结构和原理 视频：[ip2region 数据结构设计和实现视频分享](https://www.bilibili.com/video/BV1wv4y1N7SD)
+1. xdb 数据结构分析：[“ip2region xdb 数据结构和查询过程的详解“](https://mp.weixin.qq.com/s?__biz=MzU4MDc2MzQ5OA==&mid=2247483696&idx=1&sn=6e9e138e86cf18245656c54ff4be3129&chksm=fd50ab35ca2722239ae7c0bb08efa44f499110c810227cbad3a16f36ebc1c2afc58eb464a57c#rd)
+2. xdb 查询过程分析：[“ip2region xdb 数据结构和查询过程的详解”](https://mp.weixin.qq.com/s?__biz=MzU4MDc2MzQ5OA==&mid=2247483696&idx=1&sn=6e9e138e86cf18245656c54ff4be3129&chksm=fd50ab35ca2722239ae7c0bb08efa44f499110c810227cbad3a16f36ebc1c2afc58eb464a57c#rd)
