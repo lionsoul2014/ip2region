@@ -2,7 +2,9 @@
 
 # 使用方式
 
-第三方 composer 地址: [https://github.com/chinayin/ip2region-core-php](https://github.com/chinayin/ip2region-core-php)
+第三方 composer 地址: 
+1. [https://github.com/zoujingli/ip2region](https://github.com/zoujingli/ip2region)
+2. [https://github.com/chinayin/ip2region-core-php](https://github.com/chinayin/ip2region-core-php)
 
 ### 完全基于文件的查询
 ```php
