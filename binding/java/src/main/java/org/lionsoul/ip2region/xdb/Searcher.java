@@ -167,8 +167,10 @@ public class Searcher {
     }
 
     public static Header loadHeaderFromFile(String dbPath) throws IOException {
-        RandomAccessFile handle = new RandomAccessFile(dbPath, "r");
-        return loadHeader(handle);
+        final RandomAccessFile handle = new RandomAccessFile(dbPath, "r");
+        final Header header = loadHeader(handle);
+        handle.close();
+        return header;
     }
 
     public static byte[] loadVectorIndex(RandomAccessFile handle) throws IOException {
@@ -184,8 +186,10 @@ public class Searcher {
     }
 
     public static byte[] loadVectorIndexFromFile(String dbPath) throws IOException {
-        RandomAccessFile handle = new RandomAccessFile(dbPath, "r");
-        return loadVectorIndex(handle);
+        final RandomAccessFile handle = new RandomAccessFile(dbPath, "r");
+        final byte[] vIndex = loadVectorIndex(handle);
+        handle.close();
+        return vIndex;
     }
 
     public static byte[] loadContent(RandomAccessFile handle) throws IOException {
@@ -200,8 +204,10 @@ public class Searcher {
     }
 
     public static byte[] loadContentFromFile(String dbPath) throws IOException {
-        RandomAccessFile handle = new RandomAccessFile(dbPath, "r");
-        return loadContent(handle);
+        final RandomAccessFile handle = new RandomAccessFile(dbPath, "r");
+        final byte[] content = loadContent(handle);
+        handle.close();
+        return content;
     }
 
     // --- End cache load util function
