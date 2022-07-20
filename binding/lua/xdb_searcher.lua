@@ -265,6 +265,7 @@ function _M.load_content(dbPath)
 
     local c = handle:read("*a")
     if c == nil then
+        handle:close()
         return nil, string.format("failed to read xdb content")
     end
 
