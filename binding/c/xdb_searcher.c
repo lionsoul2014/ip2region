@@ -205,12 +205,15 @@ XDB_PUBLIC(xdb_header_t *) xdb_load_header(FILE *handle) {
 }
 
 XDB_PUBLIC(xdb_header_t *) xdb_load_header_from_file(const char *db_path) {
+    xdb_header_t *header;
     FILE *handle = fopen(db_path, "r");
     if (handle == NULL) {
         return NULL;
     }
 
-    return xdb_load_header(handle);
+    header = xdb_load_header(handle);
+    fclose(handle);
+    return header;
 }
 
 XDB_PUBLIC(void) xdb_close_header(void *ptr) {
@@ -248,12 +251,15 @@ XDB_PUBLIC(xdb_vector_index_t *) xdb_load_vector_index(FILE *handle) {
 }
 
 XDB_PUBLIC(xdb_vector_index_t *) xdb_load_vector_index_from_file(const char *db_path) {
+    xdb_vector_index_t *v_index;
     FILE *handle = fopen(db_path, "r");
     if (handle == NULL) {
         return NULL;
     }
 
-    return xdb_load_vector_index(handle);
+    v_index = xdb_load_vector_index(handle);
+    fclose(handle);
+    return v_index;
 }
 
 XDB_PUBLIC(void) xdb_close_vector_index(void *ptr) {
@@ -305,12 +311,15 @@ XDB_PUBLIC(xdb_content_t *) xdb_load_content(FILE *handle) {
 }
 
 XDB_PUBLIC(xdb_content_t *) xdb_load_content_from_file(const char *db_path) {
+    xdb_content_t *content;
     FILE *handle = fopen(db_path, "r");
     if (handle == NULL) {
         return NULL;
     }
 
-    return xdb_load_content(handle);
+    content = xdb_load_content(handle);
+    fclose(handle);
+    return content;
 }
 
 XDB_PUBLIC(void) xdb_close_content(void *ptr) {
