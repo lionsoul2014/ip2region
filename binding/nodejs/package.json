@@ -1,5 +1,5 @@
 {
-  "name": "ip2region",
+  "name": " node-ip2region",
   "version": "2.0.0",
   "description": "official nodejs client of ip2region",
   "main": "index.js",

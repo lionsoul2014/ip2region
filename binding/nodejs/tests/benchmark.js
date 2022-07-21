@@ -4,17 +4,26 @@ const Searcher = require('..')
 
 const dbPath = path.join(__dirname, '..', '..', '..', 'data', 'ip2region.xdb')
 const buffer = Searcher.loadContentFromFile(dbPath)
-const seacher = Searcher.newWithBuffer(buffer)
+const searcher1 = Searcher.newWithBuffer(buffer)
+
+const vectorIndex = Searcher.loadVectorIndexFromFile(dbPath)
+const searcher2 = Searcher.newWithVectorIndex(dbPath, vectorIndex)
+
+const searcher3 = Searcher.newWithFileOnly(dbPath)
 
 const suite = new Benchmark.Suite()
 suite
-  .add('#search - 1', async () => {
-    const ip = '202.97.77.50'
-    return seacher.search(ip)
-  })
-  .add('#search - 2', async () => {
+  .add('#缓存整个xdb数据【搜索218.4.167.70】', async () => {
     const ip = '218.4.167.70'
-    return seacher.search(ip)
+    return searcher1.search(ip)
+  })
+  .add('#缓存VectorIndex索引【搜索218.4.167.70】', async () => {
+    const ip = '218.4.167.70'
+    return searcher2.search(ip)
+  })
+  .add('#完全基于文件的查询【搜索218.4.167.70】', async () => {
+    const ip = '218.4.167.70'
+    return searcher3.search(ip)
   })
   .on('cycle', function (event) {
     console.log(String(event.target)) // eslint-disable-line
