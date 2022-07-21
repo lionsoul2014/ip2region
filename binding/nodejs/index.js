@@ -157,9 +157,11 @@ class Searcher {
       }
     }
 
+    // 异步关闭文件，使用同步关闭的话，会极大影响性能
+    // 超高并发下，由于是异步close，会导致too many open files错误
+    // 建议使用完全缓存xdb文件模式
     if (fd) {
-      // 这边直接关闭，不需要等待
-      fs.close(fd, () => {})
+      fs.close(fd)
     }
 
     return result
