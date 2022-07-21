@@ -1,7 +1,8 @@
 const Benchmark = require('benchmark')
+const path = require('path')
 const Searcher = require('..')
 
-const dbPath = '../../../data/ip2region.xdb'
+const dbPath = path.join(__dirname, '..', '..', '..', 'data', 'ip2region.xdb')
 const buffer = Searcher.loadContentFromFile(dbPath)
 const seacher = Searcher.newWithBuffer(buffer)
 

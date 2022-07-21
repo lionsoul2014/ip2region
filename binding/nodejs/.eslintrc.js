@@ -4,12 +4,14 @@ module.exports = {
     commonjs: true,
     es2021: true
   },
-  extends: [
-    'standard'
-  ],
   parserOptions: {
     ecmaVersion: 'latest'
   },
-  rules: {
+  extends: [
+    'standard'
+  ],
+  globals: {
+    describe: true,
+    it: true
   }
 }
