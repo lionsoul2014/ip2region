@@ -83,7 +83,6 @@ class Searcher {
     let fd = null
 
     // 假如不是通过newWithBuffer创建的对象，那么一定是需要依赖文件的
-
     if (!this._buffer) {
       // 不存在_buffer的情况
       fd = await this[openFilePromise](this._dbFile)
@@ -158,7 +157,7 @@ class Searcher {
     }
 
     // 异步关闭文件，使用同步关闭的话，会极大影响性能
-    // 超高并发下，由于是异步close，会导致too many open files错误
+    // 超高并发下，由于是异步close，新开文件会导致too many open files错误
     // 建议使用完全缓存xdb文件模式
     if (fd) {
       fs.close(fd)
