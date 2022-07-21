@@ -15,7 +15,7 @@ try {
   const searcher = Searcher.newWithFileOnly(dbPath)
   // 查询
   const data = await searcher.search('218.4.167.70')
-  // data: '中国|0|江苏省|苏州市|电信'
+  // data: {region: '中国|0|江苏省|苏州市|电信', ioCount: 3, took: 1.342389}
 } catch(e) {
   console.log(e)
 }
@@ -37,7 +37,7 @@ try {
   const searcher = Searcher.newWithVectorIndex(dbPath, vectorIndex)
   // 查询 await 或 promise均可
   const data = await searcher.search('218.4.167.70')
-  // data: '中国|0|江苏省|苏州市|电信'
+  // data: {region: '中国|0|江苏省|苏州市|电信', ioCount: 2, took: 0.402874}
 } catch(e) {
   console.log(e)
 }
@@ -58,7 +58,7 @@ try {
   const searcher = Searcher.newWithVectorIndex(buffer)
   // 查询 await 或 promise均可
   const data = await searcher.search('218.4.167.70')
-  // data: '中国|0|江苏省|苏州市|电信'
+  // data: {region:'中国|0|江苏省|苏州市|电信', ioCount: 0, took: 0.063833}
 } catch(e) {
   console.log(e)
 }
