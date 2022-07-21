@@ -1,0 +1,23 @@
+{
+  "name": "ip2region",
+  "version": "1.0.0",
+  "description": "ip2region",
+  "main": "index.js",
+  "scripts": {
+    "test": "node ./tests/test.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^18.0.6",
+    "benchmark": "^2.1.4",
+    "eslint": "^8.20.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-n": "^15.2.4",
+    "eslint-plugin-promise": "^6.0.0"
+  },
+  "engines": {
+    "node": ">=8.0.0"
+  }
+}
