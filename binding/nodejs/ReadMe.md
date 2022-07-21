@@ -66,6 +66,29 @@ try {
 
 ## 查询测试
 
+可以通过 `java -jar ip2region-{version}.jar search` 命令来测试查询：
+
+```shell
+➜  java git:(v2.0_xdb) ✗ java -jar target/ip2region-2.6.0.jar search
+java -jar ip2region-{version}.jar search [command options]
+options:
+ --db string              ip2region binary xdb file path
+ --cache-policy string    cache policy: file/vectorIndex/content
+```
+
+例如：使用默认的 data/ip2region.xdb 文件进行查询测试：
+
+```shell
+➜  java git:(v2.0_xdb) ✗ java -jar target/ip2region-2.6.0.jar search --db=../../data/ip2region.xdb
+ip2region xdb searcher test program, cachePolicy: vectorIndex
+type 'quit' to exit
+ip2region>> 1.2.3.4
+{region: 美国|0|华盛顿|0|谷歌, ioCount: 7, took: 82 μs}
+ip2region>>
+```
+
+输入 ip 即可进行查询测试，也可以分别设置 `cache-policy` 为 file/vectorIndex/content 来测试三种不同缓存实现的查询效果。
+
 ## bench 测试
 
 ## 单元测试结果

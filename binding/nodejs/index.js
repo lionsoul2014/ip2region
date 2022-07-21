@@ -15,6 +15,7 @@ const IP_REGEX = /((25[0-5]|2[0-4]\d|((1\d{2})|([1-9]?\d)))\.){3}(25[0-5]|2[0-4]
 const getStartEndPtr = Symbol('#getStartEndPtr')
 const getBuffer = Symbol('#getBuffer')
 const openFilePromise = Symbol('#openFilePromise')
+const NS_PER_SEC = 1e9
 
 class Searcher {
   constructor (dbFile, vectorIndex, buffer) {
@@ -27,7 +28,7 @@ class Searcher {
     }
   }
 
-  async [getStartEndPtr] (idx, fd) {
+  async [getStartEndPtr] (idx, fd, ioStatus) {
     if (this._vectorIndex) {
       // 区域二分索引的开始地址
       // idx 开始读取 4 个字节，用小端字节序解码得到一个整数
@@ -37,20 +38,21 @@ class Searcher {
       const ePtr = this._vectorIndex.readUInt32LE(idx + 4)
       return { sPtr, ePtr }
     } else {
-      const buf = await this[getBuffer](256 + idx, 8, fd)
+      const buf = await this[getBuffer](256 + idx, 8, fd, ioStatus)
       const sPtr = buf.readUInt32LE()
       const ePtr = buf.readUInt32LE(4)
       return { sPtr, ePtr }
     }
   }
 
-  async [getBuffer] (offset, length, fd) {
+  async [getBuffer] (offset, length, fd, ioStatus) {
     if (this._buffer) {
       return this._buffer.subarray(offset, offset + length)
     } else {
       // 从文件中读取
       const buf = Buffer.alloc(length)
       return new Promise((resolve, reject) => {
+        ioStatus.ioCount += 1
         fs.read(fd, buf, 0, length, offset, (err) => {
           if (err) {
             reject(err)
@@ -76,6 +78,11 @@ class Searcher {
   }
 
   async search (ip) {
+    const startTime = process.hrtime()
+    const ioStatus = {
+      ioCount: 0
+    }
+
     if (!IP_REGEX.test(ip)) {
       throw new Error(`IP: ${ip} is invalid`)
     }
@@ -104,7 +111,7 @@ class Searcher {
     const idx = i0 * VectorIndexCols * VectorIndexSize + i1 * VectorIndexSize
 
     // 区域二分索引的开始地址和结束地址
-    const { sPtr, ePtr } = await this[getStartEndPtr](idx, fd)
+    const { sPtr, ePtr } = await this[getStartEndPtr](idx, fd, ioStatus)
 
     // 二分搜索低位
     let l = 0
@@ -126,7 +133,7 @@ class Searcher {
       // 从 p 位置开始读取 SegmentIndexSize = 14 个字节到 buff
       // 得到一个完整的上述描述的二分索引项，不过为了减少不必要的操作
       // 我们是按需要解码，此处 buff 为 p 开始的 14 个 byte 的数据
-      const buff = await this[getBuffer](p, SegmentIndexSize, fd)
+      const buff = await this[getBuffer](p, SegmentIndexSize, fd, ioStatus)
 
       // 前面 4 个字节是起始 IP
       const sip = buff.readUInt32LE(0)
@@ -149,7 +156,7 @@ class Searcher {
           const dataLen = buff.readUInt16LE(8)
           // 10 ~ 13 的 4 个字节是地域数据的地址
           const dataPtr = buff.readUInt32LE(10)
-          const data = await this[getBuffer](dataPtr, dataLen, fd)
+          const data = await this[getBuffer](dataPtr, dataLen, fd, ioStatus)
           result = data.toString('utf-8')
           break
         }
@@ -163,7 +170,10 @@ class Searcher {
       fs.close(fd)
     }
 
-    return result
+    const diff = process.hrtime(startTime)
+
+    const took = (diff[0] * NS_PER_SEC + diff[1]) / 1e6
+    return { region: result, ioCount: ioStatus.ioCount, took }
   }
 }
 
