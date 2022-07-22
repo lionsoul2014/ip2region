@@ -123,7 +123,7 @@ options:
     src: ../../data/ip2region.xdb
     cache-policy: content
 
-Bench finished, {cachePolicy: content, total: 3417955, took: 19.587147156s, cost: 0.005730662678707005μs/op}
+Bench finished, {cachePolicy: content, total: 3417955, took: 20.591887765s, cost: 6.02462225658325μs/op}
 ```
 
 可以通过分别设置 `cache-policy` 为 file/vectorIndex/content 来测试三种不同缓存实现的效果。  
