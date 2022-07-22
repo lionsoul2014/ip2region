@@ -86,8 +86,20 @@ const main = async () => {
         const list = line.split('|')
         const sip = list[0]
         const eip = list[1]
+
+        if (!Searcher.isValidIp(sip)) {
+          throw new Error(`IP: ${sip} is invalid`)
+        }
+        if (!Searcher.isValidIp(eip)) {
+          throw new Error(`IP: ${eip} is invalid`)
+        }
+
         const sipInt = ipToInt(sip)
         const eipInt = ipToInt(eip)
+
+        if (sipInt > eipInt) {
+          throw new Error(`start ip(${sip}) should not be greater than end ip(${eip})`)
+        }
 
         const mipInt = Math.floor((sipInt + eipInt) / 2)
         const mip = intToIp(mipInt)
