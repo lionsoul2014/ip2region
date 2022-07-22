@@ -175,7 +175,7 @@ class Searcher {
 
     const diff = process.hrtime(startTime)
 
-    const took = (diff[0] * 1e9 + diff[1]) / 1e6
+    const took = (diff[0] * 1e9 + diff[1]) / 1e3
     return { region: result, ioCount: ioStatus.ioCount, took }
   }
 }
