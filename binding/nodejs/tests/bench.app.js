@@ -91,7 +91,14 @@ const main = async () => {
       const mipInt = Math.floor((sipInt + eipInt) / 2)
       const mip = intToIp(mipInt)
 
-      await searcher.search(mip)
+      const info = await searcher.search(mip)
+
+      const region = list.slice(2, list.length).join('|')
+      // check the region info
+      if (region !== info.region) {
+        console.log(`failed search(${mip}) with (${region} != ${info.region})`)
+        process.exit(1)
+      }
       total++
     })
     .on('error', err => {
