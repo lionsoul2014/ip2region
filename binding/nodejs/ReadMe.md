@@ -126,8 +126,8 @@ options:
 Bench finished, {cachePolicy: content, total: 683591, took: 5.018973507s, cost: 0.007342070780627597μs/op}
 ```
 
-可以通过分别设置 `cache-policy` 为 file/vectorIndex/content 来测试三种不同缓存实现的效果。
-@Note: 注意 bench 使用的 src 文件要是生成对应 xdb 文件相同的源文件。
+可以通过分别设置 `cache-policy` 为 file/vectorIndex/content 来测试三种不同缓存实现的效果。  
+>Note: 注意 bench 使用的 src 文件要是生成对应 xdb 文件相同的源文件。
 
 ## 单元测试及覆盖率结果
 
