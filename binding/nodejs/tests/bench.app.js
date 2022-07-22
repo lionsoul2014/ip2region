@@ -119,8 +119,7 @@ const main = async () => {
           const region = list.slice(2, list.length).join('|')
           // check the region info
           if (region !== info.region) {
-            console.log(`failed search(${mip}) with (${region} != ${info.region})`)
-            process.exit(1)
+            throw new Error(`failed search(${mip}) with (${region} != ${info.region})`)
           }
           total++
         }
@@ -139,8 +138,9 @@ process.on('exit', code => {
   if (code === 0) {
     // 这边只算个总时间就够了
     const diff = process.hrtime(startTime)
-    const took = (diff[0] * 1e9 + diff[1]) / 1e9
-    console.log(`Bench finished, {cachePolicy: ${cachePolicy}, total: ${total}, took: ${took}s, cost: ${total === 0 ? 0 : ((diff[0] * 1e9 + diff[1]) / 1e6) / total}μs/op}`)
+    const totalInNS = diff[0] * 1e9 + diff[1]
+    const took = totalInNS / 1e9
+    console.log(`Bench finished, {cachePolicy: ${cachePolicy}, total: ${total}, took: ${took}s, cost: ${total === 0 ? 0 : (totalInNS / 1e6) / total}μs/op}`)
   }
 })
 
