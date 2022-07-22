@@ -139,8 +139,7 @@ process.on('exit', code => {
     // 这边只算个总时间就够了
     const diff = process.hrtime(startTime)
     const totalInNS = diff[0] * 1e9 + diff[1]
-    const took = totalInNS / 1e9
-    console.log(`Bench finished, {cachePolicy: ${cachePolicy}, total: ${total}, took: ${took}s, cost: ${total === 0 ? 0 : (totalInNS / 1e6) / total}μs/op}`)
+    console.log(`Bench finished, {cachePolicy: ${cachePolicy}, total: ${total}, took: ${totalInNS / 1e9}s, cost: ${total === 0 ? 0 : (totalInNS / 1e3) / total}μs/op}`)
   }
 })
 
