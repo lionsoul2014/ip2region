@@ -74,7 +74,7 @@ target
 /binding/nodejs/coverage
 /binding/nodejs/node_modules
 /binding/nodejs/.nyc_output
-/bingind/nodejs/package-lock.json
+/binging/nodejs/package-lock.json
 
 # maker
 ## golang

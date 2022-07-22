@@ -69,21 +69,29 @@ try {
 可以通过 `java -jar ip2region-{version}.jar search` 命令来测试查询：
 
 ```shell
-➜  java git:(v2.0_xdb) ✗ java -jar target/ip2region-2.6.0.jar search
-java -jar ip2region-{version}.jar search [command options]
-options:
- --db string              ip2region binary xdb file path
- --cache-policy string    cache policy: file/vectorIndex/content
+➜  nodejs git:(v2.0-for-nodejs) ✗ node ./tests/test.app.js --help
+usage: Usage node test.app.js <agrs>
+
+ip2region test app
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -d DB, --db DB        ip2region binary xdb file path, default: ../../data/ip2region.xdb
+  -c CACHE_POLICY, --cache-policy CACHE_POLICY
+                        cache policy: file/vectorIndex/content, default: content
 ```
 
 例如：使用默认的 data/ip2region.xdb 文件进行查询测试：
 
 ```shell
-➜  java git:(v2.0_xdb) ✗ java -jar target/ip2region-2.6.0.jar search --db=../../data/ip2region.xdb
-ip2region xdb searcher test program, cachePolicy: vectorIndex
+➜  nodejs git:(v2.0-for-nodejs) ✗ node ./tests/test.app.js
+parameters:
+    dbPath: ../../data/ip2region.xdb
+    cache-policy: content
+
 type 'quit' to exit
 ip2region>> 1.2.3.4
-{region: 美国|0|华盛顿|0|谷歌, ioCount: 7, took: 82 μs}
+{ region: '美国|0|华盛顿|0|谷歌', ioCount: 0, took: 0.606261 }
 ip2region>>
 ```
 
