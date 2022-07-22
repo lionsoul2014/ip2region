@@ -82,24 +82,40 @@ const main = async () => {
   const rl = readline(src)
   rl
     .on('line', async (line, lineCount, byteCount) => {
-      const list = line.split('|')
-      const sip = list[0]
-      const eip = list[1]
-      const sipInt = ipToInt(sip)
-      const eipInt = ipToInt(eip)
+      try {
+        const list = line.split('|')
+        const sip = list[0]
+        const eip = list[1]
+        const sipInt = ipToInt(sip)
+        const eipInt = ipToInt(eip)
 
-      const mipInt = Math.floor((sipInt + eipInt) / 2)
-      const mip = intToIp(mipInt)
+        const mipInt = Math.floor((sipInt + eipInt) / 2)
+        const mip = intToIp(mipInt)
 
-      const info = await searcher.search(mip)
+        const mipLeftInt = Math.floor((sipInt + mipInt) / 2)
+        const mipLeft = intToIp(mipLeftInt)
 
-      const region = list.slice(2, list.length).join('|')
-      // check the region info
-      if (region !== info.region) {
-        console.log(`failed search(${mip}) with (${region} != ${info.region})`)
+        const mipRightInt = Math.floor((mipInt + eipInt) / 2)
+        const mipRight = intToIp(mipRightInt)
+
+        const arr = [sip, mipLeft, mip, mipRight, eip]
+
+        for (let i = 0; i < arr.length; ++i) {
+          const target = arr[i]
+          const info = await searcher.search(target)
+
+          const region = list.slice(2, list.length).join('|')
+          // check the region info
+          if (region !== info.region) {
+            console.log(`failed search(${mip}) with (${region} != ${info.region})`)
+            process.exit(1)
+          }
+          total++
+        }
+      } catch (err) {
+        console.log(err)
         process.exit(1)
       }
-      total++
     })
     .on('error', err => {
       console.log(err)
