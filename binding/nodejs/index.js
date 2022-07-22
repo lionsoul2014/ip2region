@@ -14,7 +14,7 @@ const VectorIndexLength = 256 * 256 * (4 + 4)
 // 二分索引项的字节数
 const SegmentIndexSize = 14
 // IPv4检查正则
-const IP_REGEX = /((25[0-5]|2[0-4]\d|((1\d{2})|([1-9]?\d)))\.){3}(25[0-5]|2[0-4]\d|((1\d{2})|([1-9]?\d)))/
+const IP_REGEX = /^((\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.){3}(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])$/
 
 const getStartEndPtr = Symbol('#getStartEndPtr')
 const getBuffer = Symbol('#getBuffer')
@@ -86,7 +86,7 @@ class Searcher {
       ioCount: 0
     }
 
-    if (!IP_REGEX.test(ip)) {
+    if (!isValidIp(ip)) {
       throw new Error(`IP: ${ip} is invalid`)
     }
 
@@ -194,6 +194,10 @@ const _checkFile = dbPath => {
   }
 }
 
+const isValidIp = ip => {
+  return IP_REGEX.test(ip)
+}
+
 const newWithFileOnly = dbPath => {
   _checkFile(dbPath)
 
@@ -238,6 +242,7 @@ const loadContentFromFile = dbPath => {
 }
 
 module.exports = {
+  isValidIp,
   loadVectorIndexFromFile,
   loadContentFromFile,
   newWithFileOnly,
