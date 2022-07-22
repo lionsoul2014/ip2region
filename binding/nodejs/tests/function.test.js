@@ -1,3 +1,7 @@
+/*
+ * Created by Wu Jian Ping on - 2022/07/22.
+ */
+
 const { expect } = require('chai')
 const path = require('path')
 const Searcher = require('..')
