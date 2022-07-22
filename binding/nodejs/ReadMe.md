@@ -117,13 +117,13 @@ optional arguments:
 例如：通过默认的 data/ip2region.xdb 和 data/ip.merge.txt 文件进行 bench 测试：
 
 ```shell
-➜  nodejs git:(v2.0-for-nodejs) ✗ node ./tests/bench.app.js       
+➜  nodejs git:(v2.0-for-nodejs) ✗ node ./tests/bench.app.js
 options: 
     dbPath: ../../data/ip2region.xdb
     src: ../../data/ip2region.xdb
     cache-policy: content
 
-Bench finished, {cachePolicy: content, total: 683591, took: 5.018973507s, cost: 0.007342070780627597μs/op}
+Bench finished, {cachePolicy: content, total: 3417955, took: 19.587147156s, cost: 0.005730662678707005μs/op}
 ```
 
 可以通过分别设置 `cache-policy` 为 file/vectorIndex/content 来测试三种不同缓存实现的效果。  
