@@ -91,7 +91,7 @@ parameters:
 
 type 'quit' to exit
 ip2region>> 1.2.3.4
-{ region: '美国|0|华盛顿|0|谷歌', ioCount: 0, took: 0.606261 }
+{ region: '美国|0|华盛顿|0|谷歌', ioCount: 0, took: 54.606261 }
 ip2region>>
 ```
 
