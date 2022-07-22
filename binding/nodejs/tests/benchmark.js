@@ -1,3 +1,7 @@
+/*
+ * Created by Wu Jian Ping on - 2022/07/22.
+ */
+
 const Benchmark = require('benchmark')
 const path = require('path')
 const Searcher = require('..')

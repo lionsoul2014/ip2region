@@ -1,3 +1,7 @@
+/*
+ * Created by Wu Jian Ping on - 2022/07/22.
+ */
+
 const fs = require('fs')
 
 // 常量定义
@@ -15,7 +19,6 @@ const IP_REGEX = /((25[0-5]|2[0-4]\d|((1\d{2})|([1-9]?\d)))\.){3}(25[0-5]|2[0-4]
 const getStartEndPtr = Symbol('#getStartEndPtr')
 const getBuffer = Symbol('#getBuffer')
 const openFilePromise = Symbol('#openFilePromise')
-const NS_PER_SEC = 1e9
 
 class Searcher {
   constructor (dbFile, vectorIndex, buffer) {
@@ -172,7 +175,7 @@ class Searcher {
 
     const diff = process.hrtime(startTime)
 
-    const took = (diff[0] * NS_PER_SEC + diff[1]) / 1e6
+    const took = (diff[0] * 1e9 + diff[1]) / 1e6
     return { region: result, ioCount: ioStatus.ioCount, took }
   }
 }

@@ -1,5 +1,8 @@
+/*
+ * Created by Wu Jian Ping on - 2022/07/22.
+ */
+
 const Searcher = require('../')
-const path = require('path')
 const { ArgumentParser } = require('argparse')
 
 // 处理输入参数
@@ -7,21 +10,18 @@ const parser = new ArgumentParser({
   add_help: true,
   description: 'ip2region test app',
   prog: 'node test.app.js',
-  usage: 'Usage %(prog)s <agrs>'
+  usage: 'Usage %(prog)s [command options]'
 })
 
-parser.add_argument('-d', '--db', { help: `ip2region binary xdb file path, default: ${path.join(__dirname, '..', '..', '..', 'data', 'ip2region.xdb')}` })
-parser.add_argument('-c', '--cache-policy', { help: 'cache policy: file/vectorIndex/content, default: content' })
+parser.add_argument('--db', { help: 'ip2region binary xdb file path, default: ../../data/ip2region.xdb' })
+parser.add_argument('--cache-policy', { help: 'cache policy: file/vectorIndex/content, default: content' })
 
 const args = parser.parse_args()
-const db = args.db
-const policy = args.cache_policy
+const dbPath = args.db || '../../data/ip2region.xdb'
+const cachePolicy = args.cache_policy || 'content'
 
 // 创建searcher对象
 const createSearcher = () => {
-  const dbPath = db || '../../data/ip2region.xdb'
-  const cachePolicy = policy || 'content'
-
   let searcher = null
   let vectorIndex = null
   let buffer = null
@@ -38,7 +38,7 @@ const createSearcher = () => {
       buffer = Searcher.loadContentFromFile(dbPath)
       searcher = Searcher.newWithBuffer(buffer)
   }
-  console.log('parameters: ')
+  console.log('options: ')
   console.log(`    dbPath: ${dbPath}`)
   console.log(`    cache-policy: ${cachePolicy}`)
   console.log('')
@@ -58,7 +58,7 @@ const readlineSync = () => {
 
 const searcher = createSearcher()
 
-async function main () {
+const main = async () => {
   console.log('type \'quit\' to exit')
   while (true) {
     process.stdout.write('ip2region>> ')

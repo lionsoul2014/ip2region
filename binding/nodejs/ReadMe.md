@@ -99,20 +99,57 @@ ip2region>>
 
 ## bench 测试
 
-## 单元测试结果
+```shell
+➜  nodejs git:(v2.0-for-nodejs) ✗ node ./tests/bench.app.js --help
+usage: Usage node test.app.js [command options]
+
+ip2region benchmark app
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --db DB               ip2region binary xdb file path, default: ../../data/ip2region.xdb
+  --src SRC             source ip text file path, default: ../../data/ip.merge.txt
+  --cache-policy CACHE_POLICY
+                        cache policy: file/vectorIndex/content, default: content
+
+```
+
+例如：通过默认的 data/ip2region.xdb 和 data/ip.merge.txt 文件进行 bench 测试：
 
 ```shell
-ip2region
-  ✔ #newWithFileOnly
-  ✔ #newWithVectorIndex
-  ✔ #newWithBuffer
+➜  nodejs git:(v2.0-for-nodejs) ✗ node ./tests/bench.app.js       
+options: 
+    dbPath: ../../data/ip2region.xdb
+    src: ../../data/ip2region.xdb
+    cache-policy: content
 
-3 passing (10ms)
+Bench finished, {cachePolicy: content, total: 683591, took: 5.018973507s, cost: 0.007342070780627597μs/op}
+```
+
+可以通过分别设置 `cache-policy` 为 file/vectorIndex/content 来测试三种不同缓存实现的效果。
+@Note: 注意 bench 使用的 src 文件要是生成对应 xdb 文件相同的源文件。
+
+## 单元测试及覆盖率结果
+
+```shell
+➜  nodejs git:(v2.0-for-nodejs) ✗ npm run coverage
+
+...
+
+  ip2region
+    ✔ #newWithFileOnly and search
+    ✔ #newWithVectorIndex and search
+    ✔ #newWithBuffer and search
+
+
+  3 passing (6ms)
 
 ----------|---------|----------|---------|---------|----------------------------------
-File      | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s
+File      | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s                
 ----------|---------|----------|---------|---------|----------------------------------
-All files |   91.17 |    60.71 |     100 |   91.17 |
- index.js |   91.17 |    60.71 |     100 |   91.17 | 56,70,80,137,143,173,179,193,201
+All files |   91.58 |    60.71 |     100 |   91.58 |                                  
+ index.js |   91.58 |    60.71 |     100 |   91.58 | 61,75,90,146,152,187,193,207,215 
 ----------|---------|----------|---------|---------|----------------------------------
 ```
+
+Made with ♥ by Wu Jian Ping
