@@ -178,10 +178,10 @@ if __name__ == '__main__':
     ]
     # 1. 缓存
     dbPath = "./data/ip2region.xdb";
-    cb = Searcher.loadContentFromFile(dbfile=dbPath)
+    cb = XdbSearcher.loadContentFromFile(dbfile=dbPath)
     
     # 2. 创建查询对象
-    searcher = Searcher(contentBuff=cb)
+    searcher = XdbSearcher(contentBuff=cb)
     
     # 3. 执行查询
     # ip = "1.2.3.4"
