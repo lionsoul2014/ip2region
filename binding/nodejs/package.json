@@ -1,0 +1,32 @@
+{
+  "name": "node-ip2region",
+  "version": "2.0.0",
+  "description": "official nodejs client of ip2region",
+  "main": "index.js",
+  "scripts": {
+    "lint": "eslint ./index.js",
+    "test": "mocha ./tests/function.test.js",
+    "coverage": "nyc npm run test",
+    "benchmark": "node ./tests/benchmark.js"
+  },
+  "author": "Wu Jian Ping",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/chai": "^4.3.1",
+    "@types/node": "^18.0.6",
+    "argparse": "^2.0.1",
+    "benchmark": "^2.1.4",
+    "chai": "^4.3.6",
+    "eslint": "^8.20.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-n": "^15.2.4",
+    "eslint-plugin-promise": "^6.0.0",
+    "linebyline": "^1.3.0",
+    "mocha": "^10.0.0",
+    "nyc": "^15.1.0"
+  },
+  "engines": {
+    "node": ">=8.0.0"
+  }
+}

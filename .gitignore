@@ -9,6 +9,7 @@
 *.xdb
 *.iml
 META-INF/
+.DS_Store
 
 # Binary Files #
 *.jar
@@ -71,6 +72,9 @@ target
 /v1.0/binding/nodejs/coverage
 /binding/nodejs/tests/unitTests/__snapshots__
 /binding/nodejs/coverage
+/binding/nodejs/node_modules
+/binding/nodejs/.nyc_output
+/binging/nodejs/package-lock.json
 
 # maker
 ## golang
