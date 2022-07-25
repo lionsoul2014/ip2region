@@ -66,7 +66,7 @@ try {
 
 ## 查询测试
 
-可以通过 `java -jar ip2region-{version}.jar search` 命令来测试查询：
+可以通过 `node ./tests/test.app.js` 命令来测试查询：
 
 ```shell
 ➜  nodejs git:(v2.0-for-nodejs) ✗ node ./tests/test.app.js --help
