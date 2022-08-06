@@ -11,140 +11,57 @@
 </dependency>
 ```
 
-### 完全基于文件的查询
+### Example
 
 ```java
+package org.lionsoul.ip2region.example;
+
 import org.lionsoul.ip2region.xdb.Searcher;
-import java.io.*;
+
 import java.util.concurrent.TimeUnit;
 
-public class SearcherTest {
-    public static void main(String[] args) {
-        // 1、创建 searcher 对象
+/**
+ * @see org.lionsoul.ip2region.xdb.Searcher
+ */
+public class SearcherExample {
+
+    public static void main(String[] args) throws Exception {
         String dbPath = "ip2region.xdb file path";
-        Searcher searcher = null;
-        try {
-            searcher = Searcher.newWithFileOnly(dbPath);
-        } catch (IOException e) {
-            System.out.printf("failed to create searcher with `%s`: %s\n", dbPath, e);
-            return;
+
+        // 基于文件查询，单次 search 需要文件 IO，非线程安全，性能最差
+        try (Searcher fileSearcher = Searcher.newWithFileOnly(dbPath)) {
+            searchExample(fileSearcher);
         }
 
-        // 2、查询
+        // 基于 VectorIndex 查询，单次 search 需要内存查询 + 文件 IO，非线程安全，性能次之
+        try (Searcher indexSearcher = Searcher.newWithVectorIndex(dbPath)) {
+            searchExample(indexSearcher);
+        }
+
+        // 推荐：基于 Buffer 查询，单次 search 全使用内存查询，线程安全，支持序列化，性能最佳
+        // 可重写 loadFile 方法扩展从其他文件系统(hdfs/s3/oss...)装载 buffer 数据
+        try (Searcher bufferSearcher = Searcher.newWithBuffer(dbPath)) {
+            searchExample(bufferSearcher);
+        }
+
+        // 备注：并发查询时，对于非线程安全实现推荐为每个线程创建一个独立的 searcher 对象单独使用。
+    }
+
+    private static void searchExample(Searcher searcher) {
+        String ip = "1.2.3.4";
         try {
-            String ip = "1.2.3.4";
             long sTime = System.nanoTime();
-            String region = searcher.search(ip);
-            long cost = TimeUnit.NANOSECONDS.toMicros((long) (System.nanoTime() - sTime));
-            System.out.printf("{region: %s, ioCount: %d, took: %d μs}\n", region, searcher.getIOCount(), cost);
+            Searcher.Region region = searcher.searchRegion(ip);
+            long cost = TimeUnit.NANOSECONDS.toMicros(System.nanoTime() - sTime);
+            System.out.printf("{region: %s, searcher: %s, ioCount: %d, took: %d μs}\n",
+                    region, searcher.getClass().getSimpleName(), region.getIoCount(), cost);
+            System.out.println(region.toRegionMsg());
         } catch (Exception e) {
             System.out.printf("failed to search(%s): %s\n", ip, e);
         }
-
-        // 3、关闭资源
-        searcher.close();
-        
-        // 备注：并发使用，每个线程需要创建一个独立的 searcher 对象单独使用。
     }
 }
-```
 
-### 缓存 `VectorIndex` 索引
-
-我们可以提前从 `xdb` 文件中加载出来 `VectorIndex` 数据，然后全局缓存，每次创建 Searcher 对象的时候使用全局的 VectorIndex 缓存可以减少一次固定的 IO 操作，从而加速查询，减少 IO 压力。
-```java
-import org.lionsoul.ip2region.xdb.Searcher;
-import java.io.*;
-import java.util.concurrent.TimeUnit;
-
-public class SearcherTest {
-    public static void main(String[] args) {
-        String dbPath = "ip2region.xdb file path";
-
-        // 1、从 dbPath 中预先加载 VectorIndex 缓存，并且把这个得到的数据作为全局变量，后续反复使用。
-        byte[] vIndex;
-        try {
-            vIndex = Searcher.loadVectorIndexFromFile(dbPath);
-        } catch (Exception e) {
-            System.out.printf("failed to load vector index from `%s`: %s\n", dbPath, e);
-            return;
-        }
-
-        // 2、使用全局的 vIndex 创建带 VectorIndex 缓存的查询对象。
-        Searcher searcher;
-        try {
-            searcher = Searcher.newWithVectorIndex(dbPath, vIndex);
-        } catch (Exception e) {
-            System.out.printf("failed to create vectorIndex cached searcher with `%s`: %s\n", dbPath, e);
-            return;
-        }
-
-        // 3、查询
-        try {
-            String ip = "1.2.3.4";
-            long sTime = System.nanoTime();
-            String region = searcher.search(ip);
-            long cost = TimeUnit.NANOSECONDS.toMicros((long) (System.nanoTime() - sTime));
-            System.out.printf("{region: %s, ioCount: %d, took: %d μs}\n", region, searcher.getIOCount(), cost);
-        } catch (Exception e) {
-            System.out.printf("failed to search(%s): %s\n", ip, e);
-        }
-        
-        // 4、关闭资源
-        searcher.close();
-
-        // 备注：每个线程需要单独创建一个独立的 Searcher 对象，但是都共享全局的制度 vIndex 缓存。
-    }
-}
-```
-
-### 缓存整个 `xdb` 数据
-
-我们也可以预先加载整个 ip2region.xdb 的数据到内存，然后基于这个数据创建查询对象来实现完全基于文件的查询，类似之前的 memory search。
-```java
-import org.lionsoul.ip2region.xdb.Searcher;
-import java.io.*;
-import java.util.concurrent.TimeUnit;
-
-public class SearcherTest {
-    public static void main(String[] args) {
-        String dbPath = "ip2region.xdb file path";
-
-        // 1、从 dbPath 加载整个 xdb 到内存。
-        byte[] cBuff;
-        try {
-            cBuff = Searcher.loadContentFromFile(dbPath);
-        } catch (Exception e) {
-            System.out.printf("failed to load content from `%s`: %s\n", dbPath, e);
-            return;
-        }
-
-        // 2、使用上述的 cBuff 创建一个完全基于内存的查询对象。
-        Searcher searcher;
-        try {
-            searcher = Searcher.newWithBuffer(cBuff);
-        } catch (Exception e) {
-            System.out.printf("failed to create content cached searcher: %s\n", e);
-            return;
-        }
-
-        // 3、查询
-        try {
-            String ip = "1.2.3.4";
-            long sTime = System.nanoTime();
-            String region = searcher.search(ip);
-            long cost = TimeUnit.NANOSECONDS.toMicros((long) (System.nanoTime() - sTime));
-            System.out.printf("{region: %s, ioCount: %d, took: %d μs}\n", region, searcher.getIOCount(), cost);
-        } catch (Exception e) {
-            System.out.printf("failed to search(%s): %s\n", ip, e);
-        }
-        
-        // 4、关闭资源 - 该 searcher 对象可以安全用于并发，等整个服务关闭的时候再关闭 searcher
-        // searcher.close();
-
-        // 备注：并发使用，用整个 xdb 数据缓存创建的查询对象可以安全的用于并发，也就是你可以把这个 searcher 对象做成全局对象去跨线程访问。
-    }
-}
 ```
 
 
@@ -174,7 +91,7 @@ options:
 
 例如：使用默认的 data/ip2region.xdb 文件进行查询测试：
 ```bash
-➜  java git:(v2.0_xdb) ✗ java -jar target/ip2region-2.6.0.jar search --db=../../data/ip2region.xdb
+$ java -jar target/ip2region-2.6.5.jar search --db=../../data/ip2region.xdb
 ip2region xdb searcher test program, cachePolicy: vectorIndex
 type 'quit' to exit
 ip2region>> 1.2.3.4
@@ -182,26 +99,31 @@ ip2region>> 1.2.3.4
 ip2region>>
 ```
 
-输入 ip 即可进行查询测试，也可以分别设置 `cache-policy` 为 file/vectorIndex/content 来测试三种不同缓存实现的查询效果。
+输入 ip 即可进行查询测试，也可以分别设置 `--cache-policy` 来测试三种不同缓存实现的查询效果。
 
 
 # bench 测试
 
 可以通过 `java -jar ip2region-{version}.jar bench` 命令来进行 bench 测试，一方面确保 `xdb` 文件没有错误，一方面可以评估查询性能：
 ```bash
-➜  java git:(v2.0_xdb) ✗ java -jar target/ip2region-2.6.0.jar bench
+java -jar target/ip2region-2.6.5.jar bench
+
 java -jar ip2region-{version}.jar bench [command options]
 options:
  --db string              ip2region binary xdb file path
  --src string             source ip text file path
- --cache-policy string    cache policy: file/vectorIndex/content
+ --cache-policy string    cache policy: file/vectorIndex/buffer
 ```
 
 例如：通过默认的 data/ip2region.xdb 和 data/ip.merge.txt 文件进行 bench 测试：
 ```bash
-➜  java git:(v2.0_xdb) ✗ java -jar target/ip2region-2.6.0.jar bench --db=../../data/ip2region.xdb --src=../../data/ip.merge.txt
-Bench finished, {cachePolicy: vectorIndex, total: 3417955, took: 8s, cost: 2 μs/op}
+$ java -jar target/ip2region-2.6.5.jar bench --db=../../data/ip2region.xdb --src=../../data/ip.merge.txt --cache-policy=buffer
+
+-- 笔者笔记本[mac 2.6 GHz 六核Intel Core i7]测试结果案例
+Bench finished, {cachePolicy: buffer, total: 3417955, took: 2s, ioCount: 0, cost: 0 μs/op}
+Bench finished, {cachePolicy: vectorIndex, total: 3417955, took: 28s, ioCount: 43465554, cost: 8 μs/op}
+Bench finished, {cachePolicy: file, total: 3417955, took: 34s, ioCount: 43465554, cost: 9 μs/op}
 ```
 
-可以通过分别设置 `cache-policy` 为 file/vectorIndex/content 来测试三种不同缓存实现的效果。
+可以通过分别设置 `--cache-policy` 来测试三种不同缓存实现的效果。
 @Note: 注意 bench 使用的 src 文件要是生成对应 xdb 文件相同的源文件。

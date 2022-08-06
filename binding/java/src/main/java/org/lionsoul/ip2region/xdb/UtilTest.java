@@ -4,17 +4,16 @@
 // @Author Lion <chenxin619315@gmail.com>
 // @Date   2022/06/23
 
-package org.lionsoul.ip2region;
+package org.lionsoul.ip2region.xdb;
 
-import org.lionsoul.ip2region.xdb.Searcher;
-
+// for test
 public class UtilTest {
 
     public static void testIP2Long() {
         String ip = "1.2.3.4";
         long ipAddr = 0;
         try {
-            ipAddr = Searcher.checkIP(ip);
+            ipAddr = InternalUtil.ip2long(ip);
         } catch (Exception e) {
             System.out.printf("failed to check ip: %s\n", e);
             return;
@@ -25,7 +24,7 @@ public class UtilTest {
             return;
         }
 
-        String ip2 = Searcher.long2ip(ipAddr);
+        String ip2 = InternalUtil.long2ip(ipAddr);
         if (!ip.equals(ip2)) {
             System.out.print("failed long2ip\n");
             return;
