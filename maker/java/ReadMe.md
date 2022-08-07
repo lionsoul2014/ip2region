@@ -23,6 +23,7 @@ options:
 
 例如，通过默认的 data/ip.merge.txt 原数据，在当前目录生成一个 ip2region.xdb 二进制文件：
 ```bash
+➜  java git:(java_xdb_maker) ✗ java -jar ./target/ip2region-maker-1.0.0.jar --src=../../data/ip.merge.txt --dst=./ip2region.xdb
 # 会看到一堆输出，最终会看到如下输出表示运行成功
 ...
 2022-07-15 20:21:29 INFO  org.lionsoul.ip2region.xdb.Maker try to write the vector index block ...
