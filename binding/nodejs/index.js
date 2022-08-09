@@ -56,9 +56,26 @@ class Searcher {
     }
   }
 
-  [openFilePromise] (fileName) {
+  async writeString(fd, str) {
     return new Promise((resolve, reject) => {
-      fs.open(fileName, 'r', (err, fd) => {
+      fs.write(fd, str, (err) => {
+        if (err) reject(err);
+        else resolve(err);
+      })
+    })
+  }
+
+  async closeFilePromise(fd) {
+    return new Promise((resolve) => {
+      fs.close(fd, (err) => {
+        resolve(err);
+      })
+    })    
+  }
+
+  [openFilePromise] (fileName, op='r') {
+    return new Promise((resolve, reject) => {
+      fs.open(fileName, op, (err, fd) => {
         if (err) {
           reject(err)
         } else {
@@ -66,6 +83,55 @@ class Searcher {
         }
       })
     })
+  }
+
+  async dumptxt(fileName) {
+    const startTime = process.hrtime();
+    const ioStatus = {
+      ioCount: 0
+    };
+
+    let fd = null
+
+    if (!this._buffer) {
+      fd = await this[openFilePromise](this._dbFile)
+    }
+
+    let fdOut = await this[openFilePromise](fileName, "w+");
+
+    const idx0 = 0;
+    const idx1 = 255 * VectorIndexCols * VectorIndexSize + 255 * VectorIndexSize;
+    const { sPtr:sPtr0, ePtr:_ePtr0 } = await this[getStartEndPtr](idx0, fd, ioStatus)
+    const { sPtr:_sPtr1, ePtr:ePtr1 } = await this[getStartEndPtr](idx1, fd, ioStatus)
+
+    console.log(`${sPtr0}: ${ePtr1}`);
+    let p = sPtr0;
+    while (p < ePtr1) {
+      p += SegmentIndexSize;
+      const buff = await this[getBuffer](p, SegmentIndexSize, fd, ioStatus);
+      if (buff.length == SegmentIndexSize) {
+        const ip0 = buff.readUInt32LE(0);
+        const ip1 = buff.readUInt32LE(4);
+        const sip0 = this.Int2IP(ip0);
+        const sip1 = this.Int2IP(ip1);
+        const dataLen = buff.readUInt16LE(8);
+        const dataPtr = buff.readUInt32LE(10);
+        const data = await this[getBuffer](dataPtr, dataLen, fd, ioStatus);
+        const result = data.toString('utf-8');
+        const line = `${sip0}|${sip1}|${result}\n`;
+        //console.log(line);
+        await this.writeString(fdOut, line);
+      }
+    }
+    await this.closeFilePromise(fdOut);
+  }
+
+  Int2IP(i) {
+    let i0 = i >>> 24;
+    let i1 = (i >>> 16) % 256;
+    let i2 = (i >>> 8) % 256;
+    let i3 = i % 256;
+    return `${i0}.${i1}.${i2}.${i3}`;
   }
 
   async search (ip) {

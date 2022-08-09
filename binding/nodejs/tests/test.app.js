@@ -59,12 +59,15 @@ const readlineSync = () => {
 const searcher = createSearcher()
 
 const main = async () => {
-  console.log('type \'quit\' to exit')
+  console.log('type \'quit\' to exit');
+  let dmp;
   while (true) {
     process.stdout.write('ip2region>> ')
     const ip = (await readlineSync()).trim()
     if (ip === 'quit') {
       process.exit(0)
+    } else if(dmp = /dump (.*)/.exec(ip) ) {
+      await searcher.dumptxt(dmp[1]);
     } else {
       try {
         const response = await searcher.search(ip)
