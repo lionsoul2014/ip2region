@@ -275,7 +275,6 @@ XDB_PUBLIC(void) xdb_close_vector_index(void *ptr) {
 XDB_PUBLIC(xdb_content_t *) xdb_load_content(FILE *handle) {
     unsigned int size;
     xdb_content_t *content;
-    char *ptr;
 
     // determine the file size
     if (fseek(handle, 0, SEEK_END) == -1) {
@@ -303,7 +302,7 @@ XDB_PUBLIC(xdb_content_t *) xdb_load_content(FILE *handle) {
     // read the content into the buffer
     content->length = size;
     if (fread(content->buffer, 1, size, handle) != size) {
-        xdb_free(ptr);
+        xdb_free(content);
         return NULL;
     }
 
