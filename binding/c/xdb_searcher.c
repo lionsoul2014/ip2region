@@ -23,7 +23,7 @@ XDB_PRIVATE(int) xdb_new_base(xdb_searcher_t *xdb, const char *db_path, const xd
     }
 
     // open the xdb binary file
-    FILE *handle = fopen(db_path, "r");
+    FILE *handle = fopen(db_path, "rb");
     if (handle == NULL) {
         return 1;
     }
@@ -206,7 +206,7 @@ XDB_PUBLIC(xdb_header_t *) xdb_load_header(FILE *handle) {
 
 XDB_PUBLIC(xdb_header_t *) xdb_load_header_from_file(const char *db_path) {
     xdb_header_t *header;
-    FILE *handle = fopen(db_path, "r");
+    FILE *handle = fopen(db_path, "rb");
     if (handle == NULL) {
         return NULL;
     }
@@ -252,7 +252,7 @@ XDB_PUBLIC(xdb_vector_index_t *) xdb_load_vector_index(FILE *handle) {
 
 XDB_PUBLIC(xdb_vector_index_t *) xdb_load_vector_index_from_file(const char *db_path) {
     xdb_vector_index_t *v_index;
-    FILE *handle = fopen(db_path, "r");
+    FILE *handle = fopen(db_path, "rb");
     if (handle == NULL) {
         return NULL;
     }
@@ -311,7 +311,7 @@ XDB_PUBLIC(xdb_content_t *) xdb_load_content(FILE *handle) {
 
 XDB_PUBLIC(xdb_content_t *) xdb_load_content_from_file(const char *db_path) {
     xdb_content_t *content;
-    FILE *handle = fopen(db_path, "r");
+    FILE *handle = fopen(db_path, "rb");
     if (handle == NULL) {
         return NULL;
     }
