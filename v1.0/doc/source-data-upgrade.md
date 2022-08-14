@@ -104,7 +104,7 @@ part2: 运行一个更新程序
 for l := range source_file.lines() {
     sRegion = db_get(l.sip)
     eRegion = db_get(l.eip)
-    if sRegion == eRegion {
+    if sRegion != eRegion {
         // 报错
     }
 
