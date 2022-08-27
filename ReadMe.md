@@ -80,5 +80,6 @@ ip2region 微信交流群，请先加微信：lionsoul2014 (请备注 ip2region)
 基于检测算法的数据更新方式视频分享：[数据更新实现视频分享 - part1](https://www.bilibili.com/video/BV1934y1E7Q5/)，[数据更新实现视频分享 - part2](https://www.bilibili.com/video/BV1pF411j7Aw/)
 
 ### 4、数据结构
-1. xdb 数据结构分析：[“ip2region xdb 数据结构和查询过程的详解“](https://mp.weixin.qq.com/s?__biz=MzU4MDc2MzQ5OA==&mid=2247483696&idx=1&sn=6e9e138e86cf18245656c54ff4be3129&chksm=fd50ab35ca2722239ae7c0bb08efa44f499110c810227cbad3a16f36ebc1c2afc58eb464a57c#rd)
-2. xdb 查询过程分析：[“ip2region xdb 数据结构和查询过程的详解”](https://mp.weixin.qq.com/s?__biz=MzU4MDc2MzQ5OA==&mid=2247483696&idx=1&sn=6e9e138e86cf18245656c54ff4be3129&chksm=fd50ab35ca2722239ae7c0bb08efa44f499110c810227cbad3a16f36ebc1c2afc58eb464a57c#rd)
+1. xdb 数据结构分析：[“ip2region xdb 数据结构和查询过程详解“](https://mp.weixin.qq.com/s?__biz=MzU4MDc2MzQ5OA==&mid=2247483696&idx=1&sn=6e9e138e86cf18245656c54ff4be3129&chksm=fd50ab35ca2722239ae7c0bb08efa44f499110c810227cbad3a16f36ebc1c2afc58eb464a57c#rd)
+2. xdb 查询过程分析：[“ip2region xdb 数据结构和查询过程详解”](https://mp.weixin.qq.com/s?__biz=MzU4MDc2MzQ5OA==&mid=2247483696&idx=1&sn=6e9e138e86cf18245656c54ff4be3129&chksm=fd50ab35ca2722239ae7c0bb08efa44f499110c810227cbad3a16f36ebc1c2afc58eb464a57c#rd)
+3. xdb 生成过程分析：[“ip2region xdb 二进制数据生成过程详解”](https://mp.weixin.qq.com/s?__biz=MzU4MDc2MzQ5OA==&mid=2247483718&idx=1&sn=92e552f3bba44a97ca661da244f35574&chksm=fd50ab43ca2722559733ed4e1082f239f381aaa881f9dbeb479174936145522696d9d200531e#rd)
