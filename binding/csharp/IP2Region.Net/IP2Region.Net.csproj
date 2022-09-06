@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <id>IP2Region.Net</id>
+        <version>1.0.2</version>
+        <title>IP2Region.Net</title>
+        <authors>Alan Lee</authors>
+        <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageProjectUrl>https://github.com/lionsoul2014/ip2region/tree/master/binding/csharp</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/lionsoul2014/ip2region/tree/master/binding/csharp</RepositoryUrl>
+        <Description>ip2region 是一个离线IP地址定位库，极速响应，微秒级查询</Description>
+        <tags>IP2Region</tags>
+
+
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <TargetFrameworks>net6.0;netstandard2.1</TargetFrameworks>
+        <LangVersion>10.0</LangVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Folder Include="Data" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Update="Data\ip2region.xdb">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="..\README.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
+
+</Project>
