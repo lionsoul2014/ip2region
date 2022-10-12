@@ -31,8 +31,8 @@ public class SearcherTest {
         }
 
         // 2、查询
+        String ip = "1.2.3.4";
         try {
-            String ip = "1.2.3.4";
             long sTime = System.nanoTime();
             String region = searcher.search(ip);
             long cost = TimeUnit.NANOSECONDS.toMicros((long) (System.nanoTime() - sTime));
@@ -42,7 +42,10 @@ public class SearcherTest {
         }
 
         // 3、关闭资源
-        searcher.close();
+        try {
+            searcher.close();
+        } catch (Exception e) {
+        }
         
         // 备注：并发使用，每个线程需要创建一个独立的 searcher 对象单独使用。
     }
@@ -80,8 +83,8 @@ public class SearcherTest {
         }
 
         // 3、查询
+        String ip = "1.2.3.4";
         try {
-            String ip = "1.2.3.4";
             long sTime = System.nanoTime();
             String region = searcher.search(ip);
             long cost = TimeUnit.NANOSECONDS.toMicros((long) (System.nanoTime() - sTime));
@@ -91,7 +94,10 @@ public class SearcherTest {
         }
         
         // 4、关闭资源
-        searcher.close();
+        try {
+            searcher.close();
+        } catch (Exception e) {
+        }
 
         // 备注：每个线程需要单独创建一个独立的 Searcher 对象，但是都共享全局的制度 vIndex 缓存。
     }
@@ -129,8 +135,8 @@ public class SearcherTest {
         }
 
         // 3、查询
+        String ip = "1.2.3.4";
         try {
-            String ip = "1.2.3.4";
             long sTime = System.nanoTime();
             String region = searcher.search(ip);
             long cost = TimeUnit.NANOSECONDS.toMicros((long) (System.nanoTime() - sTime));
