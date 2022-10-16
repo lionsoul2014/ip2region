@@ -6,9 +6,6 @@
 
 package org.lionsoul.ip2region.xdb;
 
-
-import java.awt.image.SampleModel;
-
 public class Header {
     public final int version;
     public final int indexPolicy;
