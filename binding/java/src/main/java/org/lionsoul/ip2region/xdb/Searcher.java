@@ -175,7 +175,7 @@ public class Searcher {
 
     public static byte[] loadVectorIndex(RandomAccessFile handle) throws IOException {
         handle.seek(HeaderInfoLength);
-        int len = VectorIndexRows * VectorIndexCols * SegmentIndexSize;
+        int len = VectorIndexRows * VectorIndexCols * VectorIndexSize;
         final byte[] buff = new byte[len];
         int rLen = handle.read(buff);
         if (rLen != len) {
