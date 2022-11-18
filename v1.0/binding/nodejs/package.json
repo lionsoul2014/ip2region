@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/lionsoul2014/ip2region",
   "devDependencies": {
-    "jest": "^19.0.2",
+    "jest": "^29.3.1",
     "benchmark": "^2.1.4"
   },
   "engines": {
