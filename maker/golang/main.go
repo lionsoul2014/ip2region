@@ -328,7 +328,7 @@ func edit() {
 	}
 
 	fmt.Printf("init the editor from source @ `%s` ... \n", srcFile)
-	editor, err := xdb.NewEditor(srcFile)
+	editor, err := xdb.NewEditor(srcFile, dstFile)
 	if err != nil {
 		fmt.Printf("failed to init editor: %s", err)
 		return
