@@ -6,11 +6,29 @@
 
 package xdb
 
+import "container/list"
+
 type Editor struct {
+	// source ip file
+	srcFile string
+	dstFile string
+
+	// region info
+	region map[int]string
+
+	// segments list
+	segments *list.List
 }
 
-func NewEditor(srcFile string) (*Editor, error) {
-	return nil, nil
+func NewEditor(srcFile string, dstFile string) (*Editor, error) {
+	e := &Editor{
+		srcFile: srcFile,
+		dstFile: dstFile,
+
+		region:   map[int]string{},
+		segments: list.New(),
+	}
+	return e, nil
 }
 
 func (e *Editor) Put(ip string) error {
