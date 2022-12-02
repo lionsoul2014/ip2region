@@ -246,55 +246,35 @@ func testBench() {
 	}
 
 	var count, errCount, tStart = 0, 0, time.Now()
-	var scanner = bufio.NewScanner(handle)
-	scanner.Split(bufio.ScanLines)
-	for scanner.Scan() {
-		var l = strings.TrimSpace(strings.TrimSuffix(scanner.Text(), "\n"))
-		var ps = strings.SplitN(l, "|", 3)
-		if len(ps) != 3 {
-			fmt.Printf("invalid ip segment line `%s`\n", l)
-			return
-		}
-
-		sip, err := xdb.CheckIP(ps[0])
-		if err != nil {
-			fmt.Printf("check start ip `%s`: %s\n", ps[0], err)
-			return
-		}
-
-		eip, err := xdb.CheckIP(ps[1])
-		if err != nil {
-			fmt.Printf("check end ip `%s`: %s\n", ps[1], err)
-			return
-		}
-
-		if sip > eip {
-			fmt.Printf("start ip(%s) should not be greater than end ip(%s)\n", ps[0], ps[1])
-			return
-		}
-
+	var iErr = xdb.IterateSegments(handle, nil, func(sip uint32, eip uint32, region *string) error {
+		var s = *region
+		var l = fmt.Sprintf("%d|%d|%s", sip, eip, s)
 		fmt.Printf("try to bench segment: `%s`\n", l)
 		mip := xdb.MidIP(sip, eip)
 		for _, ip := range []uint32{sip, xdb.MidIP(sip, mip), mip, xdb.MidIP(mip, eip), eip} {
 			fmt.Printf("|-try to bench ip '%s' ... ", xdb.Long2IP(ip))
-			region, _, err := searcher.Search(ip)
+			r, _, err := searcher.Search(ip)
 			if err != nil {
-				fmt.Printf("failed to search ip '%s': %s\n", xdb.Long2IP(ip), err)
-				return
+				return fmt.Errorf("failed to search ip '%s': %s\n", xdb.Long2IP(ip), err)
 			}
 
 			// check the region info
 			count++
-			if region != ps[2] {
+			if r != s {
 				errCount++
-				fmt.Printf(" --[Failed] (%s != %s)\n", region, ps[2])
+				fmt.Printf(" --[Failed] (%s != %s)\n", r, s)
 				if ignoreError == false {
-					return
+					return fmt.Errorf("")
 				}
 			} else {
 				fmt.Printf(" --[Ok]\n")
 			}
 		}
+		return nil
+	})
+	if iErr != nil {
+		fmt.Printf("%s", err)
+		return
 	}
 
 	fmt.Printf("Bench finished, {count: %d, failed: %d, took: %s}\n", count, errCount, time.Since(tStart))
@@ -381,6 +361,8 @@ func edit() {
 				continue
 			}
 			fmt.Printf("PutFile(%s): Ok\n", file)
+		} else if len(cmd) > 0 {
+			help()
 		}
 	}
 }

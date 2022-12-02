@@ -50,12 +50,10 @@
 package xdb
 
 import (
-	"bufio"
 	"encoding/binary"
 	"fmt"
 	"log"
 	"os"
-	"strings"
 	"time"
 )
 
@@ -140,50 +138,29 @@ func (m *Maker) loadSegments() error {
 	var last *Segment = nil
 	var tStart = time.Now()
 
-	var scanner = bufio.NewScanner(m.srcHandle)
-	scanner.Split(bufio.ScanLines)
-	for scanner.Scan() {
-		var l = strings.TrimSpace(strings.TrimSuffix(scanner.Text(), "\n"))
+	var err = IterateSegments(m.srcHandle, func(l string) {
 		log.Printf("load segment: `%s`", l)
-
-		var ps = strings.SplitN(l, "|", 3)
-		if len(ps) != 3 {
-			return fmt.Errorf("invalid ip segment line `%s`", l)
-		}
-
-		sip, err := CheckIP(ps[0])
-		if err != nil {
-			return fmt.Errorf("check start ip `%s`: %s", ps[0], err)
-		}
-
-		eip, err := CheckIP(ps[1])
-		if err != nil {
-			return fmt.Errorf("check end ip `%s`: %s", ps[1], err)
-		}
-
-		if sip > eip {
-			return fmt.Errorf("start ip(%s) should not be greater than end ip(%s)", ps[0], ps[1])
-		}
-
-		if len(ps[2]) < 1 {
-			return fmt.Errorf("empty region info in segment line `%s`", l)
-		}
-
+	}, func(sip uint32, eip uint32, region *string) error {
+		var str = *region
 		var seg = &Segment{
 			StartIP: sip,
 			EndIP:   eip,
-			Region:  ps[2],
+			Region:  str,
 		}
 
 		// check the continuity of the data segment
 		if last != nil {
 			if last.EndIP+1 != seg.StartIP {
-				return fmt.Errorf("discontinuous data segment: last.eip+1(%d) != seg.sip(%d, %s)", sip, eip, ps[0])
+				return fmt.Errorf("discontinuous data segment: last.eip+1(%d) != seg.sip(%d, %s)", sip, eip, str)
 			}
 		}
 
 		m.segments = append(m.segments, seg)
 		last = seg
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("failed to load segments: %s", err)
 	}
 
 	log.Printf("all segments loaded, length: %d, elapsed: %s", len(m.segments), time.Since(tStart))
