@@ -76,7 +76,9 @@ func (e *Editor) loadSegments() error {
 	var last *Segment = nil
 	var tStart = time.Now()
 
-	var err = IterateSegments(e.srcHandle, nil, func(seg *Segment) error {
+	var err = IterateSegments(e.srcHandle, func(l string) {
+		// do nothing here
+	}, func(seg *Segment) error {
 		// check the continuity of the data segment
 		if err := seg.AfterCheck(last); err != nil {
 			return err
