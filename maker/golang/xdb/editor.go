@@ -76,19 +76,10 @@ func (e *Editor) loadSegments() error {
 	var last *Segment = nil
 	var tStart = time.Now()
 
-	var err = IterateSegments(e.srcHandle, nil, func(sip uint32, eip uint32, region *string) error {
-		var str = *region
-		var seg = &Segment{
-			StartIP: sip,
-			EndIP:   eip,
-			Region:  str,
-		}
-
+	var err = IterateSegments(e.srcHandle, nil, func(seg *Segment) error {
 		// check the continuity of the data segment
-		if last != nil {
-			if last.EndIP+1 != seg.StartIP {
-				return fmt.Errorf("discontinuous data segment: last.eip+1(%d) != seg.sip(%d, %s)", sip, eip, str)
-			}
+		if err := seg.AfterCheck(last); err != nil {
+			return err
 		}
 
 		last = seg

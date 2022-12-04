@@ -246,12 +246,11 @@ func testBench() {
 	}
 
 	var count, errCount, tStart = 0, 0, time.Now()
-	var iErr = xdb.IterateSegments(handle, nil, func(sip uint32, eip uint32, region *string) error {
-		var s = *region
-		var l = fmt.Sprintf("%d|%d|%s", sip, eip, s)
+	var iErr = xdb.IterateSegments(handle, nil, func(seg *xdb.Segment) error {
+		var l = fmt.Sprintf("%d|%d|%s", seg.StartIP, seg.EndIP, seg.Region)
 		fmt.Printf("try to bench segment: `%s`\n", l)
-		mip := xdb.MidIP(sip, eip)
-		for _, ip := range []uint32{sip, xdb.MidIP(sip, mip), mip, xdb.MidIP(mip, eip), eip} {
+		mip := xdb.MidIP(seg.StartIP, seg.EndIP)
+		for _, ip := range []uint32{seg.StartIP, xdb.MidIP(seg.EndIP, mip), mip, xdb.MidIP(mip, seg.EndIP), seg.EndIP} {
 			fmt.Printf("|-try to bench ip '%s' ... ", xdb.Long2IP(ip))
 			r, _, err := searcher.Search(ip)
 			if err != nil {
@@ -260,9 +259,9 @@ func testBench() {
 
 			// check the region info
 			count++
-			if r != s {
+			if r != seg.Region {
 				errCount++
-				fmt.Printf(" --[Failed] (%s != %s)\n", r, s)
+				fmt.Printf(" --[Failed] (%s != %s)\n", r, seg.Region)
 				if ignoreError == false {
 					return fmt.Errorf("")
 				}

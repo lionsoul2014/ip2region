@@ -47,7 +47,8 @@ func MidIP(sip uint32, eip uint32) uint32 {
 	return uint32((uint64(sip) + uint64(eip)) >> 1)
 }
 
-func IterateSegments(handle *os.File, before func(l string), cb func(sip uint32, eip uint32, region *string) error) error {
+func IterateSegments(handle *os.File, before func(l string), cb func(seg *Segment) error) error {
+	var last *Segment = nil
 	var scanner = bufio.NewScanner(handle)
 	scanner.Split(bufio.ScanLines)
 	for scanner.Scan() {
@@ -79,9 +80,36 @@ func IterateSegments(handle *os.File, before func(l string), cb func(sip uint32,
 			return fmt.Errorf("empty region info in segment line `%s`", l)
 		}
 
-		if err = cb(sip, eip, &ps[2]); err != nil {
+		var seg = &Segment{
+			StartIP: sip,
+			EndIP:   eip,
+			Region:  ps[2],
+		}
+
+		// check and automatic merging the Consecutive Segments which means:
+		// 1, region info is the same
+		// 2, last.eip+1 = cur.sip
+		if last == nil {
+			last = seg
+			continue
+		} else if last.Region == seg.Region {
+			if err = seg.AfterCheck(last); err == nil {
+				last.EndIP = seg.EndIP
+				continue
+			}
+		}
+
+		if err = cb(last); err != nil {
 			return err
 		}
+
+		// reset the last
+		last = seg
+	}
+
+	// process the last segment
+	if last != nil {
+		return cb(last)
 	}
 
 	return nil
