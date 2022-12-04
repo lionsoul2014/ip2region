@@ -42,6 +42,20 @@ func SegmentFrom(seg string) (*Segment, error) {
 	}, nil
 }
 
+// AfterCheck check the current segment is the one just after the specified one
+func (s *Segment) AfterCheck(last *Segment) error {
+	if last != nil {
+		if last.EndIP+1 != s.StartIP {
+			return fmt.Errorf(
+				"discontinuous data segment: last.eip+1(%d) != seg.sip(%d, %s)",
+				last.EndIP+1, s.StartIP, s.Region,
+			)
+		}
+	}
+
+	return nil
+}
+
 // Split the segment based on the pre-two bytes
 func (s *Segment) Split() []*Segment {
 	// 1, split the segment with the first byte

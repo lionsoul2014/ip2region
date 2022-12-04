@@ -138,29 +138,20 @@ func (m *Maker) loadSegments() error {
 	var last *Segment = nil
 	var tStart = time.Now()
 
-	var err = IterateSegments(m.srcHandle, func(l string) {
+	var iErr = IterateSegments(m.srcHandle, func(l string) {
 		log.Printf("load segment: `%s`", l)
-	}, func(sip uint32, eip uint32, region *string) error {
-		var str = *region
-		var seg = &Segment{
-			StartIP: sip,
-			EndIP:   eip,
-			Region:  str,
-		}
-
+	}, func(seg *Segment) error {
 		// check the continuity of the data segment
-		if last != nil {
-			if last.EndIP+1 != seg.StartIP {
-				return fmt.Errorf("discontinuous data segment: last.eip+1(%d) != seg.sip(%d, %s)", sip, eip, str)
-			}
+		if err := seg.AfterCheck(last); err != nil {
+			return err
 		}
 
 		m.segments = append(m.segments, seg)
 		last = seg
 		return nil
 	})
-	if err != nil {
-		return fmt.Errorf("failed to load segments: %s", err)
+	if iErr != nil {
+		return fmt.Errorf("failed to load segments: %s", iErr)
 	}
 
 	log.Printf("all segments loaded, length: %d, elapsed: %s", len(m.segments), time.Since(tStart))

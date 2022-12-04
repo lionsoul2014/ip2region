@@ -8,6 +8,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"net"
+	"os"
 	"testing"
 )
 
@@ -58,4 +59,18 @@ func TestSplitSegment(t *testing.T) {
 	for i, s := range segList {
 		fmt.Printf("idx: %3d, seg: %s\n", i, s.String())
 	}
+}
+
+func TestIterateSegments(t *testing.T) {
+	handle, err := os.OpenFile("../segments.tests", os.O_RDONLY, 0600)
+	if err != nil {
+		t.Fatalf("failed to open tests file: %s", err)
+	}
+
+	err = IterateSegments(handle, func(l string) {
+		// fmt.Printf("load segment: `%s`\n", l)
+	}, func(seg *Segment) error {
+		fmt.Printf("get segment: `%s`\n", seg)
+		return nil
+	})
 }
