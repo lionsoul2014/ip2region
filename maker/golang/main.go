@@ -322,9 +322,16 @@ func edit() {
 	}
 
 	help()
+	var sTip = ""
 	var reader = bufio.NewReader(os.Stdin)
 	for {
-		fmt.Printf(">> ")
+		if editor.NeedSave() {
+			sTip = "*"
+		} else {
+			sTip = ""
+		}
+
+		fmt.Printf("%seditor>> ", sTip)
 		line, err := reader.ReadString('\n')
 		if err != nil {
 			fmt.Printf("failed to read line from cli: %s\n", err)
@@ -335,11 +342,18 @@ func edit() {
 		if cmd == "help" {
 			help()
 		} else if cmd == "exit" {
+			if editor.NeedSave() {
+				fmt.Printf("there are changes that need to save, type 'quit!' to force quit\n")
+			} else {
+				break
+			}
+		} else if cmd == "quit!" {
+			// quit directly
 			break
 		} else if cmd == "save" {
 			err = editor.Save()
 			if err != nil {
-				fmt.Printf("failed to save the changes: %s", err)
+				fmt.Printf("failed to save the changes: %s\n", err)
 				continue
 			}
 			fmt.Printf("all segments saved to %s\n", srcFile)
