@@ -17,6 +17,7 @@ type Editor struct {
 	// source ip file
 	srcPath   string
 	srcHandle *os.File
+	toSave    bool
 
 	// segments list
 	segments *list.List
@@ -37,6 +38,7 @@ func NewEditor(srcFile string) (*Editor, error) {
 	e := &Editor{
 		srcPath:   srcPath,
 		srcHandle: srcHandle,
+		toSave:    false,
 		segments:  list.New(),
 	}
 
@@ -71,6 +73,10 @@ func (e *Editor) loadSegments() error {
 	return nil
 }
 
+func (e *Editor) NeedSave() bool {
+	return e.toSave
+}
+
 func (e *Editor) SegLen() int {
 	return e.segments.Len()
 }
@@ -84,7 +90,50 @@ func (e *Editor) Put(ip string) error {
 	return e.PutSegment(seg)
 }
 
+// PutSegment put the specified segment into the current segment list with
+// the following position relationships.
+// 1, fully contained like:
+// StartIP------seg.StartIP--------seg.EndIP----EndIP
+//                 |------------------|
+// 2, intersect like:
+// StartIP------seg.StartIP------EndIP------|
+//                 |---------------------seg.EndIP
+//
 func (e *Editor) PutSegment(seg *Segment) error {
+	var tOne *list.Element
+	var next *list.Element
+	for ele := e.segments.Front(); ele != nil; ele = next {
+		next = ele.Next()
+		s, ok := ele.Value.(*Segment)
+		if !ok {
+			// could this even be a case ?
+			continue
+		}
+
+		// find the related segment
+		if seg.StartIP >= s.StartIP && seg.StartIP <= s.EndIP {
+			tOne = ele
+			break
+		}
+	}
+
+	if tOne == nil {
+		// could this even be a case ?
+		// if the loaded segments contains all the segments we have
+		// from 0 to 0xffffffff
+		return fmt.Errorf("failed to find the related segment")
+	}
+
+	s, ok := tOne.Value.(*Segment)
+	if !ok {
+		return fmt.Errorf("internal error: invalid segment type")
+	}
+
+	fmt.Printf("tOne: %s\n", s)
+
+	// open the to save flag
+	e.toSave = true
+
 	return nil
 }
 
@@ -108,6 +157,11 @@ func (e *Editor) PutFile(src string) error {
 }
 
 func (e *Editor) Save() error {
+	// check the to-save flag
+	if e.toSave == false {
+		return fmt.Errorf("nothing changed")
+	}
+
 	dstHandle, err := os.OpenFile(e.srcPath, os.O_WRONLY|os.O_TRUNC, 0644)
 	if err != nil {
 		return err
@@ -115,11 +169,11 @@ func (e *Editor) Save() error {
 
 	// loop and flush all the segments to the dstHandle
 	var next *list.Element
-	for e := e.segments.Front(); e != nil; e = next {
-		next = e.Next()
-		s, ok := e.Value.(*Segment)
+	for ele := e.segments.Front(); ele != nil; ele = next {
+		next = ele.Next()
+		s, ok := ele.Value.(*Segment)
 		if !ok {
-			// could this even a case ?
+			// could this even be a case ?
 			continue
 		}
 
@@ -131,7 +185,9 @@ func (e *Editor) Save() error {
 	}
 
 	// close the handle
+	// and close the to-save flag
 	_ = dstHandle.Close()
+	e.toSave = false
 
 	return nil
 }
