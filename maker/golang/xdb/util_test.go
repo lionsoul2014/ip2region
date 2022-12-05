@@ -62,7 +62,7 @@ func TestSplitSegment(t *testing.T) {
 }
 
 func TestIterateSegments(t *testing.T) {
-	handle, err := os.OpenFile("../segments.tests", os.O_RDONLY, 0600)
+	handle, err := os.OpenFile("../../../data/segments.tests", os.O_RDONLY, 0600)
 	if err != nil {
 		t.Fatalf("failed to open tests file: %s", err)
 	}
