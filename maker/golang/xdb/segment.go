@@ -16,7 +16,7 @@ type Segment struct {
 }
 
 func SegmentFrom(seg string) (*Segment, error) {
-	var ps = strings.SplitN(seg, "|", 3)
+	var ps = strings.SplitN(strings.TrimSpace(seg), "|", 3)
 	if len(ps) != 3 {
 		return nil, fmt.Errorf("invalid ip segment `%s`", seg)
 	}
