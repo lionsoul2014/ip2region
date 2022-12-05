@@ -17,7 +17,7 @@ public class Segment {
 
     // parser the Segment from an input string
     public static Segment parse(String input) throws Exception {
-        String[] ps = input.split("\\|", 3);
+        String[] ps = input.trim().split("\\|", 3);
         if (ps.length != 3) {
             throw new Exception("invalid ip segment `"+input+"`");
         }
