@@ -281,13 +281,11 @@ func testBench() {
 
 func edit() {
 	var err error
-	var srcFile, dstFile = "", ""
+	var srcFile = ""
 	var fErr = iterateFlags(func(key string, val string) error {
 		switch key {
 		case "src":
 			srcFile = val
-		case "dst":
-			dstFile = val
 		default:
 			return fmt.Errorf("undefined option '%s=%s'\n", key, val)
 		}
@@ -298,21 +296,22 @@ func edit() {
 		return
 	}
 
-	if dstFile == "" || srcFile == "" {
+	if srcFile == "" {
 		fmt.Printf("%s edit [command options]\n", os.Args[0])
 		fmt.Printf("options:\n")
 		fmt.Printf(" --src string    source ip text file path\n")
-		fmt.Printf(" --dst string    destination source file path\n")
 		return
 	}
 
 	fmt.Printf("init the editor from source @ `%s` ... \n", srcFile)
-	editor, err := xdb.NewEditor(srcFile, dstFile)
+	var tStart = time.Now()
+	editor, err := xdb.NewEditor(srcFile)
 	if err != nil {
 		fmt.Printf("failed to init editor: %s", err)
 		return
 	}
 
+	fmt.Printf("all segments loaded, length: %d, elapsed: %s\n", editor.SegLen(), time.Since(tStart))
 	var help = func() {
 		fmt.Printf("command list: \n")
 		fmt.Printf("  put [segment]   : put the specifield segment\n")
@@ -343,7 +342,7 @@ func edit() {
 				fmt.Printf("failed to save the changes: %s", err)
 				continue
 			}
-			fmt.Printf("Changes saved\n")
+			fmt.Printf("all segments saved to %s\n", srcFile)
 		} else if strings.HasPrefix(cmd, "put ") {
 			seg := cmd[len("put "):]
 			err = editor.Put(seg)

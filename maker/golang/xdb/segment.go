@@ -107,5 +107,5 @@ func (s *Segment) Split() []*Segment {
 }
 
 func (s *Segment) String() string {
-	return Long2IP(s.StartIP) + "|" + Long2IP(s.EndIP) + "|" + s.Region
+	return fmt.Sprintf("%s|%s|%s", Long2IP(s.StartIP), Long2IP(s.EndIP), s.Region)
 }
