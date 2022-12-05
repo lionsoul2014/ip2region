@@ -87,18 +87,27 @@ public class Maker {
     // vector index raw bytes
     private final byte[] vectorIndex;
 
-    public Maker(int policy, String srcFile, String dstFile) throws FileNotFoundException {
-        this.srcFile = new File(srcFile);
+    public Maker(int policy, String srcPath, String dstPath) throws IOException {
+        this.srcFile = new File(srcPath);
         if (!this.srcFile.exists()) {
-            throw new FileNotFoundException("source text file `" +srcFile+ "` not found");
+            throw new FileNotFoundException("source text file `" + srcPath + "` not found");
         }
+
+        /// check and delete the target xdb file if it exists
+        /// final File dstFile = new File(dstPath);
+        /// if (dstFile.exists() && !dstFile.delete()) {
+        ///     log.warnf("failed to delete the dest xdb file `%s`", dstPath);
+        /// }
 
         this.bytesCharset = Charset.forName("utf-8");
         this.segments = new LinkedList<Segment>();
-        this.dstHandle = new RandomAccessFile(dstFile, "rw");
+        this.dstHandle = new RandomAccessFile(dstPath, "rw");
         this.indexPolicy = policy;
         this.regionPool = new HashMap<String, DataEntry>();
         this.vectorIndex = new byte[VectorIndexLength]; // all filled with 0
+
+        // truncate the original xdb file
+        this.dstHandle.setLength(0);
     }
 
     // init the header of the target xdb binary file
@@ -122,7 +131,7 @@ public class Maker {
     // load all the segments
     private void loadSegments() throws Exception {
         log.infof("try to load the segments ... ");
-        long tStart = System.currentTimeMillis();
+        final long tStart = System.currentTimeMillis();
         Segment last = null;
         String line;
 
@@ -136,8 +145,8 @@ public class Maker {
                 throw new Exception("invalid ip segment line `"+ps[0]+"`");
             }
 
-            long sip = Util.checkIP(ps[0]);
-            long eip = Util.checkIP(ps[1]);
+            final long sip = Util.checkIP(ps[0]);
+            final long eip = Util.checkIP(ps[1]);
             if (sip > eip) {
                 br.close();
                 throw new Exception("start ip("+ps[0]+") should not be greater than end ip("+ps[1]+")");
@@ -156,7 +165,7 @@ public class Maker {
                 }
             }
 
-            Segment seg = new Segment(sip, eip, ps[2]);
+            final Segment seg = new Segment(sip, eip, ps[2]);
             segments.add(seg);
             last = seg;
         }
@@ -176,10 +185,10 @@ public class Maker {
 
     // set the vector index info of the specified ip
     private void setVectorIndex(long ip, long ptr) {
-        int il0 = (int) ((ip >> 24) & 0xFF);
-        int il1 = (int) ((ip >> 16) & 0xFF);
-        int idx = il0 * VectorIndexCols * VectorIndexSize + il1 * VectorIndexSize;
-        long sPtr = Util.getIntLong(vectorIndex, idx);
+        final int il0 = (int) ((ip >> 24) & 0xFF);
+        final int il1 = (int) ((ip >> 16) & 0xFF);
+        final int idx = il0 * VectorIndexCols * VectorIndexSize + il1 * VectorIndexSize;
+        final long sPtr = Util.getIntLong(vectorIndex, idx);
         if (sPtr == 0) {
             Util.write(vectorIndex, idx, ptr, 4);
             Util.write(vectorIndex, idx + 4, ptr + SegmentIndexSize, 4);
@@ -200,14 +209,14 @@ public class Maker {
         log.infof("try to write the data block ... ");
         for (Segment seg : segments) {
             log.infof("try to write region `%s` ... ", seg.region);
-            DataEntry e = regionPool.get(seg.region);
+            final DataEntry e = regionPool.get(seg.region);
             if (e != null) {
                 log.infof(" --[Cached] with ptr=%d", e.ptr);
                 continue;
             }
 
             // get the utf-8 bytes of the region info
-            byte[] regionBuff = seg.region.getBytes(bytesCharset);
+            final byte[] regionBuff = seg.region.getBytes(bytesCharset);
             if (regionBuff.length < 1) {
                 throw new Exception("empty region info for segment `"+seg+"`");
             } else if (regionBuff.length > 0xFFFF) {
@@ -215,7 +224,7 @@ public class Maker {
             }
 
             // record the current ptr
-            long pos = dstHandle.getFilePointer();
+            final long pos = dstHandle.getFilePointer();
             dstHandle.write(regionBuff);
 
             // record the mapping
@@ -227,7 +236,7 @@ public class Maker {
         log.infof("try to write the segment index block ... ");
         int counter = 0;
         long startIndexPtr = -1, endIndexPtr = -1;
-        byte[] indexBuff = new byte[SegmentIndexSize];    // 4 + 4 + 2 + 4
+        final byte[] indexBuff = new byte[SegmentIndexSize];    // 4 + 4 + 2 + 4
         for (Segment seg : segments) {
             // we need the region ptr
             DataEntry e = regionPool.get(seg.region);
@@ -282,8 +291,8 @@ public class Maker {
     }
 
     private static class DataEntry {
-        long ptr;
-        int length; // in bytes
+        final long ptr;
+        final int length; // in bytes
 
         DataEntry(int length, long ptr) {
             this.length = length;
