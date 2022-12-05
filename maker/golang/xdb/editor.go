@@ -11,37 +11,22 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"time"
 )
 
 type Editor struct {
 	// source ip file
+	srcPath   string
 	srcHandle *os.File
-	dstHandle *os.File
-
-	// region info
-	// @Note: 2^32 items at most
-	region map[uint32]string
-	rIndex uint32
 
 	// segments list
 	segments *list.List
 }
 
-func NewEditor(srcFile string, dstFile string) (*Editor, error) {
+func NewEditor(srcFile string) (*Editor, error) {
 	// check the src and dst file
 	srcPath, err := filepath.Abs(srcFile)
 	if err != nil {
 		return nil, err
-	}
-
-	dstPath, err := filepath.Abs(dstFile)
-	if err != nil {
-		return nil, err
-	}
-
-	if srcPath == dstPath {
-		return nil, fmt.Errorf("src_path(%s) = dst_path(%s)", srcFile, dstFile)
 	}
 
 	srcHandle, err := os.OpenFile(srcPath, os.O_RDONLY, 0600)
@@ -49,23 +34,15 @@ func NewEditor(srcFile string, dstFile string) (*Editor, error) {
 		return nil, err
 	}
 
-	dstHandle, err := os.OpenFile(dstPath, os.O_CREATE|os.O_RDWR, 0644)
-	if err != nil {
-		return nil, err
-	}
-
 	e := &Editor{
+		srcPath:   srcPath,
 		srcHandle: srcHandle,
-		dstHandle: dstHandle,
-
-		region:   map[uint32]string{},
-		rIndex:   uint32(0),
-		segments: list.New(),
+		segments:  list.New(),
 	}
 
 	// load the segments
 	if err = e.loadSegments(); err != nil {
-		return nil, fmt.Errorf("failed load segments: %s", err)
+		return nil, fmt.Errorf("failed to load segments: %s", err)
 	}
 
 	return e, nil
@@ -74,9 +51,8 @@ func NewEditor(srcFile string, dstFile string) (*Editor, error) {
 // Load all the segments from the source file
 func (e *Editor) loadSegments() error {
 	var last *Segment = nil
-	var tStart = time.Now()
 
-	var err = IterateSegments(e.srcHandle, func(l string) {
+	var iErr = IterateSegments(e.srcHandle, func(l string) {
 		// do nothing here
 	}, func(seg *Segment) error {
 		// check the continuity of the data segment
@@ -84,29 +60,82 @@ func (e *Editor) loadSegments() error {
 			return err
 		}
 
+		e.segments.PushBack(seg)
 		last = seg
 		return nil
 	})
-	if err != nil {
-		return fmt.Errorf("failed to load segments: %s", err)
+	if iErr != nil {
+		return iErr
 	}
 
-	fmt.Printf("all segments loaded, length: %d, elapsed: %s\n", e.segments.Len(), time.Since(tStart))
 	return nil
 }
 
+func (e *Editor) SegLen() int {
+	return e.segments.Len()
+}
+
 func (e *Editor) Put(ip string) error {
+	seg, err := SegmentFrom(ip)
+	if err != nil {
+		return err
+	}
+
+	return e.PutSegment(seg)
+}
+
+func (e *Editor) PutSegment(seg *Segment) error {
 	return nil
 }
 
 func (e *Editor) PutFile(src string) error {
+	handle, err := os.OpenFile(src, os.O_RDONLY, 0600)
+	if err != nil {
+		return err
+	}
+
+	iErr := IterateSegments(handle, func(l string) {
+		// do nothing here
+	}, func(seg *Segment) error {
+		return e.PutSegment(seg)
+	})
+	if iErr != nil {
+		return iErr
+	}
+
+	_ = handle.Close()
 	return nil
 }
 
 func (e *Editor) Save() error {
+	dstHandle, err := os.OpenFile(e.srcPath, os.O_WRONLY|os.O_TRUNC, 0644)
+	if err != nil {
+		return err
+	}
+
+	// loop and flush all the segments to the dstHandle
+	var next *list.Element
+	for e := e.segments.Front(); e != nil; e = next {
+		next = e.Next()
+		s, ok := e.Value.(*Segment)
+		if !ok {
+			// could this even a case ?
+			continue
+		}
+
+		var l = s.String()
+		_, err = dstHandle.WriteString(fmt.Sprintf("%s\n", l))
+		if err != nil {
+			return err
+		}
+	}
+
+	// close the handle
+	_ = dstHandle.Close()
+
 	return nil
 }
 
-func (e *Editor) Close() error {
-	return nil
+func (e *Editor) Close() {
+	_ = e.srcHandle.Close()
 }
