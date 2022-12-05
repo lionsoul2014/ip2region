@@ -17,7 +17,7 @@ public class Segment {
 
     // parser the Segment from an input string
     public static Segment parse(String input) throws Exception {
-        String[] ps = input.trim().split("\\|", 3);
+        final String[] ps = input.trim().split("\\|", 3);
         if (ps.length != 3) {
             throw new Exception("invalid ip segment `"+input+"`");
         }
@@ -39,8 +39,8 @@ public class Segment {
 
     // split the current segment for vector index
     public List<Segment> split() {
-        long sByte1 = (int) ((startIP >> 24) & 0xFF);
-        long eByte1 = (int) ((endIP >> 24) & 0xFF);
+        final long sByte1 = (int) ((startIP >> 24) & 0xFF);
+        final long eByte1 = (int) ((endIP >> 24) & 0xFF);
         long nSip = startIP;
         final List<Segment> tList =  new ArrayList<Segment>();
         for (long i = sByte1; i <= eByte1; i++) {
@@ -59,10 +59,10 @@ public class Segment {
         // 2, split the segments with the second byte
         final List<Segment> segList = new ArrayList<Segment>();
         for (Segment seg : tList) {
-            long base = seg.startIP & 0xFF000000;
+            final long base = seg.startIP & 0xFF000000;
+            final long sb2 = (seg.startIP >> 16) & 0xFF;
+            final long eb2 = (seg.endIP >> 16) & 0xFF;
             long tSip = seg.startIP;
-            long sb2 = (seg.startIP >> 16) & 0xFF;
-            long eb2 = (seg.endIP >> 16) & 0xFF;
             for (long i = sb2; i <= eb2; i++) {
                 long sip = base | (i << 16) | (tSip & 0xFFFF);
                 long eip = base | (i << 16) | 0xFFFF;

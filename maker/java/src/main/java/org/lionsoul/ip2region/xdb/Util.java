@@ -51,7 +51,7 @@ public class Util
 
     /* check the specified ip address */
     public static long checkIP(String ip) throws Exception {
-        String[] ps = ip.split("\\.");
+        final String[] ps = ip.split("\\.");
         if (ps.length != 4) {
             throw new Exception("invalid ip address `" + ip + "`");
         }
