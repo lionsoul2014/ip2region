@@ -10,6 +10,7 @@ import (
 	"github.com/lionsoul2014/ip2region/maker/golang/xdb"
 	"log"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -303,6 +304,12 @@ func edit() {
 		return
 	}
 
+	rExp, err := regexp.Compile("\\s+")
+	if err != nil {
+		fmt.Printf("failed to compile regexp: %s\n", err)
+		return
+	}
+
 	fmt.Printf("init the editor from source @ `%s` ... \n", srcFile)
 	var tStart = time.Now()
 	editor, err := xdb.NewEditor(srcFile)
@@ -314,11 +321,12 @@ func edit() {
 	fmt.Printf("all segments loaded, length: %d, elapsed: %s\n", editor.SegLen(), time.Since(tStart))
 	var help = func() {
 		fmt.Printf("command list: \n")
-		fmt.Printf("  put [segment]   : put the specifield segment\n")
-		fmt.Printf("  put_file [file] : put all the segments from the specified file\n")
-		fmt.Printf("  save            : save all the changes to the destination source file\n")
-		fmt.Printf("  exit            : exit the program\n")
-		fmt.Printf("  help            : print this help menu\n")
+		fmt.Printf("  put [segment]        : put the specifield $segment\n")
+		fmt.Printf("  put_file [file]      : put all the segments from the specified $file\n")
+		fmt.Printf("  list [offset] [size] : list the first $size segments start from $offset\n")
+		fmt.Printf("  save                 : save all the changes to the destination source file\n")
+		fmt.Printf("  quit                 : exit the program\n")
+		fmt.Printf("  help                 : print this help menu\n")
 	}
 
 	help()
@@ -341,7 +349,7 @@ func edit() {
 		cmd := strings.TrimSpace(line)
 		if cmd == "help" {
 			help()
-		} else if cmd == "exit" {
+		} else if cmd == "quit" {
 			if editor.NeedSave() {
 				fmt.Printf("there are changes that need to save, type 'quit!' to force quit\n")
 			} else {
@@ -357,22 +365,45 @@ func edit() {
 				continue
 			}
 			fmt.Printf("all segments saved to %s\n", srcFile)
+		} else if strings.HasPrefix(cmd, "list") {
+			var sErr error
+			off, size, l := 0, 10, len("list")
+			str := strings.TrimSpace(cmd)
+			if len(str) > l {
+				sets := rExp.Split(cmd, 3)
+				switch len(sets) {
+				case 2:
+					_, sErr = fmt.Sscanf(cmd, "%s %d", &str, &off)
+				case 3:
+					_, sErr = fmt.Sscanf(cmd, "%s %d %d", &str, &off, &size)
+				}
+			}
+
+			if sErr != nil {
+				fmt.Printf("failed to parse the offset and size: %s\n", sErr)
+				continue
+			}
+
+			fmt.Printf("+-slice(%d,%d): \n", off, size)
+			for _, s := range editor.Slice(off, size) {
+				fmt.Printf("%s\n", s)
+			}
 		} else if strings.HasPrefix(cmd, "put ") {
-			seg := cmd[len("put "):]
-			err = editor.Put(seg)
+			seg := strings.TrimSpace(cmd[len("put "):])
+			o, n, err := editor.Put(seg)
 			if err != nil {
 				fmt.Printf("failed to Put(%s): %s\n", seg, err)
 				continue
 			}
-			fmt.Printf("Put(%s): Ok\n", seg)
+			fmt.Printf("Put(%s): Ok, with %d deletes and %d additions\n", seg, o, n)
 		} else if strings.HasPrefix(cmd, "put_file ") {
-			file := cmd[len("put_file "):]
-			err = editor.PutFile(file)
+			file := strings.TrimSpace(cmd[len("put_file "):])
+			o, n, err := editor.PutFile(file)
 			if err != nil {
 				fmt.Printf("failed to PutFile(%s): %s\n", file, err)
 				continue
 			}
-			fmt.Printf("PutFile(%s): Ok\n", file)
+			fmt.Printf("PutFile(%s): Ok, with %d deletes and %d additions\n", file, o, n)
 		} else if len(cmd) > 0 {
 			help()
 		}

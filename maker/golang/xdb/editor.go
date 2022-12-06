@@ -81,10 +81,36 @@ func (e *Editor) SegLen() int {
 	return e.segments.Len()
 }
 
-func (e *Editor) Put(ip string) error {
+func (e *Editor) Slice(offset int, size int) []*Segment {
+	var index = -1
+	var out []*Segment
+	var next *list.Element
+	for ele := e.segments.Front(); ele != nil; ele = next {
+		next = ele.Next()
+		s, ok := ele.Value.(*Segment)
+		if !ok {
+			continue
+		}
+
+		// offset match
+		index++
+		if index < offset {
+			continue
+		}
+
+		out = append(out, s)
+		if len(out) >= size {
+			break
+		}
+	}
+
+	return out
+}
+
+func (e *Editor) Put(ip string) (int, int, error) {
 	seg, err := SegmentFrom(ip)
 	if err != nil {
-		return err
+		return 0, 0, err
 	}
 
 	return e.PutSegment(seg)
@@ -92,16 +118,17 @@ func (e *Editor) Put(ip string) error {
 
 // PutSegment put the specified segment into the current segment list with
 // the following position relationships.
-// 1, fully contained like:
+// 1, A - fully contained like:
 // StartIP------seg.StartIP--------seg.EndIP----EndIP
 //                 |------------------|
-// 2, intersect like:
+// 2, B - intersect like:
 // StartIP------seg.StartIP------EndIP------|
 //                 |---------------------seg.EndIP
 //
-func (e *Editor) PutSegment(seg *Segment) error {
-	var tOne *list.Element
+func (e *Editor) PutSegment(seg *Segment) (int, int, error) {
 	var next *list.Element
+	var eList []*list.Element
+	var found = false
 	for ele := e.segments.Front(); ele != nil; ele = next {
 		next = ele.Next()
 		s, ok := ele.Value.(*Segment)
@@ -110,50 +137,114 @@ func (e *Editor) PutSegment(seg *Segment) error {
 			continue
 		}
 
-		// find the related segment
-		if seg.StartIP >= s.StartIP && seg.StartIP <= s.EndIP {
-			tOne = ele
+		// found the related segment
+		if seg.StartIP <= s.EndIP && seg.StartIP >= s.StartIP {
+			found = true
+		}
+
+		if found == false {
+			continue
+		}
+
+		eList = append(eList, ele)
+		if seg.EndIP <= s.EndIP {
 			break
 		}
 	}
 
-	if tOne == nil {
+	if len(eList) == 0 {
 		// could this even be a case ?
 		// if the loaded segments contains all the segments we have
 		// from 0 to 0xffffffff
-		return fmt.Errorf("failed to find the related segment")
+		return 0, 0, fmt.Errorf("failed to find the related segment")
 	}
 
-	s, ok := tOne.Value.(*Segment)
-	if !ok {
-		return fmt.Errorf("internal error: invalid segment type")
+	// print for debug
+	// for i, s := range eList {
+	// 	fmt.Printf("ele %d: %s\n", i, s.Value.(*Segment))
+	// }
+
+	// segment split
+	var sList []*Segment
+	var head = eList[0].Value.(*Segment)
+	if seg.StartIP > head.StartIP {
+		sList = append(sList, &Segment{
+			StartIP: head.StartIP,
+			EndIP:   seg.StartIP - 1,
+			Region:  head.Region,
+		})
 	}
 
-	fmt.Printf("tOne: %s\n", s)
+	// append the new segment
+	sList = append(sList, seg)
+
+	// check and do the tailing segment append
+	if len(sList) > 0 {
+		// check and append the tailing
+		var tail = eList[len(eList)-1].Value.(*Segment)
+		if seg.EndIP < tail.EndIP {
+			sList = append(sList, &Segment{
+				StartIP: seg.EndIP + 1,
+				EndIP:   tail.EndIP,
+				Region:  tail.Region,
+			})
+		}
+	}
+
+	// print for debug
+	// for i, s := range sList {
+	// 	fmt.Printf("%d: %s\n", i, s)
+	// }
+
+	// delete all the in-range segments and
+	var base *list.Element
+	var oldRows, newRows = len(eList), len(sList)
+	for _, ele := range eList {
+		base = ele.Next()
+		e.segments.Remove(ele)
+	}
+
+	// add all the new segments
+	if base == nil {
+		for _, s := range sList {
+			e.segments.PushBack(s)
+		}
+	} else {
+		for _, s := range sList {
+			e.segments.InsertBefore(s, base)
+		}
+	}
 
 	// open the to save flag
 	e.toSave = true
 
-	return nil
+	return oldRows, newRows, nil
 }
 
-func (e *Editor) PutFile(src string) error {
+func (e *Editor) PutFile(src string) (int, int, error) {
 	handle, err := os.OpenFile(src, os.O_RDONLY, 0600)
 	if err != nil {
-		return err
+		return 0, 0, err
 	}
 
+	var oldRows, newRows = 0, 0
 	iErr := IterateSegments(handle, func(l string) {
 		// do nothing here
 	}, func(seg *Segment) error {
-		return e.PutSegment(seg)
+		o, n, err := e.PutSegment(seg)
+		if err == nil {
+			oldRows += o
+			newRows += n
+		}
+
+		return err
 	})
 	if iErr != nil {
-		return iErr
+		return oldRows, newRows, iErr
 	}
 
 	_ = handle.Close()
-	return nil
+	return oldRows, newRows, nil
 }
 
 func (e *Editor) Save() error {
