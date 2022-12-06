@@ -18,7 +18,7 @@ import (
 var shiftIndex = []int{24, 16, 8, 0}
 
 func CheckIP(ip string) (uint32, error) {
-	var ps = strings.Split(ip, ".")
+	var ps = strings.Split(strings.TrimSpace(ip), ".")
 	if len(ps) != 4 {
 		return 0, fmt.Errorf("invalid ip address `%s`", ip)
 	}
@@ -76,12 +76,15 @@ func LoadHeaderFromFile(dbFile string) (*Header, error) {
 		return nil, fmt.Errorf("open xdb file `%s`: %w", dbFile, err)
 	}
 
+	defer func(handle *os.File) {
+		_ = handle.Close()
+	}(handle)
+
 	header, err := LoadHeader(handle)
 	if err != nil {
 		return nil, err
 	}
 
-	_ = handle.Close()
 	return header, nil
 }
 
@@ -118,12 +121,15 @@ func LoadVectorIndexFromFile(dbFile string) ([]byte, error) {
 		return nil, fmt.Errorf("open xdb file `%s`: %w", dbFile, err)
 	}
 
+	defer func() {
+		_ = handle.Close()
+	}()
+
 	vIndex, err := LoadVectorIndex(handle)
 	if err != nil {
 		return nil, err
 	}
 
-	_ = handle.Close()
 	return vIndex, nil
 }
 
@@ -163,11 +169,14 @@ func LoadContentFromFile(dbFile string) ([]byte, error) {
 		return nil, fmt.Errorf("open xdb file `%s`: %w", dbFile, err)
 	}
 
+	defer func() {
+		_ = handle.Close()
+	}()
+
 	cBuff, err := LoadContent(handle)
 	if err != nil {
 		return nil, err
 	}
 
-	_ = handle.Close()
 	return cBuff, nil
 }
