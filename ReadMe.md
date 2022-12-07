@@ -77,8 +77,8 @@ ip2region 重点在于 <b>研究 IP 数据的存储和快速查询的实现</b>�
 
 | Ok?                | 状态  | 编程语言 | 描述                 | 贡献者 |
 |:-------------------|:----| :--- |:-------------------| :--- |
-| :white_check_mark: | 已完成 | [golang](maker/golang) | golang 原始 IP 数据编辑器 | [Lion](https://github.com/lionsoul2014) |
-| &nbsp;&nbsp;&nbsp; | 待开始 | [java](maker/java) | java 原始 IP 数据编辑器   | [Lion](https://github.com/lionsoul2014) |
+| :white_check_mark: | 已完成 | [golang](maker/golang#xdb-数据编辑) | golang 原始 IP 数据编辑器 | [Lion](https://github.com/lionsoul2014) |
+| &nbsp;&nbsp;&nbsp; | 待开始 | [java](maker/java#xdb-数据编辑) | java 原始 IP 数据编辑器   | [Lion](https://github.com/lionsoul2014) |
 
 
 ### 爬虫自动更新
