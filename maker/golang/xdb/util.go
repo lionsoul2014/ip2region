@@ -53,6 +53,12 @@ func IterateSegments(handle *os.File, before func(l string), cb func(seg *Segmen
 	scanner.Split(bufio.ScanLines)
 	for scanner.Scan() {
 		var l = strings.TrimSpace(strings.TrimSuffix(scanner.Text(), "\n"))
+
+		// ignore the comment line
+		if l[0] == '#' {
+			continue
+		}
+
 		if before != nil {
 			before(l)
 		}
