@@ -70,7 +70,7 @@ ip2region 重点在于 <b>研究 IP 数据的存储和快速查询的实现</b>�
 你可以基于 ip2region 自带的 `./data/ip.merge.txt` 原始 IP 数据用 ip2region 提供的编辑工具来自己修改，目前数据源有如下几种方式：
 1. ip2region 社区群提供的数据（请参考地底部的备注信息加入 ip2region 微信群）
 2. ip2region Github/Gitee 中带有 `[数据源补充]` 标签的 Issue
-3. 其他自定义数据：例如你的客户提供的数据或者你参考其他平台纠正的数据
+3. 其他自定义数据：例如客户提供的数据，或者通过 GPS 和 WIFI 定位得到的数据，或者你信任的他平台的数据
 4. ip2region 官方不定时提供的数据
 
 原始 IP 数据编辑工具使用方法请参考如下的 `maker` 生成程序下的 ReadMe 文档：
