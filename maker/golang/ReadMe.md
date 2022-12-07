@@ -60,6 +60,52 @@ ip2region>> 120.24.130.96
 ip2region>> 
 ```
 
+# `xdb` 数据编辑
+
+通过 `xdb_maker edit` 命令来编辑原始的　IP 数据：
+```
+➜  golang git:(fr_editor) ✗ ./xdb_maker edit
+./xdb_maker edit [command options]
+options:
+ --src string    source ip text file path
+```
+
+例如，使用编辑器打开 `./data/ip.merge.txt` 会看到如下的操作面板：
+```bash
+➜  golang git:(fr_editor) ✗ ./xdb_maker edit --src=../../data/ip.merge.txt
+init the editor from source @ `../../data/ip.merge.txt` ... 
+all segments loaded, length: 683591, elapsed: 479.73743ms
+command list: 
+  put [segment]        : put the specifield $segment
+  put_file [file]      : put all the segments from the specified $file
+  list [offset] [size] : list the first $size segments start from $offset
+  save                 : save all the changes to the destination source file
+  quit                 : exit the program
+  help                 : print this help menu
+editor>>
+```
+
+通过 `put` 命令修改指定 IP 段的定位信息，例如：
+```bash
+editor>> put 36.132.128.0|36.132.147.255|中国|0|黑龙江省|哈尔滨市|移动
+Put(36.132.128.0|36.132.147.255|中国|0|黑龙江省|哈尔滨市|移动): Ok, with 1 deletes and 2 additions
+*editor>> 
+```
+
+通过 `put_file` 命令从文件中批量载入修改，文件中的 IP 段不需要像　./data/ip.merge.txt 中的数据那么严格，不需要前后连续，不同 IP　段有重叠也没关系，编辑器会自动分析处理，例如：
+```bash
+*editor>> put_file ../../data/ip.test.txt
+PutFile(../../data/ip.test.txt): Ok, with 25 deletes and 25 additions
+*editor>> 
+```
+
+通过 `save` 命令保存修改，保存成功后，再通过上面的命令从修改后的原始 IP 文件重新生成 xdb 即可：
+```bash
+*editor>> save
+all segments saved to ../../data/ip.merge.txt
+editor>> 
+```
+
 # bench 测试
 
 如果你自主生成了 `xdb` 文件，请确保运行如下的 `xdb_maker bench` 命令来确保生成的的 `xdb` 文件的正确性：
