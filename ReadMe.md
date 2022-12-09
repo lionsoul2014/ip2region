@@ -70,8 +70,7 @@ ip2region 重点在于 <b>研究 IP 数据的存储和快速查询的实现</b>�
 你可以基于 ip2region 自带的 `./data/ip.merge.txt` 原始 IP 数据用 ip2region 提供的编辑工具来自己修改，目前数据源有如下几种方式：
 1. ip2region 社区群提供的数据（请参考地底部的备注信息加入 ip2region 微信群）
 2. ip2region Github/Gitee 中带有 `[数据源补充]` 标签的 Issue
-3. 其他自定义数据：例如客户提供的数据，或者通过 GPS 和 WIFI 定位得到的数据，或者你信任的他平台的数据
-4. ip2region 官方不定时提供的数据
+3. 其他自定义数据：例如客户提供的数据，或者通过 GPS 和 WIFI 定位得到的数据，或者你信任的他平台的纠正数据
 
 原始 IP 数据编辑工具使用方法请参考如下的 `maker` 生成程序下的 ReadMe 文档：
 
@@ -82,7 +81,7 @@ ip2region 重点在于 <b>研究 IP 数据的存储和快速查询的实现</b>�
 
 
 ### 爬虫自动更新
-如果你想通过第三方的 API 来更新数据，你可以参考以下视频分享的 `基于检测算法` 的更新算法来自己编写一个更新程序：
+如果你想通过你的 API 来更新数据，你可以参考以下视频分享的 `基于检测算法` 的更新算法来自己编写一个更新程序：
 1. [数据更新实现视频分享 - part1](https://www.bilibili.com/video/BV1934y1E7Q5/)
 2. [数据更新实现视频分享 - part2](https://www.bilibili.com/video/BV1pF411j7Aw/)
 
@@ -92,10 +91,11 @@ ip2region 重点在于 <b>研究 IP 数据的存储和快速查询的实现</b>�
 ### 1、并发查询必读
 全部查询客户端的 search 接口都 <b>不是</b> 并发安全的实现，不同进程/线程/协程需要通过创建不同的查询对象来安全使用，并发量很大的情况下，基于文件查询的方式可能会导致打开文件数过多的错误，请修改内核的最大允许打开文件数(fs.file-max=一个更高的值)，或者将整个xdb加载到内存进行安全并发使用。
 
-### 2、技术交流
+### 2、技术交流社区
 ip2region 微信交流群，请先加微信：lionsoul2014 (请备注 ip2region)
 
-### 3、数据结构
-1. xdb 数据结构分析：[“ip2region xdb 数据结构和查询过程详解“](https://mp.weixin.qq.com/s?__biz=MzU4MDc2MzQ5OA==&mid=2247483696&idx=1&sn=6e9e138e86cf18245656c54ff4be3129&chksm=fd50ab35ca2722239ae7c0bb08efa44f499110c810227cbad3a16f36ebc1c2afc58eb464a57c#rd)
-2. xdb 查询过程分析：[“ip2region xdb 数据结构和查询过程详解”](https://mp.weixin.qq.com/s?__biz=MzU4MDc2MzQ5OA==&mid=2247483696&idx=1&sn=6e9e138e86cf18245656c54ff4be3129&chksm=fd50ab35ca2722239ae7c0bb08efa44f499110c810227cbad3a16f36ebc1c2afc58eb464a57c#rd)
-3. xdb 生成过程分析：[“ip2region xdb 二进制数据生成过程详解”](https://mp.weixin.qq.com/s?__biz=MzU4MDc2MzQ5OA==&mid=2247483718&idx=1&sn=92e552f3bba44a97ca661da244f35574&chksm=fd50ab43ca2722559733ed4e1082f239f381aaa881f9dbeb479174936145522696d9d200531e#rd)
+### 3、技术资源分享
+1. xdb 数据结构分析：[“ip2region xdb 数据结构和查询过程详解“](https://mp.weixin.qq.com/s/ndjzu0BgaeBmDOCw5aqHUg)
+2. xdb 查询过程分析：[“ip2region xdb 数据结构和查询过程详解”](https://mp.weixin.qq.com/s/ndjzu0BgaeBmDOCw5aqHUg)
+3. xdb 生成过程分析：[“ip2region xdb 二进制数据生成过程详解”](https://mp.weixin.qq.com/s/HEAc7WKzAjH5oTwgxojPUg)
+4. xdb 数据更新方法：[“ip2region 数据更新和 xdb 数据编辑器的使用”](https://mp.weixin.qq.com/s/cZH5qIn4E5rQFy6N32RCzA)
