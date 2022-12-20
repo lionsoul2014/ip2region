@@ -1,11 +1,11 @@
 mod ip_value;
 
+use std::env;
 use std::error::Error;
+use std::fmt;
+use std::fmt::Formatter;
 use std::fs::File;
 use std::io::Read;
-use std::fmt;
-use std::env;
-use std::fmt::Formatter;
 
 use once_cell::sync::OnceCell;
 
@@ -17,8 +17,6 @@ const VECTOR_INDEX_COLS: u32 = 256;
 const VECTOR_INDEX_SIZE: u32 = 8;
 const SEGMENT_INDEX_SIZE: usize = 14;
 
-const DEFAULT_XDB_FILEPATH: &str = "../../../data/ip2region.xdb";
-
 pub struct Searcher {
     pub buffer: Vec<u8>,
 }
@@ -26,8 +24,7 @@ pub struct Searcher {
 pub fn global_searcher() -> &'static Searcher {
     static SEARCHER: OnceCell<Searcher> = OnceCell::new();
     SEARCHER.get_or_init(|| {
-        let xdp_filepath = env::var("XDB_FILEPATH")
-            .unwrap_or_else(|_| DEFAULT_XDB_FILEPATH.to_owned());
+        let xdp_filepath = env::var("XDB_FILEPATH").expect("you must set XDB_FILEPATH for search");
         println!("init xdb searcher at {xdp_filepath}");
         Searcher::new(xdp_filepath.as_str()).unwrap()
     })
@@ -40,8 +37,8 @@ impl fmt::Display for Searcher {
 }
 
 pub fn search_by_ip<T>(ip: T) -> Result<String, Box<dyn Error>>
-    where
-        T: ToUIntIP,
+where
+    T: ToUIntIP,
 {
     let changed_value = ip.to_u32_ip()?;
     search_by_ip_u32(changed_value)
@@ -117,8 +114,7 @@ mod tests {
         search_by_ip("2.0.0.0").unwrap();
         search_by_ip("32").unwrap();
         search_by_ip(32).unwrap();
-        search_by_ip(Ipv4Addr::from_str("1.1.1.1").unwrap())
-            .unwrap();
+        search_by_ip(Ipv4Addr::from_str("1.1.1.1").unwrap()).unwrap();
     }
 
     /// test find ip correct use the file ip.test.txt in ../../data
