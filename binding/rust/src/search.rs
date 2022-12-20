@@ -3,6 +3,7 @@ use std::fs::File;
 use std::io::Read;
 use std::net::Ipv4Addr;
 use std::str::FromStr;
+
 use crate::ip_value::ToUIntIP;
 
 const HEADER_INFO_LENGTH: u32 = 256;
@@ -25,7 +26,7 @@ impl Searcher {
 
     pub fn search_by_ip<T>(&self, ip: T) -> Result<String, Box<dyn Error>>
     where
-        T: ToUIntIP
+        T: ToUIntIP,
     {
         let changed_value = ip.to_u32_ip()?;
         self.search_by_ip_u32(changed_value)
@@ -90,7 +91,9 @@ mod tests {
         searcher.search_by_ip("2.0.0.0").unwrap();
         searcher.search_by_ip("32").unwrap();
         searcher.search_by_ip(32).unwrap();
-        searcher.search_by_ip(Ipv4Addr::from_str("1.1.1.1").unwrap()).unwrap();
+        searcher
+            .search_by_ip(Ipv4Addr::from_str("1.1.1.1").unwrap())
+            .unwrap();
     }
 
     fn get_xdb_filepath() -> &'static str {
@@ -106,7 +109,7 @@ mod tests {
         file.read_to_string(&mut contents).unwrap();
         for line in contents.split("\n") {
             if !line.contains("|") {
-                continue
+                continue;
             }
             let ip_test_line = line.splitn(3, "|").collect::<Vec<&str>>();
             let start_ip = Ipv4Addr::from_str(ip_test_line[0]).unwrap();
@@ -116,6 +119,5 @@ mod tests {
                 assert_eq!(result.as_str(), ip_test_line[2])
             }
         }
-
     }
 }
