@@ -4,6 +4,7 @@ use std::error::Error;
 use std::fs::File;
 use std::io::Read;
 use std::fmt;
+use std::env;
 use std::fmt::Formatter;
 
 use once_cell::sync::OnceCell;
@@ -22,10 +23,13 @@ pub struct Searcher {
     pub buffer: Vec<u8>,
 }
 
-fn global_searcher() -> &'static Searcher {
+pub fn global_searcher() -> &'static Searcher {
     static SEARCHER: OnceCell<Searcher> = OnceCell::new();
     SEARCHER.get_or_init(|| {
-        Searcher::new(DEFAULT_XDB_FILEPATH).unwrap()
+        let xdp_filepath = env::var("XDB_FILEPATH")
+            .unwrap_or_else(|_| DEFAULT_XDB_FILEPATH.to_owned());
+        println!("init xdb searcher at {xdp_filepath}");
+        Searcher::new(xdp_filepath.as_str()).unwrap()
     })
 }
 
@@ -103,6 +107,7 @@ mod tests {
     use super::*;
     use std::net::Ipv4Addr;
     use std::str::FromStr;
+    use std::thread;
 
     const TEST_IP_FILEPATH: &str = "../../../data/ip.test.txt";
 
@@ -134,5 +139,16 @@ mod tests {
                 assert_eq!(result.as_str(), ip_test_line[2])
             }
         }
+    }
+
+    #[test]
+    fn test_multi_thread() {
+        let handle = thread::spawn(|| {
+            let result = search_by_ip("2.2.2.2").unwrap();
+            println!("ip search in spawn: {result}");
+        });
+        let r = search_by_ip("1.1.1.1").unwrap();
+        println!("ip search in main thread: {r}");
+        handle.join().unwrap();
     }
 }
