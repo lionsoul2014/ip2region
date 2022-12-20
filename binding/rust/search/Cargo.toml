@@ -12,9 +12,9 @@ license = "Apache-2.0"
 once_cell = "1.16"
 
 [dev-dependencies]
-criterion = "0.3"
+criterion = "0.4"
 rand = "0.8"
 
-#[[bench]]
-#name = "search"
-#harness = false
+[[bench]]
+name = "search"
+harness = false
