@@ -8,10 +8,11 @@ fn main() {
     env::var("XDB_FILEPATH").unwrap_or_else(|_| {
         let matches = cmd::get_matches();
         let xdb_filepath = matches
-            .get_one::<String>("xdb")
-            .expect("you must use --xdb in command or set XDB_FILEPATH environment");
-        env::set_var("XDB_FILEPATH", xdb_filepath);
-        xdb_filepath.to_owned()
+            .get_one::<String>("xdb");
+        if xdb_filepath.is_some() {
+            env::set_var("XDB_FILEPATH", xdb_filepath.unwrap());
+        }
+        "".to_owned()
     });
 
     search::global_searcher();
