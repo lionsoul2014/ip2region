@@ -1,6 +1,6 @@
 [package]
-name = "ip2region"
-default-run = "ip2region"
+name = "example"
+default-run = "example"
 version = "0.1.0"
 edition = "2021"
 rust-version = "1.66.0"
@@ -10,5 +10,5 @@ license = "Apache-2.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-search = { path = "../search" }
+ip2region2 = { path = "../ip2region2" }
 clap = { version = "4.0" }

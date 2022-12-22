@@ -7,15 +7,13 @@ mod cmd;
 fn main() {
     env::var("XDB_FILEPATH").unwrap_or_else(|_| {
         let matches = cmd::get_matches();
-        let xdb_filepath = matches
-            .get_one::<String>("xdb");
-        if xdb_filepath.is_some() {
-            env::set_var("XDB_FILEPATH", xdb_filepath.unwrap());
+        if let Some(xdb_filepath) = matches.get_one::<String>("xdb") {
+            env::set_var("XDB_FILEPATH", xdb_filepath);
         }
         "".to_owned()
     });
 
-    search::global_searcher();
+    ip2region2::global_searcher();
     println!("ip2region xdb searcher test program, type `quit` or `Ctrl + c` to exit");
     loop {
         print!("ip2region>> ");
@@ -26,7 +24,7 @@ fn main() {
             break;
         }
         let now = Instant::now();
-        let result = search::search_by_ip(line.trim());
+        let result = ip2region2::search_by_ip(line.trim());
         println!("region: {:?}, took: {:?}", result, now.elapsed());
     }
 }

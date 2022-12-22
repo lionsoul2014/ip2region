@@ -1,80 +1,33 @@
-use std::env;
 use std::error::Error;
-use std::fmt;
-use std::fmt::Formatter;
-use std::fs::File;
-use std::io::Read;
-use std::path::Path;
-
-use once_cell::sync::OnceCell;
-
+use std::fmt::Display;
 use ip_value::ToUIntIP;
 
 mod ip_value;
+mod searcher;
+
+pub use searcher::global_searcher;
 
 const HEADER_INFO_LENGTH: usize = 256;
 const VECTOR_INDEX_COLS: usize = 256;
 const VECTOR_INDEX_SIZE: usize = 8;
 const SEGMENT_INDEX_SIZE: usize = 14;
 
-/// store the xdb file in memory totally
-pub struct Searcher {
-    pub buffer: Vec<u8>,
-}
-
-impl Searcher {
-    /// you can set the XDB_FILEPATH
-    /// or super dir has data dir with the file ip2region.xdb
-    /// it will check ../data/ip2region.xdb, ../../data/ip2region.xdb, ../../../data/ip2region.xdb
-    pub fn new() -> Result<Self, Box<dyn Error>> {
-        let xdb_filepath = env::var("XDB_FILEPATH")
-            .unwrap_or_else(|_| {
-                let prefix = "../".to_owned();
-                for recurse in 1..4 {
-                    let filepath = prefix.repeat(recurse) + "data/ip2region.xdb";
-                    if Path::new(filepath.as_str()).exists() {
-                        return filepath
-                    }
-                };
-                panic!("you must set XDB_FILEPATH or put file in ../data/ip2region.xdb")
-            });
-        println!("load xdb searcher file at {xdb_filepath}");
-        let mut f = File::open(xdb_filepath)?;
-        let mut buffer = Vec::new();
-        f.read_to_end(&mut buffer)?;
-        Ok(Self { buffer })
-    }
-}
-
-/// global init searcher thread safely
-pub fn global_searcher() -> &'static Searcher {
-    static SEARCHER: OnceCell<Searcher> = OnceCell::new();
-    SEARCHER.get_or_init(|| {
-        Searcher::new().unwrap()
-    })
-}
-
-impl fmt::Display for Searcher {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "searcher_with_len {}", self.buffer.len())
-    }
-}
 
 pub fn get_start_end_ptr(ip: u32) -> (usize, usize) {
-    let il0= ((ip >> 24) & 0xFF) as usize;
+    let il0 = ((ip >> 24) & 0xFF) as usize;
     let il1 = ((ip >> 16) & 0xFF) as usize;
     let idx = VECTOR_INDEX_SIZE * (il0 * VECTOR_INDEX_COLS + il1);
     let start_point = HEADER_INFO_LENGTH + idx;
 
-    let start_ptr = get_block_by_size(&global_searcher().buffer, start_point, 4);
-    let end_ptr = get_block_by_size(&global_searcher().buffer, start_point + 4, 4);
+    let start_ptr = get_block_by_size(global_searcher().buffer(), start_point, 4);
+    let end_ptr = get_block_by_size(global_searcher().buffer(), start_point + 4, 4);
     (start_ptr, end_ptr)
 }
 
 /// check https://mp.weixin.qq.com/s/ndjzu0BgaeBmDOCw5aqHUg for details
 pub fn search_by_ip<T>(ip: T) -> Result<String, Box<dyn Error>>
 where
-    T: ToUIntIP,
+    T: ToUIntIP + Display,
 {
     let ip = ip.to_u32_ip()?;
     let (start_ptr, end_ptr) = get_start_end_ptr(ip);
@@ -83,31 +36,25 @@ where
 
     while left <= right {
         let mid = (left + right) >> 1;
-        let offset = &start_ptr + mid * SEGMENT_INDEX_SIZE;
+        let offset = start_ptr + mid * SEGMENT_INDEX_SIZE;
         let buffer_ip_value = buffer_value(offset, SEGMENT_INDEX_SIZE);
-        let start_ip = get_block_by_size(&buffer_ip_value, 0, 4);
-        if &ip < &(start_ip as u32) {
+        let start_ip = get_block_by_size(buffer_ip_value, 0, 4);
+        if ip < (start_ip as u32) {
             right = mid - 1;
-        } else if &ip > &(get_block_by_size(&buffer_ip_value, 4, 4) as u32) {
+        } else if ip > (get_block_by_size(buffer_ip_value, 4, 4) as u32) {
             left = mid + 1;
         } else {
-            let data_length = get_block_by_size(&buffer_ip_value, 8, 2);
-            let data_offset = get_block_by_size(&buffer_ip_value, 10, 4);
-            let result = String::from_utf8(
-                buffer_value(data_offset, data_length)
-                    .to_vec());
+            let data_length = get_block_by_size(buffer_ip_value, 8, 2);
+            let data_offset = get_block_by_size(buffer_ip_value, 10, 4);
+            let result = String::from_utf8(buffer_value(data_offset, data_length).to_vec());
             return Ok(result?);
         }
     }
     Err("not matched".into())
 }
 
-pub fn start_end_buffer_value(bytes: &[u8], offset: usize, length: usize) -> &[u8] {
-    &bytes[offset..offset+length]
-}
-
 pub fn buffer_value(offset: usize, length: usize) -> &'static [u8] {
-    &global_searcher().buffer[offset..offset + length]
+    &global_searcher().buffer()[offset..offset + length]
 }
 
 #[inline]
@@ -117,8 +64,8 @@ where
     usize: From<T>,
 {
     let mut result: usize = 0;
-    for (index, value) in bytes[offset..offset+length].iter().enumerate() {
-        result |= usize::from(value.clone()) << (index*8);
+    for (index, value) in bytes[offset..offset + length].iter().enumerate() {
+        result |= usize::from(value.clone()) << (index * 8);
     }
     result
 }
@@ -128,6 +75,8 @@ mod tests {
     use std::net::Ipv4Addr;
     use std::str::FromStr;
     use std::thread;
+    use std::fs::File;
+    use std::io::Read;
 
     use super::*;
 

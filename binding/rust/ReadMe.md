@@ -2,10 +2,6 @@
 
 # 使用方式
 
-### 缓存整个 `xdb` 数据
-
-预先加载整个` ip2region.xdb` 到内存，完全基于内存查询，该方式线程安全，采用`once_cell::sync::OnceCell`，只会加载一次数据，多线程安全，可以自由使用`tokio`异步运行时或者标准库的多线程`std::thread`
-
 配置`Cargo.toml`如下
 
 ```toml
@@ -14,6 +10,14 @@ search = { git = "https://github.com/lionsoul2014/ip2region.git", branch = "mast
 # 如果要在异步环境下使用，需要加上如下依赖
 tokio = { version = "1", features = ["full"]}
 ```
+
+程序启动的时候是没加载文件，这个程序占用内存`1M`左右
+
+一旦开始执行查询，`ip2region.xdb`文件会直接加载到内存，程序占用内存`12M`左右
+
+预先加载整个` ip2region.xdb` 到内存，完全基于内存查询，该方式线程安全，采用`once_cell::sync::OnceCell`，只会加载一次数据，多线程安全，可以自由使用`tokio`异步运行时或者标准库的多线程`std::thread`
+
+### 缓存整个 `xdb` 数据
 
 编写`main.rs`
 
@@ -28,6 +32,10 @@ async fn main() {
         "XDB_FILEPATH",
         "../data/ip2region.xdb",
     );
+    //可以调用如下直接加载文件
+    // search::global_searcher();
+    
+    
     // search_by_ip的参数可以是u32类型，字符串IP类型，字符串数字类型
     for i in 1..5 {
         tokio::spawn(async move {
