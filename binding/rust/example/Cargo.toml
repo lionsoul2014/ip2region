@@ -12,3 +12,5 @@ license = "Apache-2.0"
 [dependencies]
 ip2region2 = { path = "../ip2region2" }
 clap = { version = "4.0" }
+tracing = "0.1"
+tracing-subscriber = "0.2.0"

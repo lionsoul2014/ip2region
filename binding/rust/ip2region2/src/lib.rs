@@ -1,3 +1,4 @@
 mod ip_value;
 pub use self::ip_value::ToUIntIP;
-mod searcher;
+pub mod searcher;
+pub use searcher::{search_by_ip, searcher_init};
