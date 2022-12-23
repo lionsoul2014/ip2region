@@ -81,8 +81,7 @@ pub fn get_block_by_size(bytes: &[u8], offset: usize, length: usize) -> usize {
     result
 }
 
-pub fn searcher_init(xdb_filepath: Option<String>)
-{
+pub fn searcher_init(xdb_filepath: Option<String>) {
     let xdb_filepath = xdb_filepath.unwrap_or_else(|| default_detect_xdb_file().unwrap());
     std::env::set_var(XDB_FILEPATH_ENV, xdb_filepath);
     CACHE.get_or_init(load_file);
@@ -158,5 +157,17 @@ mod tests {
         let r = search_by_ip("1.1.1.1").unwrap();
         println!("ip search in main thread: {r}");
         handle.join().unwrap();
+    }
+
+    #[test]
+    fn test_multi_searcher_init() {
+        for _ in 0..5 {
+            thread::spawn(|| {
+                searcher_init(None);
+            });
+        }
+        searcher_init(None);
+        searcher_init(Some(String::from("test")));
+        search_by_ip(123).unwrap();
     }
 }

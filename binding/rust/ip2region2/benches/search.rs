@@ -2,8 +2,8 @@ use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use rand;
 
 use ip2region2::searcher::{
-    get_block_by_size, get_full_cache, get_vector_index_cache,
-    search_by_ip, searcher_init, get_int_block_value
+    get_block_by_size, get_full_cache, get_int_block_value, get_vector_index_cache, search_by_ip,
+    searcher_init,
 };
 
 fn ip_search_bench(c: &mut Criterion) {
@@ -18,9 +18,11 @@ fn ip_search_bench(c: &mut Criterion) {
 fn get_block_by_size_bench(c: &mut Criterion) {
     c.bench_function("get_block_by_size", |b| {
         b.iter(|| {
-            black_box(get_block_by_size(get_full_cache(),
-                                        rand::random::<u16>() as usize,
-                                        4));
+            black_box(get_block_by_size(
+                get_full_cache(),
+                rand::random::<u16>() as usize,
+                4,
+            ));
         })
     });
 }
@@ -28,8 +30,10 @@ fn get_block_by_size_bench(c: &mut Criterion) {
 fn get_int_block_bench(c: &mut Criterion) {
     c.bench_function("get_int_block_bench", |b| {
         b.iter(|| {
-            black_box(get_int_block_value(get_full_cache(),
-                                        rand::random::<u16>() as usize));
+            black_box(get_int_block_value(
+                get_full_cache(),
+                rand::random::<u16>() as usize,
+            ));
         })
     });
 }
