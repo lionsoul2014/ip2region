@@ -1,42 +1,51 @@
-use criterion::{criterion_group, criterion_main, Criterion};
+use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use rand;
 
-use ip2region2::{buffer_value, get_block_by_size, get_start_end_ptr, global_searcher, search_by_ip};
+use ip2region2::searcher::{
+    get_block_by_size, get_full_cache, get_vector_index_cache,
+    search_by_ip, searcher_init, get_int_block_value
+};
 
 fn ip_search_bench(c: &mut Criterion) {
     c.bench_function("ip_search_bench", |b| {
+        searcher_init(None);
         b.iter(|| {
             search_by_ip(rand::random::<u32>()).unwrap();
         })
     });
 }
 
-fn buffer_value_bench(c: &mut Criterion) {
-    c.bench_function("buffer_value", |b| {
-        b.iter(|| {
-            let offset = rand::random::<u16>();
-            let length = rand::random::<u8>();
-            buffer_value(offset as usize, length as usize);
-        });
-    });
-}
-
 fn get_block_by_size_bench(c: &mut Criterion) {
     c.bench_function("get_block_by_size", |b| {
         b.iter(|| {
-            get_block_by_size(
-                &global_searcher().buffer(),
-                rand::random::<u16>() as usize,
-                4,
-            );
+            black_box(get_block_by_size(get_full_cache(),
+                                        rand::random::<u16>() as usize,
+                                        4));
         })
     });
 }
 
-fn get_start_end_ptr_bench(c: &mut Criterion) {
-    c.bench_function("get_start_end_ptr", |b| {
+fn get_int_block_bench(c: &mut Criterion) {
+    c.bench_function("get_int_block_bench", |b| {
         b.iter(|| {
-            get_start_end_ptr(rand::random::<u32>());
+            black_box(get_int_block_value(get_full_cache(),
+                                        rand::random::<u16>() as usize));
+        })
+    });
+}
+
+fn get_full_cache_bench(c: &mut Criterion) {
+    c.bench_function("get_full_cache", |b| {
+        b.iter(|| {
+            black_box(get_full_cache());
+        })
+    });
+}
+
+fn get_vec_index_cache_bench(c: &mut Criterion) {
+    c.bench_function("get_vec_index_cache", |b| {
+        b.iter(|| {
+            black_box(get_vector_index_cache());
         })
     });
 }
@@ -44,8 +53,9 @@ fn get_start_end_ptr_bench(c: &mut Criterion) {
 criterion_group!(
     benches,
     ip_search_bench,
-    buffer_value_bench,
+    get_int_block_bench,
     get_block_by_size_bench,
-    get_start_end_ptr_bench
+    get_full_cache_bench,
+    get_vec_index_cache_bench,
 );
 criterion_main!(benches);

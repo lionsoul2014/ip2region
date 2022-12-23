@@ -1,6 +1,5 @@
 use std::error::Error;
-use std::fmt;
-use std::fmt::{Display, Formatter};
+use std::fmt::Display;
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
@@ -16,19 +15,13 @@ const SEGMENT_INDEX_SIZE: usize = 14;
 const VECTOR_INDEX_LENGTH: usize = 512 * 1024;
 
 const XDB_FILEPATH_ENV: &str = "XDB_FILEPATH";
-const CACHE_POLICY_ENV: &str = "CACHE_POLICY";
 
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub enum CachePolicy {
-    Never=1,
-    VecIndex,
-    Full,
-}
+static CACHE: OnceCell<Vec<u8>> = OnceCell::new();
 
 /// check https://mp.weixin.qq.com/s/ndjzu0BgaeBmDOCw5aqHUg for details
 pub fn search_by_ip<T>(ip: T) -> Result<String, Box<dyn Error>>
-    where
-        T: ToUIntIP + Display,
+where
+    T: ToUIntIP + Display,
 {
     let ip = ip.to_u32_ip()?;
     let (start_ptr, end_ptr) = get_start_end_ptr(ip);
@@ -38,7 +31,7 @@ pub fn search_by_ip<T>(ip: T) -> Result<String, Box<dyn Error>>
     while left <= right {
         let mid = (left + right) >> 1;
         let offset = start_ptr + mid * SEGMENT_INDEX_SIZE;
-        let buffer_ip_value = &get_full_cache()[offset..offset+SEGMENT_INDEX_SIZE];
+        let buffer_ip_value = &get_full_cache()[offset..offset + SEGMENT_INDEX_SIZE];
         let start_ip = get_block_by_size(buffer_ip_value, 0, 4);
         if ip < (start_ip as u32) {
             right = mid - 1;
@@ -47,7 +40,9 @@ pub fn search_by_ip<T>(ip: T) -> Result<String, Box<dyn Error>>
         } else {
             let data_length = get_block_by_size(buffer_ip_value, 8, 2);
             let data_offset = get_block_by_size(buffer_ip_value, 10, 4);
-            let result = String::from_utf8(get_full_cache()[data_offset..(data_offset + data_length)].to_vec());
+            let result = String::from_utf8(
+                get_full_cache()[data_offset..(data_offset + data_length)].to_vec(),
+            );
             return Ok(result?);
         }
     }
@@ -60,7 +55,7 @@ pub fn get_start_end_ptr(ip: u32) -> (usize, usize) {
     let idx = VECTOR_INDEX_SIZE * (il0 * VECTOR_INDEX_COLS + il1);
     let start_point = idx;
     let vector_cache = get_vector_index_cache();
-    let start_ptr = get_block_by_size( vector_cache, start_point, 4);
+    let start_ptr = get_block_by_size(vector_cache, start_point, 4);
     let end_ptr = get_block_by_size(vector_cache, start_point + 4, 4);
     (start_ptr, end_ptr)
 }
@@ -78,44 +73,29 @@ fn default_detect_xdb_file() -> Result<String, Box<dyn Error>> {
 }
 
 #[inline]
-pub fn get_block_by_size(bytes: &[u8], offset: usize, length: usize) -> usize
-{
+pub fn get_block_by_size(bytes: &[u8], offset: usize, length: usize) -> usize {
     let mut result: usize = 0;
     for (index, value) in bytes[offset..offset + length].iter().enumerate() {
-        result |= usize::from(value.clone()) << (index * 8);
+        result += usize::from(*value) << (index << 3);
     }
     result
 }
 
-fn set_log_level() {
-    let rust_log_key = "RUST_LOG";
-    std::env::var(rust_log_key).unwrap_or_else(|_| {
-        std::env::set_var(rust_log_key, "INFO");
-        std::env::var(rust_log_key).unwrap()
-    });
+pub fn searcher_init(xdb_filepath: Option<String>)
+{
+    let xdb_filepath = xdb_filepath.unwrap_or_else(|| default_detect_xdb_file().unwrap());
+    std::env::set_var(XDB_FILEPATH_ENV, xdb_filepath);
+    CACHE.get_or_init(load_file);
 }
 
-pub fn searcher_init(xdb_filepath: Option<String>, cache_policy: Option<CachePolicy>) {
-    set_log_level();
-    let xdb_filepath = xdb_filepath.unwrap_or_else(|| {
-        default_detect_xdb_file().unwrap()
-    });
-    std::env::set_var(XDB_FILEPATH_ENV, xdb_filepath.as_str());
-    if let Some(policy) = cache_policy {
-        std::env::set_var(CACHE_POLICY_ENV, policy);
-        return;
-    }
-    std::env::set_var(CACHE_POLICY_ENV, CachePolicy::Full);
-
-}
-
-fn get_vector_index_cache() -> &'static [u8] {
+pub fn get_vector_index_cache() -> &'static [u8] {
     let full_cache: &'static Vec<u8> = get_full_cache();
     &full_cache[HEADER_INFO_LENGTH..(HEADER_INFO_LENGTH + VECTOR_INDEX_LENGTH)]
 }
 
-fn load_file() -> Vec<u8>{
-    let xdb_filepath = std::env::var("XDB_FILEPATH").unwrap();
+fn load_file() -> Vec<u8> {
+    let xdb_filepath =
+        std::env::var("XDB_FILEPATH").unwrap_or_else(|_| default_detect_xdb_file().unwrap());
     tracing::debug!("load xdb searcher file at {} ", xdb_filepath);
     let mut f = File::open(xdb_filepath).expect("file open error");
     let mut buffer = Vec::new();
@@ -123,29 +103,24 @@ fn load_file() -> Vec<u8>{
     buffer
 }
 
-fn get_full_cache() -> &'static Vec<u8> {
-    let cache_policy = std::env::var(CACHE_POLICY_ENV).unwrap();
-    if cache_policy == CachePolicy::Full {
-        static CACHE: OnceCell<Vec<u8>> = OnceCell::new();
-        return CACHE.get_or_init(|| load_file())
-    }
-    &load_file()
+pub fn get_full_cache() -> &'static Vec<u8> {
+    CACHE.get_or_init(load_file)
 }
 
 #[cfg(test)]
 mod tests {
+    use std::fs::File;
+    use std::io::Read;
     use std::net::Ipv4Addr;
     use std::str::FromStr;
     use std::thread;
-    use std::fs::File;
-    use std::io::Read;
 
     use super::*;
 
     ///test all types find correct
     #[test]
     fn test_multi_type_ip() {
-        searcher_init(None, None);
+        searcher_init(None);
 
         search_by_ip("2.0.0.0").unwrap();
         search_by_ip("32").unwrap();
@@ -155,7 +130,7 @@ mod tests {
 
     #[test]
     fn test_match_all_ip_correct() {
-        searcher_init(None, None);
+        searcher_init(None);
         let mut file = File::open("../../../data/ip.test.txt").unwrap();
         let mut contents = String::new();
         file.read_to_string(&mut contents).unwrap();
@@ -175,9 +150,9 @@ mod tests {
 
     #[test]
     fn test_multi_thread_only_load_xdb_once() {
-        searcher_init(None, None);
+        searcher_init(None);
         let handle = thread::spawn(|| {
-            let result =search_by_ip("2.2.2.2").unwrap();
+            let result = search_by_ip("2.2.2.2").unwrap();
             println!("ip search in spawn: {result}");
         });
         let r = search_by_ip("1.1.1.1").unwrap();
