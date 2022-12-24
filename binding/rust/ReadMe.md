@@ -2,26 +2,22 @@
 
 # 使用方式
 
+使用`cargo`新建一个项目，如`cargo new ip-test`
+
 配置`Cargo.toml`如下
 
 ```toml
 [dependencies]
 search = { git = "https://github.com/lionsoul2014/ip2region.git", branch = "master" }
-# 如果要在异步环境下使用，需要加上如下依赖
-tokio = { version = "1", features = ["full"]}
 ```
 
-程序启动的时候是没加载文件，这个程序占用内存`1M`左右
+`ip2region.xdb`文件会直接加载到内存，程序占用内存`13M`左右
 
-一旦开始执行查询，`ip2region.xdb`文件会直接加载到内存，程序占用内存`12M`左右
-
-预先加载整个` ip2region.xdb` 到内存，完全基于内存查询，该方式线程安全，采用`once_cell::sync::OnceCell`，只会加载一次数据，多线程安全，可以自由使用`tokio`异步运行时或者标准库的多线程`std::thread`
+预先加载整个` ip2region.xdb` 到内存，完全基于内存查询，只会加载一次数据，多线程安全，可以自由使用`tokio`异步运行时或者标准库的多线程`std::thread`
 
 ### 缓存整个 `xdb` 数据
 
 编写`main.rs`
-
-**需要使用`XDB_FILEPATH`指定`ip2region.xdb`文件的路径**，该参数可以使用相对路径或者绝对路径，如果使用相对路径报错，请修改为绝对路径
 
 ```rust
 use std::env;
@@ -65,17 +61,39 @@ Ok("0|0|0|内网IP|内网IP")
 Ok("0|0|0|内网IP|内网IP")
 ```
 
+# `binding/rust`路径下面的结构说明
+
+`ip2region2`
+
+- 包含了`ip`到`region`的函数调用库
+- 里面包含了单元测试和`benchmark`测试
+
+`example`
+
+- 包含了命令行可执行文件生成的源码程序
+- 作为一个用于`rust`的开发集成例子
+
+开始编译之后会生成如下
+
+`target`
+
+- 文件夹存放编译之后的文件以及编译产生的临时文件与缓存
+
+`Cargo.lock`
+
+- 固定`rust`第三方库的版本
+
+这个些编译生成的文件全部在`.gitignore`中有标识，不会被提交
+
 # 编译程序
 
-通过如下方式编译得到 `ip2region` 可执行程序
-
-切换到 `rust binding` 根目录，执行如下命令
+切换到 `binding/rust` 路径，执行如下命令
 
 ```bash
 ➜ cargo build -r
 ```
 
-生成的二进制文件会在`./target/release/ip2region`位置
+生成的二进制文件会在`./target/release/rust-example`位置
 
 # 查询测试
 
