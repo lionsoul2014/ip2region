@@ -1,2 +1,2 @@
 [workspace]
-members = ["bin", "search"]
+members = ["example", "ip2region2"]
