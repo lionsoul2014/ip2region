@@ -246,7 +246,7 @@ region: Ok("法国|0|0|0|橘子电信"), took: 4.294µs
 ip2region>> 
 ```
 
-这边发现每次查询的消耗时间都超过`1µs`，和开头所说的纳秒级查询不一致啊，这个是由于`rust`的标准库封装的`use std::time::Instant`对象是调用系统底层函数实现的，导致会有微秒级别的误差
+这边发现每次查询的消耗时间都超过`1µs`，和开头所说的纳秒级查询不一致啊，这个是由于`rust`的标准库封装的`use std::time::Instant`对象是调用系统底层函数实现的，在打印过程中会存在时间误差
 
 可以试着找一个新的项目
 
@@ -263,7 +263,7 @@ fn main() {
 }
 ```
 
-执行命令如下，发现毫秒级别是没什么问题都，微秒和纳秒上面是存在误差的，详情可以参考[`rust`标准库文档的`time::Instant`章](https://rustwiki.org/zh-CN/std/time/struct.Instant.html)
+执行命令如下，发现毫秒级别是没什么问题，微秒和纳秒上面是存在误差的，详情可以参考[`rust`标准库文档的`time::Instant`章](https://rustwiki.org/zh-CN/std/time/struct.Instant.html)
 
 ```shell
 $ cargo run -r
@@ -309,7 +309,7 @@ Bench finished, total: 3419220,took: 519.820535ms ,cost: 152ns/op
 $ cargo test
 ```
 
-需要保证查询速度不会有大幅降低，希望有朝一日，远方的朋友可以再优化一下，实现几十纳秒级别的查询速度
+需要保证查询速度不会有大幅降低，希望有朝一日，远方的朋友可以再深度优化一下，实现几十纳秒级别的查询速度
 
 下面是`ip2region2`库的第一版`benchmark`结果
 
@@ -317,11 +317,11 @@ $ cargo test
 
 `search_by_ip_bench  `
 
-- 查询`ip`的实际调用函数
+- 查询`ip`的实际调用函数`search_by_ip`
 
 `get_block_by_size_bench`
 
-- 获取并且计算偏移值，和其他`binding`下的实现的`getLong`和`getShort`相似
+- 获取并且计算偏移值，对应函数`get_block_by_size_bench`，和其他`binding`下的实现的`getLong`和`getShort`相似
 - 该函数会被`search_by_ip`多次调用，所以被标注为`#[inline]`使用内联优化，以此来消除函数调用产生的压栈开销
 
 ```shell
