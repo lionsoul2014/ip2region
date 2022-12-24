@@ -23,7 +23,7 @@
 
 ```toml
 [dependencies]
-search = { git = "https://github.com/lionsoul2014/ip2region.git", branch = "master" }
+ip2region2 = { git = "https://github.com/lionsoul2014/ip2region.git", branch = "master" }
 # 用于生成随机数
 rand = "0.8"
 # 用于初始化日志打印
