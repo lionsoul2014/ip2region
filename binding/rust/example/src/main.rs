@@ -1,12 +1,13 @@
 extern crate core;
 
-use clap::ArgMatches;
 use std::fs::File;
 use std::io::Read;
 use std::io::Write;
 use std::net::Ipv4Addr;
 use std::str::FromStr;
 use std::time::Instant;
+
+use clap::ArgMatches;
 
 use ip2region2::{search_by_ip, searcher_init};
 
@@ -28,11 +29,15 @@ fn bench_test(src_filepath: &str) {
     let mut file = File::open(src_filepath).unwrap();
     let mut contents = String::new();
     file.read_to_string(&mut contents).unwrap();
+
     for line in contents.split('\n') {
         if !line.contains('|') {
             continue;
         }
         let ip_test_line = line.splitn(3, '|').collect::<Vec<&str>>();
+        if ip_test_line.len() != 3 {
+            panic!("this line {line} don`t have enough `|` for spilt");
+        }
         let start_ip = Ipv4Addr::from_str(ip_test_line[0]).unwrap();
         let end_ip = Ipv4Addr::from_str(ip_test_line[1]).unwrap();
         if end_ip < start_ip {
@@ -48,7 +53,8 @@ fn bench_test(src_filepath: &str) {
             ((mid_ip as u64 + end_ip as u64) >> 1) as u32,
             end_ip,
         ] {
-            search_by_ip(ip).unwrap();
+            let result = search_by_ip(ip).unwrap();
+            assert_eq!(result.as_str(), ip_test_line[2]);
             count += 1;
         }
     }
@@ -75,7 +81,7 @@ fn query_test() {
         let now = Instant::now();
         let result = search_by_ip(line);
         let cost = now.elapsed();
-        println!("region: {result:?}, took: {cost:?}", );
+        println!("region: {result:?}, took: {cost:?}",);
     }
 }
 
