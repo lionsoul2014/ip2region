@@ -10,7 +10,7 @@ license = "Apache-2.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ip2region2 = { path = "../ip2region2" }
+xdb = { path = "../xdb" }
 clap = { version = "4.0" }
 tracing = "0.1"
 tracing-subscriber = "0.3.14"

@@ -9,7 +9,7 @@ use std::time::Instant;
 
 use clap::ArgMatches;
 
-use ip2region2::{search_by_ip, searcher_init};
+use xdb::{search_by_ip, searcher_init};
 
 mod cmd;
 

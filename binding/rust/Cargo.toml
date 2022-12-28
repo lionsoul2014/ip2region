@@ -1,2 +1,2 @@
 [workspace]
-members = ["example", "ip2region2"]
+members = ["example", "xdb"]
