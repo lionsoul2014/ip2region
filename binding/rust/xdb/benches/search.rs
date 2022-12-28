@@ -1,7 +1,7 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use rand;
 
-use ip2region2::searcher::{
+use xdb::searcher::{
     get_block_by_size, get_full_cache, get_vector_index_cache, search_by_ip, searcher_init,
 };
 
