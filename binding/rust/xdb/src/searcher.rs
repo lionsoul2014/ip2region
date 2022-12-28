@@ -24,7 +24,13 @@ where
     T: ToUIntIP + Display,
 {
     let ip = ip.to_u32_ip()?;
-    let (start_ptr, end_ptr) = get_start_end_ptr(ip);
+    let il0 = ((ip >> 24) & 0xFF) as usize;
+    let il1 = ((ip >> 16) & 0xFF) as usize;
+    let idx = VECTOR_INDEX_SIZE * (il0 * VECTOR_INDEX_COLS + il1);
+    let start_point = idx;
+    let vector_cache = get_vector_index_cache();
+    let start_ptr = get_block_by_size(vector_cache, start_point, 4);
+    let end_ptr = get_block_by_size(vector_cache, start_point + 4, 4);
     let mut left: usize = 0;
     let mut right: usize = (end_ptr - start_ptr) / SEGMENT_INDEX_SIZE;
 
@@ -47,17 +53,6 @@ where
         }
     }
     Err("not matched".into())
-}
-
-pub fn get_start_end_ptr(ip: u32) -> (usize, usize) {
-    let il0 = ((ip >> 24) & 0xFF) as usize;
-    let il1 = ((ip >> 16) & 0xFF) as usize;
-    let idx = VECTOR_INDEX_SIZE * (il0 * VECTOR_INDEX_COLS + il1);
-    let start_point = idx;
-    let vector_cache = get_vector_index_cache();
-    let start_ptr = get_block_by_size(vector_cache, start_point, 4);
-    let end_ptr = get_block_by_size(vector_cache, start_point + 4, 4);
-    (start_ptr, end_ptr)
 }
 
 /// it will check ../data/ip2region.xdb, ../../data/ip2region.xdb, ../../../data/ip2region.xdb
