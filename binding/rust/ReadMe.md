@@ -23,7 +23,7 @@
 
 ```toml
 [dependencies]
-ip2region2 = { git = "https://github.com/lionsoul2014/ip2region.git", branch = "master" }
+xdb = { git = "https://github.com/lionsoul2014/ip2region.git", branch = "master" }
 # 用于生成随机数
 rand = "0.8"
 # 用于初始化日志打印
@@ -42,7 +42,7 @@ use std::net::Ipv4Addr;
 use std::thread;
 use std::time::{Duration, Instant};
 
-use ip2region2::{search_by_ip, searcher_init};
+use xdb::{search_by_ip, searcher_init};
 
 fn main() {
     // 配置输出日志信息
@@ -103,7 +103,7 @@ fn main() {
    Compiling ip-test v0.1.0 (/home/gong/rust-work/ip-test)
     Finished release [optimized] target(s) in 0.27s
      Running `target/release/ip-test`
-2022-12-24T03:31:22.921958Z DEBUG ip2region2::searcher: load xdb searcher file at ./ip2region.xdb 
+2022-12-24T03:31:22.921958Z DEBUG xdb::searcher: load xdb searcher file at ./ip2region.xdb 
 
 测试多类型查询
 0|0|0|内网IP|内网IP
@@ -131,7 +131,7 @@ use std::time::Instant;
 
 use tokio::sync::mpsc;
 
-use ip2region2::{search_by_ip, searcher_init};
+use xdb::{search_by_ip, searcher_init};
 
 #[tokio::main]
 async fn main() {
@@ -171,7 +171,7 @@ $ RUST_LOG=debug cargo run -r
    Compiling ip-test v0.1.0 (/home/gong/rust-work/ip-test)
     Finished release [optimized] target(s) in 0.51s
      Running `target/release/ip-test`
-2022-12-24T04:05:32.876664Z DEBUG ip2region2::searcher: load xdb searcher file at ./ip2region.xdb 
+2022-12-24T04:05:32.876664Z DEBUG xdb::searcher: load xdb searcher file at ./ip2region.xdb 
 tokio spawn 4 over cost: 1.133448675s, ave: 113ns
 tokio spawn 2 over cost: 1.133938619s, ave: 113ns
 tokio spawn 1 over cost: 1.136872027s, ave: 113ns
@@ -183,7 +183,7 @@ tokio spawn 3 over cost: 1.26446099s, ave: 126ns
 
 # `binding/rust`路径下面的结构说明
 
-`ip2region2`
+`xdb`
 
 - 封装了`ip`到`region`的函数
 - 里面包含单元测试和`benchmark`测试
@@ -311,7 +311,7 @@ $ cargo test
 
 需要保证查询速度不会有大幅降低，希望有朝一日，远方的朋友可以再深度优化一下，实现几十纳秒级别的查询速度
 
-下面是`ip2region2`库的第一版`benchmark`结果
+下面是`rust/xdb`库的第一版`benchmark`结果
 
 重点关注如下
 
