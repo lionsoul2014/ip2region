@@ -40,7 +40,7 @@ API 介绍，使用文档和测试程序请参考对应 `searcher` 查询客户�
 | :white_check_mark: | 已完成  | [lua](binding/lua) | 纯 lua xdb 查询客户端实现     | [Lion](https://github.com/lionsoul2014) |
 | :white_check_mark: | 已完成  | [c](binding/c) | ANSC c xdb 查询客户端实现    | [Lion](https://github.com/lionsoul2014) |
 | :white_check_mark: | 已完成  | [lua_c](binding/lua_c) | lua c 扩展 xdb 查询客户端实现  | [Lion](https://github.com/lionsoul2014) |
-| &nbsp;&nbsp;&nbsp; | 待开始  | [rust](binding/rust) | rust xdb 查询客户端实现      | [Lion](https://github.com/lionsoul2014) |
+| :white_check_mark: | 已完成  | [rust](binding/rust) | rust xdb 查询客户端实现      | [gongzhengyang](https://github.com/gongzhengyang) |
 | :white_check_mark: | 已完成  | [python](binding/python) | python xdb 查询客户端实现    | [厉害的花花](https://github.com/luckydog6132) |
 | :white_check_mark: | 已完成  | [nodejs](binding/nodejs) | nodejs xdb 查询客户端实现    | [Wu Jian Ping](https://github.com/wujjpp) |
 | :white_check_mark: | 已完成  | [csharp](binding/csharp) | csharp xdb 查询客户端实现   | [Alen Lee](https://github.com/malus2077) |
