@@ -1,0 +1,16 @@
+[package]
+name = "rust-example"
+default-run = "rust-example"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.66.0"
+description = "the rust binding for ip2region"
+license = "Apache-2.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+xdb = { path = "../xdb" }
+clap = { version = "4.0" }
+tracing = "0.1"
+tracing-subscriber = "0.3.14"
