@@ -1,7 +1,13 @@
+%%%===============================================================
+%%% @author leihua <leihua918@sina.com>
+%%% @doc
+%%% ip2region工作进程
+%%% Created: 2023-1-13 16:53
+%%% @end
+%%%===============================================================
 -module(ip2region_worker).
 -behaviour(gen_server).
 -include("ip2region.hrl").
-
 
 %% API
 -export([start/1, stop/1, start_link/1]).
@@ -31,7 +37,12 @@ search(Pid, Ip) ->
 %% gen_server callbacks
 %% =========================================
 init(_Args) ->
-    PrivDir = code:priv_dir(?APP_NAME),
+    AppName = 
+        case application:get_application() of
+            {ok, AName} -> AName;
+            _ -> ?APP_NAME
+        end,
+    PrivDir = code:priv_dir(AppName),
     XdbFileName = filename:join([PrivDir, "ip2region.xdb"]),
     error_logger:info_report(io_lib:format("XdbFile:~s~n", [XdbFileName])),
     {ok, IoDevice} = file:open(XdbFileName, [read, binary]),
