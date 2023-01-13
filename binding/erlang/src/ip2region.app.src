@@ -1,5 +1,5 @@
 {application, ip2region,
- [{description, "An OTP application"},
+ [{description, "ip2region xdb client application"},
   {vsn, "0.1.0"},
   {registered, []},
   {mod, {ip2region_app, []}},
@@ -16,5 +16,5 @@
   {modules, []},
 
   {licenses, ["Apache-2.0"]},
-  {links, []}
+  {links, [{"Github", "https://github.com/leihua996/ip2region/tree/master/binding/erlang"}]}
  ]}.

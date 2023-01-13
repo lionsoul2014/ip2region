@@ -84,3 +84,4 @@ target
 
 #erlang
 /binding/erlang/_build
+/binding/erlang/doc
