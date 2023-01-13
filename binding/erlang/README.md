@@ -1,9 +1,24 @@
-ip2region
-=====
+# ip2region xdb erlang 查询客户端
 
-An OTP application
 
-Build
------
+### 编译
 
-    $ rebar3 compile
+```
+$ rebar3 compile
+```
+### 运行
+启动erlang节点：
+```
+$ rebar3 shell
+
+```
+在erlang节点中执行以下指令查询Ip地址信息：
+```
+1> ip2region:search("1.0.8.0").
+#{city => <<229,185,191,229,183,158,229,184,130>>,
+  country => <<228,184,173,229,155,189>>,
+  isp => <<231,148,181,228,191,161>>,
+  province => <<229,185,191,228,184,156,231,156,129>>,
+  region => <<>>}
+2>
+```
