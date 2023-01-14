@@ -7,7 +7,7 @@
 $ rebar3 compile
 ```
 ### 运行
-启动erlang节点：
+将xdb文件放到priv目录下，然后启动erlang节点：
 ```
 $ rebar3 shell
 
