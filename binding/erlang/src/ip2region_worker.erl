@@ -135,7 +135,7 @@ load_vector_index_aux(<<SPtr:32/little, EPtr:32/little, VectorIndexBin/binary>>,
 
 
 search_ip(IoDevice, Ip) ->
-    IntIp = util:ipv4_to_n(Ip),
+    IntIp = ip2region_util:ipv4_to_n(Ip),
     case ets:lookup(?IP2REGION_CACHE, IntIp) of
         [{_IntIp, RegionInfo}] ->
             RegionInfo;

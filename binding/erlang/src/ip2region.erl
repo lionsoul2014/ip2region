@@ -13,7 +13,7 @@
 
 -spec search(Ip :: tuple() | list() | binary()) -> Result :: {error, Reason::atom()} | map().
 search(Ip) ->
-    case util:ipv4_to_n(Ip) of
+    case ip2region_util:ipv4_to_n(Ip) of
     IntIp when is_integer(IntIp) ->
         case ets:lookup(?IP2REGION_CACHE, IntIp) of
         [{_IntIp, Region}] -> Region;

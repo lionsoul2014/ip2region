@@ -1,4 +1,4 @@
--module(util).
+-module(ip2region_util).
 -export([ipv4_to_n/1]).
 
 
