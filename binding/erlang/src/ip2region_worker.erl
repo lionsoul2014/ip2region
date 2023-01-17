@@ -1,10 +1,12 @@
-%%%===============================================================
-%%% @author leihua <leihua918@sina.com>
-%%% @doc
-%%% ip2region工作进程
-%%% Created: 2023-1-13 16:53
-%%% @end
-%%%===============================================================
+%%%-------------------------------------------------------------------
+%% Copyright 2022 The Ip2Region Authors. All rights reserved.
+%% Use of this source code is governed by a Apache2.0-style
+%% license that can be found in the LICENSE file.
+%% 
+%% @doc 
+%% ip2region xdb client worker
+%% @end
+%%%-------------------------------------------------------------------
 -module(ip2region_worker).
 -behaviour(gen_server).
 -include("ip2region.hrl").
@@ -37,6 +39,7 @@ search(Pid, Ip) ->
 %% gen_server callbacks
 %% =========================================
 init(_Args) ->
+    process_flag(trap_exit, true),
     AppName = 
         case application:get_application() of
             {ok, AName} -> AName;
@@ -159,14 +162,7 @@ search_ip(IoDevice, IntIp, SPtr, EPtr, Low, High) when Low =< High ->
             search_ip(IoDevice, IntIp, SPtr, EPtr, Middle + 1, High);
         true ->
             {ok, DataBin} = read_file(IoDevice, DataPtr, DataLen),
-            [Country, Region, Province, City, ISP] = string:tokens(binary_to_list(DataBin), "|"),
-            #{
-                country  => ?IF(Country  == "0", <<>>, list_to_binary(Country)),
-                region   => ?IF(Region   == "0", <<>>, list_to_binary(Region)),
-                province => ?IF(Province == "0", <<>>, list_to_binary(Province)),
-                city     => ?IF(City     == "0", <<>>, list_to_binary(City)),
-                isp      => ?IF(ISP      == "0", <<>>, list_to_binary(ISP))
-            }
+            unicode:characters_to_nfc_list(DataBin)
     end;
 search_ip(_IoDevice, _IntIp, _SPtr, _EPtr, _Low, _High)  ->
     {error, unknown}.
