@@ -114,7 +114,7 @@ class Maker:
         # Write header buffer to file
         self.dst_handle.write(header)
 
-    def load_segments(self) -> list:
+    def load_segments(self):
         """
         Load the segments [start ip|end ip|region] from source ip text file.
         :return: the list of Segment
@@ -128,41 +128,37 @@ class Maker:
             logging.info("load segment: `{}`".format(line))
             ps = line.split("|", maxsplit=2)
             if len(ps) != 3:
-                logging.error("invalid ip segment line `{}`".format(line))
-                return []
+                raise Exception("invalid ip segment line `{}`".format(line))
+
             sip = util.check_ip(ps[0])
             if sip == -1:
-                logging.error(
+                raise Exception(
                     "invalid ip address `{}` in line `{}`".format(ps[0], line)
                 )
-                return []
             eip = util.check_ip(ps[1])
             if eip == -1:
-                logging.error(
+                raise Exception(
                     "invalid ip address `{}` in line `{}`".format(ps[1], line)
                 )
-                return []
+
             if sip > eip:
-                logging.error(
+                raise Exception(
                     "start ip({}) should not be greater than end ip({})".format(
                         ps[0], ps[1]
                     )
                 )
-                return []
             if len(ps[2]) < 1:
-                logging.error("empty region info in segment line `{}`".format(line))
-                return []
+                raise Exception("empty region info in segment line `{}`".format(line))
 
             segment = seg.Segment(sip=sip, eip=eip, reg=ps[2])
             # Check the continuity of data segment
             if last is not None:
                 if last.end_ip + 1 != segment.start_ip:
-                    logging.error(
+                    raise Exception(
                         "discontinuous data segment: last.eip+1({})!=seg.sip({}, {})".format(
                             sip, eip, ps[0]
                         )
                     )
-                    return []
             self.segments.append(segment)
             last = segment
         logging.info(
@@ -189,8 +185,7 @@ class Maker:
         Start to make the 'xdb' binary file.
         """
         if len(self.segments) < 1:
-            logging.error("empty segment list")
-            return
+            raise Exception("empty segment list")
 
         # 1. Write all the region/data to the binary file
         self.dst_handle.seek(Header_Info_Length + Vector_Index_Length, 0)
@@ -205,12 +200,11 @@ class Maker:
                 continue
             region = bytes(s.region, encoding="utf-8")
             if len(region) > 0xFFFF:
-                logging.error(
+                raise Exception(
                     "too long region info `{}`: should be less than {} bytes".format(
                         s.region, 0xFFFF
                     )
                 )
-                return
             # Get the first ptr of the next region
             pos = self.dst_handle.seek(0, 1)
             logging.info("{} {} {}".format(pos, region, s.region))
@@ -222,12 +216,10 @@ class Maker:
         counter, start_index_ptr, end_index_ptr = 0, -1, -1
         for sg in self.segments:
             if sg.region not in self.region_pool:
-                logging.error("missing ptr cache for region `{}`".format(sg.region))
-                return
+                raise Exception("missing ptr cache for region `{}`".format(sg.region))
             data_len = len(bytes(sg.region, encoding="utf-8"))
             if data_len < 1:
-                logging.error("empty region info for segment '{}'".format(sg.region))
-                return
+                raise Exception("empty region info for segment '{}'".format(sg.region))
 
             seg_list = sg.split()
             logging.info(
