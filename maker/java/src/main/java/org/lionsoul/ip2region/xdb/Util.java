@@ -36,8 +36,8 @@ public class Util
 
     public static int getInt2(byte[] b, int offset) {
         return (
-            (b[offset++] & 0x000000FF) |
-            (b[offset  ] & 0x0000FF00)
+            ((b[offset++]) & 0x000000FF) |
+            ((b[offset  ] << 8) & 0x0000FF00)
         );
     }
 
