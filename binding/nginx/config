@@ -1,14 +1,22 @@
-ngx_addon_name=ngx_ip2region_module
+ngx_addon_name=ngx_http_ip2region_module
 
-NGX_IP2REGION_SRCS="                                                           \
+NGX_HTTP_IP2REGION_SRCS="                                                           \
                 $ngx_addon_dir/src/ngx_http_ip2region_module.c                 \
                 $ngx_addon_dir/src/xdb_searcher.c                              \
                 "
 
-NGX_IP2REGION_DEPS="                                                           \
+NGX_HTTP_IP2REGION_DEPS="                                                           \
                 "
 
-HTTP_MODULES="$HTTP_MODULES ngx_http_ip2region_module"
-# STREAM_MODULES="ngx_stream_ip2region_module $STREAM_MODULES"
-NGX_ADDON_SRCS="$NGX_ADDON_SRCS $NGX_IP2REGION_SRCS"
-NGX_ADDON_DEPS="$NGX_ADDON_DEPS $NGX_IP2REGION_DEPS"
+if test -n "$ngx_module_link"; then
+    ngx_module_type=HTTP
+    ngx_module_name=$ngx_addon_name
+    ngx_module_deps="$NGX_HTTP_IP2REGION_DEPS"
+    ngx_module_srcs="$NGX_HTTP_IP2REGION_SRCS"
+
+    . auto/module
+else
+    HTTP_MODULES="$HTTP_MODULES $ngx_addon_name"
+    NGX_ADDON_DEPS="$NGX_ADDON_DEPS $NGX_HTTP_IP2REGION_DEPS"
+    NGX_ADDON_SRCS="$NGX_ADDON_SRCS $NGX_HTTP_IP2REGION_SRCS"
+fi
