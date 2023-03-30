@@ -22,6 +22,8 @@ $ make install
 
 cache_policy: `file` or `vectorIndex` or `content`, default: `content`
 
+Edit `nginx.conf` add `ip2region_db` directive
+
 ```nginx
 ...
 http {
@@ -47,6 +49,16 @@ http {
         }
     }
 }
+
+```
+
+Copy `ip2region.xdb` to `nginx/config` folder, then restart nginx, the `region` data stored in `ip2region` variable
+
+nginx access log sample
+
+```log
+{"remote_addr": "127.0.0.1", "region": "0|0|0|内网IP|内网IP", "http_x_forwarded_for": ""}
+{"remote_addr": "127.0.0.1", "region": "0|0|0|内网IP|内网IP", "http_x_forwarded_for": ""}
 
 ```
 
