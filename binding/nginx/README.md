@@ -3,13 +3,23 @@
 ## 编译
 
 ```shell
+$ mkdir ip2region
+$ wget https://nginx.org/download/nginx-1.23.4.tar.gz
+$ tar -zxf nginx-1.23.4.tar.gz && rm -rf nginx-1.23.4.tar.gz
+$ git clone https://github.com/lionsoul2014/ip2region.git
+$ cd nginx-1.23.4
 $ ./configure \
-    --prefix=$(PWD)/../build \
     --add-module=$(PWD)/../ip2region/binding/nginx
-
 $ make
 $ make install
 ```
+
+## Nginx 配置
+
+> Syntax:  `ip2region_db xdb_file_path` [cache_policy 可选];
+> Context: http
+
+cache_policy: `file` or `vectorIndex` or `content`, default: `content`
 
 ```nginx
 ...
@@ -38,5 +48,9 @@ http {
 }
 
 ```
+
+$ ./configure \
+    --prefix=$(PWD)/../build \
+    --add-module=$(PWD)/../ip2region/binding/nginx
 
 Made with ♥ by Wu Jian Ping
