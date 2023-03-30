@@ -10,7 +10,7 @@ static ngx_int_t ngx_http_ip2region_add_variables(ngx_conf_t *cf);
 
 static void *ngx_http_ip2region_create_conf(ngx_conf_t *cf);
 static void ngx_http_ip2region_cleanup(void *data);
-static char *ngx_http_ip2region_processor(ngx_conf_t *cf,
+static char *ngx_http_ip2region_init(ngx_conf_t *cf,
     ngx_command_t *cmd, void *conf);
 
 static ngx_int_t ngx_http_ip2region_variable(ngx_http_request_t *r,
@@ -31,7 +31,7 @@ static ngx_http_module_t ngx_http_ip2region_ctx = {
 static ngx_command_t ngx_http_ip2region_commands[] = {
     { ngx_string("ip2region"),
       NGX_HTTP_MAIN_CONF | NGX_CONF_TAKE12,
-      ngx_http_ip2region_processor,
+      ngx_http_ip2region_init,
       NGX_HTTP_MAIN_CONF_OFFSET,
       0,
       NULL },
@@ -67,7 +67,7 @@ static ngx_http_variable_t ngx_http_ip2region_vars[] = {
 
 
 static char *
-ngx_http_ip2region_processor(ngx_conf_t *cf, ngx_command_t *cmd,
+ngx_http_ip2region_init(ngx_conf_t *cf, ngx_command_t *cmd,
     void *conf)
 {
     ngx_http_ip2region_conf_t  *ip2region_cf;
