@@ -13,7 +13,7 @@
 #include "xdb_searcher.h"
 
 // internal function prototype define
-static inline int read(xdb_searcher_t *, long offset, char *, size_t length);
+static int read(xdb_searcher_t *, long offset, char *, size_t length);
 
 static inline int xdb_new_base(xdb_searcher_t *xdb, const char *db_path, const xdb_vector_index_t *v_index, const xdb_content_t *c_buffer) {
     memset(xdb, 0x00, sizeof(xdb_searcher_t));
