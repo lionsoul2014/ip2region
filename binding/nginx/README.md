@@ -1,9 +1,10 @@
 # nginx-ip2region
 
-## 编译
+## Build
 
 ```shell
-$ mkdir ip2region
+$ mkdir -p workspace
+$ cd workspace
 $ wget https://nginx.org/download/nginx-1.23.4.tar.gz
 $ tar -zxf nginx-1.23.4.tar.gz && rm -rf nginx-1.23.4.tar.gz
 $ git clone https://github.com/lionsoul2014/ip2region.git
@@ -14,9 +15,9 @@ $ make
 $ make install
 ```
 
-## Nginx 配置
+## Nginx conf
 
-> Syntax:  `ip2region_db xdb_file_path` [cache_policy 可选];
+> Syntax:  `ip2region_db xdb_file_path [cache_policy 可选]`;
 > Context: http
 
 cache_policy: `file` or `vectorIndex` or `content`, default: `content`
@@ -33,7 +34,7 @@ http {
 
     access_log logs/access.log main;
 
-    # 设置xdb文件路径
+    # set xdb file path
     ip2region_db ip2region.xdb;
 
     server {
