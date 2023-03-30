@@ -15,16 +15,16 @@ $ make install
 ...
 http {
 
-    log_format json_access_log escape=json '{'
-                                           '"remote_addr": "$remote_addr", '
-                                           '"region": "$ip2region", '
-                                           '"http_x_forwarded_for": "$http_x_forwarded_for"'
-                                           '}';
+    log_format main escape=json '{'
+                                '"remote_addr": "$remote_addr", '
+                                '"region": "$ip2region", '
+                                '"http_x_forwarded_for": "$http_x_forwarded_for"'
+                                '}';
 
-    access_log logs/access.log json_access_log;
+    access_log logs/access.log main;
 
     # 设置xdb文件路径
-    ip2region ip2region.xdb;
+    ip2region_db ip2region.xdb;
 
     server {
         listen 80;

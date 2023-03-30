@@ -29,7 +29,7 @@ static ngx_http_module_t ngx_http_ip2region_ctx = {
 
 
 static ngx_command_t ngx_http_ip2region_commands[] = {
-    { ngx_string("ip2region"),
+    { ngx_string("ip2region_db"),
       NGX_HTTP_MAIN_CONF | NGX_CONF_TAKE12,
       ngx_http_ip2region_init,
       NGX_HTTP_MAIN_CONF_OFFSET,
