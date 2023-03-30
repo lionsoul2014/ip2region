@@ -1,6 +1,6 @@
 # nginx-ip2region
 
-## Build
+## build
 
 ```shell
 $ mkdir -p workspace
@@ -15,7 +15,7 @@ $ make
 $ make install
 ```
 
-## Nginx conf
+## nginx conf
 
 > Syntax:  `ip2region_db xdb_file_path [cache_policy 可选]`;
 > Context: http
