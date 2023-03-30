@@ -1,0 +1,14 @@
+ngx_addon_name=ngx_ip2region_module
+
+NGX_IP2REGION_SRCS="                                                           \
+                $ngx_addon_dir/src/ngx_http_ip2region_module.c                 \
+                $ngx_addon_dir/src/xdb_searcher.c                              \
+                "
+
+NGX_IP2REGION_DEPS="                                                           \
+                "
+
+HTTP_MODULES="$HTTP_MODULES ngx_http_ip2region_module"
+# STREAM_MODULES="ngx_stream_ip2region_module $STREAM_MODULES"
+NGX_ADDON_SRCS="$NGX_ADDON_SRCS $NGX_IP2REGION_SRCS"
+NGX_ADDON_DEPS="$NGX_ADDON_DEPS $NGX_IP2REGION_DEPS"
