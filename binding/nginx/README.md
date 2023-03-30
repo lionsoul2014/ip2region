@@ -50,8 +50,4 @@ http {
 
 ```
 
-$ ./configure \
-    --prefix=$(PWD)/../build \
-    --add-module=$(PWD)/../ip2region/binding/nginx
-
 Made with ♥ by Wu Jian Ping
