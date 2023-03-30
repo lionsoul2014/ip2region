@@ -38,6 +38,9 @@ http {
 
     # set xdb file path
     ip2region_db ip2region.xdb;
+    # ip2region_db ip2region.xdb vectorIndex;
+    # ip2region_db ip2region.xdb file;
+    # ip2region_db ip2region.xdb content;
 
     server {
         listen 80;
