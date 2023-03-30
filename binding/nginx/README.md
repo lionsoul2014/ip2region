@@ -17,7 +17,7 @@ $ make install
 
 ## nginx conf
 
-> Syntax:  `ip2region_db xdb_file_path [cache_policy 可选]`;
+> Syntax:  `ip2region_db xdb_file_path [cache_policy Optional]`;
 > Context: http
 
 cache_policy: `file` or `vectorIndex` or `content`, default: `content`
