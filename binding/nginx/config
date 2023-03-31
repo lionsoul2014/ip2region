@@ -1,8 +1,7 @@
 ngx_addon_name=ngx_http_ip2region_module
 
 NGX_HTTP_IP2REGION_SRCS="                                                           \
-                $ngx_addon_dir/src/ngx_http_ip2region_module.c                 \
-                $ngx_addon_dir/src/xdb_searcher.c                              \
+                $ngx_addon_dir/src/ngx_http_ip2region_module.c                      \
                 "
 
 NGX_HTTP_IP2REGION_DEPS="                                                           \
@@ -13,6 +12,7 @@ if test -n "$ngx_module_link"; then
     ngx_module_name=$ngx_addon_name
     ngx_module_deps="$NGX_HTTP_IP2REGION_DEPS"
     ngx_module_srcs="$NGX_HTTP_IP2REGION_SRCS"
+    ngx_module_libs="-lxdb_searcher"
 
     . auto/module
 else
