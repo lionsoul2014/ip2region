@@ -69,9 +69,4 @@ nginx access log sample
 
 ```
 
-./configure \
-    --prefix=$(PWD)/../build/ \
-    --add-module=$(PWD)/../ip2region/binding/nginx \
-    --with-http_realip_module
-
 Made with ♥ by Wu Jian Ping
