@@ -17,7 +17,7 @@
 #   define XDB_PUBLIC(type)    extern __declspec(dllexport) type
 #   define XDB_PRIVATE(type)   static type
 #   define XDB_WINDOWS
-#elif ( defined(linux) || defined(_UNIX) )
+#elif ( defined(linux) || defined(_UNIX) || defined(__APPLE__) )
 #   define XDB_PUBLIC(type)    extern type
 #   define XDB_PRIVATE(type)   static inline type
 #   define XDB_LINUX

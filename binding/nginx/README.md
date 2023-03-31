@@ -8,9 +8,13 @@ $ cd workspace
 $ wget https://nginx.org/download/nginx-1.23.4.tar.gz
 $ tar -zxf nginx-1.23.4.tar.gz && rm -rf nginx-1.23.4.tar.gz
 $ git clone https://github.com/lionsoul2014/ip2region.git
-$ cd nginx-1.23.4
-$ ./configure \
-    --add-module=$(PWD)/../ip2region/binding/nginx
+$ cd ip2region/binding/c
+$ make xdb_searcher_lib
+$ cd ../../../nginx-1.23.4
+$ ./configure                                                            \
+    --add-module=$(PWD)/../ip2region/binding/nginx                       \
+    --with-cc-opt="-I $(PWD)/../ip2region/binding/c/build/include"       \
+    --with-ld-opt="-L$(PWD)/../ip2region/binding/c/build/lib"
 $ make
 $ make install
 ```
@@ -64,5 +68,10 @@ nginx access log sample
 {"remote_addr": "127.0.0.1", "region": "0|0|0|内网IP|内网IP", "http_x_forwarded_for": ""}
 
 ```
+
+./configure \
+    --prefix=$(PWD)/../build/ \
+    --add-module=$(PWD)/../ip2region/binding/nginx \
+    --with-http_realip_module
 
 Made with ♥ by Wu Jian Ping
