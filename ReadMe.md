@@ -46,7 +46,7 @@ API 介绍，使用文档和测试程序请参考对应 `searcher` 查询客户�
 | :white_check_mark: | 已完成  | [csharp](binding/csharp) | csharp xdb 查询客户端实现   | [Alen Lee](https://github.com/malus2077) |
 | :white_check_mark: | 已完成  | [erlang](binding/erlang) | erlang xdb 查询客户端实现   | [leihua996](https://github.com/leihua996) |
 | &nbsp;&nbsp;&nbsp; | 待开始  | [php_ext](binding/php7_ext) | php c 扩展 xdb 查询客户端实现 | 待确定 |
-| &nbsp;&nbsp;&nbsp; | 待开始  | [nginx](binding/nginx) | nginx 扩展 xdb 查询客户端实现  | 待确定 |
+| :white_check_mark: | 已完成  | [nginx](binding/nginx) | nginx 扩展 xdb 查询客户端实现  | [Wu Jian Ping](https://github.com/wujjpp) |
 
 
 
