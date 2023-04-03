@@ -132,7 +132,7 @@ XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, unsigned int ip, char *region_bu
     }
 
     // buffer length checking
-    if (data_len >= length) {
+    if (data_len >= (int) length) {
         return 1;
     }
 
