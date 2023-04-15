@@ -32,7 +32,7 @@ v2.0 格式的 `xdb` 支持亿级别的 IP 数据段行数，region 信息也可
 
 API 介绍，使用文档和测试程序请参考对应 `searcher` 查询客户端下的 ReadMe 介绍，全部查询 binding 实现情况如下：
 
-| Ok?                 | 状态 | 编程语言 | 描述                    | 贡献者                 |
+| Ok?                | 状态 | 编程语言 | 描述                    | 贡献者                |
 |:-------------------|:-----| :--- |:----------------------|:--------------------|
 | :white_check_mark: | 已完成  | [golang](binding/golang) | golang xdb 查询客户端实现    | [Lion](https://github.com/lionsoul2014) |
 | :white_check_mark: | 已完成  | [php](binding/php) | php xdb 查询客户端实现       | [Lion](https://github.com/lionsoul2014) |
@@ -48,6 +48,12 @@ API 介绍，使用文档和测试程序请参考对应 `searcher` 查询客户�
 | &nbsp;&nbsp;&nbsp; | 待开始  | [php_ext](binding/php7_ext) | php c 扩展 xdb 查询客户端实现 | 待确定 |
 | :white_check_mark: | 已完成  | [nginx](binding/nginx) | nginx 扩展 xdb 查询客户端实现  | [Wu Jian Ping](https://github.com/wujjpp) |
 
+
+以下工具链实现由社区开发者通过第三方仓库贡献：
+| Ok?                | 状态 | 编程语言 | 描述                    | 贡献者            |
+|:-------------------|:-----| :--- |:----------------------|:--------------------|
+| :white_check_mark: | 已完成  | [ruby](ruby-ip2region) | ruby xdb 查询客户端实现    | [jicheng1014](https://github.com/jicheng1014/ruby-ip2region) |
+| :white_check_mark: | 已完成  | [Golang](Ip2regionTool) | ip2region数据转换工具     | [orestonce](https://github.com/orestonce/Ip2regionTool) |
 
 
 # `xdb` 数据生成
