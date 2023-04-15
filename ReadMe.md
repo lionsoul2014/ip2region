@@ -52,8 +52,8 @@ API 介绍，使用文档和测试程序请参考对应 `searcher` 查询客户�
 以下工具链实现由社区开发者通过第三方仓库贡献：
 | Ok?                | 状态 | 编程语言 | 描述                    | 贡献者            |
 |:-------------------|:-----| :--- |:----------------------|:--------------------|
-| :white_check_mark: | 已完成  | [ruby](ruby-ip2region) | ruby xdb 查询客户端实现    | [jicheng1014](https://github.com/jicheng1014/ruby-ip2region) |
-| :white_check_mark: | 已完成  | [Golang](Ip2regionTool) | ip2region数据转换工具     | [orestonce](https://github.com/orestonce/Ip2regionTool) |
+| :white_check_mark: | 已完成  | [ruby-ip2region](https://github.com/jicheng1014/ruby-ip2region) | ruby xdb 查询客户端实现    | [jicheng1014](https://github.com/jicheng1014) |
+| :white_check_mark: | 已完成  | [Ip2regionTool](https://github.com/orestonce/Ip2regionTool) | ip2region数据转换工具     | [orestonce](https://github.com/orestonce) |
 
 
 # `xdb` 数据生成
