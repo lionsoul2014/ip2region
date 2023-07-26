@@ -1,4 +1,5 @@
 using System.Net;
+using System.Runtime.InteropServices;
 
 namespace IP2Region.Net.XDB;
 
@@ -14,12 +15,9 @@ public static class Util
     {
         byte[] bytes = ipAddress.GetAddressBytes();
         Array.Reverse(bytes);
-        return BitConverter.ToUInt32(bytes, 0);
+        return MemoryMarshal.Read<uint>(bytes);
     }
 
     public static uint GetMidIp(uint x, uint y)
-        => (x & y) + ((x ^ y) >> 1);
-
-    public static int GetMidIp(int x, int y)
         => (x & y) + ((x ^ y) >> 1);
 }
