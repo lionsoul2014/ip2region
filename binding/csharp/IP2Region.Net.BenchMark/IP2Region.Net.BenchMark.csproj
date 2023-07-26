@@ -16,4 +16,11 @@
       <ProjectReference Include="..\IP2Region.Net\IP2Region.Net.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Content Include="..\..\..\data\ip2region.xdb">
+        <Link>IP2Region/ip2region.xdb</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+
 </Project>
