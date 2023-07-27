@@ -3,15 +3,15 @@ namespace IP2Region.Net.XDB;
 public enum CachePolicy
 {
     /// <summary>
-    /// no cache , not thread safe!
+    /// no cache 
     /// </summary>
     File,
     /// <summary>
-    /// cache vector index , reduce the number of IO operations , not thread safe!
+    /// cache vector index , reduce the number of IO operations
     /// </summary>
     VectorIndex,
     /// <summary>
-    /// default cache policy , cache whole xdb file , thread safe 
+    /// default cache policy , cache whole xdb file
     /// </summary>
     Content
 }

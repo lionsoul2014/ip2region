@@ -5,6 +5,8 @@ namespace IP2Region.Net.Test;
 [TestFixture]
 public class SearcherTest
 {
+    private readonly string _xdbPath = Path.Combine(AppContext.BaseDirectory, "TestData", "ip2region.xdb");
+    
     public static IEnumerable<string> Ips()
     {
         yield return "114.114.114.114";
@@ -15,25 +17,28 @@ public class SearcherTest
     }
 
     [TestCaseSource(nameof(Ips))]
+    [Parallelizable(ParallelScope.All)]
     public void TestSearchCacheContent(string ip)
     {
-        var contentSearcher = new Searcher(CachePolicy.Content);
+        var contentSearcher = new Searcher(CachePolicy.Content,_xdbPath);
         var region = contentSearcher.Search(ip);
         Console.WriteLine(region);
     }
 
     [TestCaseSource(nameof(Ips))]
+    [Parallelizable(ParallelScope.All)]
     public void TestSearchCacheVector(string ip)
     {
-        var vectorSearcher = new Searcher(CachePolicy.VectorIndex);
+        var vectorSearcher = new Searcher(CachePolicy.VectorIndex,_xdbPath);
         var region = vectorSearcher.Search(ip);
         Console.WriteLine(region);
     }
 
     [TestCaseSource(nameof(Ips))]
+    [Parallelizable(ParallelScope.All)]
     public void TestSearchCacheFile(string ip)
     {
-        var fileSearcher = new Searcher(CachePolicy.File);
+        var fileSearcher = new Searcher(CachePolicy.File,_xdbPath);
         var region = fileSearcher.Search(ip);
         Console.WriteLine(region);
     }
@@ -43,7 +48,7 @@ public class SearcherTest
     [TestCase(CachePolicy.File)]
     public void TestBenchSearch(CachePolicy cachePolicy)
     {
-        Searcher searcher = new Searcher(cachePolicy);
+        Searcher searcher = new Searcher(cachePolicy,_xdbPath);
         var srcPath = Path.Combine(AppContext.BaseDirectory, "TestData", "ip.merge.txt");
 
         foreach (var line in File.ReadLines(srcPath))

@@ -146,9 +146,9 @@ namespace IP2RegionMaker.XDB
             {
                 Console.WriteLine($"try to write region {seg.Region}");
 
-                if (_regionPool.ContainsKey(seg.Region))
+                if (_regionPool.TryGetValue(seg.Region, out var value))
                 {
-                    Console.WriteLine($"--[Cached] with ptr={_regionPool[seg.Region]}");
+                    Console.WriteLine($"--[Cached] with ptr={value}");
                     continue;
                 }
 

@@ -21,13 +21,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="TestData" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="TestData\ip.merge.txt">
+    <Content Include="..\..\..\data\ip.merge.txt">
+      <Link>TestData/ip.merge.txt</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    </Content>
+    <Content Include="..\..\..\data\ip2region.xdb">
+      <Link>TestData/ip2region.xdb</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>

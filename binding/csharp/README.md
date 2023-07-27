@@ -1,11 +1,10 @@
 # IP2Region.Net
 
-IP2Region c# xdb client
+.NET client library for IP2Region
 
 ## Installation
 
 Install the package with [NuGet](https://www.nuget.org/packages/IP2Region.Net)
-
 
 ```bash
 Install-Package IP2Region.Net
@@ -14,44 +13,43 @@ Install-Package IP2Region.Net
 ## Usage
 
 ```csharp
+using IP2Region.Net.Abstractions;
 using IP2Region.Net.XDB;
 
-//use default db and cache whole xdb file
-Searcher searcher = new Searcher();
-searcher.Search("ipaddress value");
-
-/*
- * custom cache policy and xdb file path
- * CachePolicy.Content default cache policy , cache whole xdb file , thread safe
- * CachePolicy.VectorIndex cache vector index , reduce the number of IO operations , not thread safe!
- * CachePolicy.File no cache , not thread safe!
- */
-Searcher searcher = new Searcher(CachePolicy.File, "your xdb file path");
-
+ISearcher searcher = new Searcher(CachePolicy , "your xdb file path");
 ```
+### Cache Policy Description
+| Cache Policy            | Description                                                                                                | Thread Safe |
+|-------------------------|------------------------------------------------------------------------------------------------------------|-------------|
+| CachePolicy.Content     | Cache the entire `xdb` data.                                                                               | Yes         |
+| CachePolicy.VectorIndex | Cache `vecotorIndex` to speed up queries and reduce system io pressure by reducing one fixed IO operation. | Yes         |
+| CachePolicy.File        | Completely file-based queries                                                                              | Yes         |
+### XDB File Description
+Generate using [maker](https://github.com/lionsoul2014/ip2region/tree/master/maker/csharp), or [download](https://github.com/lionsoul2014/ip2region/blob/master/data/ip2region.xdb) pre-generated xdb files
 
 ## ASP.NET Core Usage
 
 ```csharp
-services.AddSingleton<ISearcher,Searcher>();
+services.AddSingleton<ISearcher>(new Searcher(CachePolicy , "your xdb file path"));
 ```
 
 ## Performance
 
 ``` ini
 
-BenchmarkDotNet=v0.13.2, OS=Windows 11 (10.0.22000.856/21H2)
-AMD Ryzen 5 3550H with Radeon Vega Mobile Gfx, 1 CPU, 8 logical and 4 physical cores
-.NET SDK=6.0.400
-  [Host]     : .NET 6.0.8 (6.0.822.36306), X64 RyuJIT AVX2
-  DefaultJob : .NET 6.0.8 (6.0.822.36306), X64 RyuJIT AVX2
+BenchmarkDotNet=v0.13.2, OS=macOS 13.4.1 (c) (22F770820d) [Darwin 22.5.0]
+Apple M1, 1 CPU, 8 logical and 8 physical cores
+.NET SDK=7.0.306
+  [Host]     : .NET 6.0.20 (6.0.2023.32017), Arm64 RyuJIT AdvSIMD
+  DefaultJob : .NET 6.0.20 (6.0.2023.32017), Arm64 RyuJIT AdvSIMD
 
 
 ```
-|                  Method |        Mean |     Error |    StdDev |
-|------------------------ |------------:|----------:|----------:|
-|     CachePolicy_Content |    224.6 ns |   4.44 ns |   7.41 ns |
-| CachePolicy_VectorIndex | 11,648.4 ns | 231.98 ns | 457.91 ns |
+| Method                  |       Mean |    Error |   StdDev |
+|-------------------------|-----------:|---------:|---------:|
+| CachePolicy_Content     |   155.7 ns |  0.46 ns |  0.39 ns |
+| CachePolicy_File        | 2,186.8 ns | 34.27 ns | 32.06 ns |
+| CachePolicy_VectorIndex | 1,570.3 ns | 27.53 ns | 22.99 ns |
 
 
 
