@@ -42,7 +42,7 @@ public class Searcher : ISearcher
     {
         var index = _cacheStrategy.GetVectorIndex(ip);
         uint sPtr = MemoryMarshal.Read<uint>(index.Span);
-        uint ePtr = MemoryMarshal.Read<uint>(index.Span[4..]);
+        uint ePtr = MemoryMarshal.Read<uint>(index.Span.Slice(4));
 
         var dataLen = 0;
         uint dataPtr = 0;
@@ -56,7 +56,7 @@ public class Searcher : ISearcher
 
             var buffer = _cacheStrategy.GetData((int)pos, SegmentIndexSize);
             uint sip = MemoryMarshal.Read<uint>(buffer.Span);
-            uint eip = MemoryMarshal.Read<uint>(buffer.Span[4..]);
+            uint eip = MemoryMarshal.Read<uint>(buffer.Span.Slice(4));
 
             if (ip < sip)
             {
@@ -68,8 +68,8 @@ public class Searcher : ISearcher
             }
             else
             {
-                dataLen = MemoryMarshal.Read<ushort>(buffer.Span[8..]);
-                dataPtr = MemoryMarshal.Read<uint>(buffer.Span[10..]);
+                dataLen = MemoryMarshal.Read<ushort>(buffer.Span.Slice(8));
+                dataPtr = MemoryMarshal.Read<uint>(buffer.Span.Slice(10));
                 break;
             }
         }
@@ -80,6 +80,6 @@ public class Searcher : ISearcher
         }
 
         var regionBuff = _cacheStrategy.GetData((int)dataPtr,dataLen);
-        return Encoding.UTF8.GetString(regionBuff.Span);
+        return Encoding.UTF8.GetString(regionBuff.Span.ToArray());
     }
 }
