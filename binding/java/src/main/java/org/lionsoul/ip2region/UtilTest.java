@@ -12,7 +12,7 @@ public class UtilTest {
 
     public static void testIP2Long() {
         String ip = "1.2.3.4";
-        long ipAddr = 0;
+        long ipAddr;
         try {
             ipAddr = Searcher.checkIP(ip);
         } catch (Exception e) {

@@ -24,13 +24,14 @@ public class Header {
         buffer = buff;
     }
 
-    @Override public String toString() {
+    @Override
+    public String toString() {
         return "{" +
-            "Version: " + version + ',' +
-            "IndexPolicy: " + indexPolicy + ',' +
-            "CreatedAt: " + createdAt + ',' +
-            "StartIndexPtr: " + startIndexPtr + ',' +
-            "EndIndexPtr: " + endIndexPtr +
-        '}';
+                "Version: " + version + ',' +
+                "IndexPolicy: " + indexPolicy + ',' +
+                "CreatedAt: " + createdAt + ',' +
+                "StartIndexPtr: " + startIndexPtr + ',' +
+                "EndIndexPtr: " + endIndexPtr +
+                '}';
     }
 }
