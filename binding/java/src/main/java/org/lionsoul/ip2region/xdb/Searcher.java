@@ -17,13 +17,16 @@ import java.nio.charset.StandardCharsets;
 public class Searcher implements Closeable {
     // constant defined copied from the xdb maker
     public static final int HeaderInfoLength = 256;
-    public static final int VectorIndexRows = 256;
-    public static final int VectorIndexCols = 256;
-    public static final int VectorIndexSize = 8;
+    public static final int VectorIndexRows  = 256;
+    public static final int VectorIndexCols  = 256;
+    public static final int VectorIndexSize  = 8;
     public static final int SegmentIndexSize = 14;
-    public static final byte[] shiftIndex = {24, 16, 8, 0};
+
     // random access file handle for file based search
     private final RandomAccessFile handle;
+
+    private int ioCount = 0;
+
     // vector index.
     // use the byte[] instead of VectorIndex entry array to keep
     // the minimal memory allocation.
@@ -33,7 +36,20 @@ public class Searcher implements Closeable {
     private final byte[] contentBuff;
 
     // --- static method to create searchers
-    private int ioCount = 0;
+
+    public static Searcher newWithFileOnly(String dbPath) throws IOException {
+        return new Searcher(dbPath, null, null);
+    }
+
+    public static Searcher newWithVectorIndex(String dbPath, byte[] vectorIndex) throws IOException {
+        return new Searcher(dbPath, vectorIndex, null);
+    }
+
+    public static Searcher newWithBuffer(byte[] cBuff) throws IOException {
+        return new Searcher(null, null, cBuff);
+    }
+
+    // --- End of creator
 
     public Searcher(String dbFile, byte[] vectorIndex, byte[] cBuff) throws IOException {
         if (cBuff != null) {
@@ -45,129 +61,6 @@ public class Searcher implements Closeable {
             this.vectorIndex = vectorIndex;
             this.contentBuff = null;
         }
-    }
-
-    public static Searcher newWithFileOnly(String dbPath) throws IOException {
-        return new Searcher(dbPath, null, null);
-    }
-
-    // --- End of creator
-
-    public static Searcher newWithVectorIndex(String dbPath, byte[] vectorIndex) throws IOException {
-        return new Searcher(dbPath, vectorIndex, null);
-    }
-
-    public static Searcher newWithBuffer(byte[] cBuff) throws IOException {
-        return new Searcher(null, null, cBuff);
-    }
-
-    public static Header loadHeader(RandomAccessFile handle) throws IOException {
-        handle.seek(0);
-        final byte[] buff = new byte[HeaderInfoLength];
-        handle.read(buff);
-        return new Header(buff);
-    }
-
-    public static Header loadHeaderFromFile(String dbPath) throws IOException {
-        final RandomAccessFile handle = new RandomAccessFile(dbPath, "r");
-        final Header header = loadHeader(handle);
-        handle.close();
-        return header;
-    }
-
-    public static byte[] loadVectorIndex(RandomAccessFile handle) throws IOException {
-        handle.seek(HeaderInfoLength);
-        int len = VectorIndexRows * VectorIndexCols * VectorIndexSize;
-        final byte[] buff = new byte[len];
-        int rLen = handle.read(buff);
-        if (rLen != len) {
-            throw new IOException("incomplete read: read bytes should be " + len);
-        }
-
-        return buff;
-    }
-
-    public static byte[] loadVectorIndexFromFile(String dbPath) throws IOException {
-        final RandomAccessFile handle = new RandomAccessFile(dbPath, "r");
-        final byte[] vIndex = loadVectorIndex(handle);
-        handle.close();
-        return vIndex;
-    }
-
-    // --- static cache util function
-
-    public static byte[] loadContent(RandomAccessFile handle) throws IOException {
-        handle.seek(0);
-        final byte[] buff = new byte[(int) handle.length()];
-        int rLen = handle.read(buff);
-        if (rLen != buff.length) {
-            throw new IOException("incomplete read: read bytes should be " + buff.length);
-        }
-
-        return buff;
-    }
-
-    public static byte[] loadContentFromFile(String dbPath) throws IOException {
-        final RandomAccessFile handle = new RandomAccessFile(dbPath, "r");
-        final byte[] content = loadContent(handle);
-        handle.close();
-        return content;
-    }
-
-    /* get an int from a byte array start from the specified offset */
-    public static long getIntLong(byte[] b, int offset) {
-        return (
-                ((b[offset++] & 0x000000FFL)) |
-                        ((b[offset++] << 8) & 0x0000FF00L) |
-                        ((b[offset++] << 16) & 0x00FF0000L) |
-                        ((b[offset] << 24) & 0xFF000000L)
-        );
-    }
-
-    public static int getInt(byte[] b, int offset) {
-        return (
-                ((b[offset++] & 0x000000FF)) |
-                        ((b[offset++] << 8) & 0x0000FF00) |
-                        ((b[offset++] << 16) & 0x00FF0000) |
-                        ((b[offset] << 24) & 0xFF000000)
-        );
-    }
-
-    public static int getInt2(byte[] b, int offset) {
-        return (
-                ((b[offset++] & 0x000000FF)) |
-                        ((b[offset] << 8) & 0x0000FF00)
-        );
-    }
-
-    /* long int to ip string */
-    public static String long2ip(long ip) {
-        return String.valueOf((ip >> 24) & 0xFF) + '.' +
-                ((ip >> 16) & 0xFF) + '.' + ((ip >> 8) & 0xFF) + '.' + ((ip) & 0xFF);
-    }
-
-    // --- End cache load util function
-
-    // --- static util method
-
-    /* check the specified ip address */
-    public static long checkIP(String ip) throws Exception {
-        String[] ps = ip.split("\\.");
-        if (ps.length != 4) {
-            throw new Exception("invalid ip address `" + ip + "`");
-        }
-
-        long ipDst = 0;
-        for (int i = 0; i < ps.length; i++) {
-            int val = Integer.parseInt(ps[i]);
-            if (val > 255) {
-                throw new Exception("ip part `" + ps[i] + "` should be less then 256");
-            }
-
-            ipDst |= ((long) val << shiftIndex[i]);
-        }
-
-        return ipDst & 0xFFFFFFFFL;
     }
 
     @Override
@@ -265,6 +158,115 @@ public class Searcher implements Closeable {
         if (rLen != buffer.length) {
             throw new IOException("incomplete read: read bytes should be " + buffer.length);
         }
+    }
+
+    // --- static cache util function
+
+    public static Header loadHeader(RandomAccessFile handle) throws IOException {
+        handle.seek(0);
+        final byte[] buff = new byte[HeaderInfoLength];
+        handle.read(buff);
+        return new Header(buff);
+    }
+
+    public static Header loadHeaderFromFile(String dbPath) throws IOException {
+        try (RandomAccessFile handle = new RandomAccessFile(dbPath, "r")) {
+            return loadHeader(handle);
+        }
+    }
+
+    public static byte[] loadVectorIndex(RandomAccessFile handle) throws IOException {
+        handle.seek(HeaderInfoLength);
+        int len = VectorIndexRows * VectorIndexCols * VectorIndexSize;
+        final byte[] buff = new byte[len];
+        int rLen = handle.read(buff);
+        if (rLen != len) {
+            throw new IOException("incomplete read: read bytes should be " + len);
+        }
+
+        return buff;
+    }
+
+    public static byte[] loadVectorIndexFromFile(String dbPath) throws IOException {
+        try (RandomAccessFile handle = new RandomAccessFile(dbPath, "r")) {
+            return loadVectorIndex(handle);
+        }
+    }
+
+    public static byte[] loadContent(RandomAccessFile handle) throws IOException {
+        handle.seek(0);
+        final byte[] buff =  new byte[(int) handle.length()];
+        int rLen = handle.read(buff);
+        if (rLen != buff.length) {
+            throw new IOException("incomplete read: read bytes should be " + buff.length);
+        }
+
+        return buff;
+    }
+
+    public static byte[] loadContentFromFile(String dbPath) throws IOException {
+        try (RandomAccessFile handle = new RandomAccessFile(dbPath, "r")) {
+            return loadContent(handle);
+        }
+    }
+
+    // --- End cache load util function
+
+    // --- static util method
+
+    /* get an int from a byte array start from the specified offset */
+    public static long getIntLong(byte[] b, int offset) {
+        return (
+                ((b[offset++] & 0x000000FFL)) |
+                        ((b[offset++] <<  8) & 0x0000FF00L) |
+                        ((b[offset++] << 16) & 0x00FF0000L) |
+                        ((b[offset  ] << 24) & 0xFF000000L)
+        );
+    }
+
+    public static int getInt(byte[] b, int offset) {
+        return (
+                ((b[offset++] & 0x000000FF)) |
+                        ((b[offset++] <<  8) & 0x0000FF00) |
+                        ((b[offset++] << 16) & 0x00FF0000) |
+                        ((b[offset  ] << 24) & 0xFF000000)
+        );
+    }
+
+    public static int getInt2(byte[] b, int offset) {
+        return (
+                ((b[offset++] & 0x000000FF)) |
+                        ((b[offset  ] << 8) & 0x0000FF00)
+        );
+    }
+
+    /* long int to ip string */
+    public static String long2ip( long ip )
+    {
+        return String.valueOf((ip >> 24) & 0xFF) + '.' +
+                ((ip >> 16) & 0xFF) + '.' + ((ip >> 8) & 0xFF) + '.' + ((ip) & 0xFF);
+    }
+
+    public static final byte[] shiftIndex = {24, 16, 8, 0};
+
+    /* check the specified ip address */
+    public static long checkIP(String ip) throws Exception {
+        String[] ps = ip.split("\\.");
+        if (ps.length != 4) {
+            throw new Exception("invalid ip address `" + ip + "`");
+        }
+
+        long ipDst = 0;
+        for (int i = 0; i < ps.length; i++) {
+            int val = Integer.parseInt(ps[i]);
+            if (val > 255) {
+                throw new Exception("ip part `"+ps[i]+"` should be less then 256");
+            }
+
+            ipDst |= ((long) val << shiftIndex[i]);
+        }
+
+        return ipDst & 0xFFFFFFFFL;
     }
 
 }
