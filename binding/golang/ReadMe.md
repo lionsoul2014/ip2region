@@ -97,20 +97,24 @@ make
 # 查询测试
 
 通过 `xdb_searcher search` 命令来测试 ip2region.xdb 的查询：
-```
-➜  golang git:(v2.0_xdb) ./xdb_searcher search
-./xdb_searcher search [command options]
-options:
- --db string              ip2region binary xdb file path
- --cache-policy string    cache policy: file/vectorIndex/content
+```bash
+$ ./xdb_searcher search
+Usage:
+  xdb_searcher search [flags]
+
+Flags:
+  -c, --cache-policy string   cache policy (file|vectorIndex|content) (default "vectorIndex")
+  -d, --db string             ip2region binary xdb file path (required)
+  -h, --help                  help for search
 ```
 
 例如：使用默认的 data/ip2region.xdb 进行查询测试
 ```bash
-➜  golang git:(v2.0_xdb) ✗ ./xdb_searcher search --db=../../data/ip2region.xdb
-ip2region xdb searcher test program, type `quit` to exit
-ip2region>> 1.2.3.4
-{region:美国|0|华盛顿|0|谷歌, took:101.57µs}
+$ ./xdb_searcher search --db=../../data/ip2region.xdb
+ip2region xdb searcher test program, cachePolicy: vectorIndex 
+ type 'quit' to exit 
+ ip2region>> 1.2.3.4
+{region: 美国|0|华盛顿|0|谷歌, ioCount: 7, took: 776.292µs}
 ```
 
 输入 ip 地址进行查询即可，输入 quit 退出测试程序。可以设置 `cache-policy` 为 file/vectorIndex/content 来测试不同的查询缓存机制。
@@ -120,17 +124,20 @@ ip2region>> 1.2.3.4
 
 通过 `xdb_searcher bench` 命令来进行自动 bench 测试，一方面确保程序和 `xdb` 文件都没有错误，另一方面通过大量的查询得到平均查询性能：
 ```bash
-➜  golang git:(v2.0_xdb) ./xdb_searcher bench
-./xdb_searcher bench [command options]
-options:
- --db string              ip2region binary xdb file path
- --src string             source ip text file path
- --cache-policy string    cache policy: file/vectorIndex/content
+$ ./xdb_searcher bench                                                            
+Usage:
+  xdb_searcher bench [flags]
+
+Flags:
+  -c, --cache-policy string   cache policy (file|vectorIndex|content) (default "vectorIndex")
+  -d, --db string             ip2region binary xdb file path (required)
+  -h, --help                  help for bench
+  -s, --src string            source ip text file path (required)
 ```
 
 例如：通过 data/ip2region.xdb 和 data/ip.merge.txt 进行 bench 测试：
 ```bash
-➜  golang git:(v2.0_xdb) ✗ ./xdb_searcher bench --db=../../data/ip2region.xdb --src=../../data/ip.merge.txt
+$ ./xdb_searcher bench --db=../../data/ip2region.xdb --src=../../data/ip.merge.txt
 Bench finished, {total: 3417955, took: 28.211578339s, cost: 8253 ns/op}
 ```
 
