@@ -80,8 +80,9 @@ public class SearcherTest {
         }
 
         // 3、查询
+        String ip = "";
         try {
-            String ip = "1.2.3.4";
+            ip = "1.2.3.4";
             long sTime = System.nanoTime();
             String region = searcher.search(ip);
             long cost = TimeUnit.NANOSECONDS.toMicros((long) (System.nanoTime() - sTime));
@@ -129,8 +130,9 @@ public class SearcherTest {
         }
 
         // 3、查询
+        String ip = "";
         try {
-            String ip = "1.2.3.4";
+            ip = "1.2.3.4";
             long sTime = System.nanoTime();
             String region = searcher.search(ip);
             long cost = TimeUnit.NANOSECONDS.toMicros((long) (System.nanoTime() - sTime));
