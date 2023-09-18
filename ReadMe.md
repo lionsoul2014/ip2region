@@ -94,11 +94,11 @@ ip2region 旨在于 <b>研究 IP 数据的存储和快速查询的设计和实�
 ### 1、并发查询必读
 全部查询客户端的 search 接口都 <b>不是</b> 并发安全的实现，不同进程/线程/协程需要通过创建不同的查询对象来安全使用，并发量很大的情况下，基于文件查询的方式可能会导致打开文件数过多的错误，请修改内核的最大允许打开文件数(fs.file-max=一个更高的值)，或者将整个xdb加载到内存进行安全并发使用。
 
-### 2、技术交流社区
-ip2region 微信交流群，请先加微信：lionsoul2014 (请备注 ip2region)
-
-### 3、技术资源分享
+### 2、技术资源分享
 1. xdb 数据结构分析：[“ip2region xdb 数据结构和查询过程详解“](https://mp.weixin.qq.com/s/ndjzu0BgaeBmDOCw5aqHUg)
 2. xdb 查询过程分析：[“ip2region xdb 数据结构和查询过程详解”](https://mp.weixin.qq.com/s/ndjzu0BgaeBmDOCw5aqHUg)
 3. xdb 生成过程分析：[“ip2region xdb 二进制数据生成过程详解”](https://mp.weixin.qq.com/s/HEAc7WKzAjH5oTwgxojPUg)
 4. xdb 数据更新方法：[“ip2region 数据更新和 xdb 数据编辑器的使用”](https://mp.weixin.qq.com/s/cZH5qIn4E5rQFy6N32RCzA)
+
+### 3、技术信息博客
+请先关注微信公众号 lionsoul-org (狮子的魂)
