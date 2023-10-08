@@ -43,7 +43,7 @@
 //
 // index entry structure
 // +------------+-----------+---------------+------------+
-// | 4bytes		| 4bytes	| 2bytes        | 4 bytes    |
+// | 4bytes     | 4bytes    | 2bytes        | 4 bytes    |
 // +------------+-----------+---------------+------------+
 //  start ip 	  end ip	  data length     data ptr
 
