@@ -8,7 +8,10 @@ package org.lionsoul.ip2region;
 
 import org.lionsoul.ip2region.xdb.Searcher;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.concurrent.TimeUnit;
 
 public class SearchTest {
@@ -65,7 +68,7 @@ public class SearchTest {
             }
         }
 
-        if (dbPath.length() < 1) {
+        if (dbPath.isEmpty()) {
             System.out.print("java -jar ip2region-{version}.jar search [command options]\n");
             System.out.print("options:\n");
             System.out.print(" --db string              ip2region binary xdb file path\n");
@@ -73,32 +76,30 @@ public class SearchTest {
             return;
         }
 
-        Searcher searcher = createSearcher(dbPath, cachePolicy);
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-        System.out.printf("ip2region xdb searcher test program, cachePolicy: %s\ntype 'quit' to exit\n", cachePolicy);
-        while ( true ) {
-            System.out.print("ip2region>> ");
-            String line = reader.readLine().trim();
-            if ( line.length() < 2 ) {
-                continue;
-            }
+        try (Searcher searcher = createSearcher(dbPath, cachePolicy);
+             BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
+            System.out.printf("ip2region xdb searcher test program, cachePolicy: %s\ntype 'quit' to exit\n", cachePolicy);
+            while (true) {
+                System.out.print("ip2region>> ");
+                String line = reader.readLine().trim();
+                if (line.length() < 2) {
+                    continue;
+                }
 
-            if ( line.equalsIgnoreCase("quit") ) {
-                break;
-            }
+                if ("quit".equalsIgnoreCase(line)) {
+                    break;
+                }
 
-            try {
-                double sTime = System.nanoTime();
-                String region = searcher.search(line);
-                long cost = TimeUnit.NANOSECONDS.toMicros((long) (System.nanoTime() - sTime));
-                System.out.printf("{region: %s, ioCount: %d, took: %d μs}\n", region, searcher.getIOCount(), cost);
-            } catch (Exception e) {
-                System.out.printf("{err: %s, ioCount: %d}\n", e, searcher.getIOCount());
+                try {
+                    double sTime = System.nanoTime();
+                    String region = searcher.search(line);
+                    long cost = TimeUnit.NANOSECONDS.toMicros((long) (System.nanoTime() - sTime));
+                    System.out.printf("{region: %s, ioCount: %d, took: %d μs}\n", region, searcher.getIOCount(), cost);
+                } catch (Exception e) {
+                    System.out.printf("{err: %s, ioCount: %d}\n", e, searcher.getIOCount());
+                }
             }
         }
-
-        reader.close();
-        searcher.close();
         System.out.println("searcher test program exited, thanks for trying");
     }
 
@@ -121,19 +122,23 @@ public class SearchTest {
 
             String key = r.substring(2, sIdx);
             String val = r.substring(sIdx + 1);
-            if ("db".equals(key)) {
-                dbPath = val;
-            } else if ("src".equals(key)) {
-                srcPath = val;
-            } else if ("cache-policy".equals(key)) {
-                cachePolicy = val;
-            } else {
-                System.out.printf("undefined option `%s`\n", r);
-                return;
+            switch (key) {
+                case "db":
+                    dbPath = val;
+                    break;
+                case "src":
+                    srcPath = val;
+                    break;
+                case "cache-policy":
+                    cachePolicy = val;
+                    break;
+                default:
+                    System.out.printf("undefined option `%s`\n", r);
+                    return;
             }
         }
 
-        if (dbPath.length() < 1 || srcPath.length() < 1) {
+        if (dbPath.isEmpty() || srcPath.isEmpty()) {
             System.out.print("java -jar ip2region-{version}.jar bench [command options]\n");
             System.out.print("options:\n");
             System.out.print(" --db string              ip2region binary xdb file path\n");
@@ -142,61 +147,59 @@ public class SearchTest {
             return;
         }
 
-        Searcher searcher = createSearcher(dbPath, cachePolicy);
         long count = 0, costs = 0, tStart = System.nanoTime();
-        String line;
-        final BufferedReader reader = new BufferedReader(new FileReader(srcPath));
-        while ((line = reader.readLine()) != null) {
-            String l = line.trim();
-            String[] ps = l.split("\\|", 3);
-            if (ps.length != 3) {
-                System.out.printf("invalid ip segment `%s`\n", l);
-                return;
-            }
-
-            long sip;
-            try {
-                sip = Searcher.checkIP(ps[0]);
-            } catch (Exception e) {
-                System.out.printf("check start ip `%s`: %s\n", ps[0], e);
-                return;
-            }
-
-            long eip;
-            try {
-                eip = Searcher.checkIP(ps[1]);
-            } catch (Exception e) {
-                System.out.printf("check end ip `%s`: %s\n", ps[1], e);
-                return;
-            }
-
-            if (sip > eip) {
-                System.out.printf("start ip(%s) should not be greater than end ip(%s)\n", ps[0], ps[1]);
-                return;
-            }
-
-            long mip = (sip + eip) >> 1;
-            for (final long ip : new long[]{sip, (sip + mip) >> 1, mip, (mip + eip) >> 1, eip}) {
-                long sTime = System.nanoTime();
-                String region = searcher.search(ip);
-                costs += System.nanoTime() - sTime;
-
-                // check the region info
-                if (!ps[2].equals(region)) {
-                    System.out.printf("failed search(%s) with (%s != %s)\n", Searcher.long2ip(ip), region, ps[2]);
+        try (Searcher searcher = createSearcher(dbPath, cachePolicy);
+             BufferedReader reader = new BufferedReader(new FileReader(srcPath))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String l = line.trim();
+                String[] ps = l.split("\\|", 3);
+                if (ps.length != 3) {
+                    System.out.printf("invalid ip segment `%s`\n", l);
                     return;
                 }
 
-                count++;
+                long sip;
+                try {
+                    sip = Searcher.checkIP(ps[0]);
+                } catch (Exception e) {
+                    System.out.printf("check start ip `%s`: %s\n", ps[0], e);
+                    return;
+                }
+
+                long eip;
+                try {
+                    eip = Searcher.checkIP(ps[1]);
+                } catch (Exception e) {
+                    System.out.printf("check end ip `%s`: %s\n", ps[1], e);
+                    return;
+                }
+
+                if (sip > eip) {
+                    System.out.printf("start ip(%s) should not be greater than end ip(%s)\n", ps[0], ps[1]);
+                    return;
+                }
+
+                long mip = (sip + eip) >> 1;
+                for (final long ip : new long[]{sip, (sip + mip) >> 1, mip, (mip + eip) >> 1, eip}) {
+                    long sTime = System.nanoTime();
+                    String region = searcher.search(ip);
+                    costs += System.nanoTime() - sTime;
+
+                    // check the region info
+                    if (!ps[2].equals(region)) {
+                        System.out.printf("failed search(%s) with (%s != %s)\n", Searcher.long2ip(ip), region, ps[2]);
+                        return;
+                    }
+
+                    count++;
+                }
             }
         }
-
-        reader.close();
-        searcher.close();
         long took = System.nanoTime() - tStart;
         System.out.printf("Bench finished, {cachePolicy: %s, total: %d, took: %ds, cost: %d μs/op}\n",
                 cachePolicy, count, TimeUnit.NANOSECONDS.toSeconds(took),
-                count == 0 ? 0 : TimeUnit.NANOSECONDS.toMicros(costs/count));
+                count == 0 ? 0 : TimeUnit.NANOSECONDS.toMicros(costs / count));
     }
 
     public static void main(String[] args) {

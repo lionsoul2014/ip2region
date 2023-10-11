@@ -15,35 +15,29 @@
 
 ```java
 import org.lionsoul.ip2region.xdb.Searcher;
+
 import java.io.*;
 import java.util.concurrent.TimeUnit;
 
 public class SearcherTest {
     public static void main(String[] args) {
-        // 1、创建 searcher 对象
         String dbPath = "ip2region.xdb file path";
-        Searcher searcher = null;
-        try {
-            searcher = Searcher.newWithFileOnly(dbPath);
-        } catch (IOException e) {
-            System.out.printf("failed to create searcher with `%s`: %s\n", dbPath, e);
-            return;
-        }
+        String ip = "1.2.3.4";
 
-        // 2、查询
-        try {
-            String ip = "1.2.3.4";
+        // 1、创建 searcher 对象
+        try (Searcher searcher = Searcher.newWithFileOnly(dbPath)) {
+            // 2、查询
             long sTime = System.nanoTime();
             String region = searcher.search(ip);
-            long cost = TimeUnit.NANOSECONDS.toMicros((long) (System.nanoTime() - sTime));
+            long cost = TimeUnit.NANOSECONDS.toMicros(System.nanoTime() - sTime);
             System.out.printf("{region: %s, ioCount: %d, took: %d μs}\n", region, searcher.getIOCount(), cost);
+        } catch (IOException e) {
+            System.out.printf("failed to create searcher with `%s`: %s\n", dbPath, e);
         } catch (Exception e) {
             System.out.printf("failed to search(%s): %s\n", ip, e);
         }
+        // 3、关闭资源（这里通过 try-with-resources 自动关闭）
 
-        // 3、关闭资源
-        searcher.close();
-        
         // 备注：并发使用，每个线程需要创建一个独立的 searcher 对象单独使用。
     }
 }
@@ -54,12 +48,14 @@ public class SearcherTest {
 我们可以提前从 `xdb` 文件中加载出来 `VectorIndex` 数据，然后全局缓存，每次创建 Searcher 对象的时候使用全局的 VectorIndex 缓存可以减少一次固定的 IO 操作，从而加速查询，减少 IO 压力。
 ```java
 import org.lionsoul.ip2region.xdb.Searcher;
+
 import java.io.*;
 import java.util.concurrent.TimeUnit;
 
 public class SearcherTest {
     public static void main(String[] args) {
         String dbPath = "ip2region.xdb file path";
+        String ip = "1.2.3.4";
 
         // 1、从 dbPath 中预先加载 VectorIndex 缓存，并且把这个得到的数据作为全局变量，后续反复使用。
         byte[] vIndex;
@@ -71,27 +67,17 @@ public class SearcherTest {
         }
 
         // 2、使用全局的 vIndex 创建带 VectorIndex 缓存的查询对象。
-        Searcher searcher;
-        try {
-            searcher = Searcher.newWithVectorIndex(dbPath, vIndex);
-        } catch (Exception e) {
-            System.out.printf("failed to create vectorIndex cached searcher with `%s`: %s\n", dbPath, e);
-            return;
-        }
-
-        // 3、查询
-        try {
-            String ip = "1.2.3.4";
+        try (Searcher searcher = Searcher.newWithVectorIndex(dbPath, vIndex)) {
             long sTime = System.nanoTime();
             String region = searcher.search(ip);
-            long cost = TimeUnit.NANOSECONDS.toMicros((long) (System.nanoTime() - sTime));
+            long cost = TimeUnit.NANOSECONDS.toMicros(System.nanoTime() - sTime);
             System.out.printf("{region: %s, ioCount: %d, took: %d μs}\n", region, searcher.getIOCount(), cost);
+        } catch (IOException e) {
+            System.out.printf("failed to create vectorIndex cached searcher with `%s`: %s\n", dbPath, e);
         } catch (Exception e) {
             System.out.printf("failed to search(%s): %s\n", ip, e);
         }
-        
-        // 4、关闭资源
-        searcher.close();
+        // 3、关闭资源（这里通过 try-with-resources 自动关闭）
 
         // 备注：每个线程需要单独创建一个独立的 Searcher 对象，但是都共享全局的制度 vIndex 缓存。
     }
@@ -103,12 +89,14 @@ public class SearcherTest {
 我们也可以预先加载整个 ip2region.xdb 的数据到内存，然后基于这个数据创建查询对象来实现完全基于文件的查询，类似之前的 memory search。
 ```java
 import org.lionsoul.ip2region.xdb.Searcher;
+
 import java.io.*;
 import java.util.concurrent.TimeUnit;
 
 public class SearcherTest {
     public static void main(String[] args) {
         String dbPath = "ip2region.xdb file path";
+        String ip = "1.2.3.4";
 
         // 1、从 dbPath 加载整个 xdb 到内存。
         byte[] cBuff;
@@ -123,22 +111,21 @@ public class SearcherTest {
         Searcher searcher;
         try {
             searcher = Searcher.newWithBuffer(cBuff);
-        } catch (Exception e) {
+        } catch (IOException e) {
             System.out.printf("failed to create content cached searcher: %s\n", e);
             return;
         }
 
         // 3、查询
         try {
-            String ip = "1.2.3.4";
             long sTime = System.nanoTime();
             String region = searcher.search(ip);
-            long cost = TimeUnit.NANOSECONDS.toMicros((long) (System.nanoTime() - sTime));
+            long cost = TimeUnit.NANOSECONDS.toMicros(System.nanoTime() - sTime);
             System.out.printf("{region: %s, ioCount: %d, took: %d μs}\n", region, searcher.getIOCount(), cost);
         } catch (Exception e) {
             System.out.printf("failed to search(%s): %s\n", ip, e);
         }
-        
+
         // 4、关闭资源 - 该 searcher 对象可以安全用于并发，等整个服务关闭的时候再关闭 searcher
         // searcher.close();
 

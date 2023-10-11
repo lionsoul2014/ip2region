@@ -9,10 +9,12 @@ package org.lionsoul.ip2region.xdb;
 // @Date   2022/06/23
 
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.charset.StandardCharsets;
 
-public class Searcher {
+public class Searcher implements Closeable {
     // constant defined copied from the xdb maker
     public static final int HeaderInfoLength = 256;
     public static final int VectorIndexRows  = 256;
@@ -61,6 +63,7 @@ public class Searcher {
         }
     }
 
+    @Override
     public void close() throws IOException {
         if (this.handle != null) {
             this.handle.close();
@@ -135,7 +138,7 @@ public class Searcher {
         // load and return the region data
         final byte[] regionBuff = new byte[dataLen];
         read(dataPtr, regionBuff);
-        return new String(regionBuff, "utf-8");
+        return new String(regionBuff, StandardCharsets.UTF_8);
     }
 
     protected void read(int offset, byte[] buffer) throws IOException {
@@ -167,10 +170,9 @@ public class Searcher {
     }
 
     public static Header loadHeaderFromFile(String dbPath) throws IOException {
-        final RandomAccessFile handle = new RandomAccessFile(dbPath, "r");
-        final Header header = loadHeader(handle);
-        handle.close();
-        return header;
+        try (RandomAccessFile handle = new RandomAccessFile(dbPath, "r")) {
+            return loadHeader(handle);
+        }
     }
 
     public static byte[] loadVectorIndex(RandomAccessFile handle) throws IOException {
@@ -186,10 +188,9 @@ public class Searcher {
     }
 
     public static byte[] loadVectorIndexFromFile(String dbPath) throws IOException {
-        final RandomAccessFile handle = new RandomAccessFile(dbPath, "r");
-        final byte[] vIndex = loadVectorIndex(handle);
-        handle.close();
-        return vIndex;
+        try (RandomAccessFile handle = new RandomAccessFile(dbPath, "r")) {
+            return loadVectorIndex(handle);
+        }
     }
 
     public static byte[] loadContent(RandomAccessFile handle) throws IOException {
@@ -204,10 +205,9 @@ public class Searcher {
     }
 
     public static byte[] loadContentFromFile(String dbPath) throws IOException {
-        final RandomAccessFile handle = new RandomAccessFile(dbPath, "r");
-        final byte[] content = loadContent(handle);
-        handle.close();
-        return content;
+        try (RandomAccessFile handle = new RandomAccessFile(dbPath, "r")) {
+            return loadContent(handle);
+        }
     }
 
     // --- End cache load util function
@@ -217,26 +217,26 @@ public class Searcher {
     /* get an int from a byte array start from the specified offset */
     public static long getIntLong(byte[] b, int offset) {
         return (
-            ((b[offset++] & 0x000000FFL)) |
-            ((b[offset++] <<  8) & 0x0000FF00L) |
-            ((b[offset++] << 16) & 0x00FF0000L) |
-            ((b[offset  ] << 24) & 0xFF000000L)
+                ((b[offset++] & 0x000000FFL)) |
+                        ((b[offset++] <<  8) & 0x0000FF00L) |
+                        ((b[offset++] << 16) & 0x00FF0000L) |
+                        ((b[offset  ] << 24) & 0xFF000000L)
         );
     }
 
     public static int getInt(byte[] b, int offset) {
         return (
-            ((b[offset++] & 0x000000FF)) |
-            ((b[offset++] <<  8) & 0x0000FF00) |
-            ((b[offset++] << 16) & 0x00FF0000) |
-            ((b[offset  ] << 24) & 0xFF000000)
+                ((b[offset++] & 0x000000FF)) |
+                        ((b[offset++] <<  8) & 0x0000FF00) |
+                        ((b[offset++] << 16) & 0x00FF0000) |
+                        ((b[offset  ] << 24) & 0xFF000000)
         );
     }
 
     public static int getInt2(byte[] b, int offset) {
         return (
-            ((b[offset++] & 0x000000FF)) |
-            ((b[offset  ] << 8) & 0x0000FF00)
+                ((b[offset++] & 0x000000FF)) |
+                        ((b[offset  ] << 8) & 0x0000FF00)
         );
     }
 
@@ -244,7 +244,7 @@ public class Searcher {
     public static String long2ip( long ip )
     {
         return String.valueOf((ip >> 24) & 0xFF) + '.' +
-            ((ip >> 16) & 0xFF) + '.' + ((ip >> 8) & 0xFF) + '.' + ((ip) & 0xFF);
+                ((ip >> 16) & 0xFF) + '.' + ((ip >> 8) & 0xFF) + '.' + ((ip) & 0xFF);
     }
 
     public static final byte[] shiftIndex = {24, 16, 8, 0};
