@@ -9,6 +9,7 @@ package org.lionsoul.ip2region;
 import org.lionsoul.ip2region.xdb.Searcher;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
