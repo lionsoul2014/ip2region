@@ -6,8 +6,35 @@
 // @Author Lion <chenxin619315@gmail.com>
 // @Date   2022/06/27
 
-#include "sys/time.h"
 #include "xdb_searcher.h"
+
+// for Linux
+#ifdef XDB_LINUX
+#include "sys/time.h"
+#endif
+
+// @Note: since 2023/10/13 to compatible with the windows system
+#ifdef XDB_WINDOWS
+#include <windows.h>
+XDB_PRIVATE(int) gettimeofday(struct timeval* tp, void* tzp) {
+    time_t clock;
+    struct tm tm;
+    SYSTEMTIME wtm;
+    GetLocalTime(&wtm);
+    tm.tm_year = wtm.wYear - 1900;
+    tm.tm_mon = wtm.wMonth - 1;
+    tm.tm_mday = wtm.wDay;
+    tm.tm_hour = wtm.wHour;
+    tm.tm_min = wtm.wMinute;
+    tm.tm_sec = wtm.wSecond;
+    tm.tm_isdst = -1;
+    clock = mktime(&tm);
+    tp->tv_sec = clock;
+    tp->tv_usec = wtm.wMilliseconds * 1000;
+    return (0);
+}
+#endif
+
 
 // internal function prototype define
 XDB_PRIVATE(int) read(xdb_searcher_t *, long offset, char *, size_t length);
