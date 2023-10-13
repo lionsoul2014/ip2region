@@ -147,8 +147,9 @@ public class SearchTest {
         Searcher searcher = createSearcher(dbPath, cachePolicy);
         long count = 0, costs = 0, tStart = System.nanoTime();
         String line;
+        final Charset charset = Charset.forName("utf-8");
         final FileInputStream fis = new FileInputStream(srcPath);
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(fis, StandardCharsets.UTF_8));
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(fis, charset));
         while ((line = reader.readLine()) != null) {
             String l = line.trim();
             String[] ps = l.split("\\|", 3);
