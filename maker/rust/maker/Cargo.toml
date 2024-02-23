@@ -1,0 +1,12 @@
+[package]
+name = "maker"
+version = "0.1.0"
+edition = "2021"
+authors = ["Kevin Wang <wanglong.kevin@gmail.com>"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = { version = "4.4.18", features = ["derive"] }
+lazy_static = "1.4.0"
+once_cell = "1.19.0"
