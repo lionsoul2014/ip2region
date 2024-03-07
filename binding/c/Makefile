@@ -1,10 +1,10 @@
 all: xdb_searcher util_test
 
 xdb_searcher: xdb_searcher.h xdb_searcher.c main.c
-	gcc -g -O2 -I./ xdb_searcher.c main.c -o xdb_searcher
+	gcc -O2 -I./ xdb_searcher.c main.c -o xdb_searcher
 
 util_test: xdb_searcher.h xdb_searcher.c util_test.c
-	gcc -g -O2 -I./ xdb_searcher.c util_test.c -o util_test
+	gcc -O2 -I./ xdb_searcher.c util_test.c -o util_test
 
 xdb_searcher.o: xdb_searcher.c
 	gcc -c -o xdb_searcher.o xdb_searcher.c

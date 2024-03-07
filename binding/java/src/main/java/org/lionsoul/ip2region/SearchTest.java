@@ -9,6 +9,8 @@ package org.lionsoul.ip2region;
 import org.lionsoul.ip2region.xdb.Searcher;
 
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
 public class SearchTest {
@@ -145,7 +147,9 @@ public class SearchTest {
         Searcher searcher = createSearcher(dbPath, cachePolicy);
         long count = 0, costs = 0, tStart = System.nanoTime();
         String line;
-        final BufferedReader reader = new BufferedReader(new FileReader(srcPath));
+        final Charset charset = Charset.forName("utf-8");
+        final FileInputStream fis = new FileInputStream(srcPath);
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(fis, charset));
         while ((line = reader.readLine()) != null) {
             String l = line.trim();
             String[] ps = l.split("\\|", 3);

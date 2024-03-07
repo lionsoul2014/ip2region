@@ -37,13 +37,13 @@
 //
 // data entry structure:
 // +--------------------+-----------------------+
-// | 2bytes (for desc)	| dynamic length		|
+// | 2bytes (for desc)	| dynamic length        |
 // +--------------------+-----------------------+
 //  data length   whatever in bytes
 //
 // index entry structure
 // +------------+-----------+---------------+------------+
-// | 4bytes		| 4bytes	| 2bytes		| 4 bytes    |
+// | 4bytes     | 4bytes    | 2bytes        | 4 bytes    |
 // +------------+-----------+---------------+------------+
 //  start ip 	  end ip	  data length     data ptr
 
