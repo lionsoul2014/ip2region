@@ -1,18 +1,21 @@
-// Copyright 2022 The Ip2Region Authors. All rights reserved.
+// Copyright 2024 The Ip2Region Authors. All rights reserved.
 // Use of this source code is governed by a Apache2.0-style
 // license that can be found in the LICENSE file.
 
 package org.lionsoul.ip2region.xdb;
 
-// xdb searcher (Not thread safe implementation)
-// @Author Lion <chenxin619315@gmail.com>
-// @Date   2022/06/23
-
-
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
-public class Searcher {
+/**
+ * xdb searcher (Not thread-safe implementation).
+ *
+ * @author Lion <chenxin619315@gmail.com>
+ * @date 2022/06/23
+ */
+public class Searcher implements Closeable {
+
     // constant defined copied from the xdb maker
     public static final int HeaderInfoLength = 256;
     public static final int VectorIndexRows  = 256;
@@ -61,14 +64,15 @@ public class Searcher {
         }
     }
 
-    public void close() throws IOException {
+   @Override
+   public void close() throws IOException {
         if (this.handle != null) {
             this.handle.close();
         }
     }
 
     public int getIOCount() {
-        return ioCount;
+        return this.ioCount;
     }
 
     public String search(String ipStr) throws Exception {
@@ -135,7 +139,7 @@ public class Searcher {
         // load and return the region data
         final byte[] regionBuff = new byte[dataLen];
         read(dataPtr, regionBuff);
-        return new String(regionBuff, "utf-8");
+        return new String(regionBuff, "UTF-8");
     }
 
     protected void read(int offset, byte[] buffer) throws IOException {
@@ -241,8 +245,7 @@ public class Searcher {
     }
 
     /* long int to ip string */
-    public static String long2ip( long ip )
-    {
+    public static String long2ip( long ip ) {
         return String.valueOf((ip >> 24) & 0xFF) + '.' +
             ((ip >> 16) & 0xFF) + '.' + ((ip >> 8) & 0xFF) + '.' + ((ip) & 0xFF);
     }
