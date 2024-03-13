@@ -25,7 +25,7 @@ $ rebar3 compile
 $ rebar3 shell
 
 ```
-在erlang shell中调用xdb:search/1接口查询Ip地址信息, 该接口支持以list格式字符串、bianry格式字符串、tuple和整数表示的IP地址，如下：
+在erlang shell中调用xdb:search/1接口查询Ip地址信息, 该接口支持以list格式字符串、binary格式字符串、tuple和整数表示的IP地址，如下：
 ```
 1> xdb:search("1.0.8.0").
 [20013,22269,124,48,124,24191,19996,30465,124,24191,24030,
