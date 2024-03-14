@@ -62,6 +62,7 @@ API 介绍，使用文档和测试程序请参考如下 `maker` 生成程序下�
 | &nbsp;&nbsp;&nbsp; | 待开始  | [c](maker/c) | ANSC c xdb 生成程序实现 | [Lion](https://github.com/lionsoul2014) |
 | :white_check_mark: | 已完成  | [python](maker/python) | python xdb 生成程序实现 | [leolin49](https://github.com/leolin49) |
 | :white_check_mark: | 已完成  | [csharp](maker/csharp) | csharp xdb 生成程序实现 | [Alan Lee](https://github.com/malus2077) |
+| :white_check_mark: | 已完成  | [rust](maker/rust) | rust xdb 生成程序实现 | [KevinWang](https://github.com/KevinWL) |
 
 
 # `xdb` 数据更新
