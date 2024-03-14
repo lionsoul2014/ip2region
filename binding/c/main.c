@@ -172,12 +172,12 @@ void test_search(int argc, char *argv[]) {
             break;
         }
 
+        s_time = xdb_now();
         if (xdb_check_ip(line, &ip) != 0) {
             printf("invalid ip address `%s`\n", line);
             continue;
         }
 
-        s_time = xdb_now();
         err = xdb_search(&test.searcher, ip, region, sizeof(region));
         if (err != 0) {
             printf("{err: %d, io_count: %d}\n", err, xdb_get_io_count(&test.searcher));
@@ -290,10 +290,10 @@ void test_bench(int argc, char *argv[]) {
         ip_list[3] = xdb_mip(mip, eip);
         ip_list[4] = eip;
         for (i = 0; i < 5; i++) {
+            xdb_long2ip(ip_list[i], sip_str);
             t_time = xdb_now();
-            err = xdb_search(&test.searcher, ip_list[i], region_buffer, sizeof(region_buffer));
+            err = xdb_search_by_string(&test.searcher, sip_str, region_buffer, sizeof(region_buffer));
             if (err != 0) {
-                xdb_long2ip(ip_list[i], sip_str);
                 printf("failed to search ip `%s` with errno=%d\n", sip_str, err);
                 return;
             }
@@ -302,7 +302,6 @@ void test_bench(int argc, char *argv[]) {
 
             // check the region info
             if (strcmp(region_buffer, src_region) != 0) {
-                xdb_long2ip(ip_list[i], sip_str);
                 printf("failed to search(%s) with (%s != %s)\n", sip_str, region_buffer, src_region);
                 return;
             }
