@@ -42,6 +42,7 @@ API 介绍，使用文档和测试程序请参考对应 `searcher` 查询客户�
 | :white_check_mark: | 已完成  | [erlang](binding/erlang) | erlang xdb 查询客户端实现   | [leihua996](https://github.com/leihua996) |
 | &nbsp;&nbsp;&nbsp; | 待开始  | [php_ext](binding/php7_ext) | php c 扩展 xdb 查询客户端实现 | 待确定 |
 | :white_check_mark: | 已完成  | [nginx](binding/nginx) | nginx 扩展 xdb 查询客户端实现  | [Wu Jian Ping](https://github.com/wujjpp) |
+| :white_check_mark: | 已完成  | [C++](binding/cpp) | C++ xdb 查询客户端实现    | [Yunbin Liu](https://github.com/liuyunbin) |
 
 
 以下工具链实现由社区开发者通过第三方仓库贡献：
@@ -63,6 +64,7 @@ API 介绍，使用文档和测试程序请参考如下 `maker` 生成程序下�
 | :white_check_mark: | 已完成  | [python](maker/python) | python xdb 生成程序实现 | [leolin49](https://github.com/leolin49) |
 | :white_check_mark: | 已完成  | [csharp](maker/csharp) | csharp xdb 生成程序实现 | [Alan Lee](https://github.com/malus2077) |
 | :white_check_mark: | 已完成  | [rust](maker/rust) | rust xdb 生成程序实现 | [KevinWang](https://github.com/KevinWL) |
+| :white_check_mark: | 已完成  | [C++](maker/cpp) | C++ xdb 生成程序实现 | [Yunbin Liu](https://github.com/liuyunbin) |
 
 
 # `xdb` 数据更新
@@ -82,6 +84,7 @@ ip2region 旨在于 <b>研究 IP 数据的存储和快速查询的设计和实�
 |:-------------------|:----| :--- |:-------------------| :--- |
 | :white_check_mark: | 已完成 | [golang](maker/golang#xdb-数据编辑) | golang 原始 IP 数据编辑器 | [Lion](https://github.com/lionsoul2014) |
 | &nbsp;&nbsp;&nbsp; | 待开始 | [java](maker/java#xdb-数据编辑) | java 原始 IP 数据编辑器   | [Lion](https://github.com/lionsoul2014) |
+| :white_check_mark: | 已完成 | [C++](maker/cpp#xdb-数据编辑) | C++ 原始 IP 数据编辑器 | [Yunbin Liu](https://github.com/liuyunbin) |
 
 
 ### 检测自动更新
