@@ -59,11 +59,11 @@ class XdbSearcher(object):
             return self.searchByIPLong(ip)
         else:
             return self.searchByIPLong(ip)
-       
+
     def searchByIPStr(self, ip):
         if not ip.isdigit(): ip = self.ip2long(ip)
         return self.searchByIPLong(ip)
-         
+
     def searchByIPLong(self, ip):
         # locate the segment index block based on the vector index
         sPtr = ePtr = 0
@@ -162,7 +162,7 @@ class XdbSearcher(object):
         return 0
 
     def getInt2(self, b, offset):
-        return ((b[offset] & 0x000000FF) | (b[offset+1] & 0x0000FF00))
+        return ((b[offset] & 0x000000FF) | (b[offset+1] << 8))
 
     def close(self):
         if self.__f is not None:
@@ -179,10 +179,10 @@ if __name__ == '__main__':
     # 1. 缓存
     dbPath = "./data/ip2region.xdb";
     cb = XdbSearcher.loadContentFromFile(dbfile=dbPath)
-    
+
     # 2. 创建查询对象
     searcher = XdbSearcher(contentBuff=cb)
-    
+
     # 3. 执行查询
     # ip = "1.2.3.4"
     for ip in ip_array:
