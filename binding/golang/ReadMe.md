@@ -41,9 +41,9 @@ func main() {
 }
 ```
 
-### 缓存 `VetorIndex` 索引
+### 缓存 `VectorIndex` 索引
 
-可以预先加载 `vecotorIndex` 缓存，然后做成全局变量，每次创建 searcher 的时候使用全局的 `vectorIndex`，可以减少一次固定的 IO 操作从而加速查询，减少系统 io 压力。
+可以预先加载 `vectorIndex` 缓存，然后做成全局变量，每次创建 searcher 的时候使用全局的 `vectorIndex`，可以减少一次固定的 IO 操作从而加速查询，减少系统 io 压力。
 ```golang
 // 1、从 dbPath 加载 VectorIndex 缓存，把下述 vIndex 变量全局到内存里面。
 vIndex, err := LoadVectorIndexFromFile(dbPath)
