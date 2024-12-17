@@ -1,28 +1,27 @@
 {
+  "name": "@types/ip2region",
   "version": "0.1.0",
-  "license": "MIT",
+  "license": "Apache-2.0",
+  "author": "Alan",
   "main": "dist/index.js",
+  "module": "dist/ip2region.esm.js",
   "typings": "dist/index.d.ts",
   "files": [
     "dist",
     "src"
   ],
-  "engines": {
-    "node": ">=10"
-  },
   "scripts": {
-    "start": "tsdx watch",
-    "build": "tsdx build",
-    "test": "tsdx test",
-    "lint": "tsdx lint",
-    "prepare": "tsdx build",
+    "analyze": "size-limit --why",
+    "build": "dts build",
+    "lint": "dts lint",
+    "prepare": "dts build",
     "size": "size-limit",
-    "analyze": "size-limit --why"
+    "start": "dts watch",
+    "test": "dts test"
   },
-  "peerDependencies": {},
   "husky": {
     "hooks": {
-      "pre-commit": "tsdx lint"
+      "pre-commit": "dts lint"
     }
   },
   "prettier": {
@@ -31,9 +30,13 @@
     "singleQuote": true,
     "trailingComma": "es5"
   },
-  "name": "ip2region",
-  "author": "Alan",
-  "module": "dist/ip2region.esm.js",
+  "jest": {
+    "testEnvironment": "node"
+  },
+  "peerDependencies": {},
+  "engines": {
+    "node": ">=12"
+  },
   "size-limit": [
     {
       "path": "dist/ip2region.cjs.production.min.js",
@@ -46,9 +49,10 @@
   ],
   "devDependencies": {
     "@size-limit/preset-small-lib": "^11.1.6",
+    "@tsconfig/recommended": "^1.0.8",
+    "dts-cli": "^2.0.5",
     "husky": "^9.1.7",
     "size-limit": "^11.1.6",
-    "tsdx": "^0.14.1",
     "tslib": "^2.8.1",
     "typescript": "^5.7.2"
   }
