@@ -1,4 +1,4 @@
-# IP2Region.Net
+# @types/ip2region
 
 TypeScript node client library for IP2Region
 
