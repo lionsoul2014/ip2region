@@ -43,6 +43,7 @@ API 介绍，使用文档和测试程序请参考对应 `searcher` 查询客户�
 | &nbsp;&nbsp;&nbsp; | 待开始  | [php_ext](binding/php7_ext) | php c 扩展 xdb 查询客户端实现 | 待确定 |
 | :white_check_mark: | 已完成  | [nginx](binding/nginx) | nginx 扩展 xdb 查询客户端实现  | [Wu Jian Ping](https://github.com/wujjpp) |
 | :white_check_mark: | 已完成  | [C++](binding/cpp) | C++ xdb 查询客户端实现    | [Yunbin Liu](https://github.com/liuyunbin) |
+| :white_check_mark: | 已完成  | [Typescript](binding/typescript) | Typescript xdb 查询客户端实现    | [Alan Lee](https://github.com/malus2077) |
 
 
 以下工具链实现由社区开发者通过第三方仓库贡献：
