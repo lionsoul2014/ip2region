@@ -203,7 +203,7 @@
 ==========================================================================
 The following license applies to the ip2region library
 --------------------------------------------------------------------------
-Copyright (c) 2015 Lionsoul<chenxin619315@gmail.com>
+Copyright (c) 2025 Lionsoul<chenxin619315@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
