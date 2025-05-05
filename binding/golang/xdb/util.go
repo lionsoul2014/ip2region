@@ -11,6 +11,7 @@ package xdb
 import (
 	"embed"
 	"fmt"
+	"io"
 	"os"
 	"strconv"
 	"strings"
@@ -182,7 +183,7 @@ func LoadContentFromFile(dbFile string) ([]byte, error) {
 	return cBuff, nil
 }
 
-// LoadContentFromFS 提供了一个通用的方法来从 embed.FS 中加载文件内容
+// LoadContentFromFS load the whole xdb binary from embed.FS
 func LoadContentFromFS(fs embed.FS, filePath string) ([]byte, error) {
 	file, err := fs.Open(filePath)
 	if err != nil {
@@ -190,7 +191,6 @@ func LoadContentFromFS(fs embed.FS, filePath string) ([]byte, error) {
 	}
 	defer file.Close()
 
-	// 读取文件内容到字节数组
 	var cBuff []byte
 	cBuff, err = io.ReadAll(file)
 	if err != nil {
