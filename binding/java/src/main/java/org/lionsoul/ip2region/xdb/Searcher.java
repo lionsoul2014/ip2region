@@ -127,7 +127,7 @@ public class Searcher {
         }
 
         // empty match interception
-        System.out.printf("dataLen: %d, dataPtr: %d\n", dataLen, dataPtr);
+        // System.out.printf("dataLen: %d, dataPtr: %d\n", dataLen, dataPtr);
         if (dataPtr < 0) {
             return null;
         }

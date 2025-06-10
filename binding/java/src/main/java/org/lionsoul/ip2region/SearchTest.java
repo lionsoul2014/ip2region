@@ -67,7 +67,7 @@ public class SearchTest {
             }
         }
 
-        if (dbPath.length() < 1) {
+        if (dbPath.isEmpty()) {
             System.out.print("java -jar ip2region-{version}.jar search [command options]\n");
             System.out.print("options:\n");
             System.out.print(" --db string              ip2region binary xdb file path\n");
@@ -95,7 +95,6 @@ public class SearchTest {
                 long cost = TimeUnit.NANOSECONDS.toMicros((long) (System.nanoTime() - sTime));
                 System.out.printf("{region: %s, ioCount: %d, took: %d μs}\n", region, searcher.getIOCount(), cost);
             } catch (Exception e) {
-                e.printStackTrace();
                 System.out.printf("{err: %s, ioCount: %d}\n", e, searcher.getIOCount());
             }
         }
