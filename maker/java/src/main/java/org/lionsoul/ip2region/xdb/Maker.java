@@ -68,7 +68,7 @@ public class Maker {
     public static final int SegmentIndexSize = 14;
     public static final int VectorIndexLength = VectorIndexRows * VectorIndexCols * VectorIndexSize;
 
-    private static final Log log = Log.getLogger(Maker.class);
+    public static final Log log = Log.getLogger(Maker.class);
 
     // source text file handle
     private final File srcFile;
@@ -199,7 +199,7 @@ public class Maker {
 
     // start to make the binary file
     public void start() throws Exception {
-        if (segments.size() == 0) {
+        if (segments.isEmpty()) {
             throw new Exception("empty segment list");
         }
 

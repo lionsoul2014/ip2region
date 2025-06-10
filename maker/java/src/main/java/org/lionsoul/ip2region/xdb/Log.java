@@ -28,7 +28,7 @@ public class Log {
     };
 
     public final Class<?> baseClass;
-    private static int level;
+    private int level = INFO;
 
     public Log(Class<?> baseClass) {
         this.baseClass = baseClass;
@@ -56,7 +56,7 @@ public class Log {
         }
 
         // level filter
-        if (level < Log.level) {
+        if (level < this.level) {
             return;
         }
 
@@ -96,21 +96,24 @@ public class Log {
         printf(ERROR, format, args);
     }
 
-    public static void setLevel(int level) {
-        Log.level = level;
+    public Log setLevel(int level) {
+        this.level = level;
+        return this;
     }
 
-    public static void setLevel(String level) {
+    public Log setLevel(String level) {
         String v = level.toLowerCase();
         if ("debug".equals(v)) {
-            Log.level = DEBUG;
+            this.level = DEBUG;
         } else if ("info".equals(v)) {
-            Log.level = INFO;
+            this.level = INFO;
         } else if ("warn".equals(v)) {
-            Log.level = WARN;
+            this.level = WARN;
         } else if ("error".equals(v)) {
-            Log.level = ERROR;
+            this.level = ERROR;
         }
+
+        return this;
     }
 
 }

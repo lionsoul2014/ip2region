@@ -19,12 +19,13 @@ public class MakerTest {
         System.out.println("ip2region xdb maker");
         System.out.println("java -jar ip2region-maker-{version}.jar [command options]");
         System.out.println("options:");
-        System.out.println(" --src string    source ip text file path");
-        System.out.println(" --dst string    destination binary xdb file path");
+        System.out.println(" --src string        source ip text file path");
+        System.out.println(" --dst string        destination binary xdb file path");
+        System.out.println(" --log-level string  set the log level, options: debug/info/warn/error");
     }
 
     public static void genDb(String[] args) throws Exception {
-        String srcFile = "", dstFile = "";
+        String srcFile = "", dstFile = "", logLevel = "info";
         int indexPolicy = IndexPolicy.Vector;
         for (final String r : args) {
             if (r.length() < 5) {
@@ -48,25 +49,23 @@ public class MakerTest {
                 srcFile = val;
             } else if ("dst".equals(key)) {
                 dstFile = val;
-            } else if ("index".equals(key)) {
-                try {
-                    indexPolicy = IndexPolicy.parse(val);
-                } catch (Exception e) {
-                    System.out.println("parse policy " + e);
-                }
+            } else if ("log-level".equals(key)) {
+                logLevel = val;
             } else {
                 System.out.printf("undefined option `%s`\n", r);
                 return;
             }
         }
 
-        if (srcFile.length() < 1 || dstFile.length() < 1) {
+        if (srcFile.isEmpty() || dstFile.isEmpty()) {
             printHelp(args);
             return;
         }
 
         long tStart = System.currentTimeMillis();
-        Maker maker = new Maker(indexPolicy, srcFile, dstFile);
+        final Maker maker = new Maker(indexPolicy, srcFile, dstFile);
+        log.infof("Generating xdb with src=%s, dst=%s, logLevel=%s\n", srcFile, dstFile, logLevel);
+        Maker.log.setLevel(logLevel);
         maker.init();
         maker.start();
         maker.end();
