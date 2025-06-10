@@ -81,33 +81,33 @@ public class Searcher {
         this.ioCount = 0;
 
         // locate the segment index block based on the vector index
-        int sPtr = 0, ePtr = 0;
+        long sPtr = 0, ePtr = 0;
         int il0 = (int) ((ip >> 24) & 0xFF);
         int il1 = (int) ((ip >> 16) & 0xFF);
         int idx = il0 * VectorIndexCols * VectorIndexSize + il1 * VectorIndexSize;
         // System.out.printf("il0: %d, il1: %d, idx: %d\n", il0, il1, idx);
         if (vectorIndex != null) {
-            sPtr = getInt(vectorIndex, idx);
-            ePtr = getInt(vectorIndex, idx + 4);
+            sPtr = getIntLong(vectorIndex, idx);
+            ePtr = getIntLong(vectorIndex, idx + 4);
         } else if (contentBuff != null) {
-            sPtr = getInt(contentBuff, HeaderInfoLength + idx);
-            ePtr = getInt(contentBuff, HeaderInfoLength + idx + 4);
+            sPtr = getIntLong(contentBuff, HeaderInfoLength + idx);
+            ePtr = getIntLong(contentBuff, HeaderInfoLength + idx + 4);
         } else {
             final byte[] buff = new byte[VectorIndexSize];
             read(HeaderInfoLength + idx, buff);
-            sPtr = getInt(buff, 0);
-            ePtr = getInt(buff, 4);
+            sPtr = getIntLong(buff, 0);
+            ePtr = getIntLong(buff, 4);
         }
 
         // System.out.printf("sPtr: %d, ePtr: %d\n", sPtr, ePtr);
 
         // binary search the segment index block to get the region info
         final byte[] buff = new byte[SegmentIndexSize];
-        int dataLen = -1, dataPtr = -1;
-        int l = 0, h = (ePtr - sPtr) / SegmentIndexSize;
+        int dataLen = -1;
+        long dataPtr = -1, l = 0, h = (ePtr - sPtr) / SegmentIndexSize;
         while (l <= h) {
-            int m = (l + h) >> 1;
-            int p = sPtr + m * SegmentIndexSize;
+            long m = (l + h) >> 1;
+            long p = sPtr + m * SegmentIndexSize;
 
             // read the segment index
             read(p, buff);
@@ -120,14 +120,14 @@ public class Searcher {
                     l = m + 1;
                 } else {
                     dataLen = getInt2(buff, 8);
-                    dataPtr = getInt(buff, 10);
+                    dataPtr = getIntLong(buff, 10);
                     break;
                 }
             }
         }
 
         // empty match interception
-        // System.out.printf("dataLen: %d, dataPtr: %d\n", dataLen, dataPtr);
+        System.out.printf("dataLen: %d, dataPtr: %d\n", dataLen, dataPtr);
         if (dataPtr < 0) {
             return null;
         }
@@ -138,11 +138,18 @@ public class Searcher {
         return new String(regionBuff, "utf-8");
     }
 
-    protected void read(int offset, byte[] buffer) throws IOException {
+    protected void read(long offset, byte[] buffer) throws IOException {
         // check the in-memory buffer first
         if (contentBuff != null) {
             // @TODO: reduce data copying, directly decode the data ?
-            System.arraycopy(contentBuff, offset, buffer, 0, buffer.length);
+            // @TODO: added by Leon at 2025/06/10, when offset is negative and the content byte is not going to work.
+            // we need a better solution for the content buffer which is greater than (2^31 - 1 << 2)
+            int int_idx = (int) offset;
+            if (int_idx < 0) {
+                throw new IOException("No content buffer policy for NOW since the xdb is too large, use file or vectorIndex instead");
+            }
+
+            System.arraycopy(contentBuff, int_idx, buffer, 0, buffer.length);
             return;
         }
 

@@ -95,6 +95,7 @@ public class SearchTest {
                 long cost = TimeUnit.NANOSECONDS.toMicros((long) (System.nanoTime() - sTime));
                 System.out.printf("{region: %s, ioCount: %d, took: %d μs}\n", region, searcher.getIOCount(), cost);
             } catch (Exception e) {
+                e.printStackTrace();
                 System.out.printf("{err: %s, ioCount: %d}\n", e, searcher.getIOCount());
             }
         }
