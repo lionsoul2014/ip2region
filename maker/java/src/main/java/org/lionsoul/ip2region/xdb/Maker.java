@@ -53,10 +53,7 @@ package org.lionsoul.ip2region.xdb;
 
 import java.io.*;
 import java.nio.charset.Charset;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Maker {
     // constants define
@@ -72,6 +69,7 @@ public class Maker {
 
     // source text file handle
     private final File srcFile;
+    private final int[] fields;
     private final List<Segment> segments;
     private final Charset bytesCharset;
 
@@ -87,11 +85,13 @@ public class Maker {
     // vector index raw bytes
     private final byte[] vectorIndex;
 
-    public Maker(int policy, String srcPath, String dstPath) throws IOException {
+    public Maker(int policy, String srcPath, String dstPath, int[] fields) throws IOException {
         this.srcFile = new File(srcPath);
         if (!this.srcFile.exists()) {
             throw new FileNotFoundException("source text file `" + srcPath + "` not found");
         }
+
+        this.fields = fields;
 
         /// check and delete the target xdb file if it exists
         /// final File dstFile = new File(dstPath);
@@ -128,6 +128,31 @@ public class Maker {
         dstHandle.write(header);
     }
 
+    // internal method to apply the region fields filter
+    private String getFilteredRegion(String region) {
+        if (this.fields.length == 0) {
+            return region;
+        }
+
+        final String[] fs = region.split("\\|", -1);
+        final StringBuilder sb = new StringBuilder();
+        final int tailing = this.fields.length - 1;
+        for (int i = 0; i < this.fields.length; i++) {
+            final int idx = this.fields[i];
+            if (idx >= fs.length) {
+                throw new IllegalArgumentException("field index `"
+                        + idx + "` exceeded the max length `" + fs.length + "`");
+            }
+
+            sb.append(fs[idx]);
+            if (sb.length() > 0 && i < tailing) {
+                sb.append("|");
+            }
+        }
+
+        return sb.toString();
+    }
+
     // load all the segments
     private void loadSegments() throws Exception {
         log.infof("try to load the segments ... ");
@@ -152,7 +177,7 @@ public class Maker {
                 throw new Exception("start ip("+ps[0]+") should not be greater than end ip("+ps[1]+")");
             }
 
-            if (ps[2].length() < 1) {
+            if (ps[2].isEmpty()) {
                 br.close();
                 throw new Exception("empty region info in segment line `"+ps[2]+"`");
             }
@@ -165,7 +190,7 @@ public class Maker {
                 }
             }
 
-            final Segment seg = new Segment(sip, eip, ps[2]);
+            final Segment seg = new Segment(sip, eip, getFilteredRegion(ps[2]));
             segments.add(seg);
             last = seg;
         }

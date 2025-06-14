@@ -58,6 +58,15 @@ public class UtilTest {
         }
     }
 
+    public static void testFieldFilter() {
+        final String reg = "0|16777215|保留|保留|保留|保留|||||||||||";
+        final String[] fs = reg.split("\\|", -1);
+        log.infof("length: %d", fs.length);
+        for (String s : fs) {
+            log.infof("%s", s);
+        }
+    }
+
     public static void main(String[] args) {
         System.out.println("+-- testing index policy");
         testIndexPolicy();
@@ -69,6 +78,10 @@ public class UtilTest {
 
         System.out.println("+-- testing segments");
         testSegment();
+        System.out.println();
+
+        System.out.println("+-- testing field filter");
+        testFieldFilter();
         System.out.println();
     }
 
