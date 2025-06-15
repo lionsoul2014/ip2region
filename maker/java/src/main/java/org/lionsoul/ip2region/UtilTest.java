@@ -12,6 +12,8 @@ import org.lionsoul.ip2region.xdb.Log;
 import org.lionsoul.ip2region.xdb.Segment;
 import org.lionsoul.ip2region.xdb.Util;
 
+import java.util.regex.Matcher;
+
 public class UtilTest {
 
     public static final Log log = Log.getLogger(UtilTest.class);
@@ -67,6 +69,21 @@ public class UtilTest {
         }
     }
 
+    public static void testIndexParse() {
+        final String[] ss = new String[]{"1", "2-3", "23", "3-", "x-", "3-x", "4x"};
+        for (String s : ss) {
+            log.infof("parse: %s", s);
+            final Matcher m = MakerTest.p.matcher(s);
+            if (m.matches()) {
+                for (int i = 0; i < m.groupCount(); i++) {
+                    log.infof("match: %d/%d, str: %s", i, m.groupCount(), m.group(i));
+                }
+            } else {
+                log.infof("no match for: %s", s);
+            }
+        }
+    }
+
     public static void main(String[] args) {
         System.out.println("+-- testing index policy");
         testIndexPolicy();
@@ -82,6 +99,10 @@ public class UtilTest {
 
         System.out.println("+-- testing field filter");
         testFieldFilter();
+        System.out.println();
+
+        System.out.println("+-- testing index parse");
+        testIndexParse();
         System.out.println();
     }
 

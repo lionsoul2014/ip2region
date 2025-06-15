@@ -12,12 +12,16 @@ import org.lionsoul.ip2region.xdb.Log;
 import org.lionsoul.ip2region.xdb.Maker;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MakerTest {
 
     public final static Log log = Log.getLogger(MakerTest.class);
+    public final static Pattern p = Pattern.compile("^(\\d+(-\\d+)?)$");
 
     public static void printHelp(String[] args) {
         System.out.println("ip2region xdb maker");
@@ -25,7 +29,7 @@ public class MakerTest {
         System.out.println("options:");
         System.out.println(" --src string        source ip text file path");
         System.out.println(" --dst string        destination binary xdb file path");
-        System.out.println(" --field-list string field index list imploded with ',' eg: 0,1,2,3,4");
+        System.out.println(" --field-list string field index list imploded with ',' eg: 0,1,2,3-6,7");
         System.out.println(" --log-level string  set the log level, options: debug/info/warn/error");
     }
 
@@ -37,28 +41,53 @@ public class MakerTest {
             for (String f : fList) {
                 final String s = f.trim();
                 if (s.isEmpty()) {
-                    log.infof("undefined option `%s`", f);
+                    log.errorf("undefined option `%s`", f);
                     return null;
                 }
 
-                if (!s.matches("^\\d+$")) {
-                    log.infof("field `%s` is not a number", f);
+                final Matcher m = p.matcher(s);
+                if (!m.matches()) {
+                    log.errorf("field `%s` is not a number", f);
                     return null;
                 }
 
-                if (map.containsKey(s)) {
-                    log.infof("duplicate field index `%s`", s);
+                final String ms = m.group(1);
+                if (ms.indexOf('-') == -1) {
+                    if (map.containsKey(s)) {
+                        log.errorf("duplicate field index `%s`", s);
+                        return null;
+                    }
+
+                    map.put(s, s);
+                    final int idx = Integer.parseInt(s);
+                    if (idx < 0) {
+                        log.errorf("field index `%s` is negative", s);
+                        return null;
+                    }
+
+                    list.add(idx);
+                    continue;
+                }
+
+                // index range parse
+                final String[] ra = ms.split("-");
+                if (ra.length != 2) {
+                    log.errorf("field `%s` is not a valid range", ms);
                     return null;
                 }
 
-                map.put(s, s);
-                final int idx = Integer.parseInt(s);
-                if (idx < 0) {
-                    log.infof("field index `%s` is negative", s);
-                    return null;
-                }
+                final int start = Integer.parseInt(ra[0]);
+                final int end = Integer.parseInt(ra[1]);
+                for (int i = start; i <= end; i++) {
+                    final String _s = String.valueOf(i);
+                    if (map.containsKey(_s)) {
+                        log.errorf("duplicate field index `%s`", _s);
+                        return null;
+                    }
 
-                list.add(idx);
+                    map.put(_s, _s);
+                    list.add(i);
+                }
             }
         }
 
@@ -68,6 +97,8 @@ public class MakerTest {
             fields[i] = list.get(i);
         }
 
+        // sort the fields to make sure the fields follow the original index order
+        Arrays.sort(fields);
         return fields;
     }
 
