@@ -163,7 +163,7 @@ public class Maker {
         final FileInputStream fis = new FileInputStream(srcFile);
         final BufferedReader br = new BufferedReader(new InputStreamReader(fis, bytesCharset));
         while ((line = br.readLine()) != null) {
-            log.infof("load segment `%s`", line);
+            log.debugf("load segment `%s`", line);
             final String[] ps = line.split("\\|", 3);
             if (ps.length != 3) {
                 br.close();
@@ -233,10 +233,10 @@ public class Maker {
 
         log.infof("try to write the data block ... ");
         for (Segment seg : segments) {
-            log.infof("try to write region `%s` ... ", seg.region);
+            log.debugf("try to write region `%s` ... ", seg.region);
             final DataEntry e = regionPool.get(seg.region);
             if (e != null) {
-                log.infof(" --[Cached] with ptr=%d", e.ptr);
+                log.debugf(" --[Cached] with ptr=%d", e.ptr);
                 continue;
             }
 
@@ -254,7 +254,7 @@ public class Maker {
 
             // record the mapping
             regionPool.put(seg.region, new DataEntry(regionBuff.length, pos));
-            log.infof(" --[Added] with ptr=%d", pos);
+            log.debugf(" --[Added] with ptr=%d", pos);
         }
 
         // 2, write the index block cache the super index block
@@ -270,7 +270,7 @@ public class Maker {
             }
 
             List<Segment> segList = seg.split();
-            log.infof("try to index segment(%d splits) %s ... ", segList.size(), seg);
+            log.debugf("try to index segment(%d splits) %s ... ", segList.size(), seg);
             for (Segment s : segList) {
                 long pos = dstHandle.getFilePointer();
 
@@ -281,7 +281,7 @@ public class Maker {
                 Util.write(indexBuff, 10, e.ptr, 4);
                 dstHandle.write(indexBuff);
 
-                log.infof("|-segment index: %d, ptr: %d, segment: %s", counter, pos, s);
+                log.debugf("|-segment index: %d, ptr: %d, segment: %s", counter, pos, s);
                 setVectorIndex(s.startIP, pos);
                 counter++;
 

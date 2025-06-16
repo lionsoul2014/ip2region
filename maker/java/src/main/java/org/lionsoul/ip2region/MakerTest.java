@@ -151,7 +151,7 @@ public class MakerTest {
         // check and make the field list
         long tStart = System.currentTimeMillis();
         final Maker maker = new Maker(indexPolicy, srcFile, dstFile, fields);
-        log.infof("Generating xdb with src=%s, dst=%s, logLevel=%s\n", srcFile, dstFile, logLevel);
+        log.infof("Generating xdb with src=%s, dst=%s, logLevel=%s", srcFile, dstFile, logLevel);
         Maker.log.setLevel(logLevel);
         maker.init();
         maker.start();
