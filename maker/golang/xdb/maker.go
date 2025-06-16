@@ -19,9 +19,9 @@
 // -- 4bytes: index block end ptr
 //
 //
-// 2. data block : region or whatever data info.
-// 3. segment index block : binary index block.
-// 4. vector index block  : fixed index info for block index search speed up.
+// 2. data block: region or whatever data info.
+// 3. segment index block: binary index block.
+// 4. vector index block: fixed index info for block index search speedup.
 // space structure table:
 // -- 0   -> | 1rt super block | 2nd super block | 3rd super block | ... | 255th super block
 // -- 1   -> | 1rt super block | 2nd super block | 3rd super block | ... | 255th super block
@@ -54,6 +54,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -69,13 +70,16 @@ type Maker struct {
 	srcHandle *os.File
 	dstHandle *os.File
 
+	// self-define field index
+	fields []int
+
 	indexPolicy IndexPolicy
 	segments    []*Segment
 	regionPool  map[string]uint32
 	vectorIndex []byte
 }
 
-func NewMaker(policy IndexPolicy, srcFile string, dstFile string) (*Maker, error) {
+func NewMaker(policy IndexPolicy, srcFile string, dstFile string, fields []int) (*Maker, error) {
 	// open the source file with READONLY mode
 	srcHandle, err := os.OpenFile(srcFile, os.O_RDONLY, 0600)
 	if err != nil {
@@ -91,6 +95,9 @@ func NewMaker(policy IndexPolicy, srcFile string, dstFile string) (*Maker, error
 	return &Maker{
 		srcHandle: srcHandle,
 		dstHandle: dstHandle,
+
+		// fields filter index
+		fields: fields,
 
 		indexPolicy: policy,
 		segments:    []*Segment{},
@@ -133,6 +140,28 @@ func (m *Maker) initDbHeader() error {
 	return nil
 }
 
+func (m *Maker) getFilteredRegion(region string) (string, error) {
+	if len(m.fields) == 0 {
+		return region, nil
+	}
+
+	fs := strings.Split(region, "|")
+	var sb []string
+	for _, idx := range m.fields {
+		if idx < 0 {
+			return "", fmt.Errorf("negative filter index %d", idx)
+		}
+
+		if idx >= len(fs) {
+			return "", fmt.Errorf("field index %d exceeded the max length of %d", idx, len(fs))
+		}
+
+		sb = append(sb, fs[idx])
+	}
+
+	return strings.Join(sb, "|"), nil
+}
+
 func (m *Maker) loadSegments() error {
 	slog.Info("try to load the segments ... ")
 	var last *Segment = nil
@@ -146,6 +175,14 @@ func (m *Maker) loadSegments() error {
 			return err
 		}
 
+		// apply the field filter
+		region, err := m.getFilteredRegion(seg.Region)
+		if err != nil {
+			return err
+		}
+
+		// slog.Info("filtered", "region", region)
+		seg.Region = region
 		m.segments = append(m.segments, seg)
 		last = seg
 		return nil
@@ -241,7 +278,7 @@ func (m *Maker) Start() error {
 		}
 
 		// @Note: data length should be the length of bytes.
-		// this works find cuz of the string feature (byte sequence) of golang.
+		// this works fine because of the string feature (byte sequence) of golang.
 		var dataLen = len(seg.Region)
 		if dataLen < 1 {
 			// @TODO: could this even be a case ?

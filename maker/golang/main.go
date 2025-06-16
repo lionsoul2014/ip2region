@@ -12,6 +12,8 @@ import (
 	"log/slog"
 	"os"
 	"regexp"
+	"sort"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -74,6 +76,78 @@ func applyLogLevel(logLevel string) error {
 	return nil
 }
 
+var pattern = regexp.MustCompile("^(\\d+(-\\d+)?)$")
+
+func getFilterFields(fieldList string) ([]int, error) {
+	if len(fieldList) == 0 {
+		return []int{}, nil
+	}
+
+	var fields []int
+	var mapping = make(map[string]string)
+	fList := strings.Split(fieldList, ",")
+	for _, f := range fList {
+		f = strings.TrimSpace(f)
+		if len(f) == 0 {
+			return nil, fmt.Errorf("empty field index value `%s`", f)
+		}
+
+		ms := pattern.FindString(f)
+		if len(ms) == 0 {
+			return nil, fmt.Errorf("field `%s` is not a number or number range", f)
+		}
+
+		if strings.Index(ms, "-") == -1 {
+			if _, ok := mapping[ms]; ok {
+				return nil, fmt.Errorf("duplicate option `%s`", f)
+			}
+
+			idx, err := strconv.Atoi(ms)
+			if err != nil {
+				return nil, fmt.Errorf("field index `%s` not an integer", f)
+			}
+
+			mapping[ms] = ms
+			fields = append(fields, idx)
+			continue
+		}
+
+		ra := strings.Split(ms, "-")
+		if len(ra) != 2 {
+			return nil, fmt.Errorf("invalid field index range `%s`", ms)
+		}
+
+		start, err := strconv.Atoi(ra[0])
+		if err != nil {
+			return nil, fmt.Errorf("range start `%s` not an integer", ra[0])
+		}
+
+		end, err := strconv.Atoi(ra[1])
+		if err != nil {
+			return nil, fmt.Errorf("range end `%s` not an integer", ra[1])
+		}
+
+		if start > end {
+			return nil, fmt.Errorf("index range start(%d) should <= end(%d)", start, end)
+		}
+
+		for i := start; i <= end; i++ {
+			s := strconv.Itoa(i)
+			if _, ok := mapping[s]; ok {
+				return nil, fmt.Errorf("duplicate option `%s`", s)
+			}
+
+			mapping[s] = s
+			fields = append(fields, i)
+		}
+	}
+
+	// sort the fields
+	sort.Ints(fields)
+	// fmt.Printf("%+v\n", fields)
+	return fields, nil
+}
+
 func genDb() {
 	var err error
 	var srcFile, dstFile = "", ""
@@ -122,11 +196,15 @@ func genDb() {
 		return
 	}
 
-	slog.Info("field-list", "value", fieldList)
+	fields, err := getFilterFields(fieldList)
+	if err != nil {
+		slog.Error("failed to get filter fields", "error", err)
+		return
+	}
 
 	// make the binary file
 	tStart := time.Now()
-	maker, err := xdb.NewMaker(indexPolicy, srcFile, dstFile)
+	maker, err := xdb.NewMaker(indexPolicy, srcFile, dstFile, fields)
 	if err != nil {
 		fmt.Printf("failed to create %s\n", err)
 		return

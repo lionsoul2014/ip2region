@@ -94,7 +94,7 @@ func IterateSegments(handle *os.File, before func(l string), cb func(seg *Segmen
 			Region:  ps[2],
 		}
 
-		// check and automatic merging the Consecutive Segments which means:
+		// check and automatic merging the Consecutive Segments, which means:
 		// 1, region info is the same
 		// 2, last.eip+1 = cur.sip
 		if last == nil {
