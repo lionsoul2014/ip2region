@@ -52,7 +52,7 @@ package xdb
 import (
 	"encoding/binary"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"time"
 )
@@ -100,7 +100,7 @@ func NewMaker(policy IndexPolicy, srcFile string, dstFile string) (*Maker, error
 }
 
 func (m *Maker) initDbHeader() error {
-	log.Printf("try to init the db header ... ")
+	slog.Info("try to init the db header ... ")
 
 	_, err := m.dstHandle.Seek(0, 0)
 	if err != nil {
@@ -134,12 +134,12 @@ func (m *Maker) initDbHeader() error {
 }
 
 func (m *Maker) loadSegments() error {
-	log.Printf("try to load the segments ... ")
+	slog.Info("try to load the segments ... ")
 	var last *Segment = nil
 	var tStart = time.Now()
 
 	var iErr = IterateSegments(m.srcHandle, func(l string) {
-		log.Printf("load segment: `%s`", l)
+		slog.Debug("loaded", "segment", l)
 	}, func(seg *Segment) error {
 		// check the continuity of the data segment
 		if err := seg.AfterCheck(last); err != nil {
@@ -154,7 +154,7 @@ func (m *Maker) loadSegments() error {
 		return fmt.Errorf("failed to load segments: %s", iErr)
 	}
 
-	log.Printf("all segments loaded, length: %d, elapsed: %s", len(m.segments), time.Since(tStart))
+	slog.Info("all segments loaded", "length", len(m.segments), "elapsed", time.Since(tStart))
 	return nil
 }
 
@@ -201,12 +201,12 @@ func (m *Maker) Start() error {
 		return fmt.Errorf("seek to data first ptr: %w", err)
 	}
 
-	log.Printf("try to write the data block ... ")
+	slog.Info("try to write the data block ... ")
 	for _, seg := range m.segments {
-		log.Printf("try to write region '%s' ... ", seg.Region)
+		slog.Debug("try to write", "region", seg.Region)
 		ptr, has := m.regionPool[seg.Region]
 		if has {
-			log.Printf(" --[Cached] with ptr=%d", ptr)
+			slog.Debug(" --[Cached]", "ptr=", ptr)
 			continue
 		}
 
@@ -227,11 +227,11 @@ func (m *Maker) Start() error {
 		}
 
 		m.regionPool[seg.Region] = uint32(pos)
-		log.Printf(" --[Added] with ptr=%d", pos)
+		slog.Debug(" --[Added] with", "ptr", pos)
 	}
 
 	// 2, write the index block and cache the super index block
-	log.Printf("try to write the segment index block ... ")
+	slog.Info("try to write the segment index block ... ")
 	var indexBuff = make([]byte, SegmentIndexSize)
 	var counter, startIndexPtr, endIndexPtr = 0, int64(-1), int64(-1)
 	for _, seg := range m.segments {
@@ -249,7 +249,7 @@ func (m *Maker) Start() error {
 		}
 
 		var segList = seg.Split()
-		log.Printf("try to index segment(%d splits) %s ...", len(segList), seg.String())
+		slog.Debug("try to index segment", "length", len(segList), "splits", seg.String())
 		for _, s := range segList {
 			pos, err := m.dstHandle.Seek(0, 1)
 			if err != nil {
@@ -266,7 +266,7 @@ func (m *Maker) Start() error {
 				return fmt.Errorf("write segment index for '%s': %w", s.String(), err)
 			}
 
-			log.Printf("|-segment index: %d, ptr: %d, segment: %s\n", counter, pos, s.String())
+			slog.Debug("|-segment index", "counter", counter, "ptr", pos, "segment", s.String())
 			m.setVectorIndex(s.StartIP, uint32(pos))
 			counter++
 
@@ -280,7 +280,7 @@ func (m *Maker) Start() error {
 	}
 
 	// synchronized the vector index block
-	log.Printf("try to write the vector index block ... ")
+	slog.Info("try to write the vector index block ... ")
 	_, err = m.dstHandle.Seek(int64(HeaderInfoLength), 0)
 	if err != nil {
 		return fmt.Errorf("seek vector index first ptr: %w", err)
@@ -291,7 +291,7 @@ func (m *Maker) Start() error {
 	}
 
 	// synchronized the segment index info
-	log.Printf("try to write the segment index ptr ... ")
+	slog.Info("try to write the segment index ptr ... ")
 	binary.LittleEndian.PutUint32(indexBuff, uint32(startIndexPtr))
 	binary.LittleEndian.PutUint32(indexBuff[4:], uint32(endIndexPtr))
 	_, err = m.dstHandle.Seek(8, 0)
@@ -304,8 +304,8 @@ func (m *Maker) Start() error {
 		return fmt.Errorf("write segment index ptr: %w", err)
 	}
 
-	log.Printf("write done, dataBlocks: %d, indexBlocks: (%d, %d), indexPtr: (%d, %d)",
-		len(m.regionPool), len(m.segments), counter, startIndexPtr, endIndexPtr)
+	slog.Info("write done", "dataBlocks", len(m.regionPool), "indexBlocks", len(m.segments),
+		"counter", counter, "startIndexPtr", startIndexPtr, "endIndexPtr", endIndexPtr)
 
 	return nil
 }

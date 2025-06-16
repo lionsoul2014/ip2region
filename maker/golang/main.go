@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/lionsoul2014/ip2region/maker/golang/xdb"
 	"log"
+	"log/slog"
 	"os"
 	"regexp"
 	"strings"
@@ -50,9 +51,33 @@ func iterateFlags(cb func(key string, val string) error) error {
 	return nil
 }
 
+func applyLogLevel(logLevel string) error {
+	// check and apply the log level
+	var levelLog = slog.LevelInfo
+	switch strings.ToLower(logLevel) {
+	case "debug":
+		levelLog = slog.LevelDebug
+	case "info":
+		levelLog = slog.LevelInfo
+	case "warn":
+		levelLog = slog.LevelWarn
+	case "error":
+		levelLog = slog.LevelError
+	case "":
+		// ignore the empty value
+		// and default it to LevelInfo
+	default:
+		return fmt.Errorf("invalid log level %s", logLevel)
+	}
+
+	slog.SetLogLoggerLevel(levelLog)
+	return nil
+}
+
 func genDb() {
 	var err error
 	var srcFile, dstFile = "", ""
+	var fieldList, logLevel = "", ""
 	var indexPolicy = xdb.VectorIndexPolicy
 	var fErr = iterateFlags(func(key string, val string) error {
 		switch key {
@@ -60,6 +85,10 @@ func genDb() {
 			srcFile = val
 		case "dst":
 			dstFile = val
+		case "log-level":
+			logLevel = val
+		case "field-list":
+			fieldList = val
 		case "index":
 			indexPolicy, err = xdb.IndexPolicyFromString(val)
 			if err != nil {
@@ -79,10 +108,21 @@ func genDb() {
 	if srcFile == "" || dstFile == "" {
 		fmt.Printf("%s gen [command options]\n", os.Args[0])
 		fmt.Printf("options:\n")
-		fmt.Printf(" --src string    source ip text file path\n")
-		fmt.Printf(" --dst string    destination binary xdb file path\n")
+		fmt.Printf(" --src string           source ip text file path\n")
+		fmt.Printf(" --dst string           destination binary xdb file path\n")
+		fmt.Printf(" --field-list string    field index list imploded with ',' eg: 0,1,2,3-6,7\n")
+		fmt.Printf(" --log-level string     set the log level, options: debug/info/warn/error\n")
 		return
 	}
+
+	// check and apply the log level
+	err = applyLogLevel(logLevel)
+	if err != nil {
+		slog.Error("failed to apply log level", "error", err)
+		return
+	}
+
+	slog.Info("field-list", "value", fieldList)
 
 	// make the binary file
 	tStart := time.Now()
@@ -109,7 +149,7 @@ func genDb() {
 		fmt.Printf("failed End: %s\n", err)
 	}
 
-	log.Printf("Done, elapsed: %s\n", time.Since(tStart))
+	slog.Info("make done", "elapsed", time.Since(tStart))
 }
 
 func testSearch() {
@@ -154,7 +194,8 @@ quit      : exit the test program`)
 		fmt.Print("ip2region>> ")
 		str, err := reader.ReadString('\n')
 		if err != nil {
-			log.Fatalf("failed to read string: %s", err)
+			slog.Error("failed to read string", "error", err)
+			return
 		}
 
 		line := strings.TrimSpace(strings.TrimSuffix(str, "\n"))
@@ -166,7 +207,8 @@ quit      : exit the test program`)
 		if line == "loadIndex" {
 			err = searcher.LoadVectorIndex()
 			if err != nil {
-				log.Fatalf("failed to load vector index: %s", err)
+				slog.Error("failed to load vector index", "error", err)
+				return
 			}
 			fmt.Printf("vector index cached\n")
 			continue
@@ -196,7 +238,7 @@ quit      : exit the test program`)
 
 func testBench() {
 	var err error
-	var dbFile, srcFile = "", ""
+	var dbFile, srcFile, logLevel = "", "", ""
 	var ignoreError = false
 	var fErr = iterateFlags(func(key string, val string) error {
 		switch key {
@@ -204,6 +246,8 @@ func testBench() {
 			dbFile = val
 		case "src":
 			srcFile = val
+		case "log-level":
+			logLevel = val
 		case "ignore-error":
 			if val == "true" || val == "1" {
 				ignoreError = true
@@ -227,7 +271,15 @@ func testBench() {
 		fmt.Printf("options:\n")
 		fmt.Printf(" --db string            ip2region binary xdb file path\n")
 		fmt.Printf(" --src string           source ip text file path\n")
+		fmt.Printf(" --log-level string     set the log level, options: debug/info/warn/error\n")
 		fmt.Printf(" --ignore-error bool    keep going if bench failed\n")
+		return
+	}
+
+	// check and apply the log level
+	err = applyLogLevel(logLevel)
+	if err != nil {
+		slog.Error("failed to apply log level", "error", err)
 		return
 	}
 
@@ -247,12 +299,13 @@ func testBench() {
 	}
 
 	var count, errCount, tStart = 0, 0, time.Now()
+	slog.Info("Bench start", "xdbPath", dbFile, "srcPath", srcFile)
 	var iErr = xdb.IterateSegments(handle, nil, func(seg *xdb.Segment) error {
 		var l = fmt.Sprintf("%d|%d|%s", seg.StartIP, seg.EndIP, seg.Region)
-		fmt.Printf("try to bench segment: `%s`\n", l)
+		slog.Debug("try to bench", "segment", l)
 		mip := xdb.MidIP(seg.StartIP, seg.EndIP)
 		for _, ip := range []uint32{seg.StartIP, xdb.MidIP(seg.EndIP, mip), mip, xdb.MidIP(mip, seg.EndIP), seg.EndIP} {
-			fmt.Printf("|-try to bench ip '%s' ... ", xdb.Long2IP(ip))
+			slog.Debug("|-try to bench", "ip", xdb.Long2IP(ip))
 			r, _, err := searcher.Search(ip)
 			if err != nil {
 				return fmt.Errorf("failed to search ip '%s': %s\n", xdb.Long2IP(ip), err)
@@ -262,12 +315,12 @@ func testBench() {
 			count++
 			if r != seg.Region {
 				errCount++
-				fmt.Printf(" --[Failed] (%s != %s)\n", r, seg.Region)
+				slog.Error(" --[Failed] region not match", "src", r, "dst", seg.Region)
 				if ignoreError == false {
 					return fmt.Errorf("")
 				}
 			} else {
-				fmt.Printf(" --[Ok]\n")
+				slog.Debug(" --[Ok]")
 			}
 		}
 		return nil
@@ -277,7 +330,7 @@ func testBench() {
 		return
 	}
 
-	fmt.Printf("Bench finished, {count: %d, failed: %d, took: %s}\n", count, errCount, time.Since(tStart))
+	slog.Info("Bench finished", "count", count, "failed", errCount, "elapsed", time.Since(tStart))
 }
 
 func edit() {
@@ -416,7 +469,6 @@ func main() {
 		return
 	}
 
-	// set the log flag
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 	switch strings.ToLower(os.Args[1]) {
 	case "gen":
