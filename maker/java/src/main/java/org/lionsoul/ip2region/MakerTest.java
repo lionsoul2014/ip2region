@@ -27,10 +27,10 @@ public class MakerTest {
         System.out.println("ip2region xdb maker");
         System.out.println("java -jar ip2region-maker-{version}.jar [command options]");
         System.out.println("options:");
-        System.out.println(" --src string        source ip text file path");
-        System.out.println(" --dst string        destination binary xdb file path");
-        System.out.println(" --field-list string field index list imploded with ',' eg: 0,1,2,3-6,7");
-        System.out.println(" --log-level string  set the log level, options: debug/info/warn/error");
+        System.out.println(" --src string           source ip text file path");
+        System.out.println(" --dst string           destination binary xdb file path");
+        System.out.println(" --field-list string    field index list imploded with ',' eg: 0,1,2,3-6,7");
+        System.out.println(" --log-level string     set the log level, options: debug/info/warn/error");
     }
 
     private static int[] getFieldList(String fieldList) {
@@ -78,6 +78,11 @@ public class MakerTest {
 
                 final int start = Integer.parseInt(ra[0]);
                 final int end = Integer.parseInt(ra[1]);
+                if (start > end) {
+                    log.errorf("index range start(%d) should <= end(%d)", start, end);
+                    return null;
+                }
+
                 for (int i = start; i <= end; i++) {
                     final String _s = String.valueOf(i);
                     if (map.containsKey(_s)) {
