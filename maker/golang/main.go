@@ -77,7 +77,7 @@ func applyLogLevel(logLevel string) error {
 func genDb() {
 	var err error
 	var srcFile, dstFile = "", ""
-	var fieldList, logLevel = "", ""
+	var fieldList, logLevel = "", "info"
 	var indexPolicy = xdb.VectorIndexPolicy
 	var fErr = iterateFlags(func(key string, val string) error {
 		switch key {
@@ -132,6 +132,7 @@ func genDb() {
 		return
 	}
 
+	slog.Info("Generating xdb with", "src", srcFile, "dst", dstFile, "logLevel", logLevel)
 	err = maker.Init()
 	if err != nil {
 		fmt.Printf("failed Init: %s\n", err)
