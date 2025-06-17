@@ -93,8 +93,8 @@ ip2region 旨在于 <b>研究 IP 数据的存储和快速查询的设计和实�
 1. [数据更新实现视频分享 - part1](https://www.bilibili.com/video/BV1934y1E7Q5/)
 2. [数据更新实现视频分享 - part2](https://www.bilibili.com/video/BV1pF411j7Aw/)
 
-# Ip2Region社区
-[Ip2Region社区](https://ip2region.net) 正式上线于`2025/06/12`日，提供了商业版本的离线数据服务，更多关于社区的信息请访问 [Ip2Region官方社区](https://ip2region.net/)。
+# 官方社区
+[Ip2Region 官方社区](https://ip2region.net) 正式上线于`2025/06/12`日，提供了商业版本的离线数据服务，更多关于社区的信息请访问 [Ip2Region 官方社区](https://ip2region.net/)。
 
 # 相关备注
 
