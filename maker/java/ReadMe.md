@@ -32,6 +32,8 @@ options:
 2022-07-15 20:21:29 INFO  org.lionsoul.ip2region.MakerTest Done, elapsed: 50 s
 ```
 
+生成过程中数据字段自定义请参考 [xdb-生成#自定义数据字段](https://ip2region.net/doc/xdb_make#field-list)
+
 # 数据 查询/bench 测试
 
 已经完成开发的 [binding](../../binding/) 都有查询和 bench 测试程序以及使用文档，你可以使用你熟悉的语言的 searcher 进行查询测试或者bench测试，来确认数据的正确性和完整性。

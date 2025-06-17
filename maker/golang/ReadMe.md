@@ -31,6 +31,8 @@ options:
 2022/06/16 16:38:48 main.go:89: Done, elapsed: 33.615278847s
 ```
 
+生成过程中数据字段自定义请参考 [xdb-生成#自定义数据字段](https://ip2region.net/doc/xdb_make#field-list)
+
 
 # `xdb` 数据查询
 
