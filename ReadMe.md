@@ -6,7 +6,7 @@
 
 # Ip2region 特性
 
-### 1、IP 数据管理框架
+### 1、数据管理框架
 
 `xdb` 支持亿级别的 IP 数据段行数，默认的 region 信息都固定了格式：`国家|区域|省份|城市|ISP`，缺省的地域信息默认是0。
 region 信息支持完全自定义，例如：你可以在 region 中追加特定业务需求的数据，例如：GPS信息/国际统一地域信息编码/邮编等。也就是你完全可以使用 ip2region 来管理你自己的 IP 定位数据。
@@ -94,7 +94,7 @@ ip2region 旨在于 <b>研究 IP 数据的存储和快速查询的设计和实�
 2. [数据更新实现视频分享 - part2](https://www.bilibili.com/video/BV1pF411j7Aw/)
 
 # 官方社区
-[Ip2Region 官方社区](https://ip2region.net) 正式上线于`2025/06/12`日，便于在代码外强化 IP 工具链和数据服务，例如数据纠错，XDB IPv6 的设计和实现，同时也提供了商业版本的离线数据服务，更多关于社区的信息请访问 [Ip2Region 官方社区](https://ip2region.net/)。
+[Ip2Region 官方社区](https://ip2region.net) 正式上线于`2025/06/12`日，一方面提供了稳定的商用 IP [离线数据](https://ip2region.net/products/offline)服务，另一方面便于在核心代码外强化 IP 工具链和数据服务，例如[使用文档](https://ip2region.net/doc/)，数据纠错，xdb IPv6 的设计和实现等，更多关于社区的信息请访问 [Ip2Region 官方社区](https://ip2region.net/)。
 
 # 相关备注
 
@@ -109,5 +109,5 @@ xdb 整个缓存的查询都 <b>是</b> 并发安全的，基于文件的查询�
 5. xdb 数据更新方法：[“ip2region 数据更新和 xdb 数据编辑器的使用”](https://mp.weixin.qq.com/s/cZH5qIn4E5rQFy6N32RCzA)
 
 ### 3、技术信息博客
-1. [Ip2Region官方社区](https://ip2region.net)
+1. [Ip2Region 官方社区](https://ip2region.net)
 2. 请先关注微信公众号 lionsoul-org (狮子的魂)
