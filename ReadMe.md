@@ -1,6 +1,6 @@
 # Ip2region 是什么
 
-ip2region - 是一个离线IP地址定位库和IP定位数据管理框架，10微秒级别的查询效率，提供了众多主流编程语言的 `xdb` 数据生成和查询客户端实现。
+[ip2region](https://ip2region.net) - 是一个离线IP地址定位库和IP定位数据管理框架，10微秒级别的查询效率，提供了众多主流编程语言的 `xdb` 数据生成和查询客户端实现。更多信息请访问 [Ip2Region官方社区](https://ip2region.net)
 
 
 
@@ -70,7 +70,7 @@ API 介绍，使用文档和测试程序请参考如下 `maker` 生成程序下�
 
 # `xdb` 数据更新
 
-ip2region 旨在于 <b>研究 IP 数据的存储和快速查询的设计和实现</b>，并没有原始 IP 数据的支撑，也不会有商用版本。
+ip2region 旨在于 <b>研究 IP 数据的存储和快速查询的设计和实现</b>，并没有原始 IP 数据的支撑。
 本项目的自带的 `./data/ip.merge.txt` 原始数据已经很久没有更新，也不会再更新，对于数据精度和更新频率要求很高的使用场景建议购买第三方商用数据，你可以使用如下几种方式来尝试自己更新数据：
 
 ### 手动编辑更新
@@ -93,6 +93,8 @@ ip2region 旨在于 <b>研究 IP 数据的存储和快速查询的设计和实�
 1. [数据更新实现视频分享 - part1](https://www.bilibili.com/video/BV1934y1E7Q5/)
 2. [数据更新实现视频分享 - part2](https://www.bilibili.com/video/BV1pF411j7Aw/)
 
+# Ip2Region社区
+[Ip2Region社区](https://ip2region.net) 正式上线于`2025/06/12`日，提供了商业版本的离线数据服务，更多关于社区的信息请访问 [Ip2Region官方社区](https://ip2region.net/)。
 
 # 相关备注
 
