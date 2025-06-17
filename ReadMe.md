@@ -94,7 +94,7 @@ ip2region 旨在于 <b>研究 IP 数据的存储和快速查询的设计和实�
 2. [数据更新实现视频分享 - part2](https://www.bilibili.com/video/BV1pF411j7Aw/)
 
 # 官方社区
-[Ip2Region 官方社区](https://ip2region.net) 正式上线于`2025/06/12`日，提供了商业版本的离线数据服务，更多关于社区的信息请访问 [Ip2Region 官方社区](https://ip2region.net/)。
+[Ip2Region 官方社区](https://ip2region.net) 正式上线于`2025/06/12`日，便于在代码外强化 IP 工具链和数据服务，例如数据纠错，XDB IPv6 的设计和实现，同时也提供了商业版本的离线数据服务，更多关于社区的信息请访问 [Ip2Region 官方社区](https://ip2region.net/)。
 
 # 相关备注
 
