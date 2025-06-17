@@ -1,6 +1,6 @@
 # Ip2region 是什么
 
-[ip2region](https://ip2region.net) - 是一个离线IP地址定位库和IP定位数据管理框架，10微秒级别的查询效率，提供了众多主流编程语言的 `xdb` 数据生成和查询客户端实现。更多信息请访问 [Ip2Region官方社区](https://ip2region.net)
+[ip2region](https://ip2region.net) - 是一个离线IP地址定位库和IP定位数据管理框架，10微秒级别的查询效率，提供了众多主流编程语言的 `xdb` 数据生成和查询客户端实现。
 
 
 
