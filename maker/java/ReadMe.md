@@ -32,7 +32,7 @@ options:
 2022-07-15 20:21:29 INFO  org.lionsoul.ip2region.MakerTest Done, elapsed: 50 s
 ```
 
-生成过程中数据字段自定义请参考 [xdb-生成#自定义数据字段](https://ip2region.net/doc/xdb_make#field-list)
+生成过程中数据字段自定义请参考 [xdb-v4文件生成#自定义数据字段](https://ip2region.net/doc/data/ipv4_xdb_make#field-list)
 
 # 数据 查询/bench 测试
 
