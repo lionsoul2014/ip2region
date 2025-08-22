@@ -20,7 +20,10 @@ public class Searcher {
     public static final int VectorIndexSize  = 8;
     public static final int SegmentIndexSize = 14;
 
-    // random access file handle for file based search
+    // Linux max write / read bytes
+    public static final int MAX_WRITE_BYTES = 0x7ffff000;
+
+    // random access file handle for file-based search
     private final RandomAccessFile handle;
 
     private int ioCount = 0;
@@ -30,8 +33,10 @@ public class Searcher {
     // the minimal memory allocation.
     private final byte[] vectorIndex;
 
-    // xdb content buffer, used for in-memory search
-    private final byte[] contentBuff;
+    // xdb content buffer, used for in-memory search.
+    // @Note: use the LongByteArray instead since 2025/08/22
+    // private final byte[] contentBuff;
+    private final LongByteArray contentBuff;
 
     // --- static method to create searchers
 
@@ -43,13 +48,13 @@ public class Searcher {
         return new Searcher(dbPath, vectorIndex, null);
     }
 
-    public static Searcher newWithBuffer(byte[] cBuff) throws IOException {
+    public static Searcher newWithBuffer(LongByteArray cBuff) throws IOException {
         return new Searcher(null, null, cBuff);
     }
 
     // --- End of creator
 
-    public Searcher(String dbFile, byte[] vectorIndex, byte[] cBuff) throws IOException {
+    public Searcher(String dbFile, byte[] vectorIndex, LongByteArray cBuff) throws IOException {
         if (cBuff != null) {
             this.handle = null;
             this.vectorIndex = null;
@@ -90,8 +95,8 @@ public class Searcher {
             sPtr = getIntLong(vectorIndex, idx);
             ePtr = getIntLong(vectorIndex, idx + 4);
         } else if (contentBuff != null) {
-            sPtr = getIntLong(contentBuff, HeaderInfoLength + idx);
-            ePtr = getIntLong(contentBuff, HeaderInfoLength + idx + 4);
+            sPtr = contentBuff.getIntLong(HeaderInfoLength + idx);
+            ePtr = contentBuff.getIntLong(HeaderInfoLength + idx + 4);
         } else {
             final byte[] buff = new byte[VectorIndexSize];
             read(HeaderInfoLength + idx, buff);
@@ -141,15 +146,7 @@ public class Searcher {
     protected void read(long offset, byte[] buffer) throws IOException {
         // check the in-memory buffer first
         if (contentBuff != null) {
-            // @TODO: reduce data copying, directly decode the data ?
-            // @TODO: added by Leon at 2025/06/10, when offset is negative and the content byte is not going to work.
-            // we need a better solution for the content buffer which is greater than (2^31 - 1 << 2)
-            int int_idx = (int) offset;
-            if (int_idx < 0) {
-                throw new IOException("No content buffer policy for NOW since the xdb is too large, use file or vectorIndex instead");
-            }
-
-            System.arraycopy(contentBuff, int_idx, buffer, 0, buffer.length);
+            contentBuff.copy(offset, buffer, 0, buffer.length);
             return;
         }
 
@@ -199,20 +196,28 @@ public class Searcher {
         return vIndex;
     }
 
-    public static byte[] loadContent(RandomAccessFile handle) throws IOException {
+    public static LongByteArray loadContent(RandomAccessFile handle) throws IOException {
         handle.seek(0);
-        final byte[] buff =  new byte[(int) handle.length()];
-        int rLen = handle.read(buff);
-        if (rLen != buff.length) {
-            throw new IOException("incomplete read: read bytes should be " + buff.length);
+        // check the length and do the buff load
+        long toRead = handle.length();
+        final LongByteArray byteArray = new LongByteArray();
+        while (toRead > 0) {
+            final byte[] buff = new byte[(int) Math.min(toRead, MAX_WRITE_BYTES)];
+            final int rLen = handle.read(buff);
+            if (rLen != buff.length) {
+                throw new IOException("incomplete read: read bytes should be " + buff.length + ", got `" + rLen + "`");
+            }
+
+            byteArray.append(buff);
+            toRead -= rLen;
         }
 
-        return buff;
+        return byteArray;
     }
 
-    public static byte[] loadContentFromFile(String dbPath) throws IOException {
+    public static LongByteArray loadContentFromFile(String dbPath) throws IOException {
         final RandomAccessFile handle = new RandomAccessFile(dbPath, "r");
-        final byte[] content = loadContent(handle);
+        final LongByteArray content = loadContent(handle);
         handle.close();
         return content;
     }

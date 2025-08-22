@@ -112,6 +112,7 @@ if ($handle === false) {
 }
 
 $count = 0;
+$qx_count = 0;
 while (!feof($handle)) {
     $line = trim(fgets($handle, 1024));
     if (strlen($line) < 1) {
@@ -126,8 +127,13 @@ while (!feof($handle)) {
 
     $count++;
     $region = $searcher->search($ip);
-    echo $line, ", ", $region, "\n";
+    $ss = explode('|', $region);
+    if (strlen($ss[3]) > 1) {
+        $qx_count++;
+    }
+    echo $line, ",", str_replace('|', ',', $region), "\n";
 }
 
 fclose($handle);
+echo "qx_count: {$qx_count}";
 echo "Done, with {$count} IPs\n";

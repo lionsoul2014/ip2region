@@ -6,6 +6,7 @@
 
 package org.lionsoul.ip2region;
 
+import org.lionsoul.ip2region.xdb.LongByteArray;
 import org.lionsoul.ip2region.xdb.Searcher;
 
 import java.io.*;
@@ -30,7 +31,7 @@ public class SearchTest {
             byte[] vIndex = Searcher.loadVectorIndexFromFile(dbPath);
             return Searcher.newWithVectorIndex(dbPath, vIndex);
         } else if ("content".equals(cachePolicy)) {
-            byte[] cBuff = Searcher.loadContentFromFile(dbPath);
+            LongByteArray cBuff = Searcher.loadContentFromFile(dbPath);
             return Searcher.newWithBuffer(cBuff);
         } else {
             throw new IOException("invalid cache policy `" + cachePolicy + "`, options: file/vectorIndex/content");
