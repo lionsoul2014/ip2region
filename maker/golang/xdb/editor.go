@@ -120,11 +120,13 @@ func (e *Editor) Put(ip string) (int, int, error) {
 // the following position relationships.
 // 1, A - fully contained like:
 // StartIP------seg.StartIP--------seg.EndIP----EndIP
-//                 |------------------|
+//
+//	|------------------|
+//
 // 2, B - intersect like:
 // StartIP------seg.StartIP------EndIP------|
-//                 |---------------------seg.EndIP
 //
+//	|---------------------seg.EndIP
 func (e *Editor) PutSegment(seg *Segment) (int, int, error) {
 	var next *list.Element
 	var eList []*list.Element
@@ -138,7 +140,7 @@ func (e *Editor) PutSegment(seg *Segment) (int, int, error) {
 		}
 
 		// found the related segment
-		if seg.StartIP <= s.EndIP && seg.StartIP >= s.StartIP {
+		if IPCompare(seg.StartIP, s.EndIP) <= 0 && IPCompare(seg.StartIP, s.StartIP) >= 0 {
 			found = true
 		}
 
@@ -147,7 +149,7 @@ func (e *Editor) PutSegment(seg *Segment) (int, int, error) {
 		}
 
 		eList = append(eList, ele)
-		if seg.EndIP <= s.EndIP {
+		if IPCompare(seg.EndIP, s.EndIP) <= 0 {
 			break
 		}
 	}
@@ -167,10 +169,10 @@ func (e *Editor) PutSegment(seg *Segment) (int, int, error) {
 	// segment split
 	var sList []*Segment
 	var head = eList[0].Value.(*Segment)
-	if seg.StartIP > head.StartIP {
+	if IPCompare(seg.StartIP, head.StartIP) > 0 {
 		sList = append(sList, &Segment{
 			StartIP: head.StartIP,
-			EndIP:   seg.StartIP - 1,
+			EndIP:   IPSubOne(seg.StartIP),
 			Region:  head.Region,
 		})
 	}
@@ -182,9 +184,9 @@ func (e *Editor) PutSegment(seg *Segment) (int, int, error) {
 	if len(sList) > 0 {
 		// check and append the tailing
 		var tail = eList[len(eList)-1].Value.(*Segment)
-		if seg.EndIP < tail.EndIP {
+		if IPCompare(seg.EndIP, tail.EndIP) < 0 {
 			sList = append(sList, &Segment{
-				StartIP: seg.EndIP + 1,
+				StartIP: IPAddOne(seg.EndIP),
 				EndIP:   tail.EndIP,
 				Region:  tail.Region,
 			})

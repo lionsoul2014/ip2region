@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 // ---
-// ip2region database v2.0 searcher.
+// Ip2Region database v2.0 searcher.
 // this is part of the maker for testing and validate.
 // please use the searcher in binding/golang for production use.
 // And this is a Not thread safe implementation.
@@ -17,6 +17,8 @@ import (
 )
 
 type Searcher struct {
+	version *Version
+
 	handle *os.File
 
 	// header info
@@ -28,13 +30,15 @@ type Searcher struct {
 	vectorIndex []byte
 }
 
-func NewSearcher(dbFile string) (*Searcher, error) {
+func NewSearcher(version *Version, dbFile string) (*Searcher, error) {
 	handle, err := os.OpenFile(dbFile, os.O_RDONLY, 0600)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Searcher{
+		version: version,
+
 		handle: handle,
 		header: nil,
 
@@ -85,11 +89,10 @@ func (s *Searcher) ClearVectorIndex() {
 }
 
 // Search find the region for the specified ip address
-func (s *Searcher) Search(ip uint32) (string, int, error) {
+func (s *Searcher) Search(ip []byte) (string, int, error) {
 	// locate the segment index block based on the vector index
 	var ioCount = 0
-	var il0 = (ip >> 24) & 0xFF
-	var il1 = (ip >> 16) & 0xFF
+	var il0, il1, bytes, tBytes = int(ip[0]), int(ip[1]), len(ip), len(ip) << 1
 	var idx = il0*VectorIndexCols*VectorIndexSize + il1*VectorIndexSize
 	var sPtr, ePtr = uint32(0), uint32(0)
 	if s.vectorIndex != nil {
@@ -118,13 +121,14 @@ func (s *Searcher) Search(ip uint32) (string, int, error) {
 
 	//log.Printf("vIndex=%s", vIndex)
 	// binary search the segment index to get the region
+	var segIndexSize = uint32(s.version.SegmentIndexSize)
 	var dataLen, dataPtr = 0, uint32(0)
-	var buff = make([]byte, SegmentIndexSize)
-	var l, h = 0, int((ePtr - sPtr) / SegmentIndexSize)
+	var buff = make([]byte, segIndexSize)
+	var l, h = 0, int((ePtr - sPtr) / segIndexSize)
 	for l <= h {
 		// log.Printf("l=%d, h=%d", l, h)
 		m := (l + h) >> 1
-		p := sPtr + uint32(m*SegmentIndexSize)
+		p := sPtr + uint32(m)*segIndexSize
 		// log.Printf("m=%d, p=%d", m, p)
 		_, err := s.handle.Seek(int64(p), 0)
 		if err != nil {
@@ -142,18 +146,14 @@ func (s *Searcher) Search(ip uint32) (string, int, error) {
 		}
 
 		// decode the data step by step to reduce the unnecessary calculations
-		sip := binary.LittleEndian.Uint32(buff)
-		if ip < sip {
+		if IPCompare(ip, buff[0:bytes]) < 0 {
 			h = m - 1
+		} else if IPCompare(ip, buff[bytes:tBytes]) > 0 {
+			l = m + 1
 		} else {
-			eip := binary.LittleEndian.Uint32(buff[4:])
-			if ip > eip {
-				l = m + 1
-			} else {
-				dataLen = int(binary.LittleEndian.Uint16(buff[8:]))
-				dataPtr = binary.LittleEndian.Uint32(buff[10:])
-				break
-			}
+			dataLen = int(binary.LittleEndian.Uint16(buff[tBytes:]))
+			dataPtr = binary.LittleEndian.Uint32(buff[tBytes+2:])
+			break
 		}
 	}
 

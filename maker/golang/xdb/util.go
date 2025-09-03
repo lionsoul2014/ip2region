@@ -7,44 +7,96 @@ package xdb
 import (
 	"bufio"
 	"fmt"
+	"math/big"
+	"net"
 	"os"
-	"strconv"
 	"strings"
 )
 
 // Util function
 
-var shiftIndex = []int{24, 16, 8, 0}
-
-func CheckIP(ip string) (uint32, error) {
-	var ps = strings.Split(ip, ".")
-	if len(ps) != 4 {
-		return 0, fmt.Errorf("invalid ip address `%s`", ip)
+func ParseIP(ip string) ([]byte, error) {
+	parsedIP := net.ParseIP(ip)
+	if parsedIP == nil {
+		return nil, fmt.Errorf("invalid ip address: %s", ip)
 	}
 
-	var val uint32
-	for i, s := range ps {
-		d, err := strconv.Atoi(s)
-		if err != nil {
-			return 0, fmt.Errorf("the %dth part `%s` is not an integer", i, s)
-		}
-
-		if d < 0 || d > 255 {
-			return 0, fmt.Errorf("the %dth part `%s` should be an integer bettween 0 and 255", i, s)
-		}
-
-		val |= uint32(d) << shiftIndex[i]
+	v4 := parsedIP.To4()
+	if v4 != nil {
+		return v4, nil
 	}
 
-	return val, nil
+	v6 := parsedIP.To16()
+	if v6 != nil {
+		return v6, nil
+	}
+
+	return nil, fmt.Errorf("invalid ip address: %s", ip)
 }
 
-func Long2IP(ip uint32) string {
-	return fmt.Sprintf("%d.%d.%d.%d", (ip>>24)&0xFF, (ip>>16)&0xFF, (ip>>8)&0xFF, (ip>>0)&0xFF)
+func IP2String(ip []byte) string {
+	return net.IP(ip[:]).String()
 }
 
-func MidIP(sip uint32, eip uint32) uint32 {
-	return uint32((uint64(sip) + uint64(eip)) >> 1)
+func IP2Long(ip []byte) *big.Int {
+	return big.NewInt(0).SetBytes(ip)
+}
+
+// IPCompare compares two IP addresses
+// Returns: -1 if ip1 < ip2, 0 if ip1 == ip2, 1 if ip1 > ip2
+func IPCompare(ip1, ip2 []byte) int {
+	for i := 0; i < len(ip1); i++ {
+		if ip1[i] < ip2[i] {
+			return -1
+		}
+
+		if ip1[i] > ip2[i] {
+			return 1
+		}
+	}
+
+	return 0
+}
+
+func IPAddOne(ip []byte) []byte {
+	var r = make([]byte, len(ip))
+	copy(r, ip)
+	for i := len(ip) - 1; i >= 0; i-- {
+		r[i]++
+		if r[i] != 0 { // No overflow
+			break
+		}
+	}
+
+	return r
+}
+
+func IPSubOne(ip []byte) []byte {
+	var r = make([]byte, len(ip))
+	copy(r, ip)
+	for i := len(ip) - 1; i >= 0; i-- {
+		if r[i] != 0 { // No borrow needed
+			r[i]--
+			break
+		}
+		r[i] = 0xFF // borrow from the next byte
+	}
+
+	return r
+}
+
+func IPMiddle(sip, eip []byte) []byte {
+	var result = make([]byte, len(sip))
+	var carry uint16 = 0
+
+	// Add the two addresses with carry
+	for i := len(sip) - 1; i >= 0; i-- {
+		sum := uint16(sip[i]) + uint16(eip[i]) + carry
+		result[i] = byte(sum >> 0x01) // Divide by 2
+		carry = (sum & 0x01) << 7     // Carry for next byte (shift to MSB)
+	}
+
+	return result
 }
 
 func IterateSegments(handle *os.File, before func(l string), cb func(seg *Segment) error) error {
@@ -70,17 +122,17 @@ func IterateSegments(handle *os.File, before func(l string), cb func(seg *Segmen
 			return fmt.Errorf("invalid ip segment line `%s`", l)
 		}
 
-		sip, err := CheckIP(ps[0])
+		sip, err := ParseIP(ps[0])
 		if err != nil {
 			return fmt.Errorf("check start ip `%s`: %s", ps[0], err)
 		}
 
-		eip, err := CheckIP(ps[1])
+		eip, err := ParseIP(ps[1])
 		if err != nil {
 			return fmt.Errorf("check end ip `%s`: %s", ps[1], err)
 		}
 
-		if sip > eip {
+		if IPCompare(sip, eip) > 0 {
 			return fmt.Errorf("start ip(%s) should not be greater than end ip(%s)", ps[0], ps[1])
 		}
 
@@ -127,13 +179,13 @@ func CheckSegments(segList []*Segment) error {
 	var last *Segment
 	for _, seg := range segList {
 		// sip must <= eip
-		if seg.StartIP > seg.EndIP {
+		if IPCompare(seg.StartIP, seg.EndIP) > 0 {
 			return fmt.Errorf("segment `%s`: start ip should not be greater than end ip", seg.String())
 		}
 
 		// check the continuity of the data segment
 		if last != nil {
-			if last.EndIP+1 != seg.StartIP {
+			if IPCompare(IPAddOne(last.EndIP), seg.StartIP) != 0 {
 				return fmt.Errorf("discontinuous segment `%s`: last.eip+1 != cur.sip", seg.String())
 			}
 		}

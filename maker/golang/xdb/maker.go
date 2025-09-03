@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 // ----
-// ip2region database v2.0 structure
+// Ip2Region database v2.0 structure
 //
 // +----------------+-------------------+---------------+--------------+
 // | header space   | speed up index    |  data payload | block index  |
@@ -53,20 +53,22 @@ import (
 	"encoding/binary"
 	"fmt"
 	"log/slog"
+	"math"
 	"os"
 	"strings"
 	"time"
 )
 
-const VersionNo = 2
+const VersionNo = 3
 const HeaderInfoLength = 256
 const VectorIndexRows = 256
 const VectorIndexCols = 256
 const VectorIndexSize = 8
-const SegmentIndexSize = 14
 const VectorIndexLength = VectorIndexRows * VectorIndexCols * VectorIndexSize
 
 type Maker struct {
+	version *Version
+
 	srcHandle *os.File
 	dstHandle *os.File
 
@@ -79,7 +81,7 @@ type Maker struct {
 	vectorIndex []byte
 }
 
-func NewMaker(policy IndexPolicy, srcFile string, dstFile string, fields []int) (*Maker, error) {
+func NewMaker(version *Version, policy IndexPolicy, srcFile string, dstFile string, fields []int) (*Maker, error) {
 	// open the source file with READONLY mode
 	srcHandle, err := os.OpenFile(srcFile, os.O_RDONLY, 0600)
 	if err != nil {
@@ -93,6 +95,8 @@ func NewMaker(policy IndexPolicy, srcFile string, dstFile string, fields []int) 
 	}
 
 	return &Maker{
+		version: version,
+
 		srcHandle: srcHandle,
 		dstHandle: dstHandle,
 
@@ -117,7 +121,7 @@ func (m *Maker) initDbHeader() error {
 	// make and write the header space
 	var header = make([]byte, 256)
 
-	// 1, version number
+	// 1, data version number
 	binary.LittleEndian.PutUint16(header, uint16(VersionNo))
 
 	// 2, index policy code
@@ -131,6 +135,9 @@ func (m *Maker) initDbHeader() error {
 
 	// 5, index block end ptr
 	binary.LittleEndian.PutUint32(header[12:], uint32(0))
+
+	// 6, ip version
+	binary.LittleEndian.PutUint16(header[16:], uint16(m.version.Id))
 
 	_, err = m.dstHandle.Write(header)
 	if err != nil {
@@ -213,16 +220,16 @@ func (m *Maker) Init() error {
 }
 
 // refresh the vector index of the specified ip
-func (m *Maker) setVectorIndex(ip uint32, ptr uint32) {
-	var il0 = (ip >> 24) & 0xFF
-	var il1 = (ip >> 16) & 0xFF
+func (m *Maker) setVectorIndex(ip []byte, ptr uint32) {
+	var segIdxSize = uint32(m.version.SegmentIndexSize)
+	var il0, il1 = int(ip[0]), int(ip[1])
 	var idx = il0*VectorIndexCols*VectorIndexSize + il1*VectorIndexSize
 	var sPtr = binary.LittleEndian.Uint32(m.vectorIndex[idx:])
 	if sPtr == 0 {
 		binary.LittleEndian.PutUint32(m.vectorIndex[idx:], ptr)
-		binary.LittleEndian.PutUint32(m.vectorIndex[idx+4:], ptr+SegmentIndexSize)
+		binary.LittleEndian.PutUint32(m.vectorIndex[idx+4:], ptr+segIdxSize)
 	} else {
-		binary.LittleEndian.PutUint32(m.vectorIndex[idx+4:], ptr+SegmentIndexSize)
+		binary.LittleEndian.PutUint32(m.vectorIndex[idx+4:], ptr+segIdxSize)
 	}
 }
 
@@ -258,6 +265,11 @@ func (m *Maker) Start() error {
 			return fmt.Errorf("seek to current ptr: %w", err)
 		}
 
+		// @TODO: remove this if the long ptr operation were supported
+		if pos >= math.MaxUint32 {
+			return fmt.Errorf("region ptr exceed the max length of %d", math.MaxUint32)
+		}
+
 		_, err = m.dstHandle.Write(region)
 		if err != nil {
 			return fmt.Errorf("write region '%s': %w", seg.Region, err)
@@ -269,7 +281,7 @@ func (m *Maker) Start() error {
 
 	// 2, write the index block and cache the super index block
 	slog.Info("try to write the segment index block ... ")
-	var indexBuff = make([]byte, SegmentIndexSize)
+	var indexBuff = make([]byte, m.version.SegmentIndexSize)
 	var counter, startIndexPtr, endIndexPtr = 0, int64(-1), int64(-1)
 	for _, seg := range m.segments {
 		dataPtr, has := m.regionPool[seg.Region]
@@ -285,6 +297,7 @@ func (m *Maker) Start() error {
 			return fmt.Errorf("empty region info for segment '%s'", seg)
 		}
 
+		var _offset = 0
 		var segList = seg.Split()
 		slog.Debug("try to index segment", "length", len(segList), "splits", seg.String())
 		for _, s := range segList {
@@ -293,11 +306,17 @@ func (m *Maker) Start() error {
 				return fmt.Errorf("seek to segment index block: %w", err)
 			}
 
+			// @TODO: remove this if the long ptr operation were supported
+			if pos >= math.MaxUint32 {
+				return fmt.Errorf("segment index ptr exceed the max length of %d", math.MaxUint32)
+			}
+
 			// encode the segment index
-			binary.LittleEndian.PutUint32(indexBuff, s.StartIP)
-			binary.LittleEndian.PutUint32(indexBuff[4:], s.EndIP)
-			binary.LittleEndian.PutUint16(indexBuff[8:], uint16(dataLen))
-			binary.LittleEndian.PutUint32(indexBuff[10:], dataPtr)
+			copy(indexBuff[0:], s.StartIP)
+			copy(indexBuff[len(s.StartIP):], s.EndIP)
+			_offset = len(s.StartIP) + len(s.EndIP)
+			binary.LittleEndian.PutUint16(indexBuff[_offset:], uint16(dataLen))
+			binary.LittleEndian.PutUint32(indexBuff[_offset+2:], dataPtr)
 			_, err = m.dstHandle.Write(indexBuff)
 			if err != nil {
 				return fmt.Errorf("write segment index for '%s': %w", s.String(), err)

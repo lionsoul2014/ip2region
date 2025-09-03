@@ -7,7 +7,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"github.com/lionsoul2014/ip2region/maker/golang/xdb"
 	"log"
 	"log/slog"
 	"os"
@@ -16,6 +15,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/lionsoul2014/ip2region/maker/golang/xdb"
 )
 
 func printHelp() {
@@ -151,7 +152,7 @@ func getFilterFields(fieldList string) ([]int, error) {
 func genDb() {
 	var err error
 	var srcFile, dstFile = "", ""
-	var fieldList, logLevel = "", "info"
+	var ipVersion, fieldList, logLevel = "auto", "", "info"
 	var indexPolicy = xdb.VectorIndexPolicy
 	var fErr = iterateFlags(func(key string, val string) error {
 		switch key {
@@ -159,6 +160,8 @@ func genDb() {
 			srcFile = val
 		case "dst":
 			dstFile = val
+		case "version":
+			ipVersion = val
 		case "log-level":
 			logLevel = val
 		case "field-list":
@@ -184,6 +187,7 @@ func genDb() {
 		fmt.Printf("options:\n")
 		fmt.Printf(" --src string           source ip text file path\n")
 		fmt.Printf(" --dst string           destination binary xdb file path\n")
+		fmt.Printf(" --version string       IP version, options: ipv4/ipv6, default auto (detect from the source file)\n")
 		fmt.Printf(" --field-list string    field index list imploded with ',' eg: 0,1,2,3-6,7\n")
 		fmt.Printf(" --log-level string     set the log level, options: debug/info/warn/error\n")
 		return
@@ -202,9 +206,19 @@ func genDb() {
 		return
 	}
 
+	// check and define the IP version
+	var version *xdb.Version = nil
+	if ipVersion == "auto" {
+		version = xdb.V4
+	} else if v, err := xdb.VersionFromName(ipVersion); err != nil {
+		slog.Error("failed to parse version name", "error", err)
+	} else {
+		version = v
+	}
+
 	// make the binary file
 	tStart := time.Now()
-	maker, err := xdb.NewMaker(indexPolicy, srcFile, dstFile, fields)
+	maker, err := xdb.NewMaker(version, indexPolicy, srcFile, dstFile, fields)
 	if err != nil {
 		fmt.Printf("failed to create %s\n", err)
 		return
@@ -254,7 +268,7 @@ func testSearch() {
 		return
 	}
 
-	searcher, err := xdb.NewSearcher(dbFile)
+	searcher, err := xdb.NewSearcher(xdb.V4, dbFile)
 	if err != nil {
 		fmt.Printf("failed to create searcher with `%s`: %s\n", dbFile, err.Error())
 		return
@@ -299,7 +313,7 @@ quit      : exit the test program`)
 			break
 		}
 
-		ip, err := xdb.CheckIP(line)
+		ip, err := xdb.ParseIP(line)
 		if err != nil {
 			fmt.Printf("invalid ip address `%s`\n", line)
 			continue
@@ -362,7 +376,7 @@ func testBench() {
 		return
 	}
 
-	searcher, err := xdb.NewSearcher(dbFile)
+	searcher, err := xdb.NewSearcher(xdb.V4, dbFile)
 	if err != nil {
 		fmt.Printf("failed to create searcher with `%s`: %s\n", dbFile, err)
 		return
@@ -382,12 +396,13 @@ func testBench() {
 	var iErr = xdb.IterateSegments(handle, nil, func(seg *xdb.Segment) error {
 		var l = fmt.Sprintf("%d|%d|%s", seg.StartIP, seg.EndIP, seg.Region)
 		slog.Debug("try to bench", "segment", l)
-		mip := xdb.MidIP(seg.StartIP, seg.EndIP)
-		for _, ip := range []uint32{seg.StartIP, xdb.MidIP(seg.EndIP, mip), mip, xdb.MidIP(mip, seg.EndIP), seg.EndIP} {
-			slog.Debug("|-try to bench", "ip", xdb.Long2IP(ip))
+		mip := xdb.IPMiddle(seg.StartIP, seg.EndIP)
+		for _, ip := range [][]byte{
+			seg.StartIP, xdb.IPMiddle(seg.EndIP, mip), mip, xdb.IPMiddle(mip, seg.EndIP), seg.EndIP} {
+			slog.Debug("|-try to bench", "ip", xdb.IP2String(ip))
 			r, _, err := searcher.Search(ip)
 			if err != nil {
-				return fmt.Errorf("failed to search ip '%s': %s\n", xdb.Long2IP(ip), err)
+				return fmt.Errorf("failed to search ip '%s': %s\n", xdb.IP2Long(ip), err)
 			}
 
 			// check the region info
