@@ -59,12 +59,15 @@ import (
 	"time"
 )
 
-const VersionNo = 3
-const HeaderInfoLength = 256
-const VectorIndexRows = 256
-const VectorIndexCols = 256
-const VectorIndexSize = 8
-const VectorIndexLength = VectorIndexRows * VectorIndexCols * VectorIndexSize
+const (
+	VersionNo         = 3
+	HeaderInfoLength  = 256
+	VectorIndexRows   = 256
+	VectorIndexCols   = 256
+	VectorIndexSize   = 8 // in bytes
+	RuntimePtrSize    = 4 // in bytes
+	VectorIndexLength = VectorIndexRows * VectorIndexCols * VectorIndexSize
+)
 
 type Maker struct {
 	version *Version
@@ -138,6 +141,9 @@ func (m *Maker) initDbHeader() error {
 
 	// 6, ip version
 	binary.LittleEndian.PutUint16(header[16:], uint16(m.version.Id))
+
+	// 7, runtime ptr bytes
+	binary.LittleEndian.PutUint16(header[18:], uint16(RuntimePtrSize))
 
 	_, err = m.dstHandle.Write(header)
 	if err != nil {
