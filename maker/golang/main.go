@@ -152,7 +152,7 @@ func getFilterFields(fieldList string) ([]int, error) {
 func genDb() {
 	var err error
 	var srcFile, dstFile = "", ""
-	var ipVersion, fieldList, logLevel = "auto", "", "info"
+	var ipVersion, fieldList, logLevel = "ipv4", "", "info"
 	var indexPolicy = xdb.VectorIndexPolicy
 	var fErr = iterateFlags(func(key string, val string) error {
 		switch key {
@@ -187,7 +187,7 @@ func genDb() {
 		fmt.Printf("options:\n")
 		fmt.Printf(" --src string           source ip text file path\n")
 		fmt.Printf(" --dst string           destination binary xdb file path\n")
-		fmt.Printf(" --version string       IP version, options: ipv4/ipv6, default auto (detect from the source file)\n")
+		fmt.Printf(" --version string       IP version, options: ipv4/ipv6, default to ipv4\n")
 		fmt.Printf(" --field-list string    field index list imploded with ',' eg: 0,1,2,3-6,7\n")
 		fmt.Printf(" --log-level string     set the log level, options: debug/info/warn/error\n")
 		return
@@ -208,9 +208,7 @@ func genDb() {
 
 	// check and define the IP version
 	var version *xdb.Version = nil
-	if ipVersion == "auto" {
-		version = xdb.V4
-	} else if v, err := xdb.VersionFromName(ipVersion); err != nil {
+	if v, err := xdb.VersionFromName(ipVersion); err != nil {
 		slog.Error("failed to parse version name", "error", err)
 	} else {
 		version = v
@@ -247,10 +245,12 @@ func genDb() {
 
 func testSearch() {
 	var err error
-	var dbFile = ""
+	var dbFile, ipVersion = "", "v4"
 	var fErr = iterateFlags(func(key string, val string) error {
 		if key == "db" {
 			dbFile = val
+		} else if key == "version" {
+			ipVersion = val
 		} else {
 			return fmt.Errorf("undefined option '%s=%s'\n", key, val)
 		}
@@ -264,11 +264,20 @@ func testSearch() {
 	if dbFile == "" {
 		fmt.Printf("%s search [command options]\n", os.Args[0])
 		fmt.Printf("options:\n")
-		fmt.Printf(" --db string    ip2region binary xdb file path\n")
+		fmt.Printf(" --db string         ip2region binary xdb file path\n")
+		fmt.Printf(" --version string    IP version, options: ipv4/ipv6\n")
 		return
 	}
 
-	searcher, err := xdb.NewSearcher(xdb.V4, dbFile)
+	// check and parse the IP version
+	var version *xdb.Version = nil
+	if v, err := xdb.VersionFromName(ipVersion); err != nil {
+		slog.Error("failed to parse version name", "error", err)
+	} else {
+		version = v
+	}
+
+	searcher, err := xdb.NewSearcher(version, dbFile)
 	if err != nil {
 		fmt.Printf("failed to create searcher with `%s`: %s\n", dbFile, err.Error())
 		return
