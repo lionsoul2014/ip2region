@@ -199,3 +199,25 @@ func CheckSegments(segList []*Segment) error {
 
 	return nil
 }
+
+func RegionFiltering(region string, fields []int) (string, error) {
+	if len(fields) == 0 {
+		return region, nil
+	}
+
+	fs := strings.Split(region, "|")
+	var sb []string
+	for _, idx := range fields {
+		if idx < 0 {
+			return "", fmt.Errorf("negative filter index %d", idx)
+		}
+
+		if idx >= len(fs) {
+			return "", fmt.Errorf("field index %d exceeded the max length of %d", idx, len(fs))
+		}
+
+		sb = append(sb, fs[idx])
+	}
+
+	return strings.Join(sb, "|"), nil
+}

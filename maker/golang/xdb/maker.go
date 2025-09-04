@@ -58,7 +58,6 @@ import (
 	"log/slog"
 	"math"
 	"os"
-	"strings"
 	"time"
 )
 
@@ -156,28 +155,6 @@ func (m *Maker) initDbHeader() error {
 	return nil
 }
 
-func (m *Maker) getFilteredRegion(region string) (string, error) {
-	if len(m.fields) == 0 {
-		return region, nil
-	}
-
-	fs := strings.Split(region, "|")
-	var sb []string
-	for _, idx := range m.fields {
-		if idx < 0 {
-			return "", fmt.Errorf("negative filter index %d", idx)
-		}
-
-		if idx >= len(fs) {
-			return "", fmt.Errorf("field index %d exceeded the max length of %d", idx, len(fs))
-		}
-
-		sb = append(sb, fs[idx])
-	}
-
-	return strings.Join(sb, "|"), nil
-}
-
 func (m *Maker) loadSegments() error {
 	slog.Info("try to load the segments ... ")
 	var last *Segment = nil
@@ -197,7 +174,7 @@ func (m *Maker) loadSegments() error {
 		}
 
 		// apply the field filter
-		region, err := m.getFilteredRegion(seg.Region)
+		region, err := RegionFiltering(seg.Region, m.fields)
 		if err != nil {
 			return err
 		}
