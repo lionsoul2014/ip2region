@@ -6,6 +6,7 @@ package main
 
 import (
 	"bufio"
+	"encoding/binary"
 	"fmt"
 	"log"
 	"log/slog"
@@ -23,7 +24,7 @@ func printHelp() {
 	fmt.Printf("ip2region xdb maker\n")
 	fmt.Printf("%s [command] [command options]\n", os.Args[0])
 	fmt.Printf("Command: \n")
-	fmt.Printf("  gen      generate the binary db file\n")
+	fmt.Printf("  gen      generate the binary xdb file\n")
 	fmt.Printf("  search   binary xdb search test\n")
 	fmt.Printf("  bench    binary xdb bench test\n")
 	fmt.Printf("  edit     edit the source ip data\n")
@@ -152,7 +153,7 @@ func getFilterFields(fieldList string) ([]int, error) {
 func genDb() {
 	var err error
 	var srcFile, dstFile = "", ""
-	var ipVersion, fieldList, logLevel = "ipv4", "", "info"
+	var ipVersion, fieldList, logLevel = "", "", "info"
 	var indexPolicy = xdb.VectorIndexPolicy
 	var fErr = iterateFlags(func(key string, val string) error {
 		switch key {
@@ -187,10 +188,21 @@ func genDb() {
 		fmt.Printf("options:\n")
 		fmt.Printf(" --src string           source ip text file path\n")
 		fmt.Printf(" --dst string           destination binary xdb file path\n")
-		fmt.Printf(" --version string       IP version, options: ipv4/ipv6, default to ipv4\n")
+		fmt.Printf(" --version string       IP version, options: ipv4/ipv6, specify this flag so you don't get confused \n")
 		fmt.Printf(" --field-list string    field index list imploded with ',' eg: 0,1,2,3-6,7\n")
 		fmt.Printf(" --log-level string     set the log level, options: debug/info/warn/error\n")
 		return
+	}
+
+	// check and define the IP version
+	var version *xdb.Version = nil
+	if len(ipVersion) < 2 {
+		slog.Error("please specify the ip version with flag --version, ipv4 or ipv6 ?")
+		return
+	} else if v, err := xdb.VersionFromName(ipVersion); err != nil {
+		slog.Error("failed to parse version name", "error", err)
+	} else {
+		version = v
 	}
 
 	// check and apply the log level
@@ -204,14 +216,6 @@ func genDb() {
 	if err != nil {
 		slog.Error("failed to get filter fields", "error", err)
 		return
-	}
-
-	// check and define the IP version
-	var version *xdb.Version = nil
-	if v, err := xdb.VersionFromName(ipVersion); err != nil {
-		slog.Error("failed to parse version name", "error", err)
-	} else {
-		version = v
 	}
 
 	// make the binary file
@@ -245,12 +249,10 @@ func genDb() {
 
 func testSearch() {
 	var err error
-	var dbFile, ipVersion = "", "v4"
+	var dbFile = ""
 	var fErr = iterateFlags(func(key string, val string) error {
 		if key == "db" {
 			dbFile = val
-		} else if key == "version" {
-			ipVersion = val
 		} else {
 			return fmt.Errorf("undefined option '%s=%s'\n", key, val)
 		}
@@ -265,16 +267,34 @@ func testSearch() {
 		fmt.Printf("%s search [command options]\n", os.Args[0])
 		fmt.Printf("options:\n")
 		fmt.Printf(" --db string         ip2region binary xdb file path\n")
-		fmt.Printf(" --version string    IP version, options: ipv4/ipv6\n")
 		return
 	}
 
-	// check and parse the IP version
+	// detect the version from the xdb header
+	header, err := xdb.LoadXdbHeaderFromFile(dbFile)
+	if err != nil {
+		slog.Error("failed to load xdb header", "error", err)
+		return
+	}
+
 	var version *xdb.Version = nil
-	if v, err := xdb.VersionFromName(ipVersion); err != nil {
-		slog.Error("failed to parse version name", "error", err)
+	versionNo := binary.LittleEndian.Uint16(header[0:])
+	if versionNo == 2 {
+		// old xdb file
+		version = xdb.V4
+	} else if versionNo == 3 {
+		ipNo := int(binary.LittleEndian.Uint16(header[16:]))
+		if ipNo == xdb.V4.Id {
+			version = xdb.V4
+		} else if ipNo == xdb.V6.Id {
+			version = xdb.V6
+		} else {
+			slog.Error("invalid ip version", "id", ipNo)
+			return
+		}
 	} else {
-		version = v
+		slog.Error("invalid xdb version", "versionNo", versionNo, "xdbFile", dbFile)
+		return
 	}
 
 	searcher, err := xdb.NewSearcher(version, dbFile)
@@ -287,10 +307,13 @@ func testSearch() {
 		fmt.Printf("test program exited, thanks for trying\n")
 	}()
 
-	fmt.Println(`ip2region xdb search test program, commands:
-loadIndex : load the vector index for search speedup.
-clearIndex: clear the vector index.
-quit      : exit the test program`)
+	fmt.Printf(`ip2region xdb search test program,
+source xdb: %s (%s)
+commands:
+  loadIndex : load the vector index for search speedup.
+  clearIndex: clear the vector index.
+  quit      : exit the test program
+`, dbFile, version.Name)
 	reader := bufio.NewReader(os.Stdin)
 	for {
 		fmt.Print("ip2region>> ")

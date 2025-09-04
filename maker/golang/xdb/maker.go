@@ -60,7 +60,7 @@ import (
 )
 
 const (
-	VersionNo         = 3
+	VersionNo         = 3 // since 2025/09/01 (IPv6 supporting)
 	HeaderInfoLength  = 256
 	VectorIndexRows   = 256
 	VectorIndexCols   = 256
@@ -183,6 +183,11 @@ func (m *Maker) loadSegments() error {
 	var iErr = IterateSegments(m.srcHandle, func(l string) {
 		slog.Debug("loaded", "segment", l)
 	}, func(seg *Segment) error {
+		// ip version check
+		if len(seg.StartIP) != m.version.Bytes {
+			return fmt.Errorf("invalid ip segment(%s expected)", m.version.Name)
+		}
+
 		// check the continuity of the data segment
 		if err := seg.AfterCheck(last); err != nil {
 			return err

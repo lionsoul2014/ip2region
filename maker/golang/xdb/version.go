@@ -11,6 +11,8 @@ import (
 
 type Version struct {
 	Id               int
+	Name             string
+	Bytes            int
 	SegmentIndexSize int
 }
 
@@ -18,15 +20,19 @@ var (
 	VX = &Version{}
 	V4 = &Version{
 		Id:               4,
+		Name:             "IPv4",
+		Bytes:            4,
 		SegmentIndexSize: 14, // 4 + 4 + 2 + 4
 	}
 	V6 = &Version{
 		Id:               6,
+		Name:             "IPv6",
+		Bytes:            16,
 		SegmentIndexSize: 38, // 16 + 16 + 2 + 4
 	}
 )
 
-func VersionFromData(ip string) (*Version, error) {
+func VersionFromIP(ip string) (*Version, error) {
 	bytes, err := ParseIP(ip)
 	if err != nil {
 		return VX, fmt.Errorf("parse ip fail: %w", err)

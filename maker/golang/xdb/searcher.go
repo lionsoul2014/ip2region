@@ -90,6 +90,11 @@ func (s *Searcher) ClearVectorIndex() {
 
 // Search find the region for the specified ip address
 func (s *Searcher) Search(ip []byte) (string, int, error) {
+	// version check
+	if len(ip) != s.version.Bytes {
+		return "", 0, fmt.Errorf("invalid ip address(%s expected)", s.version.Name)
+	}
+
 	// locate the segment index block based on the vector index
 	var ioCount = 0
 	var il0, il1, bytes, tBytes = int(ip[0]), int(ip[1]), len(ip), len(ip) << 1
@@ -179,4 +184,43 @@ func (s *Searcher) Search(ip []byte) (string, int, error) {
 	}
 
 	return string(regionBuff), ioCount, nil
+}
+
+// LoadXdbHeader load the header info from the specified handle
+func LoadXdbHeader(handle *os.File) ([]byte, error) {
+	_, err := handle.Seek(0, 0)
+	if err != nil {
+		return nil, fmt.Errorf("seek to the header: %w", err)
+	}
+
+	var buff = make([]byte, HeaderInfoLength)
+	rLen, err := handle.Read(buff)
+	if err != nil {
+		return nil, err
+	}
+
+	if rLen != len(buff) {
+		return nil, fmt.Errorf("incomplete read: readed bytes should be %d", len(buff))
+	}
+
+	return buff, nil
+}
+
+// LoadXdbHeaderFromFile load header info from the specified db file path
+func LoadXdbHeaderFromFile(dbFile string) ([]byte, error) {
+	handle, err := os.OpenFile(dbFile, os.O_RDONLY, 0600)
+	if err != nil {
+		return nil, fmt.Errorf("open xdb file `%s`: %w", dbFile, err)
+	}
+
+	defer func(handle *os.File) {
+		_ = handle.Close()
+	}(handle)
+
+	header, err := LoadXdbHeader(handle)
+	if err != nil {
+		return nil, err
+	}
+
+	return header, nil
 }

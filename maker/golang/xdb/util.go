@@ -132,6 +132,10 @@ func IterateSegments(handle *os.File, before func(l string), cb func(seg *Segmen
 			return fmt.Errorf("check end ip `%s`: %s", ps[1], err)
 		}
 
+		if len(sip) != len(eip) {
+			return fmt.Errorf("invalid ip segment line `%s`, sip/eip version not match", l)
+		}
+
 		if IPCompare(sip, eip) > 0 {
 			return fmt.Errorf("start ip(%s) should not be greater than end ip(%s)", ps[0], ps[1])
 		}
