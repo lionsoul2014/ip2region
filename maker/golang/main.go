@@ -28,6 +28,7 @@ func printHelp() {
 	fmt.Printf("  search   binary xdb search test\n")
 	fmt.Printf("  bench    binary xdb bench test\n")
 	fmt.Printf("  edit     edit the source ip data\n")
+	fmt.Printf("  process  process the source ip data\n")
 }
 
 // Iterate the cli flags
@@ -589,6 +590,82 @@ func edit() {
 	}
 }
 
+func process() {
+	var err error
+	var srcFile, dstFile = "", ""
+	var fieldList, logLevel = "", ""
+	var fErr = iterateFlags(func(key string, val string) error {
+		switch key {
+		case "src":
+			srcFile = val
+		case "dst":
+			dstFile = val
+		case "field-list":
+			fieldList = val
+		case "log-level":
+			logLevel = val
+		default:
+			return fmt.Errorf("undefined option '%s=%s'\n", key, val)
+		}
+		return nil
+	})
+	if fErr != nil {
+		fmt.Printf("failed to parse flags: %s", fErr)
+		return
+	}
+
+	if srcFile == "" || dstFile == "" {
+		fmt.Printf("%s process [command options]\n", os.Args[0])
+		fmt.Printf("options:\n")
+		fmt.Printf(" --src string           source ip text file path\n")
+		fmt.Printf(" --dst string           target ip text file path\n")
+		fmt.Printf(" --field-list string    field index list imploded with ',' eg: 0,1,2,3-6,7\n")
+		fmt.Printf(" --log-level string     set the log level, options: debug/info/warn/error\n")
+		return
+	}
+
+	// check and apply the log level
+	err = applyLogLevel(logLevel)
+	if err != nil {
+		slog.Error("failed to apply log level", "error", err)
+		return
+	}
+
+	fields, err := getFilterFields(fieldList)
+	if err != nil {
+		slog.Error("failed to get filter fields", "error", err)
+		return
+	}
+
+	// make the binary file
+	tStart := time.Now()
+	processor, err := xdb.NewProcessor(srcFile, dstFile, fields)
+	if err != nil {
+		fmt.Printf("failed to create %s\n", err)
+		return
+	}
+
+	err = processor.Init()
+	if err != nil {
+		fmt.Printf("failed Init: %s\n", err)
+		return
+	}
+
+	slog.Info("Processing", "src", srcFile, "dst", dstFile, "logLevel", logLevel)
+	err = processor.Start()
+	if err != nil {
+		fmt.Printf("failed Start: %s\n", err)
+		return
+	}
+
+	err = processor.End()
+	if err != nil {
+		fmt.Printf("failed End: %s\n", err)
+	}
+
+	slog.Info("processor done", "elapsed", time.Since(tStart))
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		printHelp()
@@ -605,6 +682,8 @@ func main() {
 		testBench()
 	case "edit":
 		edit()
+	case "process":
+		process()
 	default:
 		printHelp()
 	}
