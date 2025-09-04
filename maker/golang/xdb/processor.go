@@ -38,7 +38,11 @@ func NewProcessor(srcFile string, dstFile string, fields []int) (*Processor, err
 	return &Processor{
 		srcHandle: srcHandle,
 		dstHandle: dstHandle,
-		segments:  []*Segment{},
+
+		// filter fields index
+		fields: fields,
+
+		segments: []*Segment{},
 	}, nil
 }
 
@@ -60,7 +64,7 @@ func (p *Processor) loadSegments() error {
 			return err
 		}
 
-		// slog.Info("filtered", "region", region)
+		// slog.Info("filtered", "source", seg.Region, "filtered", region)
 		seg.Region = region
 		p.segments = append(p.segments, seg)
 		return nil

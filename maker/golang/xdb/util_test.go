@@ -121,6 +121,21 @@ func TestSplitSegmentV4(t *testing.T) {
 	}
 }
 
+func TestRegionFiltering(t *testing.T) {
+	var line = "2001:1203:31:8000::|2001:1203:31:bfff:ffff:ffff:ffff:ffff||墨西哥|瓜纳华托州||||专线用户|"
+	seg, err := SegmentFrom(line)
+	if err != nil {
+		t.Fatalf("failed to parse segment '%s': %s", line, err)
+	}
+
+	fReg, err := RegionFiltering(seg.Region, []int{1, 2, 4, 6})
+	if err != nil {
+		t.Fatalf("failed to filter region '%s': %s", seg.Region, err)
+	}
+
+	fmt.Printf("region: %s, filtered: %s\n", seg.Region, fReg)
+}
+
 func TestSplitSegmentV6(t *testing.T) {
 	var str = "fec0::|ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff||瑞士|弗里堡州||||专线用户|IANA"
 	seg, err := SegmentFrom(str)
