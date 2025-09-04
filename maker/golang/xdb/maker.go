@@ -12,11 +12,14 @@
 // +----------------+-------------------+---------------+--------------+
 //
 // 1. padding space : for header info like block index ptr, version, release date eg ... or any other temporary needs.
-// -- 2bytes: version number, different version means structure update, it fixed to 2 for now
+// -- 2bytes: version number, different version means structure update,
+//			it fixed to 2 before IPv6 supporting, then updated to 3 since IPv6 supporting
 // -- 2bytes: index algorithm code.
 // -- 4bytes: generate unix timestamp (version)
 // -- 4bytes: index block start ptr
 // -- 4bytes: index block end ptr
+// -- 2bytes: ip version number (4/6 since IPv6 supporting)
+// -- 2bytes: runtime ptr bytes
 //
 //
 // 2. data block: region or whatever data info.
