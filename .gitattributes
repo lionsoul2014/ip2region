@@ -1,0 +1,2 @@
+data/ipv6_source.txt filter=lfs diff=lfs merge=lfs -text
+data/ip2region_v6.xdb filter=lfs diff=lfs merge=lfs -text
