@@ -202,6 +202,7 @@ func genDb() {
 		return
 	} else if v, err := xdb.VersionFromName(ipVersion); err != nil {
 		slog.Error("failed to parse version name", "error", err)
+		return
 	} else {
 		version = v
 	}
@@ -412,6 +413,7 @@ func testBench() {
 		return
 	} else if v, err := xdb.VersionFromName(ipVersion); err != nil {
 		slog.Error("failed to parse version name", "error", err)
+		return
 	} else {
 		version = v
 	}
@@ -476,11 +478,13 @@ func testBench() {
 
 func edit() {
 	var err error
-	var srcFile = ""
+	var srcFile, ipVersion = "", ""
 	var fErr = iterateFlags(func(key string, val string) error {
 		switch key {
 		case "src":
 			srcFile = val
+		case "version":
+			ipVersion = val
 		default:
 			return fmt.Errorf("undefined option '%s=%s'\n", key, val)
 		}
@@ -494,8 +498,21 @@ func edit() {
 	if srcFile == "" {
 		fmt.Printf("%s edit [command options]\n", os.Args[0])
 		fmt.Printf("options:\n")
-		fmt.Printf(" --src string    source ip text file path\n")
+		fmt.Printf(" --src string        source ip text file path\n")
+		fmt.Printf(" --version string    IP version, options: ipv4/ipv6, specify this flag so you don't get confused \n")
 		return
+	}
+
+	// check and define the IP version
+	var version *xdb.Version = nil
+	if len(ipVersion) < 2 {
+		slog.Error("please specify the ip version with flag --version, ipv4 or ipv6 ?")
+		return
+	} else if v, err := xdb.VersionFromName(ipVersion); err != nil {
+		slog.Error("failed to parse version name", "error", err)
+		return
+	} else {
+		version = v
 	}
 
 	rExp, err := regexp.Compile("\\s+")
@@ -506,7 +523,7 @@ func edit() {
 
 	fmt.Printf("init the editor from source @ `%s` ... \n", srcFile)
 	var tStart = time.Now()
-	editor, err := xdb.NewEditor(srcFile)
+	editor, err := xdb.NewEditor(version, srcFile)
 	if err != nil {
 		fmt.Printf("failed to init editor: %s", err)
 		return

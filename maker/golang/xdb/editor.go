@@ -14,6 +14,8 @@ import (
 )
 
 type Editor struct {
+	verison *Version
+
 	// source ip file
 	srcPath   string
 	srcHandle *os.File
@@ -23,7 +25,7 @@ type Editor struct {
 	segments *list.List
 }
 
-func NewEditor(srcFile string) (*Editor, error) {
+func NewEditor(version *Version, srcFile string) (*Editor, error) {
 	// check the src and dst file
 	srcPath, err := filepath.Abs(srcFile)
 	if err != nil {
@@ -36,6 +38,7 @@ func NewEditor(srcFile string) (*Editor, error) {
 	}
 
 	e := &Editor{
+		verison:   version,
 		srcPath:   srcPath,
 		srcHandle: srcHandle,
 		toSave:    false,
@@ -57,6 +60,11 @@ func (e *Editor) loadSegments() error {
 	var iErr = IterateSegments(e.srcHandle, func(l string) {
 		// do nothing here
 	}, func(seg *Segment) error {
+		// version check
+		if len(seg.StartIP) != e.verison.Bytes {
+			return fmt.Errorf("invalid ip segment(%s expected)", e.verison.Name)
+		}
+
 		// check the continuity of the data segment
 		if err := seg.AfterCheck(last); err != nil {
 			return err
@@ -270,8 +278,9 @@ func (e *Editor) Save() error {
 			continue
 		}
 
-		var l = s.String()
-		_, err = dstHandle.WriteString(fmt.Sprintf("%s\n", l))
+		// var l = s.String()
+		// _, err = dstHandle.WriteString(fmt.Sprintf("%s\n", l))
+		_, err = fmt.Fprintln(dstHandle, s.String())
 		if err != nil {
 			return err
 		}
