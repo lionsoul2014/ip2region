@@ -151,9 +151,9 @@ func (s *Searcher) Search(ip []byte) (string, int, error) {
 		}
 
 		// decode the data step by step to reduce the unnecessary calculations
-		if IPCompare(ip, buff[0:bytes]) < 0 {
+		if s.version.IPCompare(ip, buff[0:bytes]) < 0 {
 			h = m - 1
-		} else if IPCompare(ip, buff[bytes:tBytes]) > 0 {
+		} else if s.version.IPCompare(ip, buff[bytes:tBytes]) > 0 {
 			l = m + 1
 		} else {
 			dataLen = int(binary.LittleEndian.Uint16(buff[tBytes:]))

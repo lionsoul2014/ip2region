@@ -302,9 +302,15 @@ func (m *Maker) Start() error {
 				return fmt.Errorf("segment index ptr exceed the max length of %d", math.MaxUint32)
 			}
 
-			// encode the segment index
-			copy(indexBuff[0:], s.StartIP)
-			copy(indexBuff[len(s.StartIP):], s.EndIP)
+			// encode the segment index.
+			// @Note by Leon at 2025/09/05:
+			// This is a tough decision since the directly copy of the bytes will make everything simpler.
+			// But in order to compatible with the old searcher implementation we had to keep encoding the IPv4 bytes with little endian.
+			// @TODO: we may choose to use the big-endian byte order in the future.
+			// But now compatibility is the most important !!!
+
+			m.version.PutBytes(indexBuff[0:], s.StartIP)
+			m.version.PutBytes(indexBuff[len(s.StartIP):], s.EndIP)
 			_offset = len(s.StartIP) + len(s.EndIP)
 			binary.LittleEndian.PutUint16(indexBuff[_offset:], uint16(dataLen))
 			binary.LittleEndian.PutUint32(indexBuff[_offset+2:], dataPtr)

@@ -5,6 +5,7 @@
 package xdb
 
 import (
+	"bytes"
 	"fmt"
 	"strings"
 )
@@ -14,6 +15,9 @@ type Version struct {
 	Name             string
 	Bytes            int
 	SegmentIndexSize int
+
+	// function to compare two ips
+	IPCompare func([]byte, []byte) int
 }
 
 const (
@@ -27,23 +31,33 @@ var (
 		Id:               IPv4VersionNo,
 		Name:             "IPv4",
 		Bytes:            4,
-		SegmentIndexSize: 14, // 4 + 4 + 2 + 4
+		SegmentIndexSize: 14, // 4 + 4 + 2 + 4,
+		IPCompare: func(ip1, ip2 []byte) int {
+			// ip1 - with Bit endian parsed from an input
+			// ip2 - with Little endian read from the xdb index
+			ip2[0], ip2[3] = ip2[3], ip2[0]
+			ip2[1], ip2[2] = ip2[2], ip2[1]
+			return bytes.Compare(ip1, ip2)
+		},
 	}
 	IPv6 = &Version{
 		Id:               IPv6VersionNo,
 		Name:             "IPv6",
 		Bytes:            16,
-		SegmentIndexSize: 38, // 16 + 16 + 2 + 4
+		SegmentIndexSize: 38, // 16 + 16 + 2 + 4,
+		IPCompare: func(ip1, ip2 []byte) int {
+			return bytes.Compare(ip1, ip2)
+		},
 	}
 )
 
 func VersionFromIP(ip string) (*Version, error) {
-	bytes, err := ParseIP(ip)
+	r, err := ParseIP(ip)
 	if err != nil {
 		return IPvx, fmt.Errorf("parse ip fail: %w", err)
 	}
 
-	if len(bytes) == 4 {
+	if len(r) == 4 {
 		return IPv4, nil
 	}
 

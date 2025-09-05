@@ -41,70 +41,8 @@ func TestIPCompare(t *testing.T) {
 	}
 }
 
-func TestIPAddOne(t *testing.T) {
-	var ipPairs = [][]string{
-		{"1.2.3.4", "1.2.3.5"},
-		{"2.3.4.5", "2.3.4.6"},
-		{"fdff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", "fe00::"},
-		{"2fff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", "3000::"},
-		{"2fff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", "3000::1"},
-	}
-
-	for _, pairs := range ipPairs {
-		sip, err := ParseIP(pairs[0])
-		if err != nil {
-			t.Errorf("parse ip `%s`: %s\n", pairs[0], err)
-		}
-
-		eip, err := ParseIP(pairs[1])
-		if err != nil {
-			t.Errorf("parse ip `%s`: %s\n", pairs[1], err)
-		}
-
-		fmt.Printf("IPAddOne(%s) = %s ? %d\n",
-			pairs[0], pairs[1], IPCompare(IPAddOne(sip), eip))
-	}
-}
-
-func TestIPAddOne2(t *testing.T) {
-	var ip = []byte{0, 1, 2, 3}
-	nip := IPAddOne(ip)
-	fmt.Printf("nip: %+v, ip:%+v", ip, nip)
-}
-
-func TestIPSubOne(t *testing.T) {
-	var ipPairs = [][]string{
-		{"1.2.3.4", "1.2.3.5"},
-		{"2.3.4.5", "2.3.4.6"},
-		{"fdff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", "fe00::"},
-		{"2fff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", "3000::"},
-		{"2fff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", "3000::1"},
-	}
-
-	for _, pairs := range ipPairs {
-		sip, err := ParseIP(pairs[0])
-		if err != nil {
-			t.Errorf("parse ip `%s`: %s\n", pairs[0], err)
-		}
-
-		eip, err := ParseIP(pairs[1])
-		if err != nil {
-			t.Errorf("parse ip `%s`: %s\n", pairs[1], err)
-		}
-
-		fmt.Printf("IPSubOne(%s) = %s ? %d\n",
-			pairs[1], pairs[0], IPCompare(IPSubOne(eip), sip))
-	}
-}
-
-func TestIPSubOne2(t *testing.T) {
-	var ip = []byte{0, 1, 2, 3}
-	nip := IPSubOne(ip)
-	fmt.Printf("nip: %+v, ip:%+v", ip, nip)
-}
-
 func TestLoadVectorIndex(t *testing.T) {
-	vIndex, err := LoadVectorIndexFromFile("../../../data/ip2region.xdb")
+	vIndex, err := LoadVectorIndexFromFile("../../../data/ip2region_v4.xdb")
 	if err != nil {
 		fmt.Printf("failed to load vector index: %s\n", err)
 		return
@@ -114,7 +52,7 @@ func TestLoadVectorIndex(t *testing.T) {
 }
 
 func TestLoadContent(t *testing.T) {
-	buff, err := LoadContentFromFile("../../../data/ip2region.xdb")
+	buff, err := LoadContentFromFile("../../../data/ip2region_v4.xdb")
 	if err != nil {
 		fmt.Printf("failed to load xdb content: %s\n", err)
 		return
@@ -124,15 +62,17 @@ func TestLoadContent(t *testing.T) {
 }
 
 func TestLoadHeader(t *testing.T) {
-	header, err := LoadHeaderFromFile("../../../data/ip2region.xdb")
+	header, err := LoadHeaderFromFile("../../../data/ip2region_v4.xdb")
 	if err != nil {
 		fmt.Printf("failed to load xdb header info: %s\n", err)
 		return
 	}
 
-	fmt.Printf("Version        : %d\n", header.Version)
-	fmt.Printf("IndexPolicy    : %s\n", header.IndexPolicy.String())
-	fmt.Printf("CreatedAt      : %d(%s)\n", header.CreatedAt, time.Unix(int64(header.CreatedAt), 0).Format(time.RFC3339))
-	fmt.Printf("StartIndexPtr  : %d\n", header.StartIndexPtr)
-	fmt.Printf("EndIndexPtr    : %d\n", header.EndIndexPtr)
+	fmt.Printf("Version         : %d\n", header.Version)
+	fmt.Printf("IndexPolicy     : %s\n", header.IndexPolicy.String())
+	fmt.Printf("CreatedAt       : %d(%s)\n", header.CreatedAt, time.Unix(int64(header.CreatedAt), 0).Format(time.RFC3339))
+	fmt.Printf("StartIndexPtr   : %d\n", header.StartIndexPtr)
+	fmt.Printf("EndIndexPtr     : %d\n", header.EndIndexPtr)
+	fmt.Printf("IPVersion       : %d\n", header.IPVersion)
+	fmt.Printf("RuntimePtrBytes : %d\n", header.RuntimePtrBytes)
 }

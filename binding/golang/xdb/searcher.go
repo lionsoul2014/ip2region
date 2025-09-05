@@ -67,7 +67,7 @@ func NewHeader(input []byte) (*Header, error) {
 	}
 
 	return &Header{
-		Version:       binary.LittleEndian.Uint16(input),
+		Version:       binary.LittleEndian.Uint16(input[0:]),
 		IndexPolicy:   IndexPolicy(binary.LittleEndian.Uint16(input[2:])),
 		CreatedAt:     binary.LittleEndian.Uint32(input[4:]),
 		StartIndexPtr: binary.LittleEndian.Uint32(input[8:]),
@@ -104,6 +104,7 @@ func baseNew(version *Version, dbFile string, vIndex []byte, cBuff []byte) (*Sea
 	// content buff first
 	if cBuff != nil {
 		return &Searcher{
+			version:     version,
 			vectorIndex: nil,
 			contentBuff: cBuff,
 		}, nil
@@ -130,15 +131,8 @@ func NewWithVectorIndex(version *Version, dbFile string, vIndex []byte) (*Search
 	return baseNew(version, dbFile, vIndex, nil)
 }
 
-func NewWithBuffer(cBuff []byte) (*Searcher, error) {
-	versionNo := binary.LittleEndian.Uint16(cBuff[16:])
-	if versionNo == IPv4VersionNo {
-		return baseNew(IPv4, "", nil, cBuff)
-	} else if versionNo == IPv6VersionNo {
-		return baseNew(IPv6, "", nil, cBuff)
-	} else {
-		return nil, fmt.Errorf("invalid version number `%d`", versionNo)
-	}
+func NewWithBuffer(version *Version, cBuff []byte) (*Searcher, error) {
+	return baseNew(version, "", nil, cBuff)
 }
 
 func (s *Searcher) Close() {
@@ -150,8 +144,8 @@ func (s *Searcher) Close() {
 	}
 }
 
-// GetIPVersion return the ip version
-func (s *Searcher) GetIPVersion() *Version {
+// IPVersion return the ip version
+func (s *Searcher) IPVersion() *Version {
 	return s.version
 }
 
@@ -219,9 +213,9 @@ func (s *Searcher) Search(ip []byte) (string, error) {
 		}
 
 		// decode the data step by step to reduce the unnecessary operations
-		if IPCompare(ip, buff[0:bytes]) < 0 {
+		if s.version.IPCompare(ip, buff[0:bytes]) < 0 {
 			h = m - 1
-		} else if IPCompare(ip, buff[bytes:dBytes]) > 0 {
+		} else if s.version.IPCompare(ip, buff[bytes:dBytes]) > 0 {
 			l = m + 1
 		} else {
 			dataLen = int(binary.LittleEndian.Uint16(buff[dBytes:]))

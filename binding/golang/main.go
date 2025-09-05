@@ -86,7 +86,7 @@ func testSearch() {
 	fmt.Printf(`ip2region xdb searcher test program
 source xdb: %s (%s, %s)
 type 'quit' to exit
-`, dbPath, searcher.GetIPVersion().Name, cachePolicy)
+`, dbPath, searcher.IPVersion().Name, cachePolicy)
 	reader := bufio.NewReader(os.Stdin)
 	for {
 		fmt.Print("ip2region>> ")
@@ -257,7 +257,7 @@ func createSearcher(dbPath string, cachePolicy string) (*xdb.Searcher, error) {
 			return nil, fmt.Errorf("failed to load content from '%s': %w", dbPath, err)
 		}
 
-		return xdb.NewWithBuffer(cBuff)
+		return xdb.NewWithBuffer(version, cBuff)
 	default:
 		return nil, fmt.Errorf("invalid cache policy `%s`, options: file/vectorIndex/content", cachePolicy)
 	}

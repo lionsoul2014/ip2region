@@ -6,6 +6,7 @@ package xdb
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"math/big"
 	"net"
@@ -45,17 +46,18 @@ func IP2Long(ip []byte) *big.Int {
 // IPCompare compares two IP addresses
 // Returns: -1 if ip1 < ip2, 0 if ip1 == ip2, 1 if ip1 > ip2
 func IPCompare(ip1, ip2 []byte) int {
-	for i := 0; i < len(ip1); i++ {
-		if ip1[i] < ip2[i] {
-			return -1
-		}
+	// for i := 0; i < len(ip1); i++ {
+	// 	if ip1[i] < ip2[i] {
+	// 		return -1
+	// 	}
 
-		if ip1[i] > ip2[i] {
-			return 1
-		}
-	}
+	// 	if ip1[i] > ip2[i] {
+	// 		return 1
+	// 	}
+	// }
 
-	return 0
+	// return 0
+	return bytes.Compare(ip1, ip2)
 }
 
 func IPAddOne(ip []byte) []byte {

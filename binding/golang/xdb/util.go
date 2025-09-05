@@ -9,10 +9,10 @@
 package xdb
 
 import (
+	"bytes"
 	"embed"
 	"fmt"
 	"io"
-	"math/big"
 	"net"
 	"os"
 )
@@ -40,51 +40,19 @@ func IP2String(ip []byte) string {
 	return net.IP(ip[:]).String()
 }
 
-func IP2Long(ip []byte) *big.Int {
-	return big.NewInt(0).SetBytes(ip)
-}
-
 // IPCompare compares two IP addresses
 // Returns: -1 if ip1 < ip2, 0 if ip1 == ip2, 1 if ip1 > ip2
 func IPCompare(ip1, ip2 []byte) int {
-	for i := 0; i < len(ip1); i++ {
-		if ip1[i] < ip2[i] {
-			return -1
-		}
-
-		if ip1[i] > ip2[i] {
-			return 1
-		}
-	}
-
-	return 0
-}
-
-func IPAddOne(ip []byte) []byte {
-	var r = make([]byte, len(ip))
-	copy(r, ip)
-	for i := len(ip) - 1; i >= 0; i-- {
-		r[i]++
-		if r[i] != 0 { // No overflow
-			break
-		}
-	}
-
-	return r
-}
-
-func IPSubOne(ip []byte) []byte {
-	var r = make([]byte, len(ip))
-	copy(r, ip)
-	for i := len(ip) - 1; i >= 0; i-- {
-		if r[i] != 0 { // No borrow needed
-			r[i]--
-			break
-		}
-		r[i] = 0xFF // borrow from the next byte
-	}
-
-	return r
+	// for i := 0; i < len(ip1); i++ {
+	// 	if ip1[i] < ip2[i] {
+	// 		return -1
+	// 	}
+	// 	if ip1[i] > ip2[i] {
+	// 		return 1
+	// 	}
+	// }
+	// return 0
+	return bytes.Compare(ip1, ip2)
 }
 
 // LoadHeader load the header info from the specified handle
