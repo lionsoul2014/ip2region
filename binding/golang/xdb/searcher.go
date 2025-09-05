@@ -15,6 +15,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"os"
+	"sync/atomic"
 )
 
 const (
@@ -77,7 +78,7 @@ type Searcher struct {
 
 	// header info
 	header  *Header
-	ioCount int
+	ioCount int32
 
 	// use it only when this feature enabled.
 	// Preload the vector index will reduce the number of IO operations
@@ -135,7 +136,7 @@ func (s *Searcher) Close() {
 
 // GetIOCount return the global io count for the last search
 func (s *Searcher) GetIOCount() int {
-	return s.ioCount
+	return int(atomic.LoadInt32(&s.ioCount))
 }
 
 // SearchByStr find the region for the specified ip string
@@ -151,7 +152,7 @@ func (s *Searcher) SearchByStr(str string) (string, error) {
 // Search find the region for the specified long ip
 func (s *Searcher) Search(ip uint32) (string, error) {
 	// reset the global ioCount
-	s.ioCount = 0
+	atomic.StoreInt32(&s.ioCount, 0)
 
 	// locate the segment index block based on the vector index
 	var il0 = (ip >> 24) & 0xFF
@@ -236,7 +237,7 @@ func (s *Searcher) read(offset int64, buff []byte) error {
 			return fmt.Errorf("seek to %d: %w", offset, err)
 		}
 
-		s.ioCount++
+		atomic.AddInt32(&s.ioCount, 1)
 		rLen, err := s.handle.Read(buff)
 		if err != nil {
 			return fmt.Errorf("handle read: %w", err)
