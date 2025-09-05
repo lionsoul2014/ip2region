@@ -15,20 +15,21 @@ make
 
 通过 `xdb_maker gen` 命令生成 ip2region.xdb 二进制文件:
 ```
-➜  golang git:(v2.0_xdb) ✗ ./xdb_maker gen
 ./xdb_maker gen [command options]
 options:
- --src string    source ip text file path
- --dst string    destination binary xdb file path
+ --src string           source ip text file path
+ --dst string           destination binary xdb file path
+ --version string       IP version, options: ipv4/ipv6, specify this flag so you don't get confused 
+ --field-list string    field index list imploded with ',' eg: 0,1,2,3-6,7
+ --log-level string     set the log level, options: debug/info/warn/error
 ```
 
-例如，使用默认的 data/ip.merge.txt 作为源数据，生成一个 ip2region.xdb 到当前目录：
+例如，使用默认的仓库 data/ 下默认的原始数据生成生成 xdb 文件到当前目录：
 ```bash
-➜  golang git:(v2.0_xdb) ✗ ./xdb_maker gen --src=../../data/ip.merge.txt --dst=./ip2region.xdb
-# 会看到一堆输出，最终会看到类似如下输出表示运行结束
-...
-2022/06/16 16:38:48 maker.go:317: write done, with 13804 data blocks and (683591, 720221) index blocks
-2022/06/16 16:38:48 main.go:89: Done, elapsed: 33.615278847s
+# ipv4 
+./xdb_maker gen --src=../../data/ipv4_source.txt --dst=./ip2region_v4.xdb --version=ipv4
+# ipv6
+./xdb_maker gen --src=../../data/ipv6_source.txt --dst=./ip2region_v6.xdb --version=ipv6
 ```
 
 生成过程中数据字段自定义请参考 [xdb-v4文件生成#自定义数据字段](https://ip2region.net/doc/data/ipv4_xdb_make#field-list)
@@ -46,36 +47,45 @@ options:
 
 例如，使用自带的 xdb 文件来运行查询测试：
 ```bash
-➜  golang git:(v2.0_xdb) ✗ ./xdb_maker search --db=../../data/ip2region.xdb
-ip2region xdb search test program, commands:
-loadIndex : load the vector index for search speedup.
-clearIndex: clear the vector index.
-quit      : exit the test program
-ip2region>> 103.192.227.215
-{region:中国|0|香港|0|0, iocount:8, took:87.151µs}
-ip2region>> loadIndex
-vector index cached
-ip2region>> 39.114.2.16
-{region:韩国|0|0|0|SK宽带, iocount:2, took:50.005µs}
-ip2region>> 120.24.130.96
-{region:中国|0|广东省|深圳市|阿里云, iocount:2, took:32.805µs}
+# ipv4
+./xdb_maker search --db=../../data/ip2region_v4.xdb
+ip2region xdb search test program,
+source xdb: ../../data/ip2region_v4.xdb (IPv4)
+commands:
+  loadIndex : load the vector index for search speedup.
+  clearIndex: clear the vector index.
+  quit      : exit the test program
+ip2region>> 58.251.30.115
+{region:中国|0|广东省|深圳市|联通, iocount:3, took:37.043µs}
 ip2region>> 
+
+# ipv6
+./xdb_maker search --db=../../data/ip2region_v6.xdb
+ip2region xdb search test program,
+source xdb: ../../data/ip2region_v6.xdb (IPv6)
+commands:
+  loadIndex : load the vector index for search speedup.
+  clearIndex: clear the vector index.
+  quit      : exit the test program
+ip2region>> 2604:bc80:8001:11a4:ffff:ffff:ffff:ffff
+{region:中国|广东省|深圳市|数据中心, iocount:14, took:138.68µs}
+ip2region>>
 ```
 
 # `xdb` 数据编辑
 
 通过 `xdb_maker edit` 命令来编辑原始的　IP 数据：
 ```
-➜  golang git:(fr_editor) ✗ ./xdb_maker edit
 ./xdb_maker edit [command options]
 options:
- --src string    source ip text file path
+ --src string        source ip text file path
+ --version string    IP version, options: ipv4/ipv6, specify this flag so you don't get confused
 ```
 
-例如，使用编辑器打开 `./data/ip.merge.txt` 会看到如下的操作面板：
+例如，使用编辑器打开 `./data/ipv4_source.txt` 会看到如下的操作面板：
 ```bash
-➜  golang git:(fr_editor) ✗ ./xdb_maker edit --src=../../data/ip.merge.txt
-init the editor from source @ `../../data/ip.merge.txt` ... 
+./xdb_maker edit --src=../../data/ipv4_source.txt --version=ipv4
+init the editor from source @ `../../data/ipv4_source.txt` ... 
 all segments loaded, length: 683591, elapsed: 479.73743ms
 command list: 
   put [segment]        : put the specifield $segment
@@ -112,26 +122,22 @@ editor>>
 
 如果你自主生成了 `xdb` 文件，请确保运行如下的 `xdb_maker bench` 命令来确保生成的的 `xdb` 文件的正确性：
 ```
-➜  golang git:(v2.0_xdb) ✗ ./xdb_maker bench
 ./xdb_maker bench [command options]
 options:
  --db string            ip2region binary xdb file path
  --src string           source ip text file path
+ --version string       IP version, options: ipv4/ipv6, specify this flag so you don't get confused 
+ --log-level string     set the log level, options: debug/info/warn/error
  --ignore-error bool    keep going if bench failed
 ```
 
-例如：使用 data/ip.merge.txt 源文件来 bench 测试 data/ip2region.xdb 这个 xdb 文件：
+例如：使用 data 下的源文件来 bench 测试 data 的 xdb 文件：
 ```bash
-➜  golang git:(v2.0_xdb) ✗ ./xdb_maker bench --db=../../data/ip2region.xdb --src=../../data/ip.merge.txt
-# 会看到一堆输出，看到类似如下的数据表示 bench 测试通过了，否则就会报错
-...
-try to bench segment: `224.0.0.0|255.255.255.255|0|0|0|内网IP|内网IP`
-|-try to bench ip '224.0.0.0' ...  --[Ok]
-|-try to bench ip '231.255.255.255' ...  --[Ok]
-|-try to bench ip '239.255.255.255' ...  --[Ok]
-|-try to bench ip '247.255.255.255' ...  --[Ok]
-|-try to bench ip '255.255.255.255' ...  --[Ok]
-Bench finished, {count: 3417955, failed: 0, took: 52.200116397s}
+# ipv4
+./xdb_maker bench --db=../../data/ip2region_v4.xdb --src=../../data/ipv4_source.txt --version=ipv4
+
+#ipv6
+./xdb_maker bench --db=../../data/ip2region_v6.xdb --src=../../data/ipv6_source.txt --version=ipv6
 ```
-*请注意 bench 测试使用的 `src` 文件需要是对应的生成 ip2region.xdb 的源文件相同*。
+*请注意 bench 测试使用的 `src` 文件需要是对应的生成 xdb 的源文件相同*。
 如果运行过程中有错误会立马停止运行，也可以执行 --ignore-error=true 参数来忽略错误，在最后看 failed 的统计结果。
