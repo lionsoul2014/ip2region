@@ -9,39 +9,98 @@
 package xdb
 
 import (
-	"encoding/binary"
 	"fmt"
-	"net"
 	"testing"
 	"time"
 )
 
-func TestCheckIP(t *testing.T) {
-	var str = "29.34.191.255"
-	ip, err := CheckIP(str)
-	if err != nil {
-		t.Errorf("check ip `%s`: %s\n", str, err)
-	}
+func TestParseIP(t *testing.T) {
+	var ips = []string{"29.34.191.255", "2c0f:fff0::", "2fff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"}
+	for _, ip := range ips {
+		bytes, err := ParseIP(ip)
+		if err != nil {
+			t.Errorf("check ip `%s`: %s\n", IP2String(bytes), err)
+		}
 
-	netIP := net.ParseIP(str).To4()
-	if netIP == nil {
-		t.Fatalf("parse ip `%s` failed", str)
+		nip := IP2String(bytes)
+		fmt.Printf("checkip: (%s / %s), isEqual: %v\n", ip, nip, ip == nip)
 	}
-
-	u32 := binary.BigEndian.Uint32(netIP)
-	fmt.Printf("checkip: %d, parseip: %d, isEqual: %v\n", ip, u32, ip == u32)
 }
 
-func TestLong2IP(t *testing.T) {
-	var str = "29.34.191.255"
-	netIP := net.ParseIP(str).To4()
-	if netIP == nil {
-		t.Fatalf("parse ip `%s` failed", str)
+func TestIPCompare(t *testing.T) {
+	var ipPairs = [][]string{
+		{"1.2.3.4", "1.2.3.5"},
+		{"58.250.36.41", "58.250.30.41"},
+		{"2c10::", "2e00::"},
+		{"fdff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", "febf:ffff:ffff:ffff:ffff:ffff:ffff:ffff"},
+		{"fe7f:ffff:ffff:ffff:ffff:ffff:ffff:ffff", "fe00::"},
 	}
 
-	u32 := binary.BigEndian.Uint32(netIP)
-	ipStr := Long2IP(u32)
-	fmt.Printf("originIP: %s, Long2IP: %s, isEqual: %v\n", str, ipStr, ipStr == str)
+	for _, pairs := range ipPairs {
+		fmt.Printf("IPCompare(%s, %s): %d\n", pairs[0], pairs[1], IPCompare([]byte(pairs[0]), []byte(pairs[1])))
+	}
+}
+
+func TestIPAddOne(t *testing.T) {
+	var ipPairs = [][]string{
+		{"1.2.3.4", "1.2.3.5"},
+		{"2.3.4.5", "2.3.4.6"},
+		{"fdff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", "fe00::"},
+		{"2fff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", "3000::"},
+		{"2fff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", "3000::1"},
+	}
+
+	for _, pairs := range ipPairs {
+		sip, err := ParseIP(pairs[0])
+		if err != nil {
+			t.Errorf("parse ip `%s`: %s\n", pairs[0], err)
+		}
+
+		eip, err := ParseIP(pairs[1])
+		if err != nil {
+			t.Errorf("parse ip `%s`: %s\n", pairs[1], err)
+		}
+
+		fmt.Printf("IPAddOne(%s) = %s ? %d\n",
+			pairs[0], pairs[1], IPCompare(IPAddOne(sip), eip))
+	}
+}
+
+func TestIPAddOne2(t *testing.T) {
+	var ip = []byte{0, 1, 2, 3}
+	nip := IPAddOne(ip)
+	fmt.Printf("nip: %+v, ip:%+v", ip, nip)
+}
+
+func TestIPSubOne(t *testing.T) {
+	var ipPairs = [][]string{
+		{"1.2.3.4", "1.2.3.5"},
+		{"2.3.4.5", "2.3.4.6"},
+		{"fdff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", "fe00::"},
+		{"2fff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", "3000::"},
+		{"2fff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", "3000::1"},
+	}
+
+	for _, pairs := range ipPairs {
+		sip, err := ParseIP(pairs[0])
+		if err != nil {
+			t.Errorf("parse ip `%s`: %s\n", pairs[0], err)
+		}
+
+		eip, err := ParseIP(pairs[1])
+		if err != nil {
+			t.Errorf("parse ip `%s`: %s\n", pairs[1], err)
+		}
+
+		fmt.Printf("IPSubOne(%s) = %s ? %d\n",
+			pairs[1], pairs[0], IPCompare(IPSubOne(eip), sip))
+	}
+}
+
+func TestIPSubOne2(t *testing.T) {
+	var ip = []byte{0, 1, 2, 3}
+	nip := IPSubOne(ip)
+	fmt.Printf("nip: %+v, ip:%+v", ip, nip)
 }
 
 func TestLoadVectorIndex(t *testing.T) {

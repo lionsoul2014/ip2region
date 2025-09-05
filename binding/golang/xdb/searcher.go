@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 // ---
-// ip2region database v2.0 searcher.
+// Ip2Region database v2.0 searcher.
 // @Note this is a Not thread safe implementation.
 //
 // @Author Lion <chenxin619315@gmail.com>
@@ -18,11 +18,12 @@ import (
 )
 
 const (
-	HeaderInfoLength      = 256
-	VectorIndexRows       = 256
-	VectorIndexCols       = 256
-	VectorIndexSize       = 8
-	SegmentIndexBlockSize = 14
+	Structure20      = 2
+	Structure30      = 3
+	HeaderInfoLength = 256
+	VectorIndexRows  = 256
+	VectorIndexCols  = 256
+	VectorIndexSize  = 8
 )
 
 // --- Index policy define
@@ -54,6 +55,10 @@ type Header struct {
 	CreatedAt     uint32
 	StartIndexPtr uint32
 	EndIndexPtr   uint32
+
+	// since IPv6 supporting
+	IPVersion       int
+	RuntimePtrBytes int
 }
 
 func NewHeader(input []byte) (*Header, error) {
@@ -67,13 +72,17 @@ func NewHeader(input []byte) (*Header, error) {
 		CreatedAt:     binary.LittleEndian.Uint32(input[4:]),
 		StartIndexPtr: binary.LittleEndian.Uint32(input[8:]),
 		EndIndexPtr:   binary.LittleEndian.Uint32(input[12:]),
+
+		IPVersion:       int(binary.LittleEndian.Uint16(input[16:])),
+		RuntimePtrBytes: int(binary.LittleEndian.Uint16(input[18:])),
 	}, nil
 }
 
 // --- searcher implementation
 
 type Searcher struct {
-	handle *os.File
+	version *Version
+	handle  *os.File
 
 	// header info
 	header  *Header
@@ -89,7 +98,7 @@ type Searcher struct {
 	contentBuff []byte
 }
 
-func baseNew(dbFile string, vIndex []byte, cBuff []byte) (*Searcher, error) {
+func baseNew(version *Version, dbFile string, vIndex []byte, cBuff []byte) (*Searcher, error) {
 	var err error
 
 	// content buff first
@@ -107,21 +116,29 @@ func baseNew(dbFile string, vIndex []byte, cBuff []byte) (*Searcher, error) {
 	}
 
 	return &Searcher{
+		version:     version,
 		handle:      handle,
 		vectorIndex: vIndex,
 	}, nil
 }
 
-func NewWithFileOnly(dbFile string) (*Searcher, error) {
-	return baseNew(dbFile, nil, nil)
+func NewWithFileOnly(version *Version, dbFile string) (*Searcher, error) {
+	return baseNew(version, dbFile, nil, nil)
 }
 
-func NewWithVectorIndex(dbFile string, vIndex []byte) (*Searcher, error) {
-	return baseNew(dbFile, vIndex, nil)
+func NewWithVectorIndex(version *Version, dbFile string, vIndex []byte) (*Searcher, error) {
+	return baseNew(version, dbFile, vIndex, nil)
 }
 
 func NewWithBuffer(cBuff []byte) (*Searcher, error) {
-	return baseNew("", nil, cBuff)
+	versionNo := binary.LittleEndian.Uint16(cBuff[16:])
+	if versionNo == IPv4VersionNo {
+		return baseNew(IPv4, "", nil, cBuff)
+	} else if versionNo == IPv6VersionNo {
+		return baseNew(IPv6, "", nil, cBuff)
+	} else {
+		return nil, fmt.Errorf("invalid version number `%d`", versionNo)
+	}
 }
 
 func (s *Searcher) Close() {
@@ -133,6 +150,11 @@ func (s *Searcher) Close() {
 	}
 }
 
+// GetIPVersion return the ip version
+func (s *Searcher) GetIPVersion() *Version {
+	return s.version
+}
+
 // GetIOCount return the global io count for the last search
 func (s *Searcher) GetIOCount() int {
 	return s.ioCount
@@ -140,7 +162,7 @@ func (s *Searcher) GetIOCount() int {
 
 // SearchByStr find the region for the specified ip string
 func (s *Searcher) SearchByStr(str string) (string, error) {
-	ip, err := CheckIP(str)
+	ip, err := ParseIP(str)
 	if err != nil {
 		return "", err
 	}
@@ -149,13 +171,17 @@ func (s *Searcher) SearchByStr(str string) (string, error) {
 }
 
 // Search find the region for the specified long ip
-func (s *Searcher) Search(ip uint32) (string, error) {
+func (s *Searcher) Search(ip []byte) (string, error) {
+	// ip version check
+	if len(ip) != s.version.Bytes {
+		return "", fmt.Errorf("invalid ip address(%s expected)", s.version.Name)
+	}
+
 	// reset the global ioCount
 	s.ioCount = 0
 
 	// locate the segment index block based on the vector index
-	var il0 = (ip >> 24) & 0xFF
-	var il1 = (ip >> 16) & 0xFF
+	var il0, il1 = int(ip[0]), int(ip[1])
 	var idx = il0*VectorIndexCols*VectorIndexSize + il1*VectorIndexSize
 	var sPtr, ePtr = uint32(0), uint32(0)
 	if s.vectorIndex != nil {
@@ -176,37 +202,35 @@ func (s *Searcher) Search(ip uint32) (string, error) {
 		ePtr = binary.LittleEndian.Uint32(buff[4:])
 	}
 
-	// fmt.Printf("sPtr=%d, ePtr=%d", sPtr, ePtr)
+	// fmt.Printf("sPtr=%d, ePtr=%d\n", sPtr, ePtr)
 
 	// binary search the segment index to get the region
+	var bytes, dBytes = len(ip), len(ip) << 1
+	var segIndexSize = uint32(s.version.SegmentIndexSize)
 	var dataLen, dataPtr = 0, uint32(0)
-	var buff = make([]byte, SegmentIndexBlockSize)
-	var l, h = 0, int((ePtr - sPtr) / SegmentIndexBlockSize)
+	var buff = make([]byte, segIndexSize)
+	var l, h = 0, int((ePtr - sPtr) / segIndexSize)
 	for l <= h {
 		m := (l + h) >> 1
-		p := sPtr + uint32(m*SegmentIndexBlockSize)
+		p := sPtr + uint32(m)*segIndexSize
 		err := s.read(int64(p), buff)
 		if err != nil {
 			return "", fmt.Errorf("read segment index at %d: %w", p, err)
 		}
 
 		// decode the data step by step to reduce the unnecessary operations
-		sip := binary.LittleEndian.Uint32(buff)
-		if ip < sip {
+		if IPCompare(ip, buff[0:bytes]) < 0 {
 			h = m - 1
+		} else if IPCompare(ip, buff[bytes:dBytes]) > 0 {
+			l = m + 1
 		} else {
-			eip := binary.LittleEndian.Uint32(buff[4:])
-			if ip > eip {
-				l = m + 1
-			} else {
-				dataLen = int(binary.LittleEndian.Uint16(buff[8:]))
-				dataPtr = binary.LittleEndian.Uint32(buff[10:])
-				break
-			}
+			dataLen = int(binary.LittleEndian.Uint16(buff[dBytes:]))
+			dataPtr = binary.LittleEndian.Uint32(buff[dBytes+2:])
+			break
 		}
 	}
 
-	//fmt.Printf("dataLen: %d, dataPtr: %d", dataLen, dataPtr)
+	// fmt.Printf("dataLen: %d, dataPtr: %d\n", dataLen, dataPtr)
 	if dataLen == 0 {
 		return "", nil
 	}

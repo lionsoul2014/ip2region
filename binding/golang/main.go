@@ -11,12 +11,13 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"github.com/lionsoul2014/ip2region/binding/golang/xdb"
-	"github.com/mitchellh/go-homedir"
 	"log"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/lionsoul2014/ip2region/binding/golang/xdb"
+	"github.com/mitchellh/go-homedir"
 )
 
 func printHelp() {
@@ -82,9 +83,10 @@ func testSearch() {
 		fmt.Printf("searcher test program exited, thanks for trying\n")
 	}()
 
-	fmt.Printf(`ip2region xdb searcher test program, cachePolicy: %s
+	fmt.Printf(`ip2region xdb searcher test program
+source xdb: %s (%s, %s)
 type 'quit' to exit
-`, cachePolicy)
+`, dbPath, searcher.GetIPVersion().Name, cachePolicy)
 	reader := bufio.NewReader(os.Stdin)
 	for {
 		fmt.Print("ip2region>> ")
@@ -185,29 +187,28 @@ func testBench() {
 			return
 		}
 
-		sip, err := xdb.CheckIP(ps[0])
+		sip, err := xdb.ParseIP(ps[0])
 		if err != nil {
 			fmt.Printf("check start ip `%s`: %s\n", ps[0], err)
 			return
 		}
 
-		eip, err := xdb.CheckIP(ps[1])
+		eip, err := xdb.ParseIP(ps[1])
 		if err != nil {
 			fmt.Printf("check end ip `%s`: %s\n", ps[1], err)
 			return
 		}
 
-		if sip > eip {
+		if xdb.IPCompare(sip, eip) > 0 {
 			fmt.Printf("start ip(%s) should not be greater than end ip(%s)\n", ps[0], ps[1])
 			return
 		}
 
-		mip := xdb.MidIP(sip, eip)
-		for _, ip := range []uint32{sip, xdb.MidIP(sip, mip), mip, xdb.MidIP(mip, eip), eip} {
+		for _, ip := range [][]byte{sip, eip} {
 			sTime := time.Now()
 			region, err := searcher.Search(ip)
 			if err != nil {
-				fmt.Printf("failed to search ip '%s': %s\n", xdb.Long2IP(ip), err)
+				fmt.Printf("failed to search ip '%s': %s\n", xdb.IP2String(ip), err)
 				return
 			}
 
@@ -215,7 +216,7 @@ func testBench() {
 
 			// check the region info
 			if region != ps[2] {
-				fmt.Printf("failed Search(%s) with (%s != %s)\n", xdb.Long2IP(ip), region, ps[2])
+				fmt.Printf("failed Search(%s) with (%s != %s)\n", xdb.IP2String(ip), region, ps[2])
 				return
 			}
 
@@ -229,16 +230,27 @@ func testBench() {
 }
 
 func createSearcher(dbPath string, cachePolicy string) (*xdb.Searcher, error) {
+	// auto-detect the ip version from the xdb header
+	header, err := xdb.LoadHeaderFromFile(dbPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load header from `%s`: %s", dbPath, err)
+	}
+
+	version, err := xdb.VersionFromHeader(header)
+	if err != nil {
+		return nil, fmt.Errorf("failed to detect IP version from `%s`: %s", dbPath, err)
+	}
+
 	switch cachePolicy {
 	case "nil", "file":
-		return xdb.NewWithFileOnly(dbPath)
+		return xdb.NewWithFileOnly(version, dbPath)
 	case "vectorIndex":
 		vIndex, err := xdb.LoadVectorIndexFromFile(dbPath)
 		if err != nil {
 			return nil, fmt.Errorf("failed to load vector index from `%s`: %w", dbPath, err)
 		}
 
-		return xdb.NewWithVectorIndex(dbPath, vIndex)
+		return xdb.NewWithVectorIndex(version, dbPath, vIndex)
 	case "content":
 		cBuff, err := xdb.LoadContentFromFile(dbPath)
 		if err != nil {
