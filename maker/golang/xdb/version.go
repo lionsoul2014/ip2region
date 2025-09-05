@@ -9,6 +9,11 @@ import (
 	"strings"
 )
 
+const (
+	IPv4VersionNo = 4
+	IPv6VersionNo = 6
+)
+
 type Version struct {
 	Id               int
 	Name             string
@@ -17,14 +22,14 @@ type Version struct {
 }
 
 var (
-	VX = &Version{}
-	V4 = &Version{
+	IPvx = &Version{}
+	IPv4 = &Version{
 		Id:               4,
 		Name:             "IPv4",
 		Bytes:            4,
 		SegmentIndexSize: 14, // 4 + 4 + 2 + 4
 	}
-	V6 = &Version{
+	IPv6 = &Version{
 		Id:               6,
 		Name:             "IPv6",
 		Bytes:            16,
@@ -35,23 +40,23 @@ var (
 func VersionFromIP(ip string) (*Version, error) {
 	bytes, err := ParseIP(ip)
 	if err != nil {
-		return VX, fmt.Errorf("parse ip fail: %w", err)
+		return IPvx, fmt.Errorf("parse ip fail: %w", err)
 	}
 
 	if len(bytes) == 4 {
-		return V4, nil
+		return IPv4, nil
 	}
 
-	return V6, nil
+	return IPv6, nil
 }
 
 func VersionFromName(name string) (*Version, error) {
 	switch strings.ToUpper(name) {
 	case "V4", "IPV4":
-		return V4, nil
+		return IPv4, nil
 	case "V6", "IPV6":
-		return V6, nil
+		return IPv6, nil
 	default:
-		return VX, fmt.Errorf("invalid version name `%s`", name)
+		return IPvx, fmt.Errorf("invalid version name `%s`", name)
 	}
 }

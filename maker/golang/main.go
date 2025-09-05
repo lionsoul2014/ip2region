@@ -283,13 +283,13 @@ func testSearch() {
 	versionNo := binary.LittleEndian.Uint16(header[0:])
 	if versionNo == 2 {
 		// old xdb file
-		version = xdb.V4
+		version = xdb.IPv4
 	} else if versionNo == 3 {
 		ipNo := int(binary.LittleEndian.Uint16(header[16:]))
-		if ipNo == xdb.V4.Id {
-			version = xdb.V4
-		} else if ipNo == xdb.V6.Id {
-			version = xdb.V6
+		if ipNo == xdb.IPv4.Id {
+			version = xdb.IPv4
+		} else if ipNo == xdb.IPv6.Id {
+			version = xdb.IPv6
 		} else {
 			slog.Error("invalid ip version", "id", ipNo)
 			return
