@@ -113,7 +113,7 @@ make
 
 # 查询测试
 
-通过 `xdb_searcher search` 命令来测试 ip2region.xdb 的查询：
+通过 `xdb_searcher search` 命令来测试 xdb 的查询：
 ```bash
 ➜  golang git:(fr_xdb_ipv6) ✗ ./xdb_searcher search                                 
 ./xdb_searcher search [command options]
@@ -132,7 +132,7 @@ ip2region>> 219.133.111.87
 ip2region>> 
 ```
 
-使用默认的 data/ip2region_v6.xdb 进行 IPv6 的查询：
+例如：使用默认的 data/ip2region_v6.xdb 进行 IPv6 的查询：
 ```bash
 ip2region xdb searcher test program
 source xdb: ../../data/ip2region_v6.xdb (IPv6, vectorIndex)
@@ -157,11 +157,16 @@ options:
  --cache-policy string    cache policy: file/vectorIndex/content
 ```
 
-例如：通过 data/ip2region_v4.xdb 和 data/ipv4_source.txt 进行 bench 测试：
+例如：通过 data/ip2region_v4.xdb 和 data/ipv4_source.txt 进行 ipv4 的 bench 测试：
 ```bash
-➜  golang git:(fr_xdb_ipv6) ✗ ./xdb_searcher bench --db=../../data/ip2region_v4.xdb --src=../../data/ipv4_source.txt 
-Bench finished, {cachePolicy: vectorIndex, total: 1367688, took: 19.730647202s, cost: 14 μs/op}
+./xdb_searcher bench --db=../../data/ip2region_v4.xdb --src=../../data/ipv4_source.txt 
 ```
+
+例如：通过 data/ip2region_v6.xdb 和 data/ipv6_source.txt 进行 ipv6 的 bench 测试：
+```bash
+./xdb_searcher bench --db=../../data/ip2region_v6.xdb --src=../../data/ipv6_source.txt 
+```
+
 
 可以设置 `cache-policy` 参数来分别测试 file/vectorIndex/content 不同缓存实现机制的效率。
 
