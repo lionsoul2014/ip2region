@@ -128,7 +128,7 @@ ip2region xdb searcher test program
 source xdb: ../../data/ip2region_v4.xdb (IPv4, vectorIndex)
 type 'quit' to exit
 ip2region>> 219.133.111.87
-{region: 中国|0|广东省|深圳市|电信, ioCount: 2, took: 19.005µs}
+{region: 中国|广东省|深圳市|电信, ioCount: 2, took: 19.005µs}
 ip2region>> 
 ```
 

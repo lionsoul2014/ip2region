@@ -56,7 +56,7 @@ commands:
   clearIndex: clear the vector index.
   quit      : exit the test program
 ip2region>> 58.251.30.115
-{region:中国|0|广东省|深圳市|联通, iocount:3, took:37.043µs}
+{region:中国|广东省|深圳市|联通, iocount:3, took:37.043µs}
 ip2region>> 
 
 # ipv6
@@ -99,8 +99,8 @@ editor>>
 
 通过 `put` 命令修改指定 IP 段的定位信息，例如：
 ```bash
-editor>> put 36.132.128.0|36.132.147.255|中国|0|黑龙江省|哈尔滨市|移动
-Put(36.132.128.0|36.132.147.255|中国|0|黑龙江省|哈尔滨市|移动): Ok, with 1 deletes and 2 additions
+editor>> put 36.132.128.0|36.132.147.255|中国|黑龙江省|哈尔滨市|移动
+Put(36.132.128.0|36.132.147.255|中国|黑龙江省|哈尔滨市|移动): Ok, with 1 deletes and 2 additions
 *editor>> 
 ```
 
