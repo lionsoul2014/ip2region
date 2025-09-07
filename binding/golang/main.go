@@ -230,8 +230,20 @@ func testBench() {
 }
 
 func createSearcher(dbPath string, cachePolicy string) (*xdb.Searcher, error) {
+	handle, err := os.OpenFile(dbPath, os.O_RDONLY, 0600)
+	if err != nil {
+		return nil, fmt.Errorf("open xdb file `%s`: %w", dbPath, err)
+	}
+
+	// verify the xdb file
+	// @see the util.Verify function for details
+	err = xdb.Verify(handle)
+	if err != nil {
+		return nil, fmt.Errorf("xdb verify: %w", err)
+	}
+
 	// auto-detect the ip version from the xdb header
-	header, err := xdb.LoadHeaderFromFile(dbPath)
+	header, err := xdb.LoadHeader(handle)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load header from `%s`: %s", dbPath, err)
 	}

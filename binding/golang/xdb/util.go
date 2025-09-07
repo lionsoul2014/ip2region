@@ -55,6 +55,57 @@ func IPCompare(ip1, ip2 []byte) int {
 	return bytes.Compare(ip1, ip2)
 }
 
+// Verify if the current Searcher could be used to search the specified xdb file.
+// Why do we need this check ?
+// The future features of the xdb impl may cause the current searcher not able to work properly.
+//
+// @Note: You Just need to check this ONCE when the service starts
+// Or use another process (eg, A command) to check once Just to confirm the suitability.
+func Verify(handle *os.File) error {
+	header, err := LoadHeader(handle)
+	if err != nil {
+		return fmt.Errorf("loading header: %w", err)
+	}
+
+	// get the runtime ptr bytes
+	runtimePtrBytes := 0
+	if header.Version == Structure20 {
+		runtimePtrBytes = 4
+	} else if header.Version == Structure30 {
+		runtimePtrBytes = header.RuntimePtrBytes
+	} else {
+		return fmt.Errorf("invalid version: %d", header.Version)
+	}
+
+	// 1, confirm the xdb file size.
+	// to sure that the MaxFilePointer does no overflow
+	stat, err := handle.Stat()
+	if err != nil {
+		return fmt.Errorf("file stat: %w", err)
+	}
+
+	maxFilePtr := int64(1<<(runtimePtrBytes*8) - 1)
+	if stat.Size() > maxFilePtr {
+		return fmt.Errorf("xdb file exceeds the maximum supported bytes: %d", maxFilePtr)
+	}
+
+	return nil
+}
+
+// VerifyFromFile check Verify for details
+func VerifyFromFile(dbFile string) error {
+	handle, err := os.OpenFile(dbFile, os.O_RDONLY, 0600)
+	if err != nil {
+		return fmt.Errorf("open xdb file `%s`: %w", dbFile, err)
+	}
+
+	defer func(handle *os.File) {
+		_ = handle.Close()
+	}(handle)
+
+	return Verify(handle)
+}
+
 // LoadHeader load the header info from the specified handle
 func LoadHeader(handle *os.File) (*Header, error) {
 	_, err := handle.Seek(0, 0)
@@ -96,7 +147,7 @@ func LoadHeaderFromFile(dbFile string) (*Header, error) {
 
 // LoadHeaderFromBuff wrap the header info from the content buffer
 func LoadHeaderFromBuff(cBuff []byte) (*Header, error) {
-	return NewHeader(cBuff[0:256])
+	return NewHeader(cBuff[0:HeaderInfoLength])
 }
 
 // LoadVectorIndex util function to load the vector index from the specified file handle
