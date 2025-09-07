@@ -236,7 +236,8 @@ func createSearcher(dbPath string, cachePolicy string) (*xdb.Searcher, error) {
 	}
 
 	// verify the xdb file
-	// @see the util.Verify function for details
+	// @Note: do NOT call it every time you create a searcher since this will slow down the search response.
+	// @see the util.Verify function for details.
 	err = xdb.Verify(handle)
 	if err != nil {
 		return nil, fmt.Errorf("xdb verify: %w", err)
