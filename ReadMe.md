@@ -8,7 +8,7 @@
 
 ### 1、离线定位库
 
-项目本身同时了提供了一份 IPv4 和 IPv6 的原始数据和对应的 xdb 文件(ip2region_v4.xdb 和 ip2region_v6.xdb) 用于实现精确到城市的的查询定位功能。
+项目本身同时了提供了一份 IPv4 和 IPv6 的原始数据和对应的 xdb 文件(`ip2region_v4.xdb` 和 `ip2region_v6.xdb`) 用于实现精确到城市的的查询定位功能。
 
 ### 2、数据管理框架
 
@@ -66,7 +66,6 @@ API 介绍，使用文档和测试程序请参考如下 `maker` 生成程序下�
 | :---------------------- | :------------------- |:-------------------|:-------------------| :----------------------------------------- |
 | [Golang](maker/golang)  | golang xdb 生成程序  | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)    |
 | [Java](maker/java)      | java xdb 生成程序    | :white_check_mark: | :soon:             | [Lion](https://github.com/lionsoul2014)    |
-| [ANSI C](maker/c)       | ANSC c xdb 生成程序  | :white_check_mark: | :x:                | [Lion](https://github.com/lionsoul2014)    |
 | [Python](maker/python)  | python xdb 生成程序  | :white_check_mark: | :x:                | [leolin49](https://github.com/leolin49)    |
 | [Csharp](maker/csharp)  | csharp xdb 生成程序  | :white_check_mark: | :x:                | [Alan Lee](https://github.com/malus2077)   |
 | [Rust](maker/rust)      | rust xdb 生成程序    | :white_check_mark: | :x:                | [KevinWang](https://github.com/KevinWL)    |
