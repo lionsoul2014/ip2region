@@ -137,6 +137,7 @@ options:
 
 例如：使用默认的 data/ip2region_v4.xdb 进行 IPv4 的查询测试
 ```bash
+➜  golang git:(master) ./xdb_searcher search --db=../../data/ip2region_v4.xdb
 ip2region xdb searcher test program
 source xdb: ../../data/ip2region_v4.xdb (IPv4, vectorIndex)
 type 'quit' to exit
@@ -147,6 +148,7 @@ ip2region>>
 
 例如：使用默认的 data/ip2region_v6.xdb 进行 IPv6 的查询：
 ```bash
+➜  golang git:(master) ✗ ./xdb_searcher search --db=../../data/ip2region_v6.xdb
 ip2region xdb searcher test program
 source xdb: ../../data/ip2region_v6.xdb (IPv6, vectorIndex)
 type 'quit' to exit
