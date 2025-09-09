@@ -152,7 +152,7 @@ func (e *Editor) PutSegment(seg *Segment) (int, int, error) {
 			found = true
 		}
 
-		if found == false {
+		if !found {
 			continue
 		}
 
@@ -259,7 +259,7 @@ func (e *Editor) PutFile(src string) (int, int, error) {
 
 func (e *Editor) Save() error {
 	// check the to-save flag
-	if e.toSave == false {
+	if !e.toSave {
 		return fmt.Errorf("nothing changed")
 	}
 

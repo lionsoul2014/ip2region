@@ -29,7 +29,7 @@ type Version struct {
 }
 
 func (v *Version) String() string {
-	return fmt.Sprintf("{Id:%d, Name:%d, Bytes:%d, IndexSize: %d}", v.Id, v.Name, v.Bytes, v.SegmentIndexSize)
+	return fmt.Sprintf("{Id:%d, Name:%s, Bytes:%d, IndexSize: %d}", v.Id, v.Name, v.Bytes, v.SegmentIndexSize)
 }
 
 var (
