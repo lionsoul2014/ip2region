@@ -18,28 +18,6 @@ public class UtilTest {
 
     public static final Log log = Log.getLogger(UtilTest.class);
 
-    public static void testIndexPolicy() {
-        final String[] inputs = {"vector", "btree", "VecTor", "BTree", "abc"};
-        for (String str : inputs) {
-            try {
-                int policy = IndexPolicy.parse(str);
-                log.infof("parse(%s)=%d", str, policy);
-            } catch (Exception e) {
-                log.errorf("parse index policy `%s`: %s", str, e.getMessage());
-            }
-        }
-    }
-
-    public static void testIPUtil() {
-        final String ipStr = "1.2.3.4";
-        try {
-            long ip = Util.checkIP(ipStr);
-            log.infof("checkIP(%s)=%d, validate: %s, long2ip(%d)=%s", ipStr, ip, ip == 16909060 ? "true" : "false", ip, Util.long2ip(ip));
-        } catch (Exception e) {
-            log.errorf("failed to check ip `%s`: %s", ipStr, e.getMessage());
-        }
-    }
-
     public static void testSegment() {
         final String[] t_segs = {
             "1.1.0.0|1.3.3.24|中国|广东|深圳|电信",
@@ -85,14 +63,6 @@ public class UtilTest {
     }
 
     public static void main(String[] args) {
-        System.out.println("+-- testing index policy");
-        testIndexPolicy();
-        System.out.println();
-
-        System.out.println("+-- testing ip util");
-        testIPUtil();
-        System.out.println();
-
         System.out.println("+-- testing segments");
         testSegment();
         System.out.println();
