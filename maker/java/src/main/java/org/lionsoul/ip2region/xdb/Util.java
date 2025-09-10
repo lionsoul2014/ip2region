@@ -9,6 +9,51 @@ package org.lionsoul.ip2region.xdb;
 
 public class Util
 {
+
+    // compare two byte ip
+    // Returns: -1 if ip1 < ip2, 0 if ip1 == ip2, 1 if ip1 > ip2
+    public static int ipCompare(byte[] ip1, byte[] ip2) {
+        for (int i = 0; i < ip1.length; i++) {
+            if (ip1[i] < ip2[i]) {
+                return -1;
+            }
+
+            if (ip1[i] > ip2[i]) {
+                return 1;
+            }
+        }
+
+        return 0;
+    }
+
+    public static byte[] ipAddOne(byte[] ip) {
+        final byte[] r = new byte[ip.length];
+        System.arraycopy(ip, 0, r, 0, ip.length);
+        for (int i = ip.length - 1; i >= 0; i--) {
+            r[i]++;
+            if (r[i] != 0) { // No overflow
+                break;
+            }
+        }
+
+        return r;
+    }
+
+    public static byte[] ipSubOne(byte[] ip) {
+        final byte[] r = new byte[ip.length];
+        System.arraycopy(ip, 0, r, 0, ip.length);
+        for (int i = ip.length - 1; i >= 0; i--) {
+            if (r[i] != 0) { // No borrow needed
+                r[i]--;
+                break;
+            }
+            r[i] = (byte) 0xFF; // borrow from the next byte
+        }
+
+        return r;
+    }
+
+
     // write specified bytes into a byte array start from offset
     public static void write( byte[] b, int offset, long v, int bytes) {
         for ( int i = 0; i < bytes; i++ ) {
