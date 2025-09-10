@@ -19,6 +19,25 @@ $ make
 $ make install
 ```
 
+## 利用 docker 构建动态模块
+
+```shell
+# 启用 BuildKit
+export DOCKER_BUILDKIT=1
+
+# 构建一个包含ip2region的动态模块自定义镜像, 默认版本由参数 `ARG NGINX_VERSION=1.27.0` 控制
+docker build -t custom-nginx .
+
+# 构建一个包含ip2region的动态模块自定义镜像, 且指定nginx版本 
+docker build -t custom-nginx:1.26.1 --build-arg NGINX_VERSION=1.26.1 .
+
+# 导出动态模块到当前目录, target表示目标阶段, o是output 输出类型和位置
+docker build --target export_so -o type=tar,dest=./so.tar .
+# 解压即可看到 `ngx_http_ip2region_module.so`, 可将此模块放置到nginx的模块目录,比如 /etc/nginx/modules/
+tar xf so.tar 
+
+```
+
 ## nginx conf
 
 > Syntax:  `ip2region_db xdb_file_path [cache_policy Optional]`;
@@ -29,7 +48,12 @@ cache_policy: `file` or `vectorIndex` or `content`, default: `content`
 Edit `nginx.conf` add `ip2region_db` directive
 
 ```nginx
-...
+
+... 
+
+# 如果是动态模块需要使用 load_module 的方式来加载它
+# load_module /etc/nginx/modules/ngx_http_ip2region_module.so;
+
 http {
 
     log_format main escape=json '{'
@@ -59,7 +83,7 @@ http {
 
 ```
 
-Copy `ip2region.xdb` to `nginx/config` folder, then restart nginx, the `region` data stored in `ip2region` variable
+Copy `ip2region.xdb` to `nginx/config` (e.g. nginx/conf.d) folder, then restart nginx, the `region` data stored in `ip2region` variable
 
 nginx access log sample
 
