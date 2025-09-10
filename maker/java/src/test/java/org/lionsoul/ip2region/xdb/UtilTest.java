@@ -1,7 +1,5 @@
 package org.lionsoul.ip2region.xdb;
 
-import java.net.UnknownHostException;
-
 import org.junit.Test;
 
 public class UtilTest {
