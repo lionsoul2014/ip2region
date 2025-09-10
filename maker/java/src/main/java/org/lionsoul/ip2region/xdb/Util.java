@@ -14,7 +14,7 @@ public class Util
 {
 
     // parse the specified IP address and return its bytes.
-    // returns: byte[4] for IPv6 and byte[16] for IPv6 and the bytes should be in Big endian order.
+    // returns: byte[4] for IPv4 and byte[16] for IPv6 and the bytes should be in Big endian order.
     public static byte[] parseIP(String ip) throws InvalidInetAddressException {
         try {
             return InetAddress.getByName(ip).getAddress();
@@ -23,7 +23,7 @@ public class Util
         }
     }
 
-    // print the ip in bytes
+    // convert the byte[] ip to string ip address
     public static String ipToString(final byte[] ip) throws InvalidInetAddressException {
         if (ip.length != 4 && ip.length != 16) {
             throw new InvalidInetAddressException("invalid ip address length `"+ip.length+"`");
