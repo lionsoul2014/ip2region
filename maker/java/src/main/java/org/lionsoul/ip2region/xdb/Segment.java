@@ -89,6 +89,11 @@ public class Segment {
         return Util.ipToString(startIP) + "|" + Util.ipToString(endIP) + "|" + region;
     }
 
+    // check if the an IP address in within this segment
+    public boolean contains(final byte[] ip) {
+        return Util.ipCompare(ip, startIP) >= 0 && Util.ipCompare(ip, endIP) <= 0;
+    }
+
     // parser the Segment from an input string
     public static Segment parse(String input) throws Exception {
         final String[] ps = input.trim().split("\\|", 3);
