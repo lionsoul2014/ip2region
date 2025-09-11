@@ -24,15 +24,15 @@ public class Util
     }
 
     // convert the byte[] ip to string ip address
-    public static String ipToString(final byte[] ip) throws InvalidInetAddressException {
+    public static String ipToString(final byte[] ip) {
         if (ip.length != 4 && ip.length != 16) {
-            throw new InvalidInetAddressException("invalid ip address length `"+ip.length+"`");
+            return String.format("invalid-ip-address-length: %d", ip.length);
         }
 
         try {
             return InetAddress.getByAddress(ip).getHostAddress();
         } catch (UnknownHostException e) {
-            throw new InvalidInetAddressException("invalid ip address `"+ipArrayString(ip)+"`");
+            return String.format("invalid-ip-address `%s`", ipArrayString(ip));
         }
     }
 
@@ -101,65 +101,29 @@ public class Util
         return r;
     }
 
-
-    // write specified bytes into a byte array start from offset
-    public static void write( byte[] b, int offset, long v, int bytes) {
-        for ( int i = 0; i < bytes; i++ ) {
-            b[offset++] = (byte)((v >>> (8 * i)) & 0xFF);
-        }
-    }
-
-    // write a int to a byte array
-    public static void writeIntLong(byte[] b, int offset, long v) {
-        b[offset++] = (byte)((v      ) & 0xFF);
-        b[offset++] = (byte)((v >>  8) & 0xFF);
-        b[offset++] = (byte)((v >> 16) & 0xFF);
-        b[offset  ] = (byte)((v >> 24) & 0xFF);
-    }
-
-    // get an int from a byte array start from the specified offset
-    public static long getIntLong(byte[] b, int offset) {
-        return (
-            ((b[offset++] & 0x000000FFL)) |
-            ((b[offset++] <<  8) & 0x0000FF00L) |
-            ((b[offset++] << 16) & 0x00FF0000L) |
-            ((b[offset  ] << 24) & 0xFF000000L)
-        );
-    }
-
-    public static int getInt2(byte[] b, int offset) {
-        return (
-            ((b[offset++]) & 0x000000FF) |
-            ((b[offset  ] << 8) & 0x0000FF00)
-        );
-    }
-
-    /* long int to ip string */
-    public static String long2ip( long ip ) {
-        return String.valueOf((ip >> 24) & 0xFF) + '.' +
-                ((ip >> 16) & 0xFF) + '.' + ((ip >> 8) & 0xFF) + '.' + ((ip) & 0xFF);
-    }
-
-    public static final byte[] shiftIndex = {24, 16, 8, 0};
-
-    /* check the specified ip address */
-    public static long checkIP(String ip) throws Exception {
-        final String[] ps = ip.split("\\.");
-        if (ps.length != 4) {
-            throw new Exception("invalid ip address `" + ip + "`");
+    // region filtering
+    public static String regionFiltering(String region, int[] fields) {
+        if (fields.length == 0) {
+            return region;
         }
 
-        long ipDst = 0;
-        for (int i = 0; i < ps.length; i++) {
-            int val = Integer.parseInt(ps[i]);
-            if (val > 255) {
-                throw new Exception("ip part `"+ps[i]+"` should be less then 256");
+        final String[] fs = region.split("\\|", -1);
+        final StringBuilder sb = new StringBuilder();
+        final int tailing = fields.length - 1;
+        for (int i = 0; i < fields.length; i++) {
+            final int idx = fields[i];
+            if (idx >= fs.length) {
+                throw new IllegalArgumentException("field index `"
+                        + idx + "` exceeded the max length `" + fs.length + "`");
             }
 
-            ipDst |= ((long) val << shiftIndex[i]);
+            sb.append(fs[idx]);
+            if (sb.length() > 0 && i < tailing) {
+                sb.append("|");
+            }
         }
 
-        return ipDst & 0xFFFFFFFFL;
+        return sb.toString();
     }
 
 }

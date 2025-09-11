@@ -4,7 +4,7 @@ import org.junit.Test;
 
 public class UtilTest {
 
-    public static final Log log = Log.getLogger(UtilTest.class).setLevel(Log.DEBUG);
+    private static final Log log = Log.getLogger(UtilTest.class).setLevel(Log.DEBUG);
 
     @Test
     public void testCheckIP() throws InvalidInetAddressException {
@@ -75,4 +75,18 @@ public class UtilTest {
             log.debugf("ipSubOne(%s): %s", ip, Util.ipToString(Util.ipSubOne(ipBytes)));
         }
     }
+
+    @Test
+    public void testRegionFiltering() {
+        final String[] regions = new String[]{
+            "亚洲|中国|广东|深圳|宝安|电信|113.88311|22.55371|440306|0755|518100|Asia/Shanghai|CNY|11|CHXX0120",
+            "大洲|国家|省份|城市|区县|ISP|经度|纬度|0|0|0|0|0"
+        };
+
+        final int[] fields = new int[] {1,2,3,4,6,7};
+        for (String region : regions) {
+            log.infof("filtering: %s", Util.regionFiltering(region, fields));
+        }
+    }
+
 }

@@ -10,6 +10,7 @@ package org.lionsoul.ip2region;
 import org.lionsoul.ip2region.xdb.IndexPolicy;
 import org.lionsoul.ip2region.xdb.Log;
 import org.lionsoul.ip2region.xdb.Maker;
+import org.lionsoul.ip2region.xdb.Version;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,6 +30,7 @@ public class MakerTest {
         System.out.println("options:");
         System.out.println(" --src string           source ip text file path");
         System.out.println(" --dst string           destination binary xdb file path");
+        System.out.println(" --version string       IP version, options: ipv4/ipv6, specify this flag so you don't get confused");
         System.out.println(" --field-list string    field index list imploded with ',' eg: 0,1,2,3-6,7");
         System.out.println(" --log-level string     set the log level, options: debug/info/warn/error");
     }
@@ -108,7 +110,7 @@ public class MakerTest {
     }
 
     public static void genDb(String[] args) throws Exception {
-        String srcFile = "", dstFile = "";
+        String srcFile = "", dstFile = "", ipVersion = "";
         String fieldList = "", logLevel = "info";
         int indexPolicy = IndexPolicy.Vector;
         for (final String r : args) {
@@ -133,8 +135,10 @@ public class MakerTest {
                 srcFile = val;
             } else if ("dst".equals(key)) {
                 dstFile = val;
+            } else if ("version".equals(key)) {
+                ipVersion = val;
             } else if ("field-list".equals(key)) {
-                    fieldList = val;
+                fieldList = val;
             } else if ("log-level".equals(key)) {
                 logLevel = val;
             } else {
@@ -148,6 +152,9 @@ public class MakerTest {
             return;
         }
 
+        // IP version
+        final Version version = Version.fromName(ipVersion);
+
         final int[] fields = getFieldList(fieldList);
         if (fields == null) {
             return;
@@ -155,7 +162,7 @@ public class MakerTest {
 
         // check and make the field list
         long tStart = System.currentTimeMillis();
-        final Maker maker = new Maker(indexPolicy, srcFile, dstFile, fields);
+        final Maker maker = new Maker(version, indexPolicy, srcFile, dstFile, fields);
         log.infof("Generating xdb with src=%s, dst=%s, logLevel=%s", srcFile, dstFile, logLevel);
         Maker.log.setLevel(logLevel);
         maker.init();

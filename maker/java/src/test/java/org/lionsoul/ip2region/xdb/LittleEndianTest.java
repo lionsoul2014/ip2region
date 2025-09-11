@@ -6,6 +6,8 @@ import org.junit.Test;
 
 public class LittleEndianTest {
 
+    private static final Log log = Log.getLogger(LittleEndianTest.class).setLevel(Log.DEBUG);
+
     @Test
     public void testAll() {
         final byte[] buff = new byte[14];
@@ -25,10 +27,10 @@ public class LittleEndianTest {
         assertEquals(LittleEndian.getInt2(buff, 8), 24);
         assertEquals(LittleEndian.getUint32(buff, 10), 1024);
 
-        System.out.printf("uint32(buff, 0): %d\n", LittleEndian.getUint32(buff, 0));
-        System.out.printf("uint32(buff, 4): %d\n", LittleEndian.getUint32(buff, 4));
-        System.out.printf("int2(buff, 8): %d\n", LittleEndian.getInt2(buff, 8));
-        System.out.printf("uint32(buff, 10): %d\n", LittleEndian.getUint32(buff, 10));
+        log.debugf("uint32(buff, 0): %d", LittleEndian.getUint32(buff, 0));
+        log.debugf("uint32(buff, 4): %d", LittleEndian.getUint32(buff, 4));
+        log.debugf("int2(buff, 8): %d", LittleEndian.getInt2(buff, 8));
+        log.debugf("uint32(buff, 10): %d", LittleEndian.getUint32(buff, 10));
     }
 
 }

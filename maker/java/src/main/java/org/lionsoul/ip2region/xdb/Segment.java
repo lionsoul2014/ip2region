@@ -11,27 +11,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Segment {
-    public final long startIP;
-    public final long endIP;
+    public final byte[] startIP;
+    public final byte[] endIP;
     public final String region;
 
-    // parser the Segment from an input string
-    public static Segment parse(String input) throws Exception {
-        final String[] ps = input.trim().split("\\|", 3);
-        if (ps.length != 3) {
-            throw new Exception("invalid ip segment `"+input+"`");
-        }
-
-        long sip = Util.checkIP(ps[0]);
-        long eip = Util.checkIP(ps[1]);
-        if (sip > eip) {
-            throw new Exception("start ip `"+ps[0]+"` should not be greater than end ip `"+ps[1]+"`");
-        }
-
-        return new Segment(sip, eip, ps[2]);
-    }
-
-    public Segment(long startIP, long endIP, String region) {
+    public Segment(final byte[] startIP, final byte[] endIP, String region) {
         this.startIP = startIP;
         this.endIP = endIP;
         this.region = region;
@@ -39,39 +23,61 @@ public class Segment {
 
     // split the current segment for vector index
     public List<Segment> split() {
-        final long sByte1 = (int) ((startIP >> 24) & 0xFF);
-        final long eByte1 = (int) ((endIP >> 24) & 0xFF);
-        long nSip = startIP;
+        final int sByte1 = (int) (startIP[0] & 0xFF);
+        final int eByte1 = (int) (endIP[0] & 0xFF);
         final List<Segment> tList =  new ArrayList<Segment>();
-        for (long i = sByte1; i <= eByte1; i++) {
-            long sip = (i << 24) | (nSip & 0xFFFFFF);
-            long eip = (i << 24) | 0xFFFFFF;
-            if (eip < endIP) {
-                nSip = (i + 1) << 24;
+        for (int i = sByte1; i <= eByte1; i++) {
+            final byte[] sip = new byte[startIP.length];
+            final byte[] eip = new byte[startIP.length];
+
+            if (i == sByte1) {
+                System.arraycopy(startIP, 0, sip, 0, sip.length);
             } else {
-                eip = endIP;
+                sip[0] = (byte) (i & 0xFF);
             }
 
-            // append the new segment
+            if (i == eByte1) {
+                System.arraycopy(endIP, 0, eip, 0, eip.length);
+            } else {
+                eip[0] = (byte)(i & 0xFF);
+                // fill the rest buffer with 0xFF
+                for (int j = 1; j < eip.length; j++) {
+                    eip[j] = (byte) (0xFF);
+                }
+            }
+
+            // append the new segment:
+            // @Note: Don't bother to copy the region.
             tList.add(new Segment(sip, eip, null));
         }
 
         // 2, split the segments with the second byte
         final List<Segment> segList = new ArrayList<Segment>();
         for (Segment seg : tList) {
-            final long base = seg.startIP & 0xFF000000;
-            final long sb2 = (seg.startIP >> 16) & 0xFF;
-            final long eb2 = (seg.endIP >> 16) & 0xFF;
-            long tSip = seg.startIP;
-            for (long i = sb2; i <= eb2; i++) {
-                long sip = base | (i << 16) | (tSip & 0xFFFF);
-                long eip = base | (i << 16) | 0xFFFF;
-                if (eip < seg.endIP) {
-                    tSip = 0;
+            final int sByte2 = (int) (seg.startIP[1] & 0xFF);
+            final int eByte2 = (int) (seg.endIP[1] & 0xFF);
+            for (int i = sByte2; i <= eByte2; i++) {
+                final byte[] sip = new byte[seg.startIP.length];
+                final byte[] eip = new byte[seg.startIP.length];
+                sip[0] = seg.startIP[0];
+                eip[0] = seg.startIP[0];
+
+                if (i == sByte2) {
+                    System.arraycopy(seg.startIP, 0, sip, 0, seg.startIP.length);
                 } else {
-                    eip = seg.endIP;
+                    sip[1] = (byte) (i & 0xFF);
                 }
 
+                if (i == eByte2) {
+                    System.arraycopy(seg.endIP, 0, eip, 0, seg.endIP.length);
+                } else {
+                    eip[1] = (byte) (i & 0xFF);
+                    for (int j = 2; j < seg.endIP.length; j++) {
+                        eip[j] = (byte) 0xFF;
+                    }
+                }
+
+                // append the new segment
                 segList.add(new Segment(sip, eip, region));
             }
         }
@@ -80,6 +86,23 @@ public class Segment {
     }
 
     @Override public String toString() {
-        return Util.long2ip(startIP) + "|" + Util.long2ip(endIP) + "|" + region;
+        return Util.ipToString(startIP) + "|" + Util.ipToString(endIP) + "|" + region;
     }
+
+    // parser the Segment from an input string
+    public static Segment parse(String input) throws Exception {
+        final String[] ps = input.trim().split("\\|", 3);
+        if (ps.length != 3) {
+            throw new Exception("invalid ip segment `"+input+"`");
+        }
+
+        final byte[] sip = Util.parseIP(ps[0]);
+        final byte[] eip = Util.parseIP(ps[1]);
+        if (Util.ipCompare(sip, eip) > 0) {
+            throw new Exception("start ip `"+ps[0]+"` should not be greater than end ip `"+ps[1]+"`");
+        }
+
+        return new Segment(sip, eip, ps[2]);
+    }
+
 }

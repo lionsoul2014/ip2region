@@ -19,6 +19,8 @@
 // -- 4bytes: generate unix timestamp (version)
 // -- 4bytes: index block start ptr
 // -- 4bytes: index block end ptr
+// -- 2bytes: ip version number (4/6 since IPv6 supporting)
+// -- 2bytes: runtime ptr bytes
 //
 //
 // 2. data block : region or whatever data info.
@@ -57,19 +59,24 @@ import java.util.*;
 
 public class Maker {
     // constants define
-    public static final int VersionNo = 2;
-    public static final int HeaderInfoLength = 256;
-    public static final int VectorIndexRows = 256;
-    public static final int VectorIndexCols = 256;
-    public static final int VectorIndexSize = 8;
-    public static final int SegmentIndexSize = 14;
+    public static final int VersionNo         = 3;  // 2 for XDB 2.0, 3 for XDB 3.0
+    public static final int HeaderInfoLength  = 256;
+    public static final int VectorIndexRows   = 256;
+    public static final int VectorIndexCols   = 256;
+    public static final int VectorIndexSize   = 8;  // in bytes
+    public static final int RuntimePtrSize    = 4;  // in bytes
+    public static final long MaxFilePointer   = (1L << (RuntimePtrSize * 8)) - 1;
     public static final int VectorIndexLength = VectorIndexRows * VectorIndexCols * VectorIndexSize;
 
     public static final Log log = Log.getLogger(Maker.class);
 
+    // IP version since xdb 3.0
+    private final Version version;
+
     // source text file handle
     private final File srcFile;
     private final int[] fields;
+
     private final List<Segment> segments;
     private final Charset bytesCharset;
 
@@ -85,13 +92,14 @@ public class Maker {
     // vector index raw bytes
     private final byte[] vectorIndex;
 
-    public Maker(int policy, String srcPath, String dstPath, int[] fields) throws IOException {
+    public Maker(Version version, int policy, String srcPath, String dstPath, int[] fields) throws IOException {
         this.srcFile = new File(srcPath);
         if (!this.srcFile.exists()) {
             throw new FileNotFoundException("source text file `" + srcPath + "` not found");
         }
 
-        this.fields = fields;
+        this.version = version;
+        this.fields  = fields;
 
         /// check and delete the target xdb file if it exists
         /// final File dstFile = new File(dstPath);
@@ -119,38 +127,29 @@ public class Maker {
         final byte[] header = new byte[HeaderInfoLength];
 
         // encode the data
-        Util.write(header, 0, VersionNo, 2);
-        Util.write(header, 2, indexPolicy, 2);
-        Util.write(header, 4, System.currentTimeMillis() / 1000, 4);
-        Util.write(header, 8, 0, 4);    // start index ptr
-        Util.write(header, 12, 0, 4);   // end index ptr
+        // 1, data version number
+        LittleEndian.put(header, 0, VersionNo, 2);
+
+        // 2, index policy code
+        LittleEndian.put(header, 2, indexPolicy, 2);
+
+        // 3, generate unix timestamp
+        LittleEndian.put(header, 4, System.currentTimeMillis() / 1000, 4);
+
+        // 4, index block start ptr
+        LittleEndian.put(header, 8, 0, 4);    // start index ptr
+
+        // 5, index block end ptr
+        LittleEndian.put(header, 12, 0, 4);   // end index ptr
+
+        // since xdb 3.0
+        // 6, IP version
+        LittleEndian.put(header, 16, version.id, 2);        // IP version
+
+        // 7, runtime ptr bytes
+        LittleEndian.put(header, 18, RuntimePtrSize, 2);    // runtime ptr bytes
 
         dstHandle.write(header);
-    }
-
-    // internal method to apply the region fields filter
-    private String getFilteredRegion(String region) {
-        if (this.fields.length == 0) {
-            return region;
-        }
-
-        final String[] fs = region.split("\\|", -1);
-        final StringBuilder sb = new StringBuilder();
-        final int tailing = this.fields.length - 1;
-        for (int i = 0; i < this.fields.length; i++) {
-            final int idx = this.fields[i];
-            if (idx >= fs.length) {
-                throw new IllegalArgumentException("field index `"
-                        + idx + "` exceeded the max length `" + fs.length + "`");
-            }
-
-            sb.append(fs[idx]);
-            if (sb.length() > 0 && i < tailing) {
-                sb.append("|");
-            }
-        }
-
-        return sb.toString();
     }
 
     // load all the segments
@@ -170,9 +169,9 @@ public class Maker {
                 throw new Exception("invalid ip segment line `"+ps[0]+"`");
             }
 
-            final long sip = Util.checkIP(ps[0]);
-            final long eip = Util.checkIP(ps[1]);
-            if (sip > eip) {
+            final byte[] sip = Util.parseIP(ps[0]);
+            final byte[] eip = Util.parseIP(ps[1]);
+            if (Util.ipCompare(sip, eip) > 0) {
                 br.close();
                 throw new Exception("start ip("+ps[0]+") should not be greater than end ip("+ps[1]+")");
             }
@@ -182,15 +181,21 @@ public class Maker {
                 throw new Exception("empty region info in segment line `"+ps[2]+"`");
             }
 
+            // ip version check
+            if (version.bytes != sip.length) {
+                br.close();
+                throw new InvalidInetAddressException("invalid ip segment(" + version.name + " expected)");
+            }
+
             // check the continuity of the data segment
             if (last != null) {
-                if (last.endIP + 1 != sip) {
+                if (Util.ipCompare(Util.ipAddOne(last.endIP), sip) != 0) {
                     br.close();
                     throw new Exception("discontinuous data segment: last.eip+1("+sip+") != seg.sip("+eip+", "+ps[0]+")");
                 }
             }
 
-            final Segment seg = new Segment(sip, eip, getFilteredRegion(ps[2]));
+            final Segment seg = new Segment(sip, eip, Util.regionFiltering(ps[2], this.fields));
             segments.add(seg);
             last = seg;
         }
@@ -209,16 +214,16 @@ public class Maker {
     }
 
     // set the vector index info of the specified ip
-    private void setVectorIndex(long ip, long ptr) {
-        final int il0 = (int) ((ip >> 24) & 0xFF);
-        final int il1 = (int) ((ip >> 16) & 0xFF);
+    private void setVectorIndex(final byte[] ip, long ptr) {
+        final int il0 = (int) (ip[0] & 0xFF);
+        final int il1 = (int) (ip[1] & 0xFF);
         final int idx = il0 * VectorIndexCols * VectorIndexSize + il1 * VectorIndexSize;
-        final long sPtr = Util.getIntLong(vectorIndex, idx);
+        final long sPtr = LittleEndian.getUint32(vectorIndex, idx);
         if (sPtr == 0) {
-            Util.write(vectorIndex, idx, ptr, 4);
-            Util.write(vectorIndex, idx + 4, ptr + SegmentIndexSize, 4);
+            LittleEndian.put(vectorIndex, idx, ptr, 4);
+            LittleEndian.put(vectorIndex, idx + 4, ptr + version.segmentIndexSize, 4);
         } else {
-            Util.write(vectorIndex, idx + 4, ptr + SegmentIndexSize, 4);
+            LittleEndian.put(vectorIndex, idx + 4, ptr + version.segmentIndexSize, 4);
         }
     }
 
@@ -232,7 +237,7 @@ public class Maker {
         dstHandle.seek(HeaderInfoLength + VectorIndexLength);
 
         log.infof("try to write the data block ... ");
-        for (Segment seg : segments) {
+        for (final Segment seg : segments) {
             log.debugf("try to write region `%s` ... ", seg.region);
             final DataEntry e = regionPool.get(seg.region);
             if (e != null) {
@@ -252,6 +257,11 @@ public class Maker {
             final long pos = dstHandle.getFilePointer();
             dstHandle.write(regionBuff);
 
+            // @TODO: remove this if the long ptr operation were supported
+            if (pos >= MaxFilePointer) {
+                throw new IOException("region ptr exceed the max length of '" + MaxFilePointer + "'");
+            }
+
             // record the mapping
             regionPool.put(seg.region, new DataEntry(regionBuff.length, pos));
             log.debugf(" --[Added] with ptr=%d", pos);
@@ -261,24 +271,34 @@ public class Maker {
         log.infof("try to write the segment index block ... ");
         int counter = 0;
         long startIndexPtr = -1, endIndexPtr = -1;
-        final byte[] indexBuff = new byte[SegmentIndexSize];    // 4 + 4 + 2 + 4
+        final byte[] indexBuff = new byte[version.segmentIndexSize];
         for (Segment seg : segments) {
             // we need the region ptr
-            DataEntry e = regionPool.get(seg.region);
+            final DataEntry e = regionPool.get(seg.region);
             if (e == null) {
                 throw new Exception("missing ptr cache for region `"+seg.region+"`");
             }
 
+            int _offset = 0;
             List<Segment> segList = seg.split();
             log.debugf("try to index segment(%d splits) %s ... ", segList.size(), seg);
-            for (Segment s : segList) {
+            for (final Segment s : segList) {
                 long pos = dstHandle.getFilePointer();
 
-                // encode the segment index info
-                Util.write(indexBuff,  0, s.startIP, 4);
-                Util.write(indexBuff,  4, s.endIP, 4);
-                Util.write(indexBuff,  8, e.length, 2);
-                Util.write(indexBuff, 10, e.ptr, 4);
+                // @TODO: remove this if the long ptr operation were supported
+                if (pos >= MaxFilePointer) {
+                    throw new IOException("region ptr exceed the max length of '" + MaxFilePointer + "'");
+                }
+
+                // encode the segment index info.
+                // @Note: in order to compatible with the old searcher implementation we choose to keep
+                // encode the IPv4 bytes with little endian.
+                // for IPv6 we choose the Network byte order (Big endian).
+                version.putBytes(indexBuff, 0, s.startIP);
+                version.putBytes(indexBuff, s.startIP.length, s.endIP);
+                _offset = s.startIP.length + s.endIP.length;
+                LittleEndian.put(indexBuff, _offset, e.length, 2);
+                LittleEndian.put(indexBuff, _offset + 2, e.ptr, 4);
                 dstHandle.write(indexBuff);
 
                 log.debugf("|-segment index: %d, ptr: %d, segment: %s", counter, pos, s);
@@ -301,8 +321,8 @@ public class Maker {
 
         // 4, synchronize the segment index info
         log.infof("try to write the segment index ptr ... ");
-        Util.write(indexBuff, 0, startIndexPtr, 4);
-        Util.write(indexBuff, 4, endIndexPtr, 4);
+        LittleEndian.put(indexBuff, 0, startIndexPtr, 4);
+        LittleEndian.put(indexBuff, 4, endIndexPtr, 4);
         dstHandle.seek(8);
         dstHandle.write(indexBuff, 0, 8);
 
