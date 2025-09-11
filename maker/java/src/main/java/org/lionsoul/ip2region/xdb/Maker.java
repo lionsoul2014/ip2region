@@ -152,55 +152,38 @@ public class Maker {
         dstHandle.write(header);
     }
 
-    // load all the segments
+    // load all the segments.
     private void loadSegments() throws Exception {
         log.infof("try to load the segments ... ");
         final long tStart = System.currentTimeMillis();
-        Segment last = null;
-        String line;
+        Segment.iterate(srcFile, new Segment.IterateAction() {
+            private Segment last = null;
 
-        final FileInputStream fis = new FileInputStream(srcFile);
-        final BufferedReader br = new BufferedReader(new InputStreamReader(fis, bytesCharset));
-        while ((line = br.readLine()) != null) {
-            log.debugf("load segment `%s`", line);
-            final String[] ps = line.split("\\|", 3);
-            if (ps.length != 3) {
-                br.close();
-                throw new Exception("invalid ip segment line `"+ps[0]+"`");
+            @Override
+            public void before(String line) {
+                log.debugf("load segment: `%s`", line);
             }
 
-            final byte[] sip = Util.parseIP(ps[0]);
-            final byte[] eip = Util.parseIP(ps[1]);
-            if (Util.ipCompare(sip, eip) > 0) {
-                br.close();
-                throw new Exception("start ip("+ps[0]+") should not be greater than end ip("+ps[1]+")");
-            }
-
-            if (ps[2].isEmpty()) {
-                br.close();
-                throw new Exception("empty region info in segment line `"+ps[2]+"`");
-            }
-
-            // ip version check
-            if (version.bytes != sip.length) {
-                br.close();
-                throw new InvalidInetAddressException("invalid ip segment(" + version.name + " expected)");
-            }
-
-            // check the continuity of the data segment
-            if (last != null) {
-                if (Util.ipCompare(Util.ipAddOne(last.endIP), sip) != 0) {
-                    br.close();
-                    throw new Exception("discontinuous data segment: last.eip+1("+sip+") != seg.sip("+eip+", "+ps[0]+")");
+            @Override
+            public void handle(Segment seg) throws Exception {
+                // ip version check
+                if (seg.startIP.length != version.bytes) {
+                    throw new Exception("invalid ip segment("+version.name+" expected)");
                 }
+
+                if (last != null && !seg.after(last)) {
+                    throw new Exception("discontinuous data segment: last.eip("
+                        + Util.ipToString(last.endIP)+")+1 != seg.sip("+ Util.ipToString(seg.startIP) + ", "+ seg.region +")");
+                }
+
+                // apply the field filtering
+                final String region = Util.regionFiltering(seg.region, fields);
+                segments.add(new Segment(seg.startIP, seg.endIP, region));
+                last = seg;
             }
 
-            final Segment seg = new Segment(sip, eip, Util.regionFiltering(ps[2], this.fields));
-            segments.add(seg);
-            last = seg;
-        }
+        });
 
-        br.close();
         log.infof("all segments loaded, length: %d, elapsed: %d ms", segments.size(), System.currentTimeMillis() - tStart);
     }
 

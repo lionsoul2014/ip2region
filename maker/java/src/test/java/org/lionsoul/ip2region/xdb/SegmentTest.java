@@ -1,5 +1,8 @@
 package org.lionsoul.ip2region.xdb;
 
+import java.io.File;
+import java.net.URL;
+
 import org.junit.Test;
 
 public class SegmentTest {
@@ -35,5 +38,26 @@ public class SegmentTest {
                 log.debugf(s.toString());
             }
         }
+    }
+
+    @Test
+    public void testIterate() throws Exception {
+        final URL res = getClass().getClassLoader().getResource("");
+        if (res == null) {
+            throw new Exception("unable to get the resource path");
+        }
+
+        final String base = new File(res.getPath()).getParentFile().getParentFile().getParentFile().getParent();
+        Segment.iterate(base+"/data/segments.tests.mixed", new Segment.IterateAction() {
+            @Override
+            public void before(String line) {
+                // log.debugf("load segment: `%s`", line);
+            }
+
+            @Override
+            public void handle(Segment seg) throws Exception {
+                log.infof("handle segment: `%s`", seg.toString());
+            }
+        });
     }
 }

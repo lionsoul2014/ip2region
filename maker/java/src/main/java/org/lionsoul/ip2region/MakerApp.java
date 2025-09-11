@@ -19,9 +19,9 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class MakerTest {
+public class MakerApp {
 
-    public final static Log log = Log.getLogger(MakerTest.class);
+    public final static Log log = Log.getLogger(MakerApp.class);
     public final static Pattern p = Pattern.compile("^(\\d+(-\\d+)?)$");
 
     public static void printHelp(String[] args) {
@@ -164,7 +164,7 @@ public class MakerTest {
         long tStart = System.currentTimeMillis();
         final Maker maker = new Maker(version, indexPolicy, srcFile, dstFile, fields);
         log.infof("Generating xdb with src=%s, dst=%s, logLevel=%s", srcFile, dstFile, logLevel);
-        Maker.log.setLevel(logLevel);
+        MakerApp.log.setLevel(logLevel);
         maker.init();
         maker.start();
         maker.end();
