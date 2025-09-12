@@ -33,6 +33,17 @@
         </developer>
     </developers>
 
+    <distributionManagement>
+		<snapshotRepository>
+			<id>lionsoul</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+		</snapshotRepository>
+		<repository>
+			<id>lionsoul</id>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+	</distributionManagement>
+
     <issueManagement>
         <url>https://github.com/lionsoul2014/ip2region/issues</url>
         <system>Github issues</system>
@@ -174,18 +185,19 @@
                             </execution>
                         </executions>
                     </plugin>
+                    <!--use the Central Portal: https://central.sonatype.org/publish/publish-portal-maven/ instead-->
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>0.7.0</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <publishingServerId>lionsoul</publishingServerId>
+                            <autoPublish>true</autoPublish>
+                        </configuration>
+                    </plugin>
                 </plugins>
             </build>
-            <distributionManagement>
-                <snapshotRepository>
-                    <id>oss-parent</id>
-                    <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-                </snapshotRepository>
-                <repository>
-                    <id>oss-parent</id>
-                    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-                </repository>
-            </distributionManagement>
         </profile>
     </profiles>
 
