@@ -33,8 +33,8 @@ var (
 		Bytes:            4,
 		SegmentIndexSize: 14, // 4 + 4 + 2 + 4,
 		IPCompare: func(ip1, ip2 []byte) int {
-			// ip1 - with Bit endian parsed from an input
-			// ip2 - with Little endian read from the xdb index
+			// ip1 - with Big endian byte order parsed from an input
+			// ip2 - with Little endian byte order read from the xdb index
 			ip2[0], ip2[3] = ip2[3], ip2[0]
 			ip2[1], ip2[2] = ip2[2], ip2[1]
 			return bytes.Compare(ip1, ip2)
