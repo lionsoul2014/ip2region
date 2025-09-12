@@ -93,7 +93,9 @@ public class SearchApp {
 
         Searcher searcher = createSearcher(dbPath, cachePolicy);
         final BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-        System.out.printf("ip2region xdb searcher test program, cachePolicy: %s\ntype 'quit' to exit\n", cachePolicy);
+        System.out.printf("ip2region xdb searcher test program\n" 
++ "source xdb: %s (%s, %s)\n"
++ "type 'quit' to exit\n", dbPath, searcher.getIPVersion().name, cachePolicy);
         while ( true ) {
             System.out.print("ip2region>> ");
             String line = reader.readLine().trim();

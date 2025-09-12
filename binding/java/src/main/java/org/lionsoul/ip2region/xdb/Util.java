@@ -32,19 +32,23 @@ public class Util
         try {
             return InetAddress.getByAddress(ip).getHostAddress();
         } catch (UnknownHostException e) {
-            return String.format("invalid-ip-address `%s`", ipArrayString(ip));
+            return String.format("invalid-ip-address `%s`", ipJoin(ip));
         }
     }
 
     // implode the byte[] ip with its byte value.
-    public static String ipArrayString(byte[] ip) {
+    public static String ipJoin(byte[] ip) {
+        return bytesToString(ip, 0, ip.length);
+    }
+
+    public static String bytesToString(byte[] buff, int offset, int length) {
         final StringBuffer sb = new StringBuffer();
         sb.append("[");
-        for (int i = 0; i < ip.length; i++) {
+        for (int i = 0; i < length; i++) {
             if (i > 0) {
                 sb.append(',');
             }
-            sb.append((ip[i] & 0xFF));
+            sb.append((buff[offset+i] & 0xFF));
         }
         sb.append("]");
         return sb.toString();

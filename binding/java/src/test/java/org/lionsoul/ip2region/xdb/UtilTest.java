@@ -20,7 +20,7 @@ public class UtilTest {
 
         for (String ip : ips) {
             final byte[] ipBytes = Util.parseIP(ip);
-            log.debugf("%s(v=%s) => %s", ip, Util.ipArrayString(ipBytes), Util.ipToString(ipBytes));
+            log.debugf("%s(v=%s) => %s", ip, Util.ipJoin(ipBytes), Util.ipToString(ipBytes));
         }
     }
 
@@ -39,6 +39,22 @@ public class UtilTest {
             final byte[] ip1 = Util.parseIP(ips[0]);
             final byte[] ip2 = Util.parseIP(ips[1]);
             log.debugf("compare(%s, %s): %d", ips[0], ips[1], Util.ipCompare(ip1, ip2));
+        }
+    }
+
+    @Test
+    public void testIpSubCompare() throws InetAddressException {
+        final String[][] ipPairs = new String[][] {
+            {"1.0.0.0", "1.0.0.1"},
+            {"192.168.1.100", "192.168.2.100"},
+            {"10.100.1.10", "11.100.2.10"},
+            {"11.100.1.10", "10.100.2.10"}
+        };
+
+        for (final String[] ips : ipPairs) {
+            final byte[] ip1 = Util.parseIP(ips[0]);
+            final byte[] ip2 = Util.parseIP(ips[1]);
+            log.debugf("ipSubCompare(%s, %s): %d", Util.ipToString(ip1), Util.ipToString(ip2), Util.ipSubCompare(ip1, ip2, 0));
         }
     }
 
