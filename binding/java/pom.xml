@@ -4,7 +4,7 @@
 
     <groupId>org.lionsoul</groupId>
     <artifactId>ip2region</artifactId>
-    <version>2.8.1</version>
+    <version>3.1.0</version>
     <packaging>jar</packaging>
 
     <name>ip2region</name>
@@ -41,8 +41,8 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <maven.compiler.source>1.6</maven.compiler.source>
-        <maven.compiler.target>1.6</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
 
     <dependencies>
@@ -105,7 +105,7 @@
                         <configuration>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>org.lionsoul.ip2region.SearchTest</mainClass>
+                                    <mainClass>org.lionsoul.ip2region.SearchApp</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>

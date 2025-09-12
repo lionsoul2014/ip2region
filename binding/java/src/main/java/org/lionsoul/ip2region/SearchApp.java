@@ -6,15 +6,18 @@
 
 package org.lionsoul.ip2region;
 
+import org.lionsoul.ip2region.xdb.InetAddressException;
+import org.lionsoul.ip2region.xdb.XdbException;
 import org.lionsoul.ip2region.xdb.LongByteArray;
 import org.lionsoul.ip2region.xdb.Searcher;
+import org.lionsoul.ip2region.xdb.Util;
+import org.lionsoul.ip2region.xdb.Version;
 
 import java.io.*;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
-public class SearchTest {
+public class SearchApp {
 
     public static void printHelp(String[] args) {
         System.out.print("ip2region xdb searcher\n");
@@ -24,21 +27,33 @@ public class SearchTest {
         System.out.print("  bench     search bench test\n");
     }
 
-    public static Searcher createSearcher(String dbPath, String cachePolicy) throws IOException {
+    public static Searcher createSearcher(String dbPath, String cachePolicy) throws IOException, XdbException {
+        final RandomAccessFile handle = new RandomAccessFile(dbPath, "r");
+
+        // verify the xdb file
+        // @Note: do NOT call it every time you create a searcher since this will slow
+        // down the search response.
+        // @see the util.Verify function for details.
+        Searcher.verify(handle);
+
+        // get the ip version from header
+        final Version version = Version.fromHeader(Searcher.loadHeader(handle));
+
+        // create the final searcher
         if ("file".equals(cachePolicy)) {
-            return Searcher.newWithFileOnly(dbPath);
+            return Searcher.newWithFileOnly(version, dbPath);
         } else if ("vectorIndex".equals(cachePolicy)) {
             byte[] vIndex = Searcher.loadVectorIndexFromFile(dbPath);
-            return Searcher.newWithVectorIndex(dbPath, vIndex);
+            return Searcher.newWithVectorIndex(version, dbPath, vIndex);
         } else if ("content".equals(cachePolicy)) {
             LongByteArray cBuff = Searcher.loadContentFromFile(dbPath);
-            return Searcher.newWithBuffer(cBuff);
+            return Searcher.newWithBuffer(version, cBuff);
         } else {
             throw new IOException("invalid cache policy `" + cachePolicy + "`, options: file/vectorIndex/content");
         }
     }
 
-    public static void searchTest(String[] args) throws IOException {
+    public static void searchTest(String[] args) throws IOException, XdbException {
         String dbPath = "", cachePolicy = "vectorIndex";
         for (final String r : args) {
             if (r.length() < 5) {
@@ -105,7 +120,7 @@ public class SearchTest {
         System.out.println("searcher test program exited, thanks for trying");
     }
 
-    public static void benchTest(String[] args) throws IOException {
+    public static void benchTest(String[] args) throws IOException, XdbException, InetAddressException {
         String dbPath = "", srcPath = "", cachePolicy = "vectorIndex";
         for (final String r : args) {
             if (r.length() < 5) {
@@ -155,40 +170,44 @@ public class SearchTest {
             String l = line.trim();
             String[] ps = l.split("\\|", 3);
             if (ps.length != 3) {
+                reader.close();
                 System.out.printf("invalid ip segment `%s`\n", l);
                 return;
             }
 
-            long sip;
+            byte[] sip;
             try {
-                sip = Searcher.checkIP(ps[0]);
+                sip = Util.parseIP(ps[0]);
             } catch (Exception e) {
+                reader.close();
                 System.out.printf("check start ip `%s`: %s\n", ps[0], e);
                 return;
             }
 
-            long eip;
+            byte[] eip;
             try {
-                eip = Searcher.checkIP(ps[1]);
+                eip = Util.parseIP(ps[1]);
             } catch (Exception e) {
+                reader.close();
                 System.out.printf("check end ip `%s`: %s\n", ps[1], e);
                 return;
             }
 
-            if (sip > eip) {
+            if (Util.ipCompare(sip, eip) > 0) {
+                reader.close();
                 System.out.printf("start ip(%s) should not be greater than end ip(%s)\n", ps[0], ps[1]);
                 return;
             }
 
-            long mip = (sip + eip) >> 1;
-            for (final long ip : new long[]{sip, (sip + mip) >> 1, mip, (mip + eip) >> 1, eip}) {
+            for (final byte[] ip : new byte[][]{sip, eip}) {
                 long sTime = System.nanoTime();
                 String region = searcher.search(ip);
                 costs += System.nanoTime() - sTime;
 
                 // check the region info
                 if (!ps[2].equals(region)) {
-                    System.out.printf("failed search(%s) with (%s != %s)\n", Searcher.long2ip(ip), region, ps[2]);
+                    System.out.printf("failed search(%s) with (%s != %s)\n", Util.ipToString(ip), region, ps[2]);
+                    reader.close();
                     return;
                 }
 
@@ -213,14 +232,14 @@ public class SearchTest {
         if ("search".equals(args[0])) {
             try {
                 searchTest(args);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 System.out.printf("failed running search test: %s\n", e);
             }
         } else if ("bench".equals(args[0])) {
             try {
                 benchTest(args);
-            } catch (IOException e) {
-                System.out.printf("failed running bench test: %s\n", e);
+            } catch (Exception e) {
+                System.out.printf("fwailed running bench test: %s\n", e);
             }
         } else {
             printHelp(args);

@@ -104,27 +104,17 @@ public class LongByteArray {
         return copy(offset, buffer, 0, length);
     }
 
-    // get a 4-bytes long integer from the specified index
-    public long getIntLong(long offset) {
+    // get a 4-bytes uint32 integer from the specified index
+    public long getUint32(long offset) {
         final byte[] b = new byte[4];
         copy(offset, b, 0, 4);
-        return (
-            ((b[0] & 0x000000FFL)) |
-            ((b[1] <<  8) & 0x0000FF00L) |
-            ((b[2] << 16) & 0x00FF0000L) |
-            ((b[3] << 24) & 0xFF000000L)
-        );
+        return LittleEndian.getUint32(b, 0);
     }
 
-    public int getInt(long offset) {
+    public int getInt2(long offset) {
         final byte[] b = new byte[4];
         copy(offset, b, 0, 4);
-        return (
-            ((b[0] & 0x000000FF)) |
-            ((b[1] <<  8) & 0x0000FF00) |
-            ((b[2] << 16) & 0x00FF0000) |
-            ((b[3] << 24) & 0xFF000000)
-        );
+        return LittleEndian.getInt2(b, 0);
     }
 
     // position entry class
