@@ -118,7 +118,7 @@ public class Util
             }
 
             sb.append(fs[idx]);
-            if (sb.length() > 0 && i < tailing) {
+            if (i < tailing) {
                 sb.append("|");
             }
         }

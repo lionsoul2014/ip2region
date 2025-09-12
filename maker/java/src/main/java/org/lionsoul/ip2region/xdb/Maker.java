@@ -178,6 +178,10 @@ public class Maker {
 
                 // apply the field filtering
                 final String region = Util.regionFiltering(seg.region, fields);
+                if (region.length() < 1) {
+                    throw new Exception("empty region info for segment `"+seg+"`");
+                }
+
                 segments.add(new Segment(seg.startIP, seg.endIP, region));
                 last = seg;
             }
