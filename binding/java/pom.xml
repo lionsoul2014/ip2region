@@ -9,7 +9,7 @@
 
     <name>ip2region</name>
     <url>https://github.com/lionsoul2014/ip2region</url>
-    <description>Open source offline internet address db manager framework and locator</description>
+    <description>An open source offline IP address data manager framework and locator with both IPv4 and IPv6 suppported</description>
 
     <licenses>
         <license>
