@@ -69,11 +69,12 @@ func Verify(handle *os.File) error {
 
 	// get the runtime ptr bytes
 	runtimePtrBytes := 0
-	if header.Version == Structure20 {
+	switch header.Version {
+	case Structure20:
 		runtimePtrBytes = 4
-	} else if header.Version == Structure30 {
+	case Structure30:
 		runtimePtrBytes = header.RuntimePtrBytes
-	} else {
+	default:
 		return fmt.Errorf("invalid version: %d", header.Version)
 	}
 
@@ -98,10 +99,7 @@ func VerifyFromFile(dbFile string) error {
 	if err != nil {
 		return fmt.Errorf("open xdb file `%s`: %w", dbFile, err)
 	}
-
-	defer func(handle *os.File) {
-		_ = handle.Close()
-	}(handle)
+	defer handle.Close()
 
 	return Verify(handle)
 }
@@ -132,10 +130,7 @@ func LoadHeaderFromFile(dbFile string) (*Header, error) {
 	if err != nil {
 		return nil, fmt.Errorf("open xdb file `%s`: %w", dbFile, err)
 	}
-
-	defer func(handle *os.File) {
-		_ = handle.Close()
-	}(handle)
+	defer handle.Close()
 
 	header, err := LoadHeader(handle)
 	if err != nil {
@@ -177,10 +172,7 @@ func LoadVectorIndexFromFile(dbFile string) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("open xdb file `%s`: %w", dbFile, err)
 	}
-
-	defer func() {
-		_ = handle.Close()
-	}()
+	defer handle.Close()
 
 	vIndex, err := LoadVectorIndex(handle)
 	if err != nil {
@@ -225,10 +217,7 @@ func LoadContentFromFile(dbFile string) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("open xdb file `%s`: %w", dbFile, err)
 	}
-
-	defer func() {
-		_ = handle.Close()
-	}()
+	defer handle.Close()
 
 	cBuff, err := LoadContent(handle)
 	if err != nil {

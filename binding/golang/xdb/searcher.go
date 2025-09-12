@@ -84,8 +84,6 @@ type Searcher struct {
 	version *Version
 	handle  *os.File
 
-	// header info
-	header  *Header
 	ioCount int
 
 	// use it only when this feature enabled.

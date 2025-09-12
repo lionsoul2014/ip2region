@@ -175,6 +175,7 @@ func testBench() {
 		fmt.Printf("failed to open source text file: %s\n", err)
 		return
 	}
+	defer handle.Close()
 
 	var count, tStart, costs = int64(0), time.Now(), int64(0)
 	var scanner = bufio.NewScanner(handle)
@@ -234,6 +235,8 @@ func createSearcher(dbPath string, cachePolicy string) (*xdb.Searcher, error) {
 	if err != nil {
 		return nil, fmt.Errorf("open xdb file `%s`: %w", dbPath, err)
 	}
+
+	defer handle.Close()
 
 	// verify the xdb file
 	// @Note: do NOT call it every time you create a searcher since this will slow down the search response.

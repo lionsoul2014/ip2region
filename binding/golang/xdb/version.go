@@ -82,15 +82,16 @@ func VersionFromHeader(header *Header) (*Version, error) {
 	}
 
 	// structure 3.0 after IPv6 supporting
-	if header.Version == Structure30 {
-		if header.IPVersion == IPv4VersionNo {
-			return IPv4, nil
-		} else if header.IPVersion == IPv6VersionNo {
-			return IPv6, nil
-		} else {
-			return IPvx, fmt.Errorf("invalid version `%d`", header.IPVersion)
-		}
+	if header.Version != Structure30 {
+		return IPvx, fmt.Errorf("invalid version `%d`", header.IPVersion)
 	}
 
-	return IPvx, fmt.Errorf("invalid version `%d`", header.Version)
+	switch header.IPVersion {
+	case IPv4VersionNo:
+		return IPv4, nil
+	case IPv6VersionNo:
+		return IPv6, nil
+	default:
+		return IPvx, fmt.Errorf("invalid version `%d`", header.Version)
+	}
 }
