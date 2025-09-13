@@ -8,7 +8,7 @@
 
 ### 1、离线定位库
 
-项目本身同时了提供了一份 IPv4 和 IPv6 的原始数据和对应的 xdb 文件(`ip2region_v4.xdb` 和 `ip2region_v6.xdb`) 用于实现精确到城市的的查询定位功能。
+项目本身同时了提供了一份 IPv4(`data/ipv4_source.txt`) 和 IPv6(`data/ipv6_source.txt`) 的原始数据和对应的 xdb 文件(`data/ip2region_v4.xdb` 和 `data/ip2region_v6.xdb`) 用于实现精确到城市的的查询定位功能。
 
 ### 2、数据管理框架
 
