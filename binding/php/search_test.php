@@ -6,7 +6,11 @@
 // @Author Lion <chenxin619315@gmail.com>
 // @Date   2022/06/21
 
-require dirname(__FILE__) . '/XdbSearcher.class.php';
+require dirname(__FILE__) . '/xdb/Searcher.class.php';
+
+use \ip2region\xdb\Util;
+use \ip2region\xdb\{IPv4, IPv6};
+use \ip2region\xdb\Searcher;
 
 function printHelp($argv) {
     printf("php %s [command options]\n", $argv[0]);
@@ -56,39 +60,41 @@ if (strlen($dbFile) < 1) {
 }
 
 // printf("debug: dbFile: %s, cachePolicy: %s\n", $dbFile, $cachePolicy);
+$version = IPv4::default();
+
 // create the xdb searcher by the cache-policy
 switch ( $cachePolicy ) {
 case 'file':
     try {
-        $searcher = XdbSearcher::newWithFileOnly($dbFile);
+        $searcher = Searcher::newWithFileOnly($version, $dbFile);
     } catch (Exception $e) {
         printf("failed to create searcher with '%s': %s\n", $dbFile, $e);
         return;
     }
     break;
 case 'vectorIndex':
-    $vIndex = XdbSearcher::loadVectorIndexFromFile($dbFile);
+    $vIndex = Util::loadVectorIndexFromFile($dbFile);
     if ($vIndex == null) {
         printf("failed to load vector index from '%s'\n", $dbFile);
         return;
     }
 
     try {
-        $searcher = XdbSearcher::newWithVectorIndex($dbFile, $vIndex);
+        $searcher = Searcher::newWithVectorIndex($version, $dbFile, $vIndex);
     } catch (Exception $e) {
         printf("failed to create vector index cached searcher with '%s': %s\n", $dbFile, $e);
         return;
     }
     break;
 case 'content':
-    $cBuff = XdbSearcher::loadContentFromFile($dbFile);
+    $cBuff = Util::loadContentFromFile($dbFile);
     if ($cBuff == null) {
         printf("failed to load xdb content from '%s'\n", $dbFile);
         return;
     }
 
     try {
-        $searcher = XdbSearcher::newWithBuffer($cBuff);
+        $searcher = Searcher::newWithBuffer($version, $cBuff);
     } catch (Exception $e) {
         printf("failed to create content cached searcher: %s", $e);
         return;
@@ -111,21 +117,20 @@ while ( true ) {
         break;
     }
 
-    if (XdbSearcher::ip2long($line) === null) {
-        echo "Error: invalid ip address\n";
-        continue;
-    }
-
-    $sTime = XdbSearcher::now();
+    $cost = -1;
     try {
+        $sTime = Util::now();
         $region = $searcher->search($line);
+        $cost = Util::now() - $sTime;
     } catch (Exception $e) {
-        printf("search call failed: %s\n", $e);
+        printf("search call failed: %s\n", $e->getMessage());
         continue;
     }
 
-    printf("{region: %s, ioCount: %d, took: %.5f ms}\n",
-        $region, $searcher->getIOCount(), XdbSearcher::now() - $sTime);
+    printf(
+        "{region: %s, ioCount: %d, took: %.5f ms}\n",
+        $region, $searcher->getIOCount(), $cost
+    );
 }
 
 // close the searcher at last
