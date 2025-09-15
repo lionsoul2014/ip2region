@@ -35,7 +35,7 @@ API 介绍，使用文档和测试程序请参考对应 `searcher` 查询客户�
 | 编程语言                         | 描述                        | IPv4 支持          | IPv6 支持          | 贡献者                                            |
 |:---------------------------------|:----------------------------|:-------------------|:------------------ |:--------------------------------------------------|
 | [Golang](binding/golang)         | golang xdb 查询客户端       | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
-| [PHP](binding/php)               | php xdb 查询客户端          | :white_check_mark: | :soon:             | [Lion](https://github.com/lionsoul2014)           |
+| [PHP](binding/php)               | php xdb 查询客户端          | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
 | [Java](binding/java)             | java xdb 查询客户端         | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
 | [Lua](binding/lua)               | lua xdb 查询客户端          | :white_check_mark: | :soon:             | [Lion](https://github.com/lionsoul2014)           |
 | [ANSI C](binding/c)              | ANSC c xdb 查询客户端       | :white_check_mark: | :soon:             | [Lion](https://github.com/lionsoul2014)           |
