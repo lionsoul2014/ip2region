@@ -60,7 +60,26 @@ if (strlen($dbFile) < 1) {
 }
 
 // printf("debug: dbFile: %s, cachePolicy: %s\n", $dbFile, $cachePolicy);
-$version = IPv4::default();
+$handle = fopen($dbFile, 'r');
+if ($handle === false) {
+    printf("failed to open the xdb file `{$dbFile}`\n");
+    return;
+}
+
+// load header
+$header = Util::loadHeader($handle);
+if ($header == null) {
+    printf("failed to load the header\n");
+    return;
+}
+
+// get the version number from the xdb header
+try {
+    $version = Util::versionFromHeader($header);
+} catch (Exception $e) {
+    printf("failed to detect version from header: {$e->getMessage()}\n");
+    return;
+}
 
 // create the xdb searcher by the cache-policy
 switch ( $cachePolicy ) {
@@ -73,7 +92,7 @@ case 'file':
     }
     break;
 case 'vectorIndex':
-    $vIndex = Util::loadVectorIndexFromFile($dbFile);
+    $vIndex = Util::loadVectorIndex($handle);
     if ($vIndex == null) {
         printf("failed to load vector index from '%s'\n", $dbFile);
         return;
@@ -87,7 +106,7 @@ case 'vectorIndex':
     }
     break;
 case 'content':
-    $cBuff = Util::loadContentFromFile($dbFile);
+    $cBuff = Util::loadContent($handle);
     if ($cBuff == null) {
         printf("failed to load xdb content from '%s'\n", $dbFile);
         return;
@@ -105,7 +124,11 @@ default:
     return;
 }
 
-printf("ip2region xdb searcher test program, cachePolicy: ${cachePolicy}\ntype 'quit' to exit\n");
+printf(<<<EOF
+ip2region xdb searcher test program
+source xdb file: {$dbFile} ({$version->name}, ${cachePolicy})
+type 'quit' to exit\n
+EOF);
 while ( true ) {
     echo "ip2region>> ";
     $line = trim(fgets(STDIN));

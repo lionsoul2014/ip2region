@@ -64,7 +64,26 @@ if (strlen($dbFile) < 1 || strlen($srcFile) < 1) {
 }
 
 // printf("debug: dbFile: %s, cachePolicy: %s\n", $dbFile, $cachePolicy);
-$version = IPv4::default();
+$handle = fopen($dbFile, 'r');
+if ($handle === false) {
+    printf("failed to open the xdb file `{$dbFile}`\n");
+    return;
+}
+
+// load header
+$header = Util::loadHeader($handle);
+if ($header == null) {
+    printf("failed to load the header\n");
+    return;
+}
+
+// get the version number from the xdb header
+try {
+    $version = Util::versionFromHeader($header);
+} catch (Exception $e) {
+    printf("failed to detect version from header: {$e->getMessage()}\n");
+    return;
+}
 
 // create the xdb searcher by the cache-policy
 switch ( $cachePolicy ) {
@@ -77,7 +96,7 @@ switch ( $cachePolicy ) {
         }
         break;
     case 'vectorIndex':
-        $vIndex = Util::loadVectorIndexFromFile($dbFile);
+        $vIndex = Util::loadVectorIndex($handle);
         if ($vIndex == null) {
             printf("failed to load vector index from '%s'\n", $dbFile);
             return;
@@ -91,7 +110,7 @@ switch ( $cachePolicy ) {
         }
         break;
     case 'content':
-        $cBuff = Util::loadContentFromFile($dbFile);
+        $cBuff = Util::loadContent($handle);
         if ($cBuff == null) {
             printf("failed to load xdb content from '%s'\n", $dbFile);
             return;
@@ -123,6 +142,11 @@ $sTime = Util::now();
 while (!feof($handle)) {
     $line = trim(fgets($handle, 1024));
     if (strlen($line) < 1) {
+        continue;
+    }
+
+    // ignore the comment
+    if ($line[0] == '#') {
         continue;
     }
 

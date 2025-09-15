@@ -42,7 +42,9 @@ class Util {
     // compare two ip bytes (packed string return by parsedIP)
     // returns: -1 if ip1 < ip2, 0 if ip1 == ip2 or 1 if ip1 > ip2
     public static function ipSubCompare($ip1, $buff, $offset) {
-        $r = substr_compare($ip1, $buff, $offset, strlen($ip1));
+        // $r = substr_compare($ip1, $buff, $offset, strlen($ip1));
+        // @Note: substr_compare is not working, use the substr + strcmp instead
+        $r = strcmp($ip1, substr($buff, $offset, strlen($ip1)));
         if ($r < 0) {
             return -1;
         } else if ($r > 0) {
@@ -62,6 +64,48 @@ class Util {
         } else {
             return 0;
         }
+    }
+
+    // version parse
+    public static function versionFromName($ver_name) {
+        $name = strtoupper($ver_name);
+        if ($name == "V4" || $name == "IPv4") {
+            return IPv4::default();
+        } else if ($name == "V6" || $name == "IPv6") {
+            return IPv6::default();
+        } else {
+            throw new Exception("invalid verstion name `{$ver_name}`");
+        }
+    }
+
+    // version parse from header
+    public static function versionFromHeader($header) {
+        // Old structure 2.0 with IPv4 supports ONLY
+        if ($header['version'] == Structure_20) {
+            return IPv4::default();
+        }
+
+        // structure 3.0 after IPv6 supporting
+        if ($header['version'] != Structure_30) {
+            throw new Exception("invalid xdb structure version `{$header['version']}`");
+        }
+
+        if ($header['ipVersion'] == IPv4VersionNo) {
+            return IPv4::default();
+        } else if ($header['ipVersion'] == IPv6VersionNo) {
+            return IPv6::default();
+        } else {
+            throw new Exception("invalid ip version number `{$header['ipVersion']}`");
+        }
+    }
+
+    // binary string chars implode with space
+    public static function bytesToString($buff, $offset, $length) {
+        $sb = [];
+        for ($i = 0; $i < $length; $i++) {
+            $sb[] = ord($buff[$offset+$i]) & 0xFF;
+        }
+        return '['.implode(' ', $sb).']';
     }
 
     // decode a 4bytes long with Little endian byte order from a byte buffer
@@ -203,10 +247,14 @@ class IPv4 {
     public $name;
     public $bytes;
     public $segmentIndexSize;
-
+    
+    private static $C = null;
     public static function default() {
-        // 14 = 4 + 4 + 2 + 4
-        return new self(IPv4VersionNo, 'IPv4', 4, 14);
+        if (self::$C == null) {
+            // 14 = 4 + 4 + 2 + 4
+            self::$C = new self(IPv4VersionNo, 'IPv4', 4, 14);
+        }
+        return self::$C;
     }
 
     public function __construct($id, $name, $bytes, $segmentIndexSize) {
@@ -220,24 +268,23 @@ class IPv4 {
     public function ipSubCompare($ip1, $buff, $offset) {
         // ip1: Little endian byte order encoded long from searcher.
         // ip2: Little endian byte order read from xdb index.
-        // @Note: to compatible with the old Litten endian index encode implementation.
-        $ip2 = (
-            (ord($buff[$offset  ]) << 24) | 
-            (ord($buff[$offset+1]) << 16) | 
-            (ord($buff[$offset+2]) <<  8) | ord($buff[$offset+3])
-        );
-
-        $r = $ip1 - $ip2;
-        if ($r > 0) {
-            return 1;
-        } else if ($r < 0) {
-            return -1;
-        } else {
-            return 0;
+        $len  = strlen($ip1);
+        $eIdx = $offset + $len;
+        for ($i = 0, $j = $eIdx - 1; $i < $len; $i++, $j--) {
+            $i1 = ord($ip1[$i]) & 0xFF;
+            $i2 = ord($buff[$j]) & 0xFF;
+            // printf("i:%d, j:%d, i1:%d, i2:%d\n", $i, $j, $i1, $i2);
+            if ($i1 > $i2) {
+                return 1;
+            } else if ($i1 < $i2) {
+                return -1;
+            }
         }
+
+        return 0;
     }
 
-    public function toString() {
+    public function __toString() {
         return sprintf(
             "{id:%d, name:%s, bytes:%d, segmentIndexSize:%d}", 
             $this->id, $this->name, $this->bytes, $this->segmentIndexSize
@@ -251,9 +298,14 @@ class IPv6 {
     public $bytes;
     public $segmentIndexSize;
 
+    private static $C = null;
     public static function default() {
-        // 38 = 16 + 16 + 2 + 4
-        return new self(IPv6VersionNo, 'IPv6', 16, 38);
+        if (self::$C == null) {
+            // 38 = 16 + 16 + 2 + 4
+            self::$C = new self(IPv6VersionNo, 'IPv6', 16, 38);
+        }
+
+        return self::$C;
     }
 
     public function __construct($id, $name, $bytes, $segmentIndexSize) {
@@ -264,10 +316,11 @@ class IPv6 {
     }
 
     public function ipSubCompare($ip, $buff, $offset) {
+        // return Util::ipCompare($ip, substr($buff, $offset, strlen($ip)));
         return Util::ipSubCompare($ip, $buff, $offset);
     }
 
-    public function toString() {
+    public function __toString() {
         return sprintf(
             "{id:%d, name:%s, bytes:%d, segmentIndexSize:%d}", 
             $this->id, $this->name, $this->bytes, $this->segmentIndexSize
@@ -281,8 +334,7 @@ class Searcher {
     private $version;
 
     // xdb file handle
-    private $handle = null;
-
+    private $handle  = null;
     private $ioCount = 0;
 
     // vector index in binary string.
@@ -406,15 +458,6 @@ class Searcher {
 
         // printf("sPtr: %d, ePtr: %d\n", $sPtr, $ePtr);
         [$bytes, $dBytes] = [strlen($ipBytes), strlen($ipBytes) << 1];
-        if ($bytes == 4) {
-            // encode the IPv4 bytes to an long with Litten endian byte order
-            // to avoid the repeated calcs in the binary search loop.
-            $ipBytes = (
-                (ord($ipBytes[3]) << 24) |
-                (ord($ipBytes[2]) << 24) |
-                (ord($ipBytes[1]) << 24) | (ord($ipBytes[0]))
-            );
-        }
 
         // binary search the segment index to get the region info
         $idxSize = $this->version->segmentIndexSize;
@@ -430,6 +473,11 @@ class Searcher {
                 throw new Exception("failed to read segment index with ptr={$p}");
             }
 
+            // printf("l=%d, h=%d, sip=%s, eip=%s\n", 
+            //     $l, $h,
+            //     Util::ipToString(strrev(substr($buff, 0, 4))),
+            //     Util::ipToString(strrev(substr($buff, 4, 4)))
+            // );
             if ($this->version->ipSubCompare($ipBytes, $buff, 0) < 0) {
                 $h = $m - 1;
             } else if ($this->version->ipSubCompare($ipBytes, $buff, $bytes) > 0) {

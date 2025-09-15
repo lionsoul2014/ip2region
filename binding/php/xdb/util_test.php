@@ -6,7 +6,7 @@
 // @Author Lion <chenxin619315@gmail.com>
 // @Date   2022/06/22
 
-require dirname(__FILE__) . '/Searcher.class.php';
+require 'Searcher.class.php';
 use \ip2region\xdb\Util;
 use \ip2region\xdb\Searcher;
 use \ip2region\xdb\IPv4;
@@ -20,9 +20,11 @@ if($argc < 2) {
     $func_name = trim($argv[1]);
 }
 
+$basePath = dirname(dirname(dirname(dirname(__FILE__))));
 
 function testLoadHeader() {
-    $header = Util::loadHeaderFromFile('../../data/ip2region_v4.xdb');
+    global $basePath;
+    $header = Util::loadHeaderFromFile("{$basePath}/data/ip2region_v4.xdb");
     if ($header == null) {
         printf("failed to load header from file\n");
         return;
@@ -33,7 +35,8 @@ function testLoadHeader() {
 }
 
 function testLoadVectorIndex() {
-    $vIndex = Util::loadVectorIndexFromFile('../../data/ip2region_v4.xdb');
+    global $basePath;
+    $vIndex = Util::loadVectorIndexFromFile("{$basePath}/data/ip2region_v4.xdb");
     if ($vIndex == null) {
         printf("failed to load vector index from file\n");
         return;
@@ -43,7 +46,8 @@ function testLoadVectorIndex() {
 }
 
 function testLoadContent() {
-    $cBuff = Util::loadContentFromFile('../../data/ip2region_v4.xdb');
+    global $basePath;
+    $cBuff = Util::loadContentFromFile("{$basePath}/data/ip2region_v4.xdb");
     if ($cBuff == null) {
         printf("failed to load content from file\n");
         return;
@@ -87,6 +91,8 @@ function testIPCompare() {
         ["1.0.0.0", "1.0.0.1"],
         ["192.168.1.101", "192.168.1.90"],
         ["219.133.111.87", "114.114.114.114"],
+        ["1.0.4.0", "1.0.1.0"],
+        ["1.0.4.0", "1.0.3.255"],
         ["2000::", "2000:ffff:ffff:ffff:ffff:ffff:ffff:ffff"],
         ["2001:4:112::", "2001:4:112:ffff:ffff:ffff:ffff:ffff"],
         ["ffff::", "2001:4:ffff:ffff:ffff:ffff:ffff:ffff"]
@@ -102,8 +108,8 @@ function testIPCompare() {
 function testAttributes() {
     printf("IPv4VersioNo: %d\n", \ip2region\xdb\IPv4VersionNo);
     printf("IPv6VersioNo: %d\n", \ip2region\xdb\IPv6VersionNo);
-    printf("IPv4 Object: %s\n", IPv4::default()->toString());
-    printf("IPv6 Object: %s\n", IPv6::default()->toString());
+    printf("IPv4 Object: %s\n", IPv4::default());
+    printf("IPv6 Object: %s\n", IPv6::default());
 }
 
 

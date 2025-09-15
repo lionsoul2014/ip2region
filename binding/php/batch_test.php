@@ -6,7 +6,11 @@
 // @Author Lion <chenxin619315@gmail.com>
 // @Date   2022/06/22
 
-require dirname(__FILE__) . '/XdbSearcher.class.php';
+require dirname(__FILE__) . '/xdb/Searcher.class.php';
+
+use \ip2region\xdb\Util;
+use \ip2region\xdb\{IPv4, IPv6};
+use \ip2region\xdb\Searcher;
 
 function printHelp($argv) {
     printf("php %s [command options]\n", $argv[0]);
@@ -60,39 +64,60 @@ if (strlen($dbFile) < 1 || strlen($srcFile) < 1) {
 }
 
 // printf("debug: dbFile: %s, cachePolicy: %s\n", $dbFile, $cachePolicy);
+$handle = fopen($dbFile, 'r');
+if ($handle === false) {
+    printf("failed to open the xdb file `{$dbFile}`\n");
+    return;
+}
+
+// load header
+$header = Util::loadHeader($handle);
+if ($header == null) {
+    printf("failed to load the header\n");
+    return;
+}
+
+// get the version number from the xdb header
+try {
+    $version = Util::versionFromHeader($header);
+} catch (Exception $e) {
+    printf("failed to detect version from header: {$e->getMessage()}\n");
+    return;
+}
+
 // create the xdb searcher by the cache-policy
 switch ( $cachePolicy ) {
     case 'file':
         try {
-            $searcher = XdbSearcher::newWithFileOnly($dbFile);
+            $searcher = Searcher::newWithFileOnly($version, $dbFile);
         } catch (Exception $e) {
             printf("failed to create searcher with '%s': %s\n", $dbFile, $e);
             return;
         }
         break;
     case 'vectorIndex':
-        $vIndex = XdbSearcher::loadVectorIndexFromFile($dbFile);
+        $vIndex = Util::loadVectorIndex($handle);
         if ($vIndex == null) {
             printf("failed to load vector index from '%s'\n", $dbFile);
             return;
         }
 
         try {
-            $searcher = XdbSearcher::newWithVectorIndex($dbFile, $vIndex);
+            $searcher = Searcher::newWithVectorIndex($version, $dbFile, $vIndex);
         } catch (Exception $e) {
             printf("failed to create vector index cached searcher with '%s': %s\n", $dbFile, $e);
             return;
         }
         break;
     case 'content':
-        $cBuff = XdbSearcher::loadContentFromFile($dbFile);
+        $cBuff = Util::loadContent($handle);
         if ($cBuff == null) {
             printf("failed to load xdb content from '%s'\n", $dbFile);
             return;
         }
 
         try {
-            $searcher = XdbSearcher::newWithBuffer($cBuff);
+            $searcher = Searcher::newWithBuffer($version, $cBuff);
         } catch (Exception $e) {
             printf("failed to create content cached searcher: %s", $e);
             return;
@@ -119,21 +144,18 @@ while (!feof($handle)) {
         continue;
     }
 
-    $ip = XdbSearcher::ip2long($line);
-    if ($ip === null) {
-        printf("invalid ip `%s`\n", $line);
-        return;
+    try {
+        $ipBytes = Util::parseIP($line);
+    } catch (Exception $e) {
+        printf("failed to parse ip `%s`: %s\n", $line, $e->getMessage());
+        continue;
     }
 
     $count++;
-    $region = $searcher->search($ip);
+    $region = $searcher->searchByBytes($ipBytes);
     $ss = explode('|', $region);
-    if (strlen($ss[3]) > 1) {
-        $qx_count++;
-    }
     echo $line, ",", str_replace('|', ',', $region), "\n";
 }
 
 fclose($handle);
-echo "qx_count: {$qx_count}";
 echo "Done, with {$count} IPs\n";
