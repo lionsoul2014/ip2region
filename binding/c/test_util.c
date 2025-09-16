@@ -7,7 +7,7 @@
 // @Date   2022/06/27
 
 #include "stdio.h"
-#include "xdb_searcher.h"
+#include "xdb_api.h"
 
 void test_check_ip() {
     char *ip_list[] = {
@@ -37,7 +37,7 @@ void test_check_ip() {
 }
 
 void test_load_header() {
-    xdb_header_t *header = xdb_load_header_from_file("../../data/ip2region.xdb");
+    xdb_header_t *header = xdb_load_header_from_file("../../data/ip2region_v4.xdb");
     if (header == NULL) {
         printf("failed to load header");
     } else {
@@ -54,29 +54,29 @@ void test_load_header() {
        );
     }
 
-    xdb_close_header(header);
+    xdb_free_header(header);
 }
 
 void test_load_vector_index() {
-    xdb_vector_index_t *v_index = xdb_load_vector_index_from_file("../../data/ip2region.xdb");
+    xdb_vector_index_t *v_index = xdb_load_vector_index_from_file("../../data/ip2region_v4.xdb");
     if (v_index == NULL) {
         printf("failed to load vector index from file\n");
     } else {
         printf("vector index loaded from file, length=%d\n", v_index->length);
     }
 
-    xdb_close_vector_index(v_index);
+    xdb_free_vector_index(v_index);
 }
 
 void test_load_content() {
-    xdb_content_t *content = xdb_load_content_from_file("../../data/ip2region.xdb");
+    xdb_content_t *content = xdb_load_content_from_file("../../data/ip2region_v4.xdb");
     if (content == NULL) {
         printf("failed to load content from file\n");
     } else {
         printf("content loaded from file, length=%d\n", content->length);
     }
 
-    xdb_close_content(content);
+    xdb_free_content(content);
 }
 
 // valgrind --tool=memcheck --leak-check=full ./a.out

@@ -6,8 +6,8 @@
 // @Author Lion <chenxin619315@gmail.com>
 // @Date   2022/06/27
 
-#ifndef C_XDB_SEARCHER_H
-#define C_XDB_SEARCHER_H
+#ifndef C_IP2REGION_XDB_H
+#define C_IP2REGION_XDB_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -59,7 +59,7 @@ XDB_PUBLIC(xdb_header_t *) xdb_load_header(FILE *);
 
 XDB_PUBLIC(xdb_header_t *) xdb_load_header_from_file(const char *);
 
-XDB_PUBLIC(void) xdb_close_header(void *);
+XDB_PUBLIC(void) xdb_free_header(void *);
 
 
 // --- vector index buffer
@@ -73,7 +73,7 @@ XDB_PUBLIC(xdb_vector_index_t *) xdb_load_vector_index(FILE *);
 
 XDB_PUBLIC(xdb_vector_index_t *) xdb_load_vector_index_from_file(const char *);
 
-XDB_PUBLIC(void) xdb_close_vector_index(void *);
+XDB_PUBLIC(void) xdb_free_vector_index(void *);
 
 
 // --- content buffer
@@ -87,7 +87,7 @@ XDB_PUBLIC(xdb_content_t *) xdb_load_content(FILE *);
 
 XDB_PUBLIC(xdb_content_t *) xdb_load_content_from_file(const char *);
 
-XDB_PUBLIC(void) xdb_close_content(void *);
+XDB_PUBLIC(void) xdb_free_content(void *);
 
 // --- End buffer load
 
@@ -146,4 +146,4 @@ XDB_PUBLIC(unsigned int) xdb_mip(unsigned long, unsigned long);
 XDB_PUBLIC(long) xdb_now();
 
 
-#endif //C_XDB_SEARCHER_H
+#endif // C_IP2REGION_XDB_H

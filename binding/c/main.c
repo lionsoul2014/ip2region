@@ -7,7 +7,7 @@
 // @Date   2022/06/28
 
 #include "stdio.h"
-#include "xdb_searcher.h"
+#include "xdb_api.h"
 
 struct searcher_test_entry {
     xdb_searcher_t searcher;
@@ -64,13 +64,13 @@ void destroy_searcher_test(searcher_test_t *test) {
 
     // check and free the vector index
     if (test->v_index != NULL) {
-        xdb_close_vector_index(test->v_index);
+        xdb_free_vector_index(test->v_index);
         test->v_index = NULL;
     }
 
     // check and free the content buffer
     if (test->c_buffer != NULL) {
-        xdb_close_content(test->c_buffer);
+        xdb_free_content(test->c_buffer);
         test->c_buffer = NULL;
     }
 }

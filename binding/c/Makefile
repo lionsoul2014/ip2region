@@ -1,24 +1,27 @@
-all: xdb_searcher util_test
+all: xdb_searcher test_util
 
-xdb_searcher: xdb_searcher.h xdb_searcher.c main.c
-	gcc -O2 -I./ xdb_searcher.c main.c -o xdb_searcher
+xdb_searcher: xdb_api.h xdb_util.c xdb_searcher.c main.c
+	gcc -O2 -I./ xdb_util.c xdb_searcher.c main.c -o xdb_searcher
 
-util_test: xdb_searcher.h xdb_searcher.c util_test.c
-	gcc -O2 -I./ xdb_searcher.c util_test.c -o util_test
+test_util: xdb_api.h xdb_util.c test_util.c
+	gcc -O2 -I./ xdb_util.c test_util.c -o test_util
 
 xdb_searcher.o: xdb_searcher.c
-	gcc -c -o xdb_searcher.o xdb_searcher.c
+	gcc -c xdb_searcher.c
 
-xdb_searcher_lib: xdb_searcher.o
+xdb_util.o: xdb_util.c
+	gcc -c xdb_util.c
+
+xdb_searcher_lib: xdb_util.o xdb_searcher.o
 	mkdir -p build/lib
 	mkdir -p build/include
-	ar -rc build/lib/libxdb_searcher.a `find . -name *.o`
-	cp xdb_searcher.h build/include
+	ar -rc build/lib/libxdb.a `find . -name *.o`
+	cp xdb_api.h build/include
 
 clean:
 	find ./ -name \*.o  | xargs rm -f
-	find ./ -name util_test | xargs rm -f
+	find ./ -name test_util | xargs rm -f
 	find ./ -name xdb_searcher | xargs rm -f
 	rm -rf build
 
-.PHONY: all clean xdb_searcher util_test
+.PHONY: all clean xdb_searcher test_util

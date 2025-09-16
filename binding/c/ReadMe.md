@@ -7,7 +7,7 @@
 
 ```c
 #include <stdio.h>
-#include "xdb_searcher.h"
+#include "xdb_api.h"
 
 int main(int argc, char *argv[]) {
     char *db_path = "ip2region.xdb file path";
@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
 我们可以提前从 xdb 文件中加载出来 VectorIndex 数据，然后全局缓存，每次创建 Searcher 对象的时候使用全局的 VectorIndex 缓存可以减少一次固定的 IO 操作，从而加速查询，减少 IO 压力。
 ```c
 #include <stdio.h>
-#include "xdb_searcher.h"
+#include "xdb_api.h"
 
 int main(int argc, char *argv[]) {
     char *db_path = "ip2region.xdb file path";
@@ -94,7 +94,7 @@ int main(int argc, char *argv[]) {
 我们也可以预先加载整个 ip2region.xdb 的数据到内存，然后基于这个数据创建查询对象来实现完全基于文件的查询，类似之前的 memory search。
 ```c
 #include <stdio.h>
-#include "xdb_searcher.h"
+#include "xdb_api.h"
 
 int main(int argc, char *argv[]) {
     char *db_path = "ip2region.xdb file path";
