@@ -35,6 +35,82 @@ XDB_PRIVATE(int) gettimeofday(struct timeval* tp, void* tzp) {
 }
 #endif
 
+XDB_PUBLIC(long) xdb_now() {
+    struct timeval c_time;
+    gettimeofday(&c_time, NULL);
+    return c_time.tv_sec * (int)1e6 + c_time.tv_usec;
+}
+
+XDB_PUBLIC(unsigned int) xdb_le_get_uint32(const char *buffer, int offset) {
+    return (
+        ((buffer[offset  ]) & 0x000000FF) |
+        ((buffer[offset+1] <<  8) & 0x0000FF00) |
+        ((buffer[offset+2] << 16) & 0x00FF0000) |
+        ((buffer[offset+3] << 24) & 0xFF000000)
+    );
+}
+
+XDB_PUBLIC(int) xdb_le_get_uint16(const char *buffer, int offset) {
+    return (
+        ((buffer[offset  ]) & 0x000000FF) |
+        ((buffer[offset+1] << 8) & 0x0000FF00)
+    );
+}
+
+// string ip to unsigned int
+static int shiftIndex[4] = {24, 16, 8, 0};
+XDB_PUBLIC(int) xdb_check_ip(const char *src_ip, unsigned int *dst_ip) {
+    char c;
+    int i, n, ip = 0;
+    const char *ptr = src_ip;
+    for (i = 0; i < 4; i++) {
+        n = 0;
+        while (1) {
+            c = *ptr;
+            ptr++;
+            if (c >= '0' && c <= '9') {
+                n *= 10;
+                n += c - '0';
+            } else if ((i < 3 && c == '.') || i == 3) {
+                // stopping at the '.' but ignore the tailing chars
+                // after the 3rd one (auto clean the tailing none-integer ?).
+                break;
+            } else {
+                return 1;
+            }
+        }
+
+        if (n > 0xFF) {
+            return 2;
+        }
+
+        ip |= (n << shiftIndex[i]);
+    }
+
+    *dst_ip = ip;
+    return 0;
+}
+
+// unsigned int ip to string ip
+XDB_PUBLIC(void) xdb_long2ip(unsigned int ip, char *buffer) {
+    sprintf(buffer, "%d.%d.%d.%d", (ip >> 24) & 0xFF, (ip >> 16) & 0xFF, (ip >> 8) & 0xFF, ip & 0xFF);
+}
+
+XDB_PUBLIC(int) xdb_parse_ip(const char *ip, const char *buffer, size_t length) {
+    return 0;
+}
+
+XDB_PUBLIC(int) xdb_ip_to_string(const char *bytes, size_t length) {
+    return 0;
+}
+
+XDB_PUBLIC(int) xdb_ip_sub_compare(const char *ip1, const char *buffer, int offset, size_t length) {
+    return 0;
+}
+
+
+// --- xdb buffer function implementations
+
 XDB_PUBLIC(xdb_header_t *) xdb_load_header(FILE *handle) {
     xdb_header_t *header;
     unsigned int size = xdb_header_info_length;
@@ -57,11 +133,15 @@ XDB_PUBLIC(xdb_header_t *) xdb_load_header(FILE *handle) {
 
     // fill the fields
     header->length = size;
-    header->version = (unsigned short) xdb_get_ushort(header->buffer, 0);
-    header->index_policy = (unsigned short) xdb_get_ushort(header->buffer, 2);
-    header->created_at = xdb_get_uint(header->buffer, 4);
-    header->start_index_ptr = xdb_get_uint(header->buffer, 8);
-    header->end_index_ptr = xdb_get_uint(header->buffer,12);
+    header->version = (unsigned short) xdb_le_get_uint16(header->buffer, 0);
+    header->index_policy = (unsigned short) xdb_le_get_uint16(header->buffer, 2);
+    header->created_at = xdb_le_get_uint32(header->buffer, 4);
+    header->start_index_ptr = xdb_le_get_uint32(header->buffer, 8);
+    header->end_index_ptr = xdb_le_get_uint32(header->buffer,12);
+
+    // since IPv6 supporting
+    header->ip_version = xdb_le_get_uint16(header->buffer, 16);
+    header->runtime_ptr_bytes = xdb_le_get_uint16(header->buffer, 18);
 
     return header;
 }
@@ -194,71 +274,3 @@ XDB_PUBLIC(void) xdb_free_content(void *ptr) {
 }
 
 // --- End
-
-// get unsigned long (4bytes) from a specified buffer start from the specified offset
-XDB_PUBLIC(unsigned int) xdb_get_uint(const char *buffer, int offset) {
-    return (
-        ((buffer[offset  ]) & 0x000000FF) |
-        ((buffer[offset+1] <<  8) & 0x0000FF00) |
-        ((buffer[offset+2] << 16) & 0x00FF0000) |
-        ((buffer[offset+3] << 24) & 0xFF000000)
-    );
-}
-
-// get unsigned short (2bytes) from a specified buffer start from the specified offset
-XDB_PUBLIC(int) xdb_get_ushort(const char *buffer, int offset) {
-    return (
-        ((buffer[offset  ]) & 0x000000FF) |
-        ((buffer[offset+1] << 8) & 0x0000FF00)
-    );
-}
-
-// string ip to unsigned int
-static int shiftIndex[4] = {24, 16, 8, 0};
-XDB_PUBLIC(int) xdb_check_ip(const char *src_ip, unsigned int *dst_ip) {
-    char c;
-    int i, n, ip = 0;
-    const char *ptr = src_ip;
-    for (i = 0; i < 4; i++) {
-        n = 0;
-        while (1) {
-            c = *ptr;
-            ptr++;
-            if (c >= '0' && c <= '9') {
-                n *= 10;
-                n += c - '0';
-            } else if ((i < 3 && c == '.') || i == 3) {
-                // stopping at the '.' but ignore the tailing chars
-                // after the 3rd one (auto clean the tailing none-integer ?).
-                break;
-            } else {
-                return 1;
-            }
-        }
-
-        if (n > 0xFF) {
-            return 2;
-        }
-
-        ip |= (n << shiftIndex[i]);
-    }
-
-    *dst_ip = ip;
-    return 0;
-}
-
-// unsigned int ip to string ip
-XDB_PUBLIC(void) xdb_long2ip(unsigned int ip, char *buffer) {
-    sprintf(buffer, "%d.%d.%d.%d", (ip >> 24) & 0xFF, (ip >> 16) & 0xFF, (ip >> 8) & 0xFF, ip & 0xFF);
-}
-
-// get the middle ip of a and b
-XDB_PUBLIC(unsigned int) xdb_mip(unsigned long a, unsigned long b) {
-    return (unsigned int) ((a + b) >> 1);
-}
-
-XDB_PUBLIC(long) xdb_now() {
-    struct timeval c_time;
-    gettimeofday(&c_time, NULL);
-    return c_time.tv_sec * (int)1e6 + c_time.tv_usec;
-}

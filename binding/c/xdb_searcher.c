@@ -79,19 +79,19 @@ XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, unsigned int ip, char *region_bu
     il1 = ((int) (ip >> 16)) & 0xFF;
     idx = il0 * xdb_vector_index_cols * xdb_vector_index_size + il1 * xdb_vector_index_size;
     if (xdb->v_index != NULL) {
-        s_ptr = xdb_get_uint(xdb->v_index->buffer, idx);
-        e_ptr = xdb_get_uint(xdb->v_index->buffer, idx + 4);
+        s_ptr = xdb_le_get_uint32(xdb->v_index->buffer, idx);
+        e_ptr = xdb_le_get_uint32(xdb->v_index->buffer, idx + 4);
     } else if (xdb->content != NULL) {
-        s_ptr = xdb_get_uint(xdb->content->buffer, xdb_header_info_length + idx);
-        e_ptr = xdb_get_uint(xdb->content->buffer, xdb_header_info_length + idx + 4);
+        s_ptr = xdb_le_get_uint32(xdb->content->buffer, xdb_header_info_length + idx);
+        e_ptr = xdb_le_get_uint32(xdb->content->buffer, xdb_header_info_length + idx + 4);
     } else {
         err = read(xdb, xdb_header_info_length + idx, vector_buffer, sizeof(vector_buffer));
         if (err != 0) {
             return 10 + err;
         }
 
-        s_ptr = xdb_get_uint(vector_buffer, 0);
-        e_ptr = xdb_get_uint(vector_buffer, 4);
+        s_ptr = xdb_le_get_uint32(vector_buffer, 0);
+        e_ptr = xdb_le_get_uint32(vector_buffer, 4);
     }
 
     // printf("s_ptr=%u, e_ptr=%u\n", s_ptr, e_ptr);
@@ -109,16 +109,16 @@ XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, unsigned int ip, char *region_bu
         }
 
         // decode the data fields as needed
-        sip = xdb_get_uint(segment_buffer, 0);
+        sip = xdb_le_get_uint32(segment_buffer, 0);
         if (ip < sip) {
             h = m - 1;
         } else {
-            eip = xdb_get_uint(segment_buffer, 4);
+            eip = xdb_le_get_uint32(segment_buffer, 4);
             if (ip > eip) {
                 l = m + 1;
             } else {
-                data_len = xdb_get_ushort(segment_buffer, 8);
-                data_ptr = xdb_get_uint(segment_buffer, 10);
+                data_len = xdb_le_get_uint16(segment_buffer, 8);
+                data_ptr = xdb_le_get_uint32(segment_buffer, 10);
                 break;
             }
         }

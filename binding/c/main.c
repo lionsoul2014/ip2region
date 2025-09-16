@@ -199,7 +199,7 @@ void test_bench(int argc, char *argv[]) {
     FILE *handle;
     char line[1024] = {'\0'}, sip_str[16] = {'\0'}, eip_str[16] = {'\0'};
     char src_region[512] = {'\0'}, region_buffer[512] = {'\0'};
-    unsigned int sip, eip, mip, ip_list[5];
+    unsigned int sip, eip, ip_list[2];
     int count = 0, took;
     long s_time, t_time, c_time = 0;
     searcher_test_t test;
@@ -283,13 +283,9 @@ void test_bench(int argc, char *argv[]) {
             return;
         }
 
-        mip = xdb_mip(sip, eip);
         ip_list[0] = sip;
-        ip_list[1] = xdb_mip(sip, mip);
-        ip_list[2] = mip;
-        ip_list[3] = xdb_mip(mip, eip);
-        ip_list[4] = eip;
-        for (i = 0; i < 5; i++) {
+        ip_list[1] = eip;
+        for (i = 0; i < 2; i++) {
             t_time = xdb_now();
             err = xdb_search(&test.searcher, ip_list[i], region_buffer, sizeof(region_buffer));
             if (err != 0) {

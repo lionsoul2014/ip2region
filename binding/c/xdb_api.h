@@ -37,8 +37,38 @@
 // cache of vector_index_row × vector_index_rows × vector_index_size
 #define xdb_vector_index_length 524288
 
+// --- xdb util functions
 
-// --- buffer load util functions
+// get the current time in microseconds
+XDB_PUBLIC(long) xdb_now();
+
+// get unsigned long (4bytes) from a specified buffer start from the specified offset with little-endian
+XDB_PUBLIC(unsigned int) xdb_le_get_uint32(const char *, int);
+
+// get unsigned short (2bytes) from a specified buffer start from the specified offset with little-endian
+XDB_PUBLIC(int) xdb_le_get_uint16(const char *, int);
+
+// check the specified string ip and convert it to an unsigned int
+XDB_PUBLIC(int) xdb_check_ip(const char *, unsigned int *);
+
+// unsigned int ip to string ip
+XDB_PUBLIC(void) xdb_long2ip(unsigned int, char *);
+
+
+// parse the specified IP address to byte array
+XDB_PUBLIC(int) xdb_parse_ip(const char *, const char *, size_t);
+
+// convert a specified ip bytes to humen-readable string
+XDB_PUBLIC(int) xdb_ip_to_string(const char *, size_t);
+
+// compare the specified ip bytes with another ip bytes in the specified buff from offset.
+// returns: -1 if ip1 < ip2, 1 if ip1 > ip2 or 0
+XDB_PUBLIC(int) xdb_ip_sub_compare(const char *, const char *, int, size_t);
+
+// --- END xdb utils
+
+
+// --- xdb buffer functions
 
 // use the following buffer struct to wrap the binary buffer data
 // since the buffer data could not be operated with the string API.
@@ -48,6 +78,10 @@ struct xdb_header {
     unsigned int created_at;
     unsigned int start_index_ptr;
     unsigned int end_index_ptr;
+    
+    // since 3.0+ with IPv6 supporting
+    unsigned short ip_version;
+    unsigned short runtime_ptr_bytes;
 
     // the original buffer
     unsigned int length;
@@ -89,7 +123,9 @@ XDB_PUBLIC(xdb_content_t *) xdb_load_content_from_file(const char *);
 
 XDB_PUBLIC(void) xdb_free_content(void *);
 
-// --- End buffer load
+// --- End xdb buffer
+
+// --- xdb searcher api
 
 // xdb searcher structure
 struct xdb_searcher_entry {
@@ -126,24 +162,6 @@ XDB_PUBLIC(int) xdb_search(xdb_searcher_t *, unsigned int, char *, size_t);
 
 XDB_PUBLIC(int) xdb_get_io_count(xdb_searcher_t *);
 
-
-// get unsigned long (4bytes) from a specified buffer start from the specified offset with little-endian
-XDB_PUBLIC(unsigned int) xdb_get_uint(const char *, int);
-
-// get unsigned short (2bytes) from a specified buffer start from the specified offset with little-endian
-XDB_PUBLIC(int) xdb_get_ushort(const char *, int);
-
-// check the specified string ip and convert it to an unsigned int
-XDB_PUBLIC(int) xdb_check_ip(const char *, unsigned int *);
-
-// unsigned int ip to string ip
-XDB_PUBLIC(void) xdb_long2ip(unsigned int, char *);
-
-// get the middle ip of a and b
-XDB_PUBLIC(unsigned int) xdb_mip(unsigned long, unsigned long);
-
-// get the current time in microseconds
-XDB_PUBLIC(long) xdb_now();
-
+// --- END xdb searcher api
 
 #endif // C_IP2REGION_XDB_H
