@@ -96,15 +96,73 @@ XDB_PUBLIC(void) xdb_long2ip(unsigned int ip, char *buffer) {
     sprintf(buffer, "%d.%d.%d.%d", (ip >> 24) & 0xFF, (ip >> 16) & 0xFF, (ip >> 8) & 0xFF, ip & 0xFF);
 }
 
-XDB_PUBLIC(int) xdb_parse_ip(const char *ip, const char *buffer, size_t length) {
+XDB_PUBLIC(int) xdb_parse_ip(const string_ip_t *ip, bytes_ip_t *buffer, size_t length) {
+    // where there is a . there is a IPV4 even though there are IPv6 wrapped IPv4 like
+    // ::ffff:192.168.1.100, lets just keep it in this way.
+    if (strchr(ip, '.') != NULL) {
+        return xdb_parse_v4_ip(ip, buffer, length);
+    } else if (strchr(ip, ':') != NULL) {
+        return xdb_parse_v6_ip(ip, buffer, length);
+    }
+
+    return -1;
+}
+
+XDB_PUBLIC(int) xdb_parse_v4_ip(const string_ip_t *ip, bytes_ip_t *buffer, size_t length) {
     return 0;
 }
 
-XDB_PUBLIC(int) xdb_ip_to_string(const char *bytes, size_t length) {
+XDB_PUBLIC(int) xdb_parse_v6_ip(const string_ip_t *ip, bytes_ip_t *buffer, size_t length) {
     return 0;
 }
 
-XDB_PUBLIC(int) xdb_ip_sub_compare(const char *ip1, const char *buffer, int offset, size_t length) {
+XDB_PUBLIC(int) xdb_ip_to_string(const bytes_ip_t *ip, size_t bytes, char *buffer, size_t length) {
+    if (bytes == 4) {
+        return xdb_v4_ip_to_string(ip, buffer, length);
+    } else if (bytes == 16) {
+        return xdb_v6_ip_to_string(ip, buffer, length);
+    }
+
+    return -1;
+}
+
+XDB_PUBLIC(int) xdb_v4_ip_to_string(const bytes_ip_t *ip, char *buffer, size_t length) {
+    snprintf(
+        buffer, length, 
+        "%d.%d.%d.%d", 
+        ip[0], ip[1], ip[2], ip[3]
+    );
+    return 0;
+}
+
+XDB_PUBLIC(int) xdb_v6_ip_to_string(const bytes_ip_t *ip, char *buffer, size_t length) {
+    // temp solution for testing ONLY, we will handle the :: later
+    snprintf(
+        buffer, length,
+        "%x%x:%x%x:%x%x:%x%x:%x%x:%x%x:%x%x:%x%x",
+        ip[0],  ip[1],
+        ip[2],  ip[3],
+        ip[4],  ip[5],
+        ip[6],  ip[7],
+        ip[8],  ip[9],
+        ip[10], ip[11],
+        ip[12], ip[13],
+        ip[14], ip[15]
+    );
+    return 0;
+}
+
+XDB_PUBLIC(int) xdb_ip_sub_compare(const bytes_ip_t *ip1, size_t length, const char *buffer, int offset) {
+    int i, i1, i2;
+    for (i = 0; i < length; i++) {
+        i1 = ip1[i] & 0xFF;
+        i2 = buffer[offset + i] & 0xFF;
+        if (i1 > i2) {
+            return 1;
+        } else if (i1 < i2) {
+            return -1;
+        }
+    }
     return 0;
 }
 

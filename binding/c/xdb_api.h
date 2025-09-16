@@ -34,8 +34,18 @@
 #define xdb_vector_index_size  8
 #define xdb_segment_index_size 14
 
+// --- ip version info
+#define xdb_ipv4_version_no 4
+#define xdb_ipv6_version_no 6
+#define XDB_IPV4 4
+#define XDB_IPv6 6
+
 // cache of vector_index_row × vector_index_rows × vector_index_size
 #define xdb_vector_index_length 524288
+
+// types type define
+typedef char string_ip_t;
+typedef unsigned char bytes_ip_t;
 
 // --- xdb util functions
 
@@ -55,15 +65,32 @@ XDB_PUBLIC(int) xdb_check_ip(const char *, unsigned int *);
 XDB_PUBLIC(void) xdb_long2ip(unsigned int, char *);
 
 
-// parse the specified IP address to byte array
-XDB_PUBLIC(int) xdb_parse_ip(const char *, const char *, size_t);
+// parse the specified IP address to byte array.
+// returns: 4 for valid ipv4, 16 for valid ipv6, or -1 for failed
+XDB_PUBLIC(int) xdb_parse_ip(const string_ip_t *, bytes_ip_t *, size_t);
 
-// convert a specified ip bytes to humen-readable string
-XDB_PUBLIC(int) xdb_ip_to_string(const char *, size_t);
+// parse the specified IPv4 address to byte array
+// returns: 4 for valid ipv4, or -1 for failed
+XDB_PUBLIC(int) xdb_parse_v4_ip(const string_ip_t *, bytes_ip_t *, size_t);
+
+// parse the specified IPv6 address to byte array
+// returns: 16 for valid ipv6, or -1 for failed
+XDB_PUBLIC(int) xdb_parse_v6_ip(const string_ip_t *, bytes_ip_t *, size_t);
+
+// convert a specified ip bytes to humen-readable string.
+// returns: 0 for success or -1 for failed.
+XDB_PUBLIC(int) xdb_ip_to_string(const bytes_ip_t *, size_t, char *, size_t);
+
+// ipv4 bytes to string
+XDB_PUBLIC(int) xdb_v4_ip_to_string(const bytes_ip_t *, char *, size_t);
+
+// ipv6 bytes to string
+XDB_PUBLIC(int) xdb_v6_ip_to_string(const bytes_ip_t *, char *, size_t);
 
 // compare the specified ip bytes with another ip bytes in the specified buff from offset.
+// ip args must be the return value from #xdb_parse_ip.
 // returns: -1 if ip1 < ip2, 1 if ip1 > ip2 or 0
-XDB_PUBLIC(int) xdb_ip_sub_compare(const char *, const char *, int, size_t);
+XDB_PUBLIC(int) xdb_ip_sub_compare(const bytes_ip_t *, size_t, const char *, int);
 
 // --- END xdb utils
 
