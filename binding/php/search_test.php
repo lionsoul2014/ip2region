@@ -66,6 +66,16 @@ if ($handle === false) {
     return;
 }
 
+// verify the xdb file
+// @Note: do NOT call it every time you create a searcher since this will slow
+// down the search response.
+// @see the Util.verify function for details.
+$err = Util::verify($handle);
+if ($err != null) {
+    printf("failed to verify xdb file `%s`: %s\n", $dbFile, $err);
+    return;
+}
+
 // load header
 $header = Util::loadHeader($handle);
 if ($header == null) {

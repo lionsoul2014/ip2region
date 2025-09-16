@@ -126,6 +126,57 @@ class Util {
         return ((ord($b[$idx])) | (ord($b[$idx+1]) << 8));
     }
 
+    // Verify if the current Searcher could be used to search the specified xdb file.
+    // Why do we need this check ?
+    // The future features of the xdb impl may cause the current searcher not able to work properly.
+    //
+    // @Note: You Just need to check this ONCE when the service starts
+    // Or use another process (eg, A command) to check once Just to confirm the suitability.
+    // returns: null for everything is ok or the error string.
+    public static function verify($handle) {
+        // load the header
+        $header = self::loadHeader($handle);
+        if ($header == null) {
+            return 'failed to load the header';
+        }
+
+        // get the runtime ptr bytes
+        $runtimePtrBytes = 0;
+        if ($header['version'] == Structure_20) {
+            $runtimePtrBytes = 4;
+        } else if ($header['version'] == Structure_30) {
+            $runtimePtrBytes = $header['runtimePtrBytes'];
+        } else {
+            return "invalid structure version `{$header['version']}`";
+        }
+
+        // 1, confirm the xdb file size
+        // to ensure that the maximum file pointer does not overflow
+        $stat = fstat($handle);
+        if ($stat == false) {
+            return 'failed to stat the xdb file';
+        }
+
+        $maxFilePtr = (1 << ($runtimePtrBytes * 8)) - 1;
+        // print_r([$stat['size'], $maxFilePtr]);
+        if ($stat['size'] > $maxFilePtr) {
+             return "xdb file exceeds the maximum supported bytes: {$maxFilePtr}";
+        }
+
+        return null;
+    }
+
+    public static function verifyFromFile($dbFile) {
+        $handle = fopen($dbFile, 'r');
+        if ($handle === false) {
+            return null;
+        }
+
+        $r = self::verify($handle);
+        fclose($handle);
+        return $r;
+    }
+
     // load header info from a specified file handle
     public static function loadHeader($handle) {
         if (fseek($handle, 0) == -1) {
@@ -473,11 +524,6 @@ class Searcher {
                 throw new Exception("failed to read segment index with ptr={$p}");
             }
 
-            // printf("l=%d, h=%d, sip=%s, eip=%s\n", 
-            //     $l, $h,
-            //     Util::ipToString(strrev(substr($buff, 0, 4))),
-            //     Util::ipToString(strrev(substr($buff, 4, 4)))
-            // );
             if ($this->version->ipSubCompare($ipBytes, $buff, 0) < 0) {
                 $h = $m - 1;
             } else if ($this->version->ipSubCompare($ipBytes, $buff, $bytes) > 0) {
