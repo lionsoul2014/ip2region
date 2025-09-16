@@ -40,7 +40,7 @@ try {
     return;
 }
 
-// 有验证通过，前使用的 Searcher 可以安全的用于对 dbPath 指向的 xdb 的查询操作
+// 验证通过，当前使用的 Searcher 可以安全的用于对 dbPath 指向的 xdb 的查询操作
 ```
 
 ### 完全基于文件的查询
