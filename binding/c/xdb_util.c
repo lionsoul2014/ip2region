@@ -389,3 +389,23 @@ XDB_PUBLIC(void) xdb_free_content(void *ptr) {
 }
 
 // --- End
+
+// --- ip version
+static xdb_ip_version_t _ip_version_list[] = {
+    // 14 = 4 + 4 + 2 + 4
+    {xdb_ipv4_version_no, "IPv4", xdb_ipv4_bytes, 14, NULL},
+
+    // 38 = 16 + 16 + 2 + 4
+    {xdb_ipv6_version_no, "IPv6", xdb_ipv6_bytes, 38, NULL},
+
+    // END
+    {0, NULL, 0, 0, NULL}
+};
+
+XDB_PUBLIC(xdb_ip_version_t *) xdb_version_ipv4() {
+    return &_ip_version_list[0];
+}
+
+XDB_PUBLIC(xdb_ip_version_t *) xdb_version_ipv6() {
+    return &_ip_version_list[1];
+}

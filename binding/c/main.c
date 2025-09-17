@@ -18,11 +18,12 @@ typedef struct searcher_test_entry searcher_test_t;
 
 int init_searcher_test(searcher_test_t *test, char *db_path, char *cache_policy) {
     int err;
+    xdb_ip_version_t *version = XDB_IPv4;
     test->v_index = NULL;
     test->c_buffer = NULL;
 
     if (strcmp(cache_policy, "file") == 0) {
-        err = xdb_new_with_file_only(&test->searcher, db_path);
+        err = xdb_new_with_file_only(version, &test->searcher, db_path);
         if (err != 0) {
             printf("failed to create searcher with errcode=%d\n", err);
             return 1;
@@ -34,7 +35,7 @@ int init_searcher_test(searcher_test_t *test, char *db_path, char *cache_policy)
             return 2;
         }
 
-        err = xdb_new_with_vector_index(&test->searcher, db_path, test->v_index);
+        err = xdb_new_with_vector_index(version, &test->searcher, db_path, test->v_index);
         if (err != 0) {
             printf("failed to create vector index cached searcher with errcode=%d\n", err);
             return 3;
@@ -46,7 +47,7 @@ int init_searcher_test(searcher_test_t *test, char *db_path, char *cache_policy)
             return 4;
         }
 
-        err = xdb_new_with_buffer(&test->searcher, test->c_buffer);
+        err = xdb_new_with_buffer(version, &test->searcher, test->c_buffer);
         if (err != 0) {
             printf("failed to create content cached searcher with errcode=%d\n", err);
             return 5;

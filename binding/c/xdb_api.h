@@ -46,9 +46,6 @@
 #define xdb_ipv6_version_no 6
 #define xdb_ipv4_bytes 4
 #define xdb_ipv6_bytes 16
-#define XDB_IPV4 4
-#define XDB_IPv6 6
-
 // cache of vector_index_row × vector_index_rows × vector_index_size
 #define xdb_vector_index_length 524288
 
@@ -107,6 +104,26 @@ XDB_PUBLIC(int) xdb_v6_ip_to_string(const bytes_ip_t *, char *, size_t);
 XDB_PUBLIC(int) xdb_ip_sub_compare(const bytes_ip_t *, size_t, const char *, int);
 
 // --- END xdb utils
+
+// --- ip version
+#define XDB_IPv4 (xdb_version_ipv4())
+#define XDB_IPv6 (xdb_version_ipv6())
+typedef int (* ip_compare_fn_t) (const bytes_ip_t *, size_t, const char *, int);
+struct xdb_ip_version_entry {
+    int id;                 // version id
+    char *name;             // version name
+    int bytes;              // ip bytes number
+    int segment_index_size; // segment index size in bytes
+
+    // function to compare two ips
+    ip_compare_fn_t ip_compare;
+};
+typedef struct xdb_ip_version_entry xdb_ip_version_t;
+
+XDB_PUBLIC(xdb_ip_version_t *) xdb_version_ipv4();
+XDB_PUBLIC(xdb_ip_version_t *) xdb_version_ipv6();
+
+// --- END ip version
 
 
 // --- xdb buffer functions
@@ -170,6 +187,10 @@ XDB_PUBLIC(void) xdb_free_content(void *);
 
 // xdb searcher structure
 struct xdb_searcher_entry {
+    // ip version
+    xdb_ip_version_t *version;
+
+    // xdb file handle
     FILE *handle;
 
     // header info
@@ -188,18 +209,20 @@ struct xdb_searcher_entry {
 typedef struct xdb_searcher_entry xdb_searcher_t;
 
 // xdb searcher new api define
-XDB_PUBLIC(int) xdb_new_with_file_only(xdb_searcher_t *, const char *);
+XDB_PUBLIC(int) xdb_new_with_file_only(xdb_ip_version_t *, xdb_searcher_t *, const char *);
 
-XDB_PUBLIC(int) xdb_new_with_vector_index(xdb_searcher_t *, const char *, const xdb_vector_index_t *);
+XDB_PUBLIC(int) xdb_new_with_vector_index(xdb_ip_version_t *, xdb_searcher_t *, const char *, const xdb_vector_index_t *);
 
-XDB_PUBLIC(int) xdb_new_with_buffer(xdb_searcher_t *, const xdb_content_t *);
+XDB_PUBLIC(int) xdb_new_with_buffer(xdb_ip_version_t *, xdb_searcher_t *, const xdb_content_t *);
 
 XDB_PUBLIC(void) xdb_close(void *);
 
 // xdb searcher search api define
 XDB_PUBLIC(int) xdb_search_by_string(xdb_searcher_t *, const char *, char *, size_t);
 
-XDB_PUBLIC(int) xdb_search(xdb_searcher_t *, unsigned int, char *, size_t);
+XDB_PUBLIC(int) xdb_search(xdb_searcher_t *, const bytes_ip_t *, int, char *, size_t);
+
+XDB_PUBLIC(xdb_ip_version_t *) xdb_get_ip_version(xdb_searcher_t *);
 
 XDB_PUBLIC(int) xdb_get_io_count(xdb_searcher_t *);
 

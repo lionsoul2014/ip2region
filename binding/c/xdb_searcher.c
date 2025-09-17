@@ -11,8 +11,11 @@
 // internal function prototype define
 XDB_PRIVATE(int) read(xdb_searcher_t *, long offset, char *, size_t length);
 
-XDB_PRIVATE(int) xdb_new_base(xdb_searcher_t *xdb, const char *db_path, const xdb_vector_index_t *v_index, const xdb_content_t *c_buffer) {
+XDB_PRIVATE(int) xdb_new_base(xdb_ip_version_t *version, xdb_searcher_t *xdb, const char *db_path, const xdb_vector_index_t *v_index, const xdb_content_t *c_buffer) {
     memset(xdb, 0x00, sizeof(xdb_searcher_t));
+
+    // set the version
+    xdb->version = version;
 
     // check the content buffer first
     if (c_buffer != NULL) {
@@ -34,16 +37,16 @@ XDB_PRIVATE(int) xdb_new_base(xdb_searcher_t *xdb, const char *db_path, const xd
 }
 
 // xdb searcher new api define
-XDB_PUBLIC(int) xdb_new_with_file_only(xdb_searcher_t *xdb, const char *db_path) {
-    return xdb_new_base(xdb, db_path, NULL, NULL);
+XDB_PUBLIC(int) xdb_new_with_file_only(xdb_ip_version_t *version, xdb_searcher_t *xdb, const char *db_path) {
+    return xdb_new_base(version, xdb, db_path, NULL, NULL);
 }
 
-XDB_PUBLIC(int) xdb_new_with_vector_index(xdb_searcher_t *xdb, const char *db_path, const xdb_vector_index_t *v_index) {
-    return xdb_new_base(xdb, db_path, v_index, NULL);
+XDB_PUBLIC(int) xdb_new_with_vector_index(xdb_ip_version_t *version, xdb_searcher_t *xdb, const char *db_path, const xdb_vector_index_t *v_index) {
+    return xdb_new_base(version, xdb, db_path, v_index, NULL);
 }
 
-XDB_PUBLIC(int) xdb_new_with_buffer(xdb_searcher_t *xdb, const xdb_content_t *c_buffer) {
-    return xdb_new_base(xdb, NULL, NULL, c_buffer);
+XDB_PUBLIC(int) xdb_new_with_buffer(xdb_ip_version_t *version, xdb_searcher_t *xdb, const xdb_content_t *c_buffer) {
+    return xdb_new_base(version, xdb, NULL, NULL, c_buffer);
 }
 
 XDB_PUBLIC(void) xdb_close(void *ptr) {
@@ -56,27 +59,38 @@ XDB_PUBLIC(void) xdb_close(void *ptr) {
 
 // --- xdb searcher search api define
 
-XDB_PUBLIC(int) xdb_search_by_string(xdb_searcher_t *xdb, const char *str_ip, char *region_buffer, size_t length) {
-    unsigned int ip = 0;
-    int errcode = xdb_check_ip(str_ip, &ip);
-    if (errcode != 0) {
-        return 10 + errcode;
+XDB_PUBLIC(int) xdb_search_by_string(xdb_searcher_t *xdb, const char *ip_string, char *region_buffer, size_t length) {
+    bytes_ip_t ip_bytes[16] = {'\0'};
+    int versionNo = xdb_parse_ip(ip_string, ip_bytes, sizeof(ip_bytes));
+    if (versionNo == -1) {
+        return 10;
     } else {
-        return xdb_search(xdb, ip, region_buffer, length);
+        return xdb_search(xdb, ip_bytes, versionNo, region_buffer, length);
     }
 }
 
-XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, unsigned int ip, char *region_buffer, size_t length) {
-    int il0, il1, idx, err, l, h, m, data_len;
+XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, const bytes_ip_t *ip_bytes, int byte_count, char *region_buffer, size_t length) {
+    int il0, il1, idx, err, data_len, bytes, d_bytes;
+    register int seg_index_size, l, h, m;
     unsigned int s_ptr, e_ptr, p, sip, eip, data_ptr;
-    char vector_buffer[xdb_vector_index_size], segment_buffer[xdb_segment_index_size];
+    char vector_buffer[xdb_vector_index_size];
+    char *segment_buffer = NULL;
 
-    // reset the io counter
+    // ip version check
+    if (byte_count != xdb->version->bytes) {
+        return -1;
+    }
+
+    // some resets
+    err = 0;
+    data_len = 0;
+    bytes = byte_count;
+    d_bytes = byte_count << 1;
     xdb->io_count = 0;
 
     // locate the segment index block based on the vector index
-    il0 = ((int) (ip >> 24)) & 0xFF;
-    il1 = ((int) (ip >> 16)) & 0xFF;
+    il0 = (int) (ip_bytes[0]);
+    il1 = (int) (ip_bytes[1]);
     idx = il0 * xdb_vector_index_cols * xdb_vector_index_size + il1 * xdb_vector_index_size;
     if (xdb->v_index != NULL) {
         s_ptr = xdb_le_get_uint32(xdb->v_index->buffer, idx);
@@ -96,53 +110,65 @@ XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, unsigned int ip, char *region_bu
 
     // printf("s_ptr=%u, e_ptr=%u\n", s_ptr, e_ptr);
     // binary search to get the final region info
+    seg_index_size = xdb->version->segment_index_size;
+    segment_buffer = xdb_malloc(seg_index_size);
+    if (segment_buffer == NULL) {
+        return -2;
+    }
+
     data_len = 0, data_ptr = 0;
-    l = 0, h = ((int) (e_ptr - s_ptr)) / xdb_segment_index_size;
+    l = 0, h = ((int) (e_ptr - s_ptr)) / seg_index_size;
     while (l <= h) {
         m = (l + h) >> 1;
-        p = s_ptr + m * xdb_segment_index_size;
+        p = s_ptr + m * seg_index_size;
 
         // read the segment index item
         err = read(xdb, p, segment_buffer, sizeof(segment_buffer));
         if (err != 0) {
-            return 20 + err;
+            err += 20;
+            goto done;
         }
 
         // decode the data fields as needed
         sip = xdb_le_get_uint32(segment_buffer, 0);
-        if (ip < sip) {
+        if (xdb_ip_sub_compare(ip_bytes, byte_count, segment_buffer, 0) < 0) {
             h = m - 1;
+        } else if (xdb_ip_sub_compare(ip_bytes, byte_count, segment_buffer, bytes) > 0) {
+            l = m + 1;
         } else {
-            eip = xdb_le_get_uint32(segment_buffer, 4);
-            if (ip > eip) {
-                l = m + 1;
-            } else {
-                data_len = xdb_le_get_uint16(segment_buffer, 8);
-                data_ptr = xdb_le_get_uint32(segment_buffer, 10);
-                break;
-            }
+            data_len = xdb_le_get_uint16(segment_buffer, d_bytes);
+            data_ptr = xdb_le_get_uint32(segment_buffer, d_bytes + 2);
+            break;
         }
     }
 
     // printf("data_len=%u, data_ptr=%u\n", data_len, data_ptr);
     if (data_len == 0) {
-        region_buffer[0] = '\0';
-        return 0;
+        goto done;
     }
 
     // buffer length checking
     if (data_len >= (int) length) {
-        return 1;
+        err = 1;
+        goto done;
     }
 
     err = read(xdb, data_ptr, region_buffer, data_len);
     if (err != 0) {
-        return 30 + err;
+        err += 30;
+        goto done;
+    }
+
+done:
+    // checn and free the segment buffer
+    if (segment_buffer != NULL) {
+        xdb_free(segment_buffer);
+        segment_buffer = NULL;
     }
 
     // auto append a NULL-end
     region_buffer[data_len] = '\0';
-    return 0;
+    return err;
 }
 
 XDB_PRIVATE(int) read(xdb_searcher_t *xdb, long offset, char *buffer, size_t length) {
@@ -163,6 +189,10 @@ XDB_PRIVATE(int) read(xdb_searcher_t *xdb, long offset, char *buffer, size_t len
     }
 
     return 0;
+}
+
+XDB_PUBLIC(xdb_ip_version_t *) xdb_get_ip_version(xdb_searcher_t *xdb) {
+    return xdb->version;
 }
 
 XDB_PUBLIC(int) xdb_get_io_count(xdb_searcher_t *xdb) {

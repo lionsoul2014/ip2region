@@ -68,8 +68,8 @@ void test_parse_ip() {
     };
 
     int errcode;
-    bytes_ip_t ip_bytes[17] = {'\0'};
-    string_ip_t ip_string[INET6_ADDRSTRLEN + 1] = {'\0'};
+    bytes_ip_t ip_bytes[16] = {'\0'};
+    string_ip_t ip_string[INET6_ADDRSTRLEN] = {'\0'};
 
     // init the sock env (for windows)
     if ((errcode = xdb_init_winsock()) != 0) {
