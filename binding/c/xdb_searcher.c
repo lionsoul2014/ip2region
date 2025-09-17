@@ -70,9 +70,9 @@ XDB_PUBLIC(int) xdb_search_by_string(xdb_searcher_t *xdb, const char *ip_string,
 }
 
 XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, const bytes_ip_t *ip_bytes, int byte_count, char *region_buffer, size_t length) {
-    int il0, il1, idx, err, data_len, bytes, d_bytes;
-    register int seg_index_size, l, h, m;
-    unsigned int s_ptr, e_ptr, p, sip, eip, data_ptr;
+    int il0, il1, idx, err, bytes, d_bytes;
+    register int seg_index_size, l, h, m, p;
+    unsigned int s_ptr, e_ptr, data_ptr, data_len;
     char vector_buffer[xdb_vector_index_size];
     char *segment_buffer = NULL;
 
@@ -130,7 +130,6 @@ XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, const bytes_ip_t *ip_bytes, int 
         }
 
         // decode the data fields as needed
-        sip = xdb_le_get_uint32(segment_buffer, 0);
         if (xdb_ip_sub_compare(ip_bytes, byte_count, segment_buffer, 0) < 0) {
             h = m - 1;
         } else if (xdb_ip_sub_compare(ip_bytes, byte_count, segment_buffer, bytes) > 0) {
