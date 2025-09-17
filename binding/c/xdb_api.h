@@ -17,10 +17,17 @@
 #   define XDB_PUBLIC(type)    extern __declspec(dllexport) type
 #   define XDB_PRIVATE(type)   static type
 #   define XDB_WINDOWS
+#include <windows.h>
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#pragma comment(lib, "ws2_32.lib")
 #elif ( defined(linux) || defined(_UNIX) || defined(__APPLE__) )
 #   define XDB_PUBLIC(type)    extern type
 #   define XDB_PRIVATE(type)   static inline type
 #   define XDB_LINUX
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #endif
 
 #define xdb_calloc( _blocks, _bytes )  calloc( _blocks, _bytes )
@@ -37,6 +44,8 @@
 // --- ip version info
 #define xdb_ipv4_version_no 4
 #define xdb_ipv6_version_no 6
+#define xdb_ipv4_bytes 4
+#define xdb_ipv6_bytes 16
 #define XDB_IPV4 4
 #define XDB_IPv6 6
 
@@ -48,6 +57,11 @@ typedef char string_ip_t;
 typedef unsigned char bytes_ip_t;
 
 // --- xdb util functions
+
+// to compatiable with the windows
+// returns: 0 for ok and -1 for failed
+XDB_PUBLIC(int) xdb_init_winsock();
+XDB_PUBLIC(void) xdb_clean_winsock();
 
 // get the current time in microseconds
 XDB_PUBLIC(long) xdb_now();
@@ -79,7 +93,7 @@ XDB_PUBLIC(int) xdb_parse_v6_ip(const string_ip_t *, bytes_ip_t *, size_t);
 
 // convert a specified ip bytes to humen-readable string.
 // returns: 0 for success or -1 for failed.
-XDB_PUBLIC(int) xdb_ip_to_string(const bytes_ip_t *, size_t, char *, size_t);
+XDB_PUBLIC(int) xdb_ip_to_string(const bytes_ip_t *, int, char *, size_t);
 
 // ipv4 bytes to string
 XDB_PUBLIC(int) xdb_v4_ip_to_string(const bytes_ip_t *, char *, size_t);

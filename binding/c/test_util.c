@@ -9,32 +9,12 @@
 #include "stdio.h"
 #include "xdb_api.h"
 
-void test_check_ip() {
-    char *ip_list[] = {
-            "1.2.3.4", "192.168.2.3", "120.24.78.129", "255.255.255.0",
-            "256.7.12.9", "12.56.78.320", "32.12.45.192", "222.221.220.219",
-            "192.168.1.101 ", "132.96.12.98a", "x23.12.2.12"
-    };
-
-    int errcode, i;
-    unsigned int ip;
-    char ip_buff[16] = {'\0'};
-    for (i = 0; i < 11; i++) {
-        errcode = xdb_check_ip(ip_list[i], &ip);
-        if (errcode != 0) {
-            printf("invalid ip address `%s`\n", ip_list[i]);
-            continue;
-        }
-
-        xdb_long2ip(ip, ip_buff);
-        printf("long(%-15s)=%-10u, long2ip(%-10u)=%-15s", ip_list[i], ip, ip, ip_buff);
-        if (strcmp(ip_list[i], ip_buff) != 0) {
-            printf(" --[Failed]\n");
-        } else {
-            printf(" --[Ok]\n");
-        }
-    }
-}
+typedef void (* test_func_ptr) ();
+struct test_func_entry {
+    char *name;
+    test_func_ptr func;
+};
+typedef struct test_func_entry test_func_t;
 
 void test_load_header() {
     xdb_header_t *header = xdb_load_header_from_file("../../data/ip2region_v4.xdb");
@@ -79,23 +59,146 @@ void test_load_content() {
     xdb_free_content(content);
 }
 
+void test_parse_ip() {
+    const char *ip_list[] = {
+        "1.0.0.0", "58.251.30.115", "192.168.1.100",
+        "::", "2c0f:fff0::", "2fff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", "240e:982:e617:ffff:ffff:ffff:ffff:ffff", 
+        "219.xx.xx.11", "::xx:ffff",
+        NULL
+    };
+
+    int errcode;
+    bytes_ip_t ip_bytes[17] = {'\0'};
+    string_ip_t ip_string[INET6_ADDRSTRLEN + 1] = {'\0'};
+
+    // init the sock env (for windows)
+    if ((errcode = xdb_init_winsock()) != 0) {
+        printf("failed to init the winsock");
+        return;
+    }
+
+    for (int i = 0;; i++) {
+        if (ip_list[i] == NULL) {
+            break;
+        }
+
+        errcode = xdb_parse_ip(ip_list[i], ip_bytes, sizeof(ip_bytes));
+        if (errcode == -1) {
+            printf("failed to parse ip `%s`\n", ip_list[i]);
+            continue;
+        }
+
+        xdb_ip_to_string(ip_bytes, errcode, ip_string, sizeof(ip_string));
+        printf("ip: %s (version=v%d), toString: %s\n", ip_list[i], errcode, ip_string);
+    }
+
+    // clean up the winsock
+    xdb_clean_winsock();
+}
+
+struct ip_pair {
+    const char *sip;
+    const char *eip;
+};
+void test_ip_compare() {
+    struct ip_pair ip_pair_list[] = {
+        {"1.0.0.0", "1.0.0.1"},
+        {"192.168.1.101", "192.168.1.90"},
+        {"219.133.111.87", "114.114.114.114"},
+        {"1.0.4.0", "1.0.1.0"},
+        {"1.0.4.0", "1.0.3.255"},
+        {"2000::", "2000:ffff:ffff:ffff:ffff:ffff:ffff:ffff"},
+        {"2001:4:112::", "2001:4:112:ffff:ffff:ffff:ffff:ffff"},
+        {"ffff::", "2001:4:ffff:ffff:ffff:ffff:ffff:ffff"},
+        {NULL, NULL}
+    };
+
+    struct ip_pair *pair_ptr = NULL;
+    bytes_ip_t sip_bytes[16] = {'\0'};
+    bytes_ip_t eip_bytes[16] = {'\0'};
+    int sip_version, eip_version, bytes, errcode;
+
+    // init the sock env (for windows)
+    if ((errcode = xdb_init_winsock()) != 0) {
+        printf("failed to init the winsock");
+        return;
+    }
+
+    for (int i = 0; ;i++) {
+        pair_ptr = &ip_pair_list[i];
+        if (pair_ptr->sip == NULL) {
+            break;
+        }
+
+        sip_version = xdb_parse_ip(pair_ptr->sip, sip_bytes, sizeof(sip_bytes));
+        if (sip_version == -1) {
+            printf("failed to parse sip `%s`", pair_ptr->sip);
+            continue;
+        }
+
+        eip_version = xdb_parse_ip(pair_ptr->eip, eip_bytes, sizeof(eip_bytes));
+        if (eip_version == -1) {
+            printf("failed to parse eip `%s`", pair_ptr->eip);
+            continue;
+        }
+
+        bytes = sip_version == xdb_ipv4_version_no ? xdb_ipv4_bytes : xdb_ipv6_bytes;
+        printf(
+            "ip_sub_compare(%s, %s): %d\n", 
+            pair_ptr->sip, pair_ptr->eip, 
+            xdb_ip_sub_compare(sip_bytes, bytes, eip_bytes, 0)
+        );
+    }
+
+    // clean up the winsock
+    xdb_clean_winsock();
+}
+
+// please register your function heare
+static test_func_t _test_function_list[] = {
+    // xdb buffer
+    {"test_load_header", test_load_header},
+    {"test_load_vector_index", test_load_vector_index},
+    {"test_load_content", test_load_content},
+
+    // ip utils
+    {"test_parse_ip", test_parse_ip},
+    {"test_ip_compare", test_ip_compare},
+
+    {NULL, NULL}
+};
+
 // valgrind --tool=memcheck --leak-check=full ./a.out
 int main(int argc, char *argv[]) {
-    printf("test check ip ... \n");
-    test_check_ip();
-    printf("|--done\n\n");
+    int i;
+    char *name;
 
-    printf("test load header ... \n");
-    test_load_header();
-    printf("|--done\n\n");
+    // check and call the function
+    if (argc < 2) {
+        printf("please specified the function name to call\n");
+        return 1;
+    }
 
-    printf("test load vector index ... \n");
-    test_load_vector_index();
-    printf("|--done\n\n");
+    name = argv[1];
+    test_func_ptr func = NULL;
+    for (i = 0; ; i++) {
+        if (_test_function_list[i].name == NULL) {
+            break;
+        }
 
-    printf("test load content ... \n");
-    test_load_content();
-    printf("|--done\n\n");
+        if (strcmp(name, _test_function_list[i].name) == 0) {
+            func = _test_function_list[i].func;
+            break;
+        }
+    }
+
+    if (func == NULL) {
+        printf("can't find test function `%s`\n", name);
+        return 1;
+    }
+    
+    // call the function
+    func();
 
     return 0;
 }

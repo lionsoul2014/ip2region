@@ -15,7 +15,27 @@
 
 // @Note: since 2023/10/13 to compatible with the windows system
 #ifdef XDB_WINDOWS
-#include <windows.h>
+static int winsock_initialized = 0;
+XDB_PUBLIC(int) xdb_init_winsock() {
+    if (winsock_initialized == 1) {
+        return 0;
+    }
+
+    WSADATA wsaData;
+    if (WSAStartup(MAKEWORD(2,2), &wsaData) != 0) {
+        return -1; 
+    }
+    winsock_initialized = 1;
+    return 0;
+}
+
+XDB_PUBLIC(void) xdb_clean_winsock() {
+    if (winsock_initialized == 1) {
+        WSACleanup();
+        winsock_initialized = 0;
+    }
+}
+
 XDB_PRIVATE(int) gettimeofday(struct timeval* tp, void* tzp) {
     time_t clock;
     struct tm tm;
@@ -33,6 +53,9 @@ XDB_PRIVATE(int) gettimeofday(struct timeval* tp, void* tzp) {
     tp->tv_usec = wtm.wMilliseconds * 1000;
     return (0);
 }
+#else
+XDB_PUBLIC(int) xdb_init_winsock() {return 0;}
+XDB_PUBLIC(void) xdb_clean_winsock() {}
 #endif
 
 XDB_PUBLIC(long) xdb_now() {
@@ -96,66 +119,100 @@ XDB_PUBLIC(void) xdb_long2ip(unsigned int ip, char *buffer) {
     sprintf(buffer, "%d.%d.%d.%d", (ip >> 24) & 0xFF, (ip >> 16) & 0xFF, (ip >> 8) & 0xFF, ip & 0xFF);
 }
 
-XDB_PUBLIC(int) xdb_parse_ip(const string_ip_t *ip, bytes_ip_t *buffer, size_t length) {
-    // where there is a . there is a IPV4 even though there are IPv6 wrapped IPv4 like
-    // ::ffff:192.168.1.100, lets just keep it in this way.
-    if (strchr(ip, '.') != NULL) {
-        return xdb_parse_v4_ip(ip, buffer, length);
-    } else if (strchr(ip, ':') != NULL) {
-        return xdb_parse_v6_ip(ip, buffer, length);
+XDB_PUBLIC(int) xdb_parse_ip(const string_ip_t *ip_string, bytes_ip_t *buffer, size_t length) {
+    // version check
+    if (strchr(ip_string, '.') != NULL && strchr(ip_string, ':') == NULL) {
+        return xdb_parse_v4_ip(ip_string, buffer, length);
+    } else if (strchr(ip_string, ':') != NULL) {
+        return xdb_parse_v6_ip(ip_string, buffer, length);
     }
 
     return -1;
 }
 
-XDB_PUBLIC(int) xdb_parse_v4_ip(const string_ip_t *ip, bytes_ip_t *buffer, size_t length) {
-    return 0;
+XDB_PUBLIC(int) xdb_parse_v4_ip(const string_ip_t *ip_string, bytes_ip_t *buffer, size_t length) {
+    struct in_addr addr;
+
+    // buffer length checking
+    if (length < xdb_ipv4_bytes) {
+        return -1;
+    }
+
+    if (inet_pton(AF_INET, ip_string, &addr) != 1) {
+        return -1;
+    }
+
+    // encode the address to buffer with big endian byte bufffer.
+    buffer[0] = (addr.s_addr) & 0xFF;
+    buffer[1] = (addr.s_addr >> 8) & 0xFF;
+    buffer[2] = (addr.s_addr >> 16) & 0xFF;
+    buffer[3] = (addr.s_addr >> 24) & 0xFF;
+    return xdb_ipv4_version_no;
 }
 
-XDB_PUBLIC(int) xdb_parse_v6_ip(const string_ip_t *ip, bytes_ip_t *buffer, size_t length) {
-    return 0;
+XDB_PUBLIC(int) xdb_parse_v6_ip(const string_ip_t *ip_string, bytes_ip_t *buffer, size_t length) {
+    struct  in6_addr addr;
+
+    // buffer length checking
+    if (length < xdb_ipv6_bytes) {
+        return -1;
+    }
+
+    if (inet_pton(AF_INET6, ip_string, &addr) != 1) {
+        return -1;
+    }
+
+    memcpy(buffer, addr.s6_addr, xdb_ipv6_bytes);
+    return xdb_ipv6_version_no;
 }
 
-XDB_PUBLIC(int) xdb_ip_to_string(const bytes_ip_t *ip, size_t bytes, char *buffer, size_t length) {
-    if (bytes == 4) {
-        return xdb_v4_ip_to_string(ip, buffer, length);
-    } else if (bytes == 16) {
-        return xdb_v6_ip_to_string(ip, buffer, length);
+XDB_PUBLIC(int) xdb_ip_to_string(const bytes_ip_t *ip_bytes, int version, char *ip_string, size_t length) {
+    if (version == xdb_ipv4_version_no) {
+        return xdb_v4_ip_to_string(ip_bytes, ip_string, length);
+    } else if (version == xdb_ipv6_version_no) {
+        return xdb_v6_ip_to_string(ip_bytes, ip_string, length);
     }
 
     return -1;
 }
 
-XDB_PUBLIC(int) xdb_v4_ip_to_string(const bytes_ip_t *ip, char *buffer, size_t length) {
-    snprintf(
-        buffer, length, 
-        "%d.%d.%d.%d", 
-        ip[0], ip[1], ip[2], ip[3]
-    );
+XDB_PUBLIC(int) xdb_v4_ip_to_string(const bytes_ip_t *ip_bytes, char *ip_string, size_t length) {
+    if (!ip_bytes || !ip_string || length == 0) {
+        return -1;
+    }
+
+    // buffer length checking
+    if (length < INET_ADDRSTRLEN) {
+        return -1;
+    }
+
+    if (inet_ntop(AF_INET, ip_bytes, ip_string, length) == NULL) {
+        return -1;
+    }
+
     return 0;
 }
 
-XDB_PUBLIC(int) xdb_v6_ip_to_string(const bytes_ip_t *ip, char *buffer, size_t length) {
-    // temp solution for testing ONLY, we will handle the :: later
-    snprintf(
-        buffer, length,
-        "%x%x:%x%x:%x%x:%x%x:%x%x:%x%x:%x%x:%x%x",
-        ip[0],  ip[1],
-        ip[2],  ip[3],
-        ip[4],  ip[5],
-        ip[6],  ip[7],
-        ip[8],  ip[9],
-        ip[10], ip[11],
-        ip[12], ip[13],
-        ip[14], ip[15]
-    );
+XDB_PUBLIC(int) xdb_v6_ip_to_string(const bytes_ip_t *ip_bytes, char *ip_string, size_t length) {
+    if (!ip_bytes || !ip_string || length == 0) {
+        return -1;
+    }
+
+    if (length < INET6_ADDRSTRLEN) {
+        return -1;
+    }
+
+    if (inet_ntop(AF_INET6, ip_bytes, ip_string, length) == NULL) {
+        return -1;
+    }
+
     return 0;
 }
 
 XDB_PUBLIC(int) xdb_ip_sub_compare(const bytes_ip_t *ip1, size_t length, const char *buffer, int offset) {
-    int i, i1, i2;
+    register int i, i1, i2;
     for (i = 0; i < length; i++) {
-        i1 = ip1[i] & 0xFF;
+        i1 = ip1[i];
         i2 = buffer[offset + i] & 0xFF;
         if (i1 > i2) {
             return 1;
