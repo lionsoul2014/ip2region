@@ -68,6 +68,7 @@ void test_parse_ip() {
     };
 
     int errcode;
+    xdb_ip_version_t *version;
     bytes_ip_t ip_bytes[16] = {'\0'};
     string_ip_t ip_string[INET6_ADDRSTRLEN] = {'\0'};
 
@@ -82,14 +83,14 @@ void test_parse_ip() {
             break;
         }
 
-        errcode = xdb_parse_ip(ip_list[i], ip_bytes, sizeof(ip_bytes));
-        if (errcode == -1) {
+        version = xdb_parse_ip(ip_list[i], ip_bytes, sizeof(ip_bytes));
+        if (version == NULL) {
             printf("failed to parse ip `%s`\n", ip_list[i]);
             continue;
         }
 
-        xdb_ip_to_string(ip_bytes, errcode, ip_string, sizeof(ip_string));
-        printf("ip: %s (version=v%d), toString: %s\n", ip_list[i], errcode, ip_string);
+        xdb_ip_to_string(ip_bytes, version->bytes, ip_string, sizeof(ip_string));
+        printf("ip: %s (version=v%d), toString: %s\n", ip_list[i], version->id, ip_string);
     }
 
     // clean up the winsock
@@ -116,7 +117,8 @@ void test_ip_compare() {
     struct ip_pair *pair_ptr = NULL;
     bytes_ip_t sip_bytes[16] = {'\0'};
     bytes_ip_t eip_bytes[16] = {'\0'};
-    int sip_version, eip_version, bytes, errcode;
+    xdb_ip_version_t *s_version, *e_version;
+    int bytes, errcode;
 
     // init the sock env (for windows)
     if ((errcode = xdb_init_winsock()) != 0) {
@@ -130,23 +132,27 @@ void test_ip_compare() {
             break;
         }
 
-        sip_version = xdb_parse_ip(pair_ptr->sip, sip_bytes, sizeof(sip_bytes));
-        if (sip_version == -1) {
+        s_version = xdb_parse_ip(pair_ptr->sip, sip_bytes, sizeof(sip_bytes));
+        if (s_version == NULL) {
             printf("failed to parse sip `%s`", pair_ptr->sip);
             continue;
         }
 
-        eip_version = xdb_parse_ip(pair_ptr->eip, eip_bytes, sizeof(eip_bytes));
-        if (eip_version == -1) {
+        e_version = xdb_parse_ip(pair_ptr->eip, eip_bytes, sizeof(eip_bytes));
+        if (e_version == NULL) {
             printf("failed to parse eip `%s`", pair_ptr->eip);
             continue;
         }
 
-        bytes = sip_version == xdb_ipv4_version_no ? xdb_ipv4_bytes : xdb_ipv6_bytes;
+        if (s_version->id != e_version->id) {
+            printf("sip and eip version not match `%s` != `%s`\n", s_version->name, e_version->name);
+            continue;
+        }
+
         printf(
             "ip_sub_compare(%s, %s): %d\n", 
             pair_ptr->sip, pair_ptr->eip, 
-            xdb_ip_sub_compare(sip_bytes, bytes, eip_bytes, 0)
+            xdb_ip_sub_compare(sip_bytes, s_version->bytes, eip_bytes, 0)
         );
     }
 

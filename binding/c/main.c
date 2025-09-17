@@ -110,6 +110,11 @@ void test_search(int argc, char *argv[]) {
     long s_time, c_time;
     unsigned int ip;
     char line[512] = {'\0'}, region[512] = {'\0'};
+
+    // ip parse
+    xdb_ip_version_t *version;
+    bytes_ip_t ip_bytes[16] = {'\0'};
+
     searcher_test_t test;
 
     for (i = 2; i < argc; i++) {
@@ -173,13 +178,14 @@ void test_search(int argc, char *argv[]) {
             break;
         }
 
-        if (xdb_check_ip(line, &ip) != 0) {
+        version = xdb_parse_ip(line, ip_bytes, sizeof(ip_bytes));
+        if (version == NULL) {
             printf("invalid ip address `%s`\n", line);
             continue;
         }
 
         s_time = xdb_now();
-        err = xdb_search(&test.searcher, ip, region, sizeof(region));
+        err = xdb_search(&test.searcher, ip_bytes, version->bytes, region, sizeof(region));
         if (err != 0) {
             printf("{err: %d, io_count: %d}\n", err, xdb_get_io_count(&test.searcher));
         } else {
@@ -200,9 +206,15 @@ void test_bench(int argc, char *argv[]) {
     FILE *handle;
     char line[1024] = {'\0'}, sip_str[16] = {'\0'}, eip_str[16] = {'\0'};
     char src_region[512] = {'\0'}, region_buffer[512] = {'\0'};
-    unsigned int sip, eip, ip_list[2];
     int count = 0, took;
     long s_time, t_time, c_time = 0;
+
+    // ip parse
+    xdb_ip_version_t *s_version, *e_version;
+    bytes_ip_t sip_bytes[16] = {'\0'}, eip_bytes[16] = {'\0'};
+    string_ip_t ip_string[INET6_ADDRSTRLEN] = {'\0'};
+    bytes_ip_t *ip_list[2];
+
     searcher_test_t test;
 
     for (i = 2; i < argc; i++) {
@@ -269,38 +281,44 @@ void test_bench(int argc, char *argv[]) {
             return;
         }
 
-        if (xdb_check_ip(sip_str, &sip) != 0) {
+        s_version = xdb_parse_ip(sip_str, sip_bytes, sizeof(sip_bytes));
+        if (s_version == NULL) {
             printf("invalid start ip `%s`\n", sip_str);
             return;
         }
 
-        if (xdb_check_ip(eip_str, &eip) != 0) {
+        e_version = xdb_parse_ip(eip_str, eip_bytes, sizeof(eip_bytes));
+        if (e_version == NULL) {
             printf("invalid end ip `%s`\n", sip_str);
             return;
         }
 
-        if (sip > eip) {
+        if (s_version->id != e_version->id) {
+            printf("start ip and end ip version not match for line `%s`\n", line);
+            return;
+        }
+
+        if (xdb_ip_sub_compare(sip_bytes, s_version->bytes, eip_bytes, 0) > 0) {
             printf("start ip(%s) should not be greater than end ip(%s)\n", sip_str, eip_str);
             return;
         }
 
-        ip_list[0] = sip;
-        ip_list[1] = eip;
+        ip_list[0] = sip_bytes;
+        ip_list[1] = eip_bytes;
         for (i = 0; i < 2; i++) {
             t_time = xdb_now();
-            err = xdb_search(&test.searcher, ip_list[i], region_buffer, sizeof(region_buffer));
+            err = xdb_search(&test.searcher, ip_list[i], s_version->bytes, region_buffer, sizeof(region_buffer));
+            c_time += xdb_now() - t_time;
             if (err != 0) {
-                xdb_long2ip(ip_list[i], sip_str);
-                printf("failed to search ip `%s` with errno=%d\n", sip_str, err);
+                xdb_ip_to_string(ip_list[i], s_version->bytes, ip_string, sizeof(ip_string));
+                printf("failed to search ip `%s` with errno=%d\n", ip_string, err);
                 return;
             }
 
-            c_time += xdb_now() - t_time;
-
             // check the region info
             if (strcmp(region_buffer, src_region) != 0) {
-                xdb_long2ip(ip_list[i], sip_str);
-                printf("failed to search(%s) with (%s != %s)\n", sip_str, region_buffer, src_region);
+                xdb_ip_to_string(ip_list[i], s_version->bytes, ip_string, sizeof(ip_string));
+                printf("failed to search(%s) with (%s != %s)\n", ip_string, region_buffer, src_region);
                 return;
             }
 

@@ -59,33 +59,34 @@ XDB_PUBLIC(void) xdb_close(void *ptr) {
 
 // --- xdb searcher search api define
 
-XDB_PUBLIC(int) xdb_search_by_string(xdb_searcher_t *xdb, const char *ip_string, char *region_buffer, size_t length) {
+XDB_PUBLIC(int) xdb_search_by_string(xdb_searcher_t *xdb, const string_ip_t *ip_string, char *region_buffer, size_t length) {
     bytes_ip_t ip_bytes[16] = {'\0'};
-    int versionNo = xdb_parse_ip(ip_string, ip_bytes, sizeof(ip_bytes));
-    if (versionNo == -1) {
+    xdb_ip_version_t *version = xdb_parse_ip(ip_string, ip_bytes, sizeof(ip_bytes));
+    if (version == NULL) {
         return 10;
     } else {
-        return xdb_search(xdb, ip_bytes, versionNo, region_buffer, length);
+        return xdb_search(xdb, ip_bytes, version->bytes, region_buffer, length);
     }
 }
 
-XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, const bytes_ip_t *ip_bytes, int byte_count, char *region_buffer, size_t length) {
+XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, const bytes_ip_t *ip_bytes, int ip_len, char *region_buffer, size_t length) {
     int il0, il1, idx, err, bytes, d_bytes;
     register int seg_index_size, l, h, m, p;
     unsigned int s_ptr, e_ptr, data_ptr, data_len;
     char vector_buffer[xdb_vector_index_size];
     char *segment_buffer = NULL;
+    string_ip_t sip_string[INET6_ADDRSTRLEN] = {'\0'}, eip_string[INET6_ADDRSTRLEN] = {'\0'};
 
     // ip version check
-    if (byte_count != xdb->version->bytes) {
+    if (ip_len != xdb->version->bytes) {
         return -1;
     }
 
     // some resets
     err = 0;
     data_len = 0;
-    bytes = byte_count;
-    d_bytes = byte_count << 1;
+    bytes   = xdb->version->bytes;
+    d_bytes = xdb->version->bytes << 1;
     xdb->io_count = 0;
 
     // locate the segment index block based on the vector index
@@ -108,7 +109,7 @@ XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, const bytes_ip_t *ip_bytes, int 
         e_ptr = xdb_le_get_uint32(vector_buffer, 4);
     }
 
-    // printf("s_ptr=%u, e_ptr=%u\n", s_ptr, e_ptr);
+    printf("s_ptr=%u, e_ptr=%u\n", s_ptr, e_ptr);
     // binary search to get the final region info
     seg_index_size = xdb->version->segment_index_size;
     segment_buffer = xdb_malloc(seg_index_size);
@@ -129,10 +130,14 @@ XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, const bytes_ip_t *ip_bytes, int 
             goto done;
         }
 
+        xdb_ip_to_string(segment_buffer, bytes, sip_string, sizeof(sip_string));
+        xdb_ip_to_string(segment_buffer + bytes, bytes, eip_string, sizeof(eip_string));
+        printf("l=%d, h=%d, p=%d, sip: %s, eip: %s\n", l, h, p, sip_string, eip_string);
+
         // decode the data fields as needed
-        if (xdb_ip_sub_compare(ip_bytes, byte_count, segment_buffer, 0) < 0) {
+        if (xdb->version->ip_compare(ip_bytes, bytes, segment_buffer, 0) < 0) {
             h = m - 1;
-        } else if (xdb_ip_sub_compare(ip_bytes, byte_count, segment_buffer, bytes) > 0) {
+        } else if (xdb->version->ip_compare(ip_bytes, bytes, segment_buffer, bytes) > 0) {
             l = m + 1;
         } else {
             data_len = xdb_le_get_uint16(segment_buffer, d_bytes);
@@ -141,7 +146,7 @@ XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, const bytes_ip_t *ip_bytes, int 
         }
     }
 
-    // printf("data_len=%u, data_ptr=%u\n", data_len, data_ptr);
+    printf("data_len=%u, data_ptr=%u\n", data_len, data_ptr);
     if (data_len == 0) {
         goto done;
     }
