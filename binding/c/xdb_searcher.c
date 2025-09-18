@@ -11,7 +11,7 @@
 // internal function prototype define
 XDB_PRIVATE(int) read(xdb_searcher_t *, long offset, char *, size_t length);
 
-XDB_PRIVATE(int) xdb_new_base(xdb_ip_version_t *version, xdb_searcher_t *xdb, const char *db_path, const xdb_vector_index_t *v_index, const xdb_content_t *c_buffer) {
+XDB_PRIVATE(int) xdb_new_base(xdb_version_t *version, xdb_searcher_t *xdb, const char *db_path, const xdb_vector_index_t *v_index, const xdb_content_t *c_buffer) {
     memset(xdb, 0x00, sizeof(xdb_searcher_t));
 
     // set the version
@@ -37,15 +37,15 @@ XDB_PRIVATE(int) xdb_new_base(xdb_ip_version_t *version, xdb_searcher_t *xdb, co
 }
 
 // xdb searcher new api define
-XDB_PUBLIC(int) xdb_new_with_file_only(xdb_ip_version_t *version, xdb_searcher_t *xdb, const char *db_path) {
+XDB_PUBLIC(int) xdb_new_with_file_only(xdb_version_t *version, xdb_searcher_t *xdb, const char *db_path) {
     return xdb_new_base(version, xdb, db_path, NULL, NULL);
 }
 
-XDB_PUBLIC(int) xdb_new_with_vector_index(xdb_ip_version_t *version, xdb_searcher_t *xdb, const char *db_path, const xdb_vector_index_t *v_index) {
+XDB_PUBLIC(int) xdb_new_with_vector_index(xdb_version_t *version, xdb_searcher_t *xdb, const char *db_path, const xdb_vector_index_t *v_index) {
     return xdb_new_base(version, xdb, db_path, v_index, NULL);
 }
 
-XDB_PUBLIC(int) xdb_new_with_buffer(xdb_ip_version_t *version, xdb_searcher_t *xdb, const xdb_content_t *c_buffer) {
+XDB_PUBLIC(int) xdb_new_with_buffer(xdb_version_t *version, xdb_searcher_t *xdb, const xdb_content_t *c_buffer) {
     return xdb_new_base(version, xdb, NULL, NULL, c_buffer);
 }
 
@@ -61,7 +61,7 @@ XDB_PUBLIC(void) xdb_close(void *ptr) {
 
 XDB_PUBLIC(int) xdb_search_by_string(xdb_searcher_t *xdb, const string_ip_t *ip_string, char *region_buffer, size_t length) {
     bytes_ip_t ip_bytes[16] = {'\0'};
-    xdb_ip_version_t *version = xdb_parse_ip(ip_string, ip_bytes, sizeof(ip_bytes));
+    xdb_version_t *version = xdb_parse_ip(ip_string, ip_bytes, sizeof(ip_bytes));
     if (version == NULL) {
         return 10;
     } else {
@@ -75,7 +75,6 @@ XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, const bytes_ip_t *ip_bytes, int 
     unsigned int s_ptr, e_ptr, data_ptr, data_len;
     char vector_buffer[xdb_vector_index_size];
     char *segment_buffer = NULL;
-    string_ip_t sip_string[INET6_ADDRSTRLEN] = {'\0'}, eip_string[INET6_ADDRSTRLEN] = {'\0'};
 
     // ip version check
     if (ip_len != xdb->version->bytes) {
@@ -109,7 +108,7 @@ XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, const bytes_ip_t *ip_bytes, int 
         e_ptr = xdb_le_get_uint32(vector_buffer, 4);
     }
 
-    printf("s_ptr=%u, e_ptr=%u\n", s_ptr, e_ptr);
+    // printf("s_ptr=%u, e_ptr=%u\n", s_ptr, e_ptr);
     // binary search to get the final region info
     seg_index_size = xdb->version->segment_index_size;
     segment_buffer = xdb_malloc(seg_index_size);
@@ -124,15 +123,11 @@ XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, const bytes_ip_t *ip_bytes, int 
         p = s_ptr + m * seg_index_size;
 
         // read the segment index item
-        err = read(xdb, p, segment_buffer, sizeof(segment_buffer));
+        err = read(xdb, p, segment_buffer, seg_index_size);
         if (err != 0) {
             err += 20;
             goto done;
         }
-
-        xdb_ip_to_string(segment_buffer, bytes, sip_string, sizeof(sip_string));
-        xdb_ip_to_string(segment_buffer + bytes, bytes, eip_string, sizeof(eip_string));
-        printf("l=%d, h=%d, p=%d, sip: %s, eip: %s\n", l, h, p, sip_string, eip_string);
 
         // decode the data fields as needed
         if (xdb->version->ip_compare(ip_bytes, bytes, segment_buffer, 0) < 0) {
@@ -146,7 +141,7 @@ XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, const bytes_ip_t *ip_bytes, int 
         }
     }
 
-    printf("data_len=%u, data_ptr=%u\n", data_len, data_ptr);
+    // printf("data_len=%u, data_ptr=%u\n", data_len, data_ptr);
     if (data_len == 0) {
         goto done;
     }
@@ -195,7 +190,7 @@ XDB_PRIVATE(int) read(xdb_searcher_t *xdb, long offset, char *buffer, size_t len
     return 0;
 }
 
-XDB_PUBLIC(xdb_ip_version_t *) xdb_get_ip_version(xdb_searcher_t *xdb) {
+XDB_PUBLIC(xdb_version_t *) xdb_get_version(xdb_searcher_t *xdb) {
     return xdb->version;
 }
 

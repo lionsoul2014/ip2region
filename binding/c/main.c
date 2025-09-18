@@ -18,7 +18,22 @@ typedef struct searcher_test_entry searcher_test_t;
 
 int init_searcher_test(searcher_test_t *test, char *db_path, char *cache_policy) {
     int err;
-    xdb_ip_version_t *version = XDB_IPv4;
+
+    // auto detect the version from the xdb header
+    xdb_header_t *header = xdb_load_header_from_file(db_path);
+    if (header == NULL) {
+        printf("failed to load header from `%s`\n", db_path);
+        return 1;
+    }
+
+    xdb_version_t *version = xdb_version_from_header(header);
+    if (version == NULL) {
+        printf("failed to load version from header\n");
+        xdb_free_header(header);
+        return 1;
+    }
+
+    xdb_free_header(header);
     test->v_index = NULL;
     test->c_buffer = NULL;
 
@@ -112,7 +127,7 @@ void test_search(int argc, char *argv[]) {
     char line[512] = {'\0'}, region[512] = {'\0'};
 
     // ip parse
-    xdb_ip_version_t *version;
+    xdb_version_t *version;
     bytes_ip_t ip_bytes[16] = {'\0'};
 
     searcher_test_t test;
@@ -158,6 +173,13 @@ void test_search(int argc, char *argv[]) {
         return;
     }
 
+    // init the win sock
+    err = xdb_init_winsock();
+    if (err != 0) {
+        printf("failed to init the winsock with errno=%d\n", err);
+        return;
+    }
+
     // printf("db_file=%s, cache_policy=%s\n", db_file, cache_policy);
     err = init_searcher_test(&test, db_file, cache_policy);
     if (err != 0) {
@@ -165,8 +187,9 @@ void test_search(int argc, char *argv[]) {
         return;
     }
 
-    printf("ip2region xdb searcher test program, "
-           "cache_policy: %s\ntype 'quit' to exit\n", cache_policy);
+    printf("ip2region xdb searcher test program\n"
+            "source xdb: %s (%s, %s)\n"
+            "type 'quit' to exit\n", db_file, xdb_get_version(&test.searcher)->name, cache_policy);
     while ( 1 ) {
         printf("ip2region>> ");
         get_line(stdin, line);
@@ -195,6 +218,7 @@ void test_search(int argc, char *argv[]) {
     }
 
     destroy_searcher_test(&test);
+    xdb_clean_winsock();
     printf("searcher test program exited, thanks for trying\n");
 }
 
@@ -204,19 +228,18 @@ void test_bench(int argc, char *argv[]) {
     char db_file[256] = {'\0'}, src_file[256] = {'\0'}, cache_policy[16] = {"vectorIndex"};
 
     FILE *handle;
-    char line[1024] = {'\0'}, sip_str[16] = {'\0'}, eip_str[16] = {'\0'};
+    char line[1024] = {'\0'}, sip_str[INET6_ADDRSTRLEN+1] = {'\0'}, eip_str[INET6_ADDRSTRLEN+1] = {'\0'};
     char src_region[512] = {'\0'}, region_buffer[512] = {'\0'};
     int count = 0, took;
     long s_time, t_time, c_time = 0;
 
     // ip parse
-    xdb_ip_version_t *s_version, *e_version;
+    xdb_version_t *s_version, *e_version;
     bytes_ip_t sip_bytes[16] = {'\0'}, eip_bytes[16] = {'\0'};
     string_ip_t ip_string[INET6_ADDRSTRLEN] = {'\0'};
     bytes_ip_t *ip_list[2];
 
     searcher_test_t test;
-
     for (i = 2; i < argc; i++) {
         r = argv[i];
         if (strlen(r) < 5) {
@@ -259,6 +282,13 @@ void test_bench(int argc, char *argv[]) {
         return;
     }
 
+    // init the win sock
+    err = xdb_init_winsock();
+    if (err != 0) {
+        printf("failed to init the winsock with errno=%d\n", err);
+        return;
+    }
+
     // printf("db_file=%s, src_file=%s, cache_policy=%s\n", db_file, src_file, cache_policy);
     s_time = xdb_now();
     err = init_searcher_test(&test, db_file, cache_policy);
@@ -275,7 +305,7 @@ void test_bench(int argc, char *argv[]) {
     }
 
     while(fgets(line, sizeof(line), handle) != NULL) {
-        n = sscanf(line, "%15[^|]|%15[^|]|%511[^\n]", sip_str, eip_str, src_region);
+        n = sscanf(line, "%46[^|]|%46[^|]|%511[^\n]", sip_str, eip_str, src_region);
         if (n != 3) {
             printf("invalid ip segment line `%s`\n", line);
             return;
@@ -328,6 +358,7 @@ void test_bench(int argc, char *argv[]) {
 
     took = xdb_now() - s_time;
     destroy_searcher_test(&test);
+    xdb_clean_winsock();
     fclose(handle);
     printf("Bench finished, {cache_policy: %s, total: %d, took: %.3fs, cost: %d μs/op}\n",
            cache_policy, count, took/1e6, count == 0 ? 0 : (int)(c_time/count));

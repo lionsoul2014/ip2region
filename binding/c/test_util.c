@@ -27,10 +27,13 @@ void test_load_header() {
            "    created_at: %u, \n"
            "    start_index_ptr: %d, \n"
            "    end_index_ptr: %d\n"
+           "    ip_version: %d\n"
+           "    runtime_ptr_bytes: %d\n"
            "    length: %d\n"
            "}\n",
            header->version, header->index_policy, header->created_at,
-           header->start_index_ptr, header->end_index_ptr, header->length
+           header->start_index_ptr, header->end_index_ptr, 
+           header->ip_version, header->runtime_ptr_bytes, header->length
        );
     }
 
@@ -68,7 +71,7 @@ void test_parse_ip() {
     };
 
     int errcode;
-    xdb_ip_version_t *version;
+    xdb_version_t *version;
     bytes_ip_t ip_bytes[16] = {'\0'};
     string_ip_t ip_string[INET6_ADDRSTRLEN] = {'\0'};
 
@@ -117,7 +120,7 @@ void test_ip_compare() {
     struct ip_pair *pair_ptr = NULL;
     bytes_ip_t sip_bytes[16] = {'\0'};
     bytes_ip_t eip_bytes[16] = {'\0'};
-    xdb_ip_version_t *s_version, *e_version;
+    xdb_version_t *s_version, *e_version;
     int bytes, errcode;
 
     // init the sock env (for windows)
