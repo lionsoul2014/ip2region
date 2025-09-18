@@ -106,6 +106,20 @@ XDB_PUBLIC(xdb_content_t *) xdb_load_content_from_file(const char *);
 
 XDB_PUBLIC(void) xdb_free_content(void *);
 
+// --- xdb verify
+
+// Verify if the current Searcher could be used to search the specified xdb file.
+// Why do we need this check ?
+// The future features of the xdb impl may cause the current searcher not able to work properly.
+//
+// @Note: You Just need to check this ONCE when the service starts
+// Or use another process (eg, A command) to check once Just to confirm the suitability.
+XDB_PUBLIC(int) xdb_verify(FILE *);
+
+XDB_PUBLIC(int) xdb_verify_from_header(FILE *handle, xdb_header_t *);
+
+XDB_PUBLIC(int) xdb_verify_from_file(const char *);
+
 // --- End xdb buffer
 
 
@@ -221,9 +235,9 @@ XDB_PUBLIC(int) xdb_new_with_buffer(xdb_version_t *, xdb_searcher_t *, const xdb
 XDB_PUBLIC(void) xdb_close(void *);
 
 // xdb searcher search api define
-XDB_PUBLIC(int) xdb_search_by_string(xdb_searcher_t *, const string_ip_t *, char *, size_t);
+XDB_PUBLIC(int) xdb_search_by_string(xdb_searcher_t *, const string_ip_t *, char **, size_t);
 
-XDB_PUBLIC(int) xdb_search(xdb_searcher_t *, const bytes_ip_t *, int, char *, size_t);
+XDB_PUBLIC(int) xdb_search(xdb_searcher_t *, const bytes_ip_t *, int, char **, size_t);
 
 XDB_PUBLIC(xdb_version_t *) xdb_get_version(xdb_searcher_t *);
 

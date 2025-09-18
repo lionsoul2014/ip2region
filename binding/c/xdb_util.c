@@ -223,6 +223,61 @@ XDB_PUBLIC(void) xdb_free_content(void *ptr) {
     }
 }
 
+XDB_PUBLIC(int) xdb_verify_from_header(FILE *handle, xdb_header_t *header) {
+    int runtime_ptr_bytes = 0;  // runtime ptr bytes
+    if (header->version == xdb_structure_20) {
+        runtime_ptr_bytes = 4;
+    } else if (header->version == xdb_structure_30) {
+        runtime_ptr_bytes = header->runtime_ptr_bytes;
+    } else {
+        return 2;
+    }
+
+    // 1, confirm the xdb file size.
+    // to ensure that the maximum file pointer does not overflow.
+    int err = fseek(handle, 0L, SEEK_END);
+    if (err != 0) {
+        return 3;
+    }
+
+    long int fileBytes = ftell(handle);
+    long int maxFilePtr = (1L << (runtime_ptr_bytes * 8)) - 1;
+    // printf("fileBytes: %ld, maxFilePtr: %ld\n", fileBytes, maxFilePtr);
+    if (fileBytes > maxFilePtr) {
+        return 4;
+    }
+
+    return 0;
+}
+
+XDB_PUBLIC(int) xdb_verify(FILE *handle) {
+    xdb_header_t *header = xdb_load_header(handle);
+    if (header == NULL) {
+        return 1;
+    }
+
+    int errcode = xdb_verify_from_header(handle, header);
+    if (errcode != 0) {
+        goto done;
+    }
+
+    // what next ?
+done:
+    xdb_free_header(header);
+    return errcode;
+}
+
+XDB_PUBLIC(int) xdb_verify_from_file(const char *db_path) {
+    FILE *handle = fopen(db_path, "rb");
+    if (handle == NULL) {
+        return -1;
+    }
+
+    int r = xdb_verify(handle);
+    fclose(handle);
+    return r;
+}
+
 // --- End content buffer
 
 

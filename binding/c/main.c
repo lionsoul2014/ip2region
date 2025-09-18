@@ -17,23 +17,35 @@ struct searcher_test_entry {
 typedef struct searcher_test_entry searcher_test_t;
 
 int init_searcher_test(searcher_test_t *test, char *db_path, char *cache_policy) {
-    int err;
+    int err, errcode = 0;
+    FILE *handle = fopen(db_path, "rb");
+    if (handle == NULL) {
+        return -1;
+    }
 
     // auto detect the version from the xdb header
-    xdb_header_t *header = xdb_load_header_from_file(db_path);
+    xdb_header_t *header = xdb_load_header(handle);
     if (header == NULL) {
         printf("failed to load header from `%s`\n", db_path);
-        return 1;
+        errcode = 1;
+        goto defer;
+    }
+
+    // verify the current xdb
+    err = xdb_verify_from_header(handle, header);
+    if (err != 0) {
+        printf("failed to verify xdb file `%s` with errno=%d\n", db_path, err);
+        errcode = 2;
+        goto defer;
     }
 
     xdb_version_t *version = xdb_version_from_header(header);
     if (version == NULL) {
         printf("failed to load version from header\n");
-        xdb_free_header(header);
-        return 1;
+        errcode = 3;
+        goto defer;
     }
 
-    xdb_free_header(header);
     test->v_index = NULL;
     test->c_buffer = NULL;
 
@@ -41,38 +53,53 @@ int init_searcher_test(searcher_test_t *test, char *db_path, char *cache_policy)
         err = xdb_new_with_file_only(version, &test->searcher, db_path);
         if (err != 0) {
             printf("failed to create searcher with errcode=%d\n", err);
-            return 1;
+            errcode = 4;
+            goto defer;
         }
     } else if (strcmp(cache_policy, "vectorIndex") == 0) {
         test->v_index = xdb_load_vector_index_from_file(db_path);
         if (test->v_index == NULL) {
             printf("failed to load vector index from `%s`\n", db_path);
-            return 2;
+            errcode = 4;
+            goto defer;
         }
 
         err = xdb_new_with_vector_index(version, &test->searcher, db_path, test->v_index);
         if (err != 0) {
             printf("failed to create vector index cached searcher with errcode=%d\n", err);
-            return 3;
+            errcode = 5;
+            goto defer;
         }
     } else if (strcmp(cache_policy, "content") == 0) {
         test->c_buffer = xdb_load_content_from_file(db_path);
         if (test->c_buffer == NULL) {
             printf("failed to load xdb content from `%s`\n", db_path);
-            return 4;
+            errcode = 4;
+            goto defer;
         }
 
         err = xdb_new_with_buffer(version, &test->searcher, test->c_buffer);
         if (err != 0) {
             printf("failed to create content cached searcher with errcode=%d\n", err);
-            return 5;
+            errcode = 5;
+            goto defer;
         }
     } else {
         printf("invalid cache policy `%s`, options: file/vectorIndex/content\n", cache_policy);
-        return 6;
+        errcode = 6;
+        goto defer;
     }
 
-    return 0;
+defer:
+    if (header != NULL) {
+        xdb_free_header(header);
+    }
+
+    if (handle != NULL) {
+        fclose(handle);
+    }
+
+    return errcode;
 }
 
 void destroy_searcher_test(searcher_test_t *test) {
@@ -125,6 +152,7 @@ void test_search(int argc, char *argv[]) {
     long s_time, c_time;
     unsigned int ip;
     char line[512] = {'\0'}, region[512] = {'\0'};
+    char *region_buffer = NULL;
 
     // ip parse
     xdb_version_t *version;
@@ -208,13 +236,17 @@ void test_search(int argc, char *argv[]) {
         }
 
         s_time = xdb_now();
-        err = xdb_search(&test.searcher, ip_bytes, version->bytes, region, sizeof(region));
+        err = xdb_search(&test.searcher, ip_bytes, version->bytes, &region_buffer, sizeof(region));
         if (err != 0) {
             printf("{err: %d, io_count: %d}\n", err, xdb_get_io_count(&test.searcher));
         } else {
             c_time = xdb_now() - s_time;
-            printf("{region: %s, io_count: %d, took: %ld μs}\n", region, xdb_get_io_count(&test.searcher), c_time);
+            printf("{region: %s, io_count: %d, took: %ld μs}\n", region_buffer, xdb_get_io_count(&test.searcher), c_time);
         }
+
+        // free the region_buffer
+        xdb_free(region_buffer);
+        region_buffer = NULL;
     }
 
     destroy_searcher_test(&test);
@@ -229,7 +261,8 @@ void test_bench(int argc, char *argv[]) {
 
     FILE *handle;
     char line[1024] = {'\0'}, sip_str[INET6_ADDRSTRLEN+1] = {'\0'}, eip_str[INET6_ADDRSTRLEN+1] = {'\0'};
-    char src_region[512] = {'\0'}, region_buffer[512] = {'\0'};
+    char src_region[512] = {'\0'}, region[512] = {'\0'};
+    char *region_buffer = region;
     int count = 0, took;
     long s_time, t_time, c_time = 0;
 
@@ -337,7 +370,7 @@ void test_bench(int argc, char *argv[]) {
         ip_list[1] = eip_bytes;
         for (i = 0; i < 2; i++) {
             t_time = xdb_now();
-            err = xdb_search(&test.searcher, ip_list[i], s_version->bytes, region_buffer, sizeof(region_buffer));
+            err = xdb_search(&test.searcher, ip_list[i], s_version->bytes, &region_buffer, sizeof(region));
             c_time += xdb_now() - t_time;
             if (err != 0) {
                 xdb_ip_to_string(ip_list[i], s_version->bytes, ip_string, sizeof(ip_string));

@@ -59,7 +59,7 @@ XDB_PUBLIC(void) xdb_close(void *ptr) {
 
 // --- xdb searcher search api define
 
-XDB_PUBLIC(int) xdb_search_by_string(xdb_searcher_t *xdb, const string_ip_t *ip_string, char *region_buffer, size_t length) {
+XDB_PUBLIC(int) xdb_search_by_string(xdb_searcher_t *xdb, const string_ip_t *ip_string, char **region_buffer, size_t length) {
     bytes_ip_t ip_bytes[16] = {'\0'};
     xdb_version_t *version = xdb_parse_ip(ip_string, ip_bytes, sizeof(ip_bytes));
     if (version == NULL) {
@@ -69,7 +69,7 @@ XDB_PUBLIC(int) xdb_search_by_string(xdb_searcher_t *xdb, const string_ip_t *ip_
     }
 }
 
-XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, const bytes_ip_t *ip_bytes, int ip_len, char *region_buffer, size_t length) {
+XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, const bytes_ip_t *ip_bytes, int ip_len, char **region_buffer, size_t length) {
     int il0, il1, idx, err, bytes, d_bytes;
     register int seg_index_size, l, h, m, p;
     unsigned int s_ptr, e_ptr, data_ptr, data_len;
@@ -147,12 +147,23 @@ XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, const bytes_ip_t *ip_bytes, int 
     }
 
     // buffer length checking
-    if (data_len >= (int) length) {
+    if (length > 0 && data_len >= (int) length) {
         err = 1;
         goto done;
     }
 
-    err = read(xdb, data_ptr, region_buffer, data_len);
+    // @Note: since 2025/09/18 with IPv6 supporting.
+    // if the region_buffer is NULL or the length is 0 we will create a buffer
+    // to hold the region info and the caller should call xdb_free to free the region info after finished use it.
+    char *r_buffer = *region_buffer;
+    if (r_buffer == NULL || length == 0) {
+        r_buffer = (char *) xdb_malloc(data_len + 1);
+        *region_buffer = r_buffer;
+    }
+
+    // auto append a NULL-end
+    r_buffer[data_len] = '\0';
+    err = read(xdb, data_ptr, r_buffer, data_len);
     if (err != 0) {
         err += 30;
         goto done;
@@ -165,8 +176,6 @@ done:
         segment_buffer = NULL;
     }
 
-    // auto append a NULL-end
-    region_buffer[data_len] = '\0';
     return err;
 }
 
