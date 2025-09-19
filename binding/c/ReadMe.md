@@ -46,9 +46,17 @@ if ($err != 0) {
 int main(int argc, char *argv[]) {
     xdb_searcher_t searcher;
     char region_buffer[512] = {'\0'};
+    xdb_region_buffer_t region;
+
+    // 使用栈空间的 region_buffer 初始化 region_buffer_t
+    int err = xdb_region_buffer_init(&region, region_buffer, sizeof(region_buffer));
+    if (err != 0) {
+        printf("failed to init the region buffer with errcode=%d\n", err);
+        return 1;
+    }
 
     // 在服务启动的时候初始化 winsock，不需要重复调用，只需要在 windows 系统下调用
-    int err = xdb_init_winsock();
+    err = xdb_init_winsock();
     if (err != 0) {
         printf("failed to init the winsock with errno=%d\n", err);
         return 1;
@@ -63,18 +71,20 @@ int main(int argc, char *argv[]) {
     }
 
     // 2、调用 search API 查询，IPv4 和 IPv6 都支持.
-    // 得到的 region 信息会存储到 region_buffer 里面，如果你自定义了数据，请确保给足 buffer 的空间。
     const char *ip_string = "1.2.3.4";
     // ip_string = "2001:4:112:ffff:ffff:ffff:ffff:ffff"; // IPv6
 
     long cost_time = 0, s_time = xdb_now();
-    err = xdb_search_by_string(&searcher, ip_string, region_buffer, sizeof(region_buffer));
+    err = xdb_search_by_string(&searcher, ip_string, &region);
     cost_time = (int) (xdb_now() - s_time);
     if (err != 0) {
         printf("failed search(%s) with errno=%d\n", ip_string, err);
     } else {
-        printf("{region: %s, took: %d μs}", region_buffer, cost_time);
+        printf("{region: %s, took: %d μs}", region.value, cost_time);
     }
+
+    // 清理 region 信息的内存资源，每次 search 之后都得调用
+    xdb_region_buffer_free(&region);
 
     // 备注：并发使用，每一个线程需要单独定义并且初始化一个 searcher 查询对象。
 
@@ -95,10 +105,17 @@ int main(int argc, char *argv[]) {
 int main(int argc, char *argv[]) {
     xdb_vector_index_t *v_index;
     xdb_searcher_t searcher;
-    char region_buffer[512];
+    xdb_region_buffer_t region;
+
+    // 使用 NULL 初始化 region_buffer，让其自动管理内存的分配
+    int err = xdb_region_buffer_init(&region, NULL, 0);
+    if (err != 0) {
+        printf("failed to init the region buffer with errcode=%d\n", err);
+        return 0;
+    }
 
     // 在服务启动的时候初始化 winsock，不需要重复调用，只需要在 windows 系统下调用
-    int err = xdb_init_winsock();
+    err = xdb_init_winsock();
     if (err != 0) {
         printf("failed to init the winsock with errno=%d\n", err);
         return 1;
@@ -123,18 +140,21 @@ int main(int argc, char *argv[]) {
 
 
     // 3、调用 search API 查询，IPv4 和 IPv6 都支持
-    // 得到的 region 信息会存储到 region_buffer 里面，如果你自定义了数据，请确保给足 buffer 的空间。
     const char *ip_string = "1.2.3.4";
     // ip_string = "2001:4:112:ffff:ffff:ffff:ffff:ffff"; // IPv6
 
     long cost_time = 0, s_time = xdb_now();
-    err = xdb_search_by_string(&searcher, ip_string, region_buffer, sizeof(region_buffer));
+    err = xdb_search_by_string(&searcher, ip_string, &region);
     cost_time = (int) (xdb_now() - s_time);
     if (err != 0) {
         printf("failed search(%s) with errno=%d\n", ip_string, err);
     } else {
-        printf("{region: %s, took: %d μs}", region_buffer, cost_time);
+        printf("{region: %s, took: %d μs}", region.value, cost_time);
     }
+
+    // 清理 region 信息的内存资源，每次 search 之后都得调用
+    xdb_region_buffer_free(&region);
+
 
     // 备注：并发使用，每一个线程需要单独定义并且初始化一个 searcher 查询对象。
 
@@ -156,11 +176,18 @@ int main(int argc, char *argv[]) {
 int main(int argc, char *argv[]) {
     xdb_content_t *c_buffer;
     xdb_searcher_t searcher;
-    char region_buffer[512] = {'\0'};
+    xdb_region_buffer_t region;
+
+    // 使用 NULL 初始化 region_buffer，让其自动管理内存的分配
+    int err = xdb_region_buffer_init(&region, NULL, 0);
+    if (err != 0) {
+        printf("failed to init the region buffer with errcode=%d\n", err);
+        return 0;
+    }
 
 
     // 在服务启动的时候初始化 winsock，不需要重复调用，只需要在 windows 系统下调用
-    int err = xdb_init_winsock();
+    err = xdb_init_winsock();
     if (err != 0) {
         printf("failed to init the winsock with errno=%d\n", err);
         return 1;
@@ -182,18 +209,21 @@ int main(int argc, char *argv[]) {
     }
 
     // 3、调用 search API 查询，IPv4 和 IPv6 都支持
-    // 得到的 region 信息会存储到 region_buffer 里面，如果你自定义了数据，请确保给足 buffer 的空间。
     const char *ip_string = "1.2.3.4";
     // ip_string = "2001:4:112:ffff:ffff:ffff:ffff:ffff"; // IPv6
 
     long cost_time = 0, s_time = xdb_now();
-    err = xdb_search_by_string(&searcher, ip_string, region_buffer, sizeof(region_buffer));
+    err = xdb_search_by_string(&searcher, ip_string, &region);
     cost_time = (int) (xdb_now() - s_time);
     if (err != 0) {
         printf("failed search(%s) with errno=%d\n", ip_string, err);
     } else {
-        printf("{region: %s, took: %d μs}", region_buffer, cost_time);
+        printf("{region: %s, took: %d μs}", region.value, cost_time);
     }
+
+    // 清理 region 信息的内存资源，每次 search 之后都得调用
+    xdb_region_buffer_free(&region);
+
 
     // 备注：并发使用，使用这种方式创建的 xdb 查询对象可以安全用于并发。
     // 建议在服务启动的时候创建好，然后一直安全并发使用，直到服务关闭。
@@ -204,6 +234,31 @@ int main(int argc, char *argv[]) {
     xdb_clean_winsock();
     return 0;
 }
+```
+
+### 关于定位信息的存储
+在旧版本的实现中，search相关的函数都是依靠指定一个 `region_buffer` 内存来用于存储地域信息，这种方式还是有很大的局限性。
+新的实现提供了一个 `xdb_region_buffer_t` 对象来管理这些内存的分配，你依然可以指定一个固定的 `region_buffer` 来创建 region 的内存管理，这个情况适合当你的地域信息的最大长度是可知的，这种方式可以减少运行过程中内存的碎片堆积。如果地域信息的长度不确定或者你的程序不适合提前分配一块内存来管理，你可以通过指定 NULL 的方式来初始化 `xdb_region_buffer_t`，这样对象会自动管理内存的分配，也适合任意长度的地域信息的存储，不过这种方式在长期的运行过程中肯定会增加内存碎片的堆积。
+```c
+// 1, 通过指定一块内存来创建 region_buffer
+char buffer[512];
+xdb_region_buffer_t region;
+int err = xdb_region_buffer_init(&region, buffer, sizeof(buffer));
+if (err != 0) {
+    // 初始化失败
+}
+
+// 2，通过指定 NULL 来创建 region_buffer，让其自动按需分配内存
+xdb_region_buffer_t region;
+int err = xdb_region_buffer_init(&region, NULL, 0);
+if (err != 0) {
+    // 初始化失败
+}
+
+
+// 备注：在每次调用 search 完成 IP 定位信息的查询后，你需要手动调用函数来释放内存 .
+// search 函数使用未经清理的 region 信息会报错。
+xdb_region_buffer_free(&region);
 ```
 
 

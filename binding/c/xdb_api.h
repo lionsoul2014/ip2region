@@ -202,6 +202,26 @@ XDB_PUBLIC(int) xdb_ip_sub_compare(const bytes_ip_t *, int, const char *, int);
 
 // --- xdb searcher api
 
+// xdb region info structure
+#define xdb_region_buffer_wrapper 1
+#define xdb_region_buffer_auto    2
+struct xdb_region_buffer_entry {
+    int type;           // buffer type
+    char *value;        // region value
+    size_t length;      // buffer length
+};
+typedef struct xdb_region_buffer_entry xdb_region_buffer_t;
+
+// wrapper the region from a local stack buffer.
+// returns: 0 for succeed or failed
+XDB_PUBLIC(int) xdb_region_buffer_init(xdb_region_buffer_t *, char *, size_t);
+
+// do the buffer alloc.
+// returns: 0 for ok or failed
+XDB_PUBLIC(int) xdb_region_buffer_alloc(xdb_region_buffer_t *, int);
+
+XDB_PUBLIC(void) xdb_region_buffer_free(xdb_region_buffer_t *);
+
 // xdb searcher structure
 struct xdb_searcher_entry {
     // ip version
@@ -235,9 +255,9 @@ XDB_PUBLIC(int) xdb_new_with_buffer(xdb_version_t *, xdb_searcher_t *, const xdb
 XDB_PUBLIC(void) xdb_close(void *);
 
 // xdb searcher search api define
-XDB_PUBLIC(int) xdb_search_by_string(xdb_searcher_t *, const string_ip_t *, char **, size_t);
+XDB_PUBLIC(int) xdb_search_by_string(xdb_searcher_t *, const string_ip_t *, xdb_region_buffer_t *);
 
-XDB_PUBLIC(int) xdb_search(xdb_searcher_t *, const bytes_ip_t *, int, char **, size_t);
+XDB_PUBLIC(int) xdb_search(xdb_searcher_t *, const bytes_ip_t *, int, xdb_region_buffer_t *);
 
 XDB_PUBLIC(xdb_version_t *) xdb_get_version(xdb_searcher_t *);
 

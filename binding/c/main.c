@@ -13,6 +13,10 @@ struct searcher_test_entry {
     xdb_searcher_t searcher;
     xdb_vector_index_t *v_index;
     xdb_content_t *c_buffer;
+
+    // xdb region buffer
+    char region_buffer[256];
+    xdb_region_buffer_t region;
 };
 typedef struct searcher_test_entry searcher_test_t;
 
@@ -90,6 +94,14 @@ int init_searcher_test(searcher_test_t *test, char *db_path, char *cache_policy)
         goto defer;
     }
 
+    // init the region buffer
+    err = xdb_region_buffer_init(&test->region, test->region_buffer, sizeof(test->region_buffer));
+    if (err != 0) {
+        printf("failed to init the region buffer with err=%d\n", err);
+        errcode = 7;
+        goto defer;
+    }
+
 defer:
     if (header != NULL) {
         xdb_free_header(header);
@@ -152,7 +164,6 @@ void test_search(int argc, char *argv[]) {
     long s_time, c_time;
     unsigned int ip;
     char line[512] = {'\0'}, region[512] = {'\0'};
-    char *region_buffer = NULL;
 
     // ip parse
     xdb_version_t *version;
@@ -236,17 +247,16 @@ void test_search(int argc, char *argv[]) {
         }
 
         s_time = xdb_now();
-        err = xdb_search(&test.searcher, ip_bytes, version->bytes, &region_buffer, sizeof(region));
+        err = xdb_search(&test.searcher, ip_bytes, version->bytes, &test.region);
         if (err != 0) {
             printf("{err: %d, io_count: %d}\n", err, xdb_get_io_count(&test.searcher));
         } else {
             c_time = xdb_now() - s_time;
-            printf("{region: %s, io_count: %d, took: %ld μs}\n", region_buffer, xdb_get_io_count(&test.searcher), c_time);
+            printf("{region: %s, io_count: %d, took: %ld μs}\n", test.region.value, xdb_get_io_count(&test.searcher), c_time);
         }
 
-        // free the region_buffer
-        xdb_free(region_buffer);
-        region_buffer = NULL;
+        // free the region
+        xdb_region_buffer_free(&test.region);
     }
 
     destroy_searcher_test(&test);
@@ -261,8 +271,7 @@ void test_bench(int argc, char *argv[]) {
 
     FILE *handle;
     char line[1024] = {'\0'}, sip_str[INET6_ADDRSTRLEN+1] = {'\0'}, eip_str[INET6_ADDRSTRLEN+1] = {'\0'};
-    char src_region[512] = {'\0'}, region[512] = {'\0'};
-    char *region_buffer = region;
+    char src_region[512] = {'\0'};
     int count = 0, took;
     long s_time, t_time, c_time = 0;
 
@@ -370,7 +379,7 @@ void test_bench(int argc, char *argv[]) {
         ip_list[1] = eip_bytes;
         for (i = 0; i < 2; i++) {
             t_time = xdb_now();
-            err = xdb_search(&test.searcher, ip_list[i], s_version->bytes, &region_buffer, sizeof(region));
+            err = xdb_search(&test.searcher, ip_list[i], s_version->bytes, &test.region);
             c_time += xdb_now() - t_time;
             if (err != 0) {
                 xdb_ip_to_string(ip_list[i], s_version->bytes, ip_string, sizeof(ip_string));
@@ -379,11 +388,14 @@ void test_bench(int argc, char *argv[]) {
             }
 
             // check the region info
-            if (strcmp(region_buffer, src_region) != 0) {
+            if (strcmp(test.region.value, src_region) != 0) {
                 xdb_ip_to_string(ip_list[i], s_version->bytes, ip_string, sizeof(ip_string));
-                printf("failed to search(%s) with (%s != %s)\n", ip_string, region_buffer, src_region);
+                printf("failed to search(%s) with (%s != %s)\n", ip_string, test.region.value, src_region);
                 return;
             }
+
+            // free the region buffer
+            xdb_region_buffer_free(&test.region);
 
             count++;
         }

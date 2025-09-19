@@ -8,6 +8,64 @@
 
 #include "xdb_api.h"
 
+// --- region buffer
+XDB_PUBLIC(int) xdb_region_buffer_init(xdb_region_buffer_t *region, char *buffer, size_t length) {
+    if (buffer == NULL) {
+        region->type   = xdb_region_buffer_auto;
+        region->length = 0;
+    } else if (length <= 0) {
+        return 1;
+    } else {
+        region->type   = xdb_region_buffer_wrapper;
+        region->length = length;
+        memset(buffer, 0x00, length);   // zero-fill the buffer
+    }
+
+    region->value = buffer;
+    return 0;
+}
+
+XDB_PUBLIC(int) xdb_region_buffer_alloc(xdb_region_buffer_t *region, int length) {
+    if (length <= 0) {
+        return 1;
+    }
+
+    // no allocation supports for the buffer wapper
+    if (region->type == xdb_region_buffer_wrapper) {
+        if (length >= region->length) {
+            return 2;
+        }
+
+        region->value[length] = '\0';
+        return 0;
+    }
+
+    // ensure that the value were freed
+    // by calling #xdb_region_buffer_free
+    if (region->value != NULL) {
+        return 3;
+    }
+
+    char *ptr = (char *) xdb_malloc(length + 1);
+    if (ptr == NULL) {
+        return 4;
+    }
+
+    ptr[length]    = '\0';  // NULL-end
+    region->value  = ptr;
+    region->length = length;
+    return 0;
+}
+
+XDB_PUBLIC(void) xdb_region_buffer_free(xdb_region_buffer_t *region) {
+    if (region->type == xdb_region_buffer_auto) {
+        xdb_free(region->value);
+        region->value = NULL;
+    }
+}
+
+// --- END region buffer
+
 // internal function prototype define
 XDB_PRIVATE(int) read(xdb_searcher_t *, long offset, char *, size_t length);
 
@@ -59,17 +117,17 @@ XDB_PUBLIC(void) xdb_close(void *ptr) {
 
 // --- xdb searcher search api define
 
-XDB_PUBLIC(int) xdb_search_by_string(xdb_searcher_t *xdb, const string_ip_t *ip_string, char **region_buffer, size_t length) {
+XDB_PUBLIC(int) xdb_search_by_string(xdb_searcher_t *xdb, const string_ip_t *ip_string, xdb_region_buffer_t *region) {
     bytes_ip_t ip_bytes[16] = {'\0'};
     xdb_version_t *version = xdb_parse_ip(ip_string, ip_bytes, sizeof(ip_bytes));
     if (version == NULL) {
         return 10;
     } else {
-        return xdb_search(xdb, ip_bytes, version->bytes, region_buffer, length);
+        return xdb_search(xdb, ip_bytes, version->bytes, region);
     }
 }
 
-XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, const bytes_ip_t *ip_bytes, int ip_len, char **region_buffer, size_t length) {
+XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, const bytes_ip_t *ip_bytes, int ip_len, xdb_region_buffer_t *region) {
     int il0, il1, idx, err, bytes, d_bytes;
     register int seg_index_size, l, h, m, p;
     unsigned int s_ptr, e_ptr, data_ptr, data_len;
@@ -126,7 +184,7 @@ XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, const bytes_ip_t *ip_bytes, int 
         err = read(xdb, p, segment_buffer, seg_index_size);
         if (err != 0) {
             err += 20;
-            goto done;
+            goto defer;
         }
 
         // decode the data fields as needed
@@ -143,33 +201,24 @@ XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, const bytes_ip_t *ip_bytes, int 
 
     // printf("data_len=%u, data_ptr=%u\n", data_len, data_ptr);
     if (data_len == 0) {
-        goto done;
+        err = 100;
+        goto defer;
     }
 
-    // buffer length checking
-    if (length > 0 && data_len >= (int) length) {
-        err = 1;
-        goto done;
+    // buffer alloc checking
+    err = xdb_region_buffer_alloc(region, data_len);
+    if (err != 0) {
+        err += 100;
+        goto defer;
     }
 
-    // @Note: since 2025/09/18 with IPv6 supporting.
-    // if the region_buffer is NULL or the length is 0 we will create a buffer
-    // to hold the region info and the caller should call xdb_free to free the region info after finished use it.
-    char *r_buffer = *region_buffer;
-    if (r_buffer == NULL || length == 0) {
-        r_buffer = (char *) xdb_malloc(data_len + 1);
-        *region_buffer = r_buffer;
-    }
-
-    // auto append a NULL-end
-    r_buffer[data_len] = '\0';
-    err = read(xdb, data_ptr, r_buffer, data_len);
+    err = read(xdb, data_ptr, region->value, data_len);
     if (err != 0) {
         err += 30;
-        goto done;
+        goto defer;
     }
 
-done:
+defer:
     // checn and free the segment buffer
     if (segment_buffer != NULL) {
         xdb_free(segment_buffer);
