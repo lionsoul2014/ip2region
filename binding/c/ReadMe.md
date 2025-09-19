@@ -246,6 +246,8 @@ xdb_region_buffer_t region;
 int err = xdb_region_buffer_init(&region, buffer, sizeof(buffer));
 if (err != 0) {
     // 初始化失败
+    printf("failed to init region buffer width errcode=%d", err);
+    return;
 }
 
 // 2，通过指定 NULL 来创建 region_buffer，让其自动按需分配内存
@@ -253,6 +255,8 @@ xdb_region_buffer_t region;
 int err = xdb_region_buffer_init(&region, NULL, 0);
 if (err != 0) {
     // 初始化失败
+    printf("failed to init region buffer width errcode=%d", err);
+    return;
 }
 
 
