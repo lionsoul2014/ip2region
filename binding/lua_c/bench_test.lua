@@ -62,10 +62,29 @@ if string.len(dbFile) < 2 or string.len(srcFile) < 2 then
     return
 end
 
+-- verify the xdb from header
+if xdb.verify(dbFile) == false then
+    print(string.format("failed to verify the xdb file: %s", dbFile))
+    return
+end
+
+-- detect the version from the xdb header
+header, err = xdb.load_header(dbFile)
+if err ~= nil then
+    print(string.format("failed to load header: %s", err))
+    return
+end
+
+version, err = xdb.version_from_header(header);
+if err ~= nil then
+    print(string.format("failed to detect version from header: %s", err))
+    return
+end
+
 -- create the searcher based on the cache-policy
 local searcher, v_index, content
 if cachePolicy == "file" then
-    searcher, err = xdb.new_with_file_only(dbFile)
+    searcher, err = xdb.new_with_file_only(version, dbFile)
     if err ~= nil then
         print(string.format("failed to create searcher: %s", err))
         return
@@ -77,7 +96,7 @@ elseif cachePolicy == "vectorIndex" then
         return
     end
 
-    searcher, err = xdb.new_with_vector_index(dbFile, v_index)
+    searcher, err = xdb.new_with_vector_index(version, dbFile, v_index)
     if err ~= nil then
         print(string.format("failed to create vector index searcher: %s", err))
         return
@@ -89,7 +108,7 @@ elseif cachePolicy == "content" then
         return
     end
 
-    searcher, err = xdb.new_with_buffer(content)
+    searcher, err = xdb.new_with_buffer(version, content)
     if err ~= nil then
         print(string.format("failed to create content buffer searcher: %s", err))
         return
@@ -116,7 +135,7 @@ for l in lines do
         goto continue
     end
 
-    for v1, v2, v3 in string.gmatch(l, "([%d%.]+)|([%d%.]+)|([^\n]+)") do
+    for v1, v2, v3 in string.gmatch(l, "([^|]+)|([^|]+)|([^\n]+)") do
         -- print(sip_str, eip_str, region)
         sip_str = v1
         eip_str = v2
@@ -124,36 +143,35 @@ for l in lines do
         break
     end
 
-    sip, err = xdb.check_ip(sip_str)
+    sip_bytes, err = xdb.parse_ip(sip_str)
     if err ~= nil then
         print(string.format("invalid start ip `%s`", sip_str))
         return
     end
 
-    eip, err = xdb.check_ip(eip_str)
+    eip_bytes, err = xdb.parse_ip(eip_str)
     if err ~= nil then
         print(string.format("invalid end ip `%s`", sip_str))
         return
     end
 
-    if sip > eip then
+    if xdb.ip_compare(sip_bytes, eip_bytes) > 0 then
         print(string.format("start ip(%s) should not be greater than end ip(%s)\n", sip_str, eip_str))
         return
     end
 
-    mip = (sip + eip) >> 1
-    for _, ip in ipairs({sip, (sip + mip) >> 1, mip, (mip + eip) >> 1, eip}) do
+    for _, ip_bytes in ipairs({sip_bytes, eip_bytes}) do
         t_time = xdb.now()
-        region, err = searcher:search(ip)
+        region, err = searcher:search(ip_bytes)
         c_time = c_time + xdb.now() - t_time
         if err ~= nil then
-            print(string.format("failed to search ip `%s`", xdb.long2ip(ip)))
+            print(string.format("failed to search ip `%s`", xdb.ip_to_string(ip_bytes)))
             return
         end
 
         -- check the region
         if region ~= s_region then
-            printf(string.format("failed search(%s) with (%s != %s)\n", xdb.long2ip(ip), region, s_region))
+            printf(string.format("failed search(%s) with (%s != %s)\n", xdb.ip_to_string(ip_bytes), region, s_region))
             return
         end
 
@@ -171,6 +189,8 @@ end
 if content ~= nil then
     content:close()
 end
+
+xdb.cleanup();
 
 -- print the stats
 local avg_costs = 0

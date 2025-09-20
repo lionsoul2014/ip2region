@@ -257,16 +257,48 @@ static int lua_xdb_load_content_from_file(lua_State *L) {
     return 2;
 }
 
+static int lua_xdb_version_from_header(lua_State *L) {
+    xdb_version_t *version;
+    xdb_buffer_t *buffer;
+
+    luaL_argcheck(L, lua_gettop(L) == 1, 1, "call via '.' and xdb header expected");
+    // header buffer checking
+    buffer = luaL_checkudata(L, 1, XDB_BUFFER_METATABLE_NAME);
+    if (buffer->type != xdb_header_buffer) {
+        return luaL_error(L, "invalid xdb header buffer");
+    }
+
+    version = xdb_version_from_header((xdb_header_t *) buffer->ptr);
+    if (version == NULL) {
+        lua_pushnil(L);
+        lua_pushstring(L, "failed to detect version from header");
+    } else {
+        lua_pushlightuserdata(L, version);
+        lua_pushnil(L);
+    }
+
+    return 2;
+}
+
+static int lua_xdb_verify_from_file(lua_State *L) {
+    const char *db_path;
+
+    luaL_argcheck(L, lua_gettop(L) == 1, 1, "call via '.' and the xdb file path expected");
+    db_path = luaL_checkstring(L, 1);
+    lua_pushboolean(L, xdb_verify_from_file(db_path) == 0 ? 1 : 0);
+    return 1;
+}
+
 static int lua_xdb_parse_ip(lua_State *L) {
     int err;
     const char *ip_str;
-    bytes_ip_t ip_bytes[18] = {'\0'};
+    bytes_ip_t ip_bytes[19] = {'\0'};
     xdb_version_t *version;
 
     luaL_argcheck(L, lua_gettop(L) == 1, 1, "call via '.' and string ip expected, eg: 1.2.3.4 / 3000::");
     ip_str = luaL_checkstring(L, 1);
 
-    version = xdb_parse_ip(ip_str, ip_bytes, sizeof(ip_bytes));
+    version = xdb_parse_ip(ip_str, ip_bytes + 2, sizeof(ip_bytes) - 2);
     if (version == NULL) {
         lua_pushnil(L);
         lua_pushfstring(L, "failed to parse the `%s`", ip_str);
@@ -275,32 +307,46 @@ static int lua_xdb_parse_ip(lua_State *L) {
 
     // append the magic char for later analysis
     // printf("ip:%s, version->id: %d\n", ip_str, version->id);
-    ip_bytes[version->bytes]   = '&';
-    ip_bytes[version->bytes+1] = '\0';
-    lua_pushstring(L, ip_bytes);
+    ip_bytes[0] = '&';
+    ip_bytes[1] = (bytes_ip_t) version->id;
+    lua_pushlstring(L, ip_bytes, version->bytes + 2);
     lua_pushnil(L);
     return 2;
 }
 
 static int lua_xdb_ip_to_string(lua_State *L) {
-    int err, len;
+    int err, vid, bytes;
     const bytes_ip_t *ip_bytes;
-    char ip_string[INET6_ADDRSTRLEN] = {'\0'};
+    char ip_string[INET6_ADDRSTRLEN + 1] = {'\0'};
 
     luaL_argcheck(L, lua_gettop(L) == 1, 1, "call via '.' and bytes ip expected");
     ip_bytes = luaL_checkstring(L, 1);
-    len = strlen(ip_bytes);
-    if (len == 5 && ip_bytes[4] == '&') {
-        // binary IPv4 bytes
-    } else if (len == 17 || ip_bytes[16] == '&') {     // IPv6
-        // binary IPv6 bytes
+    if (strlen(ip_bytes) < 2) {
+        lua_pushnil(L);
+        lua_pushstring(L, "invalid binary ip bytes specified");
+        return 2;
+    }
+
+    if (ip_bytes[0] != '&') {
+        lua_pushnil(L);
+        lua_pushstring(L, "invalid binary ip bytes specified");
+        return 2;
+    }
+
+    vid = ip_bytes[1] & 0xFF;
+    if (vid == xdb_ipv4_id) {
+        // IPv4
+        bytes = xdb_ipv4_bytes;
+    } else if (vid == xdb_ipv6_id) {
+        // IPv6
+        bytes = xdb_ipv6_bytes;
     } else {
         lua_pushnil(L);
         lua_pushstring(L, "invalid binary ip bytes specified");
         return 2;
     }
 
-    err = xdb_ip_to_string(ip_bytes, len-1, ip_string, sizeof(ip_string));
+    err = xdb_ip_to_string(ip_bytes + 2, bytes, ip_string, sizeof(ip_string));
     if (err != 0) {
         lua_pushnil(L);
         lua_pushstring(L, "failed to conver the ip bytes to string");
@@ -308,6 +354,59 @@ static int lua_xdb_ip_to_string(lua_State *L) {
     }
 
     lua_pushstring(L, ip_string);
+    lua_pushnil(L);
+    return 2;
+}
+
+static int _validate_bytes_ip(const bytes_ip_t *ip_bytes) {
+    if (strlen(ip_bytes) < 2) {
+        return 1;
+    }
+
+    if (ip_bytes[0] != '&') {
+        return 2;
+    }
+
+    int vid = ip_bytes[1] & 0xFF;
+    if (vid != xdb_ipv4_id && vid != xdb_ipv6_id) {
+        return 3;
+    }
+
+    return 0;
+}
+
+static int lua_xdb_ip_compare(lua_State *L) {
+    int err, vid, bytes;
+    const bytes_ip_t *ip1_bytes, *ip2_bytes;
+
+    luaL_argcheck(L, lua_gettop(L) == 2, 1, "call via '.' bytes ip1 and ip2 expected");
+    ip1_bytes = luaL_checkstring(L, 1);
+    ip2_bytes = luaL_checkstring(L, 2);
+
+    // validate the ip1
+    err = _validate_bytes_ip(ip1_bytes);
+    if (err != 0) {
+        lua_pushnil(L);
+        lua_pushfstring(L, "failed to validate ip1 with errcode=%d", err);
+        return 2;
+    }
+
+    // validate the ip2
+    err = _validate_bytes_ip(ip2_bytes);
+    if (err != 0) {
+        lua_pushnil(L);
+        lua_pushfstring(L, "failed to validate ip2 with errcode=%d", err);
+        return 2;
+    }
+
+    if (ip1_bytes[1] != ip2_bytes[1]) {
+        lua_pushnil(L);
+        lua_pushstring(L, "ip version of ip1 and ip2 are not the same");
+        return 2;
+    }
+
+    err = xdb_ip_sub_compare(ip1_bytes + 2, (ip1_bytes[1] & 0xFF), ip2_bytes, 2);
+    lua_pushinteger(L, err);
     lua_pushnil(L);
     return 2;
 }
@@ -332,13 +431,10 @@ static int lua_xdb_new_with_file_only(lua_State *L) {
     luaL_argcheck(L, lua_gettop(L) == 2, 1, "call via '.' and ip version / xdb file path expected");
 
     // check the ip version
-    vid = luaL_checkinteger(L, 1);
-    if (vid == xdb_ipv4_id) {
-        version = XDB_IPv4;
-    } else if (vid == xdb_ipv6_id) {
-        version = XDB_IPv6;
+    if (!lua_islightuserdata(L, 1)) {
+        return luaL_error(L, "invalid verison resouce specified");
     } else {
-        return luaL_error(L, "invalid verison id (`%d`) specified", vid);
+        version = (xdb_version_t *) lua_touserdata(L, 1);
     }
 
     // check the db path
@@ -372,18 +468,15 @@ static int lua_xdb_new_with_vector_index(lua_State *L) {
     xdb_searcher_t *searcher;
     xdb_buffer_t *xBuffer;
     const char *db_path;
-    int err, vid;
+    int err;
 
     luaL_argcheck(L, lua_gettop(L) == 3, 1, "call via '.', ip version / xdb file path / vector index buffer expected");
 
-    // ip version checking
-    vid = luaL_checkinteger(L, 1);
-    if (vid == xdb_ipv4_id) {
-        version = XDB_IPv4;
-    } else if (vid == xdb_ipv6_id) {
-        version = XDB_IPv6;
+    // check the ip version
+    if (!lua_islightuserdata(L, 1)) {
+        return luaL_error(L, "invalid verison resouce specified");
     } else {
-        return luaL_error(L, "invalid verison id (`%d`) specified", vid);
+        version = (xdb_version_t *) lua_touserdata(L, 1);
     }
 
     // db_path checking
@@ -422,18 +515,15 @@ static int lua_xdb_new_with_buffer(lua_State *L) {
     xdb_version_t *version;
     xdb_searcher_t *searcher;
     xdb_buffer_t *xBuffer;
-    int err, vid;
+    int err;
 
     luaL_argcheck(L, lua_gettop(L) == 2, 1, "call via '.' and ip version / xdb content buffer expected");
 
-    // ip version checking
-    vid = luaL_checkinteger(L, 1);
-    if (vid == xdb_ipv4_id) {
-        version = XDB_IPv4;
-    } else if (vid == xdb_ipv6_id) {
-        version = XDB_IPv6;
+    // check the ip version
+    if (!lua_islightuserdata(L, 1)) {
+        return luaL_error(L, "invalid verison resouce specified");
     } else {
-        return luaL_error(L, "invalid verison id (`%d`) specified", vid);
+        version = (xdb_version_t *) lua_touserdata(L, 1);
     }
 
     // content buffer checking
@@ -479,7 +569,7 @@ static int lua_xdb_close(lua_State *L) {
 }
 
 static int lua_xdb_search(lua_State *L) {
-    int err, len, ip_len;
+    int err, vid, ip_len;
     const char *ip_string;
     bytes_ip_t ip_buffer[INET6_ADDRSTRLEN] = {'\0'};
     const bytes_ip_t *ip_bytes;
@@ -495,16 +585,26 @@ static int lua_xdb_search(lua_State *L) {
     ip_string = luaL_checkstring(L, 2);
 
     // ip string type checking
-    len = strlen(ip_string);
-    if (len == 5 && ip_string[4] == '&') {
-        // binary IPv4
-        ip_len   = 4;
-        ip_bytes = ip_string;
-    } else if (len == 17 && ip_string[16] == '&') {
-        // binary IPv6
-        ip_len   = 16;
-        ip_bytes = ip_string;
-        printf("ipv6 binary string\n");
+    if (strlen(ip_string) < 2) {
+        lua_pushnil(L);
+        lua_pushfstring(L, "invalid ip address `%s`", ip_string);
+        return 2;
+    }
+
+    if (ip_string[0] == '&') {
+        vid = ip_string[1] & 0xFF;
+        if (vid == xdb_ipv4_id) {
+            ip_len = xdb_ipv4_bytes;
+        } else if (vid == xdb_ipv6_id) {
+            ip_len = xdb_ipv6_bytes;
+        } else {
+            lua_pushnil(L);
+            lua_pushstring(L, "invalid binary ip bytes specified");
+            return 2;
+        }
+
+        ip_bytes = ip_string + 2;
+        // printf("ip_len: %d, vid: %d\n", ip_len, vid);
     } else {
         version = xdb_parse_ip(ip_string, ip_buffer, sizeof(ip_buffer));
         if (version == NULL) {
@@ -552,6 +652,12 @@ static int lua_xdb_tostring(lua_State *L) {
     return 1;
 }
 
+// cleanup the current module
+static int lua_xdb_cleanup(lua_State *L) {
+     xdb_clean_winsock();
+    return 0;
+}
+
 // module method define, should be access via ':'
 static const struct luaL_Reg xdb_searcher_methods[] = {
     {"search",      lua_xdb_search},
@@ -570,15 +676,26 @@ static const struct luaL_Reg xdb_searcher_functions[] = {
     {"load_header",           lua_xdb_load_header_from_file},
     {"load_vector_index",     lua_xdb_load_vector_index_from_file},
     {"load_content",          lua_xdb_load_content_from_file},
+    {"verify",                lua_xdb_verify_from_file},
+    {"version_from_header",   lua_xdb_version_from_header},
     {"parse_ip",              lua_xdb_parse_ip},
     {"ip_to_string",          lua_xdb_ip_to_string},
+    {"ip_compare",            lua_xdb_ip_compare},
     {"now",                   lua_xdb_now},
+    {"close",                 lua_xdb_close},
+    {"cleanup",               lua_xdb_cleanup},
     {NULL, NULL}
 };
 
 // module register function
 int luaopen_xdb_searcher(lua_State *L)
 {
+    int err = xdb_init_winsock();
+    if (err != 0) {
+        luaL_error(L, "failed to init the winsock with errno=%d\n", err);
+        return 1;
+    }
+    
     // create a metatable for xdb buffer object
     luaL_newmetatable(L, XDB_BUFFER_METATABLE_NAME);
     lua_pushvalue(L, -1);
@@ -593,9 +710,9 @@ int luaopen_xdb_searcher(lua_State *L)
     luaL_setfuncs(L, xdb_searcher_functions, 0);
 
     // register the constants attributes
-    lua_pushinteger(L, xdb_ipv4_id);
+    lua_pushlightuserdata(L, XDB_IPv4);
     lua_setfield(L, -2, "IPv4");
-    lua_pushinteger(L, xdb_ipv6_id);
+    lua_pushlightuserdata(L, XDB_IPv6);
     lua_setfield(L, -2, "IPv6");
     lua_pushinteger(L, xdb_header_buffer);
     lua_setfield(L, -2, "header_buffer");

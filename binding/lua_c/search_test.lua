@@ -59,7 +59,24 @@ if string.len(dbFile) < 2 then
     return
 end
 
-local version = xdb.IPv4
+-- verify the xdb from header
+if xdb.verify(dbFile) == false then
+    print(string.format("failed to verify the xdb file: %s", dbFile))
+    return
+end
+
+-- detect the version from the xdb header
+header, err = xdb.load_header(dbFile)
+if err ~= nil then
+    print(string.format("failed to load header: %s", err))
+    return
+end
+
+version, err = xdb.version_from_header(header);
+if err ~= nil then
+    print(string.format("failed to detect version from header: %s", err))
+    return
+end
 
 -- create the searcher based on the cache-policy
 local searcher, v_index, content
@@ -100,8 +117,9 @@ end
 
 -- do the search
 print(string.format([[
-ip2region xdb searcher test program, cachePolicy: %s
-type 'quit' to exit]], cachePolicy))
+ip2region xdb searcher test program
+source xdb: %s (%s, %s)
+type 'quit' to exit]], dbFile, "IPv4", cachePolicy))
 local region, err = "", nil
 local ip_int, s_time, c_time =  0, 0, 0
 while ( true ) do
@@ -144,3 +162,5 @@ end
 if content ~= nil then
     content:close()
 end
+
+xdb.cleanup();

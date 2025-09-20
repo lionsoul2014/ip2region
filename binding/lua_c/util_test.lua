@@ -24,7 +24,8 @@ function test_parse_ip()
         if err ~= nil then
             print(string.format("invalid ip address `%s`: %s", ip_src, err))
         else
-            print(string.format("parse_ip(%s): %s", ip_src, xdb.ip_to_string(ip_bytes)))
+            local ip_string = xdb.ip_to_string(ip_bytes);
+            print(string.format("parse_ip(%s)->%s ? %s", ip_src, ip_string, ip_src==ip_string))
         end
     end
 end
@@ -116,4 +117,5 @@ local s_time = xdb.now();
 print(string.format("+---calling test function %s ...", func_name))
 _G[func_name]();
 local cost_time = xdb.now() - s_time
+xdb.cleanup();
 print(string.format("|---done, took: %.3fμs", cost_time))
