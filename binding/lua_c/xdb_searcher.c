@@ -10,10 +10,10 @@
 #include "stdio.h"
 #include "lua.h"
 #include "lauxlib.h"
-#include "../c/xdb_searcher.h"
+#include "../c/xdb_api.h"
 
-#define XDB_SEARCHER_METATABLE_NAME "xdb_searcher_mt"
 #define XDB_BUFFER_METATABLE_NAME "xdb_buffer_mt"
+#define XDB_METATABLE_NAME "xdb_metatable_name"
 
 #define xdb_header_buffer 1
 #define xdb_vector_index_buffer 2
@@ -140,7 +140,24 @@ static const struct luaL_Reg xdb_buffer_methods[] = {
 // --- End of xdb buffer
 
 
-// --- buffer util function
+// --- xdb util function
+
+static int lua_xdb_parse_ip(lua_State *L) {
+    int err;
+    unsigned int ip;
+    const char *ip_str;
+
+    luaL_argcheck(L, lua_gettop(L) == 1, 1, "call via '.' and string ip expected, eg: 1.2.3.4");
+    ip_str = luaL_checkstring(L, 1);
+    lua_pushstring(L, ip_str);
+    lua_pushnil(L);
+    return 2;
+}
+
+static int lua_xdb_now(lua_State *L) {
+    lua_pushinteger(L, xdb_now());
+    return 1;
+}
 
 static int lua_xdb_load_header_from_file(lua_State *L) {
     const char *db_path;
@@ -168,7 +185,7 @@ static int lua_xdb_load_header_from_file(lua_State *L) {
     buffer->type = xdb_header_buffer;
     buffer->name = "header";
     buffer->ptr = header;
-    buffer->closer = xdb_close_header;
+    buffer->closer = xdb_free_header;
 
     // set the metatable of the header buffer object and push onto the stack
     luaL_getmetatable(L, XDB_BUFFER_METATABLE_NAME);
@@ -204,7 +221,7 @@ static int lua_xdb_load_vector_index_from_file(lua_State *L) {
     buffer->type = xdb_vector_index_buffer;
     buffer->name = "v_index";
     buffer->ptr = v_index;
-    buffer->closer = xdb_close_vector_index;
+    buffer->closer = xdb_free_vector_index;
 
     // set the metatable of the header buffer object and push onto the stack
     luaL_getmetatable(L, XDB_BUFFER_METATABLE_NAME);
@@ -240,7 +257,7 @@ static int lua_xdb_load_content_from_file(lua_State *L) {
     buffer->type = xdb_content_buffer;
     buffer->name = "content";
     buffer->ptr = content;
-    buffer->closer = xdb_close_content;
+    buffer->closer = xdb_free_content;
 
     // set the metatable of the header buffer object and push onto the stack
     luaL_getmetatable(L, XDB_BUFFER_METATABLE_NAME);
@@ -250,20 +267,31 @@ static int lua_xdb_load_content_from_file(lua_State *L) {
     return 2;
 }
 
-// --- End of buffer api
+// --- End of xdb util api
 
 
 // --- xdb searcher api
 
 static int lua_xdb_new_with_file_only(lua_State *L) {
-    int err;
+    int err, vid;
+    xdb_version_t *version;
     xdb_searcher_t *searcher;
     const char *db_path = NULL;
 
-    luaL_argcheck(L, lua_gettop(L) == 1, 1, "call via '.' and xdb file path expected");
+    luaL_argcheck(L, lua_gettop(L) == 2, 1, "call via '.' and ip version / xdb file path expected");
+
+    // check the ip version
+    vid = luaL_checkinteger(L, 1);
+    if (vid == xdb_ipv4_id) {
+        version = XDB_IPv4;
+    } else if (vid == xdb_ipv6_id) {
+        version = XDB_IPv6;
+    } else {
+        return luaL_error(L, "invalid verison id (`%d`) specified", vid);
+    }
 
     // check the db path
-    db_path = luaL_checkstring(L, 1);
+    db_path = luaL_checkstring(L, 2);
 
     // alloc for the searcher
     searcher = (xdb_searcher_t *) lua_newuserdata(L, sizeof(xdb_searcher_t));
@@ -272,7 +300,7 @@ static int lua_xdb_new_with_file_only(lua_State *L) {
     }
 
     // init the xdb searcher
-    err = xdb_new_with_file_only(searcher, db_path);
+    err = xdb_new_with_file_only(version, searcher, db_path);
     if (err != 0) {
         lua_pushnil(L);
         lua_pushfstring(L, "init xdb searcher on `%s`: errcode=%d", db_path, err);
@@ -281,7 +309,7 @@ static int lua_xdb_new_with_file_only(lua_State *L) {
 
     // push the metatable onto the stack and
     // set it as the metatable of the current searcher
-    luaL_getmetatable(L, XDB_SEARCHER_METATABLE_NAME);
+    luaL_getmetatable(L, XDB_METATABLE_NAME);
     lua_setmetatable(L, -2);
     lua_pushnil(L);
 
@@ -289,16 +317,29 @@ static int lua_xdb_new_with_file_only(lua_State *L) {
 }
 
 static int lua_xdb_new_with_vector_index(lua_State *L) {
+    xdb_version_t *version;
     xdb_searcher_t *searcher;
     xdb_buffer_t *xBuffer;
     const char *db_path;
-    int err;
+    int err, vid;
 
-    luaL_argcheck(L, lua_gettop(L) == 2, 1, "call via '.', xdb file path and vector index buffer expected");
+    luaL_argcheck(L, lua_gettop(L) == 3, 1, "call via '.', ip version / xdb file path / vector index buffer expected");
 
-    // check the db path and vector index buffer
-    db_path = luaL_checkstring(L, 1);
-    xBuffer = luaL_checkudata(L, 2, XDB_BUFFER_METATABLE_NAME);
+    // ip version checking
+    vid = luaL_checkinteger(L, 1);
+    if (vid == xdb_ipv4_id) {
+        version = XDB_IPv4;
+    } else if (vid == xdb_ipv6_id) {
+        version = XDB_IPv6;
+    } else {
+        return luaL_error(L, "invalid verison id (`%d`) specified", vid);
+    }
+
+    // db_path checking
+    db_path = luaL_checkstring(L, 2);
+
+    // vector index buffer checking
+    xBuffer = luaL_checkudata(L, 3, XDB_BUFFER_METATABLE_NAME);
     if (xBuffer->type != xdb_vector_index_buffer) {
         return luaL_error(L, "invalid vector index buffer");
     }
@@ -310,7 +351,7 @@ static int lua_xdb_new_with_vector_index(lua_State *L) {
     }
 
     // init the xdb searcher
-    err = xdb_new_with_vector_index(searcher, db_path, (xdb_vector_index_t *) xBuffer->ptr);
+    err = xdb_new_with_vector_index(version, searcher, db_path, (xdb_vector_index_t *) xBuffer->ptr);
     if (err != 0) {
         lua_pushnil(L);
         lua_pushfstring(L, "init vector index cached xdb searcher on `%s` with errcode=%d", db_path, err);
@@ -319,7 +360,7 @@ static int lua_xdb_new_with_vector_index(lua_State *L) {
 
     // push the metatable onto the stack and
     // set it as the metatable of the current searcher
-    luaL_getmetatable(L, XDB_SEARCHER_METATABLE_NAME);
+    luaL_getmetatable(L, XDB_METATABLE_NAME);
     lua_setmetatable(L, -2);
     lua_pushnil(L);
 
@@ -327,12 +368,25 @@ static int lua_xdb_new_with_vector_index(lua_State *L) {
 }
 
 static int lua_xdb_new_with_buffer(lua_State *L) {
+    xdb_version_t *version;
     xdb_searcher_t *searcher;
     xdb_buffer_t *xBuffer;
-    int err;
+    int err, vid;
 
-    luaL_argcheck(L, lua_gettop(L) == 1, 1, "call via '.' and xdb content buffer expected");
-    xBuffer = (xdb_buffer_t *) luaL_checkudata(L, 1, XDB_BUFFER_METATABLE_NAME);
+    luaL_argcheck(L, lua_gettop(L) == 2, 1, "call via '.' and ip version / xdb content buffer expected");
+
+    // ip version checking
+    vid = luaL_checkinteger(L, 1);
+    if (vid == xdb_ipv4_id) {
+        version = XDB_IPv4;
+    } else if (vid == xdb_ipv6_id) {
+        version = XDB_IPv6;
+    } else {
+        return luaL_error(L, "invalid verison id (`%d`) specified", vid);
+    }
+
+    // content buffer checking
+    xBuffer = (xdb_buffer_t *) luaL_checkudata(L, 2, XDB_BUFFER_METATABLE_NAME);
     if (xBuffer->type != xdb_content_buffer) {
         return luaL_error(L, "invalid xdb content buffer");
     }
@@ -344,7 +398,7 @@ static int lua_xdb_new_with_buffer(lua_State *L) {
     }
 
     // init the xdb searcher
-    err = xdb_new_with_buffer(searcher, (xdb_content_t *) xBuffer->ptr);
+    err = xdb_new_with_buffer(version, searcher, (xdb_content_t *) xBuffer->ptr);
     if (err != 0) {
         lua_pushnil(L);
         lua_pushfstring(L, "init content cached xdb searcher with errcode=%d", err);
@@ -353,7 +407,7 @@ static int lua_xdb_new_with_buffer(lua_State *L) {
 
     // push the metatable onto the stack and
     // set it as the metatable of the current searcher
-    luaL_getmetatable(L, XDB_SEARCHER_METATABLE_NAME);
+    luaL_getmetatable(L, XDB_METATABLE_NAME);
     lua_setmetatable(L, -2);
     lua_pushnil(L);
 
@@ -364,7 +418,7 @@ static int lua_xdb_close(lua_State *L) {
     xdb_searcher_t *searcher;
 
     luaL_argcheck(L, lua_gettop(L) == 1, 1, "call via ':'");
-    searcher = (xdb_searcher_t *) luaL_checkudata(L, 1, XDB_SEARCHER_METATABLE_NAME);
+    searcher = (xdb_searcher_t *) luaL_checkudata(L, 1, XDB_METATABLE_NAME);
     if (searcher == NULL) {
         return luaL_error(L, "broken xdb searcher instance");
     }
@@ -376,39 +430,47 @@ static int lua_xdb_close(lua_State *L) {
 static int lua_xdb_search(lua_State *L) {
     int err;
     const char *ip_str;
-    unsigned int ip_int;
-    char region_buffer[1024] = {'\0'};
+    bytes_ip_t ip_bytes[INET6_ADDRSTRLEN] = {'\0'};
+    xdb_version_t *version;
+    xdb_region_buffer_t region;
     xdb_searcher_t *searcher;
 
-    luaL_argcheck(L, lua_gettop(L) == 2, 2, "call via ':' and string or long ip address expected");
+    luaL_argcheck(L, lua_gettop(L) == 2, 2, "call via ':' and string ip address expected");
 
     // get the searcher
-    searcher = (xdb_searcher_t *) luaL_checkudata(L, 1, XDB_SEARCHER_METATABLE_NAME);
+    searcher = (xdb_searcher_t *) luaL_checkudata(L, 1, XDB_METATABLE_NAME);
 
     // input ip type checking
-    if (lua_isinteger(L, 2)) {
-        ip_int = lua_tointeger(L, 2);
-    } else if (lua_isstring(L, 2)) {
+    if (lua_isstring(L, 2)) {
         ip_str = lua_tostring(L, 2);
-        err = xdb_check_ip(ip_str, &ip_int);
-        if (err != 0) {
+        version = xdb_parse_ip(ip_str, ip_bytes, sizeof(ip_bytes));
+        if (version == NULL) {
             lua_pushnil(L);
-            lua_pushfstring(L, "invalid string ip `%s`: errcode=%d", ip_str, err);
+            lua_pushfstring(L, "failed to parse string ip `%s`", ip_str);
             return 2;
         }
     } else {
-        return luaL_error(L, "input ip not integer or string");
+        return luaL_error(L, "please specified a string ip address");
+    }
+
+    // init the region buffer
+    err = xdb_region_buffer_init(&region, NULL, 0);
+    if (err != 0) {
+        return luaL_error(L, "failed to init the region buffer with errcode=%d", err);
     }
 
     // do the search
-    err = xdb_search(searcher, ip_int, region_buffer, sizeof(region_buffer));
+    err = xdb_search(searcher, ip_bytes, version->bytes, &region);
     if (err != 0) {
         lua_pushinteger(L, err);
         lua_pushfstring(L, "err=%d", err);
     } else {
-        lua_pushstring(L, region_buffer);
+        lua_pushstring(L, region.value);
         lua_pushnil(L);
     }
+
+    // clean up the region buffer
+    xdb_region_buffer_free(&region);
 
     return 2;
 }
@@ -417,7 +479,7 @@ static int lua_xdb_get_io_count(lua_State *L) {
     xdb_searcher_t *searcher;
 
     luaL_argcheck(L, lua_gettop(L) == 1, 1, "call via ':' or xdb searcher was broken");
-    searcher = (xdb_searcher_t *) luaL_checkudata(L, 1, XDB_SEARCHER_METATABLE_NAME);
+    searcher = (xdb_searcher_t *) luaL_checkudata(L, 1, XDB_METATABLE_NAME);
     lua_pushinteger(L, xdb_get_io_count(searcher));
     return 1;
 }
@@ -426,46 +488,6 @@ static int lua_xdb_tostring(lua_State *L) {
     lua_pushliteral(L, "xdb searcher object");
     return 1;
 }
-
-// -- static util function
-
-static int lua_xdb_check_ip(lua_State *L) {
-    int err;
-    unsigned int ip;
-    const char *ip_str;
-
-    luaL_argcheck(L, lua_gettop(L) == 1, 1, "call via '.' and string ip expected, eg: 1.2.3.4");
-    ip_str = luaL_checkstring(L, 1);
-    err = xdb_check_ip(ip_str, &ip);
-    if (err != 0) {
-        lua_pushinteger(L, 0);
-        lua_pushfstring(L, "err=%d", err);
-    } else {
-        lua_pushinteger(L, ip);
-        lua_pushnil(L);
-    }
-
-    return 2;
-}
-
-static int lua_xdb_long2ip(lua_State *L) {
-    unsigned int ip;
-    char ip_buff[16] = {'\0'};
-
-    luaL_argcheck(L, lua_gettop(L) == 1, 1, "call via '.' and long ip expected");
-    ip = luaL_checkinteger(L, 1);
-    xdb_long2ip(ip, ip_buff);
-    lua_pushstring(L, ip_buff);
-
-    return 1;
-}
-
-static int lua_xdb_now(lua_State *L) {
-    lua_pushinteger(L, xdb_now());
-    return 1;
-}
-
-// --- End of static util
 
 // module method define, should be access via ':'
 static const struct luaL_Reg xdb_searcher_methods[] = {
@@ -485,8 +507,7 @@ static const struct luaL_Reg xdb_searcher_functions[] = {
     {"load_header",           lua_xdb_load_header_from_file},
     {"load_vector_index",     lua_xdb_load_vector_index_from_file},
     {"load_content",          lua_xdb_load_content_from_file},
-    {"check_ip",              lua_xdb_check_ip},
-    {"long2ip",               lua_xdb_long2ip},
+    {"parse_ip",              lua_xdb_parse_ip},
     {"now",                   lua_xdb_now},
     {NULL, NULL}
 };
@@ -495,6 +516,10 @@ static const struct luaL_Reg xdb_searcher_functions[] = {
 int luaopen_xdb_searcher(lua_State *L)
 {
     // register the constants
+    lua_pushinteger(L, xdb_ipv4_id);
+    lua_setglobal(L, "IPv4");
+    lua_pushinteger(L, xdb_ipv6_id);
+    lua_setglobal(L, "IPv6");
     lua_pushinteger(L, xdb_header_buffer);
     lua_setglobal(L, "header_buffer");
     lua_pushinteger(L, xdb_vector_index_buffer);
@@ -509,7 +534,7 @@ int luaopen_xdb_searcher(lua_State *L)
     luaL_setfuncs(L, xdb_buffer_methods, 0);
 
     // create a metatable for xdb searcher object
-    luaL_newmetatable(L, XDB_SEARCHER_METATABLE_NAME);
+    luaL_newmetatable(L, XDB_METATABLE_NAME);
     lua_pushvalue(L, -1);
     lua_setfield(L, -2, "__index");
     luaL_setfuncs(L, xdb_searcher_methods, 0);

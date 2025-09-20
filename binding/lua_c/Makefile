@@ -1,8 +1,8 @@
-LuaVersion = 5.3
+LuaVersion = 5.4
 LIB_DIR = /usr/local/share/lua/$(LuaVersion)
 
-all: ../c/xdb_searcher.h ../c/xdb_searcher.c xdb_searcher.c
-	gcc -g -O2 -I../c/ -I/usr/include/lua$(LuaVersion) ../c/xdb_searcher.c xdb_searcher.c -fPIC -shared -o xdb_searcher.so
+all: ../c/xdb_api.h ../c/xdb_util.c ../c/xdb_searcher.c xdb_searcher.c
+	gcc -g -O2 -I../c/ -I/usr/include/lua$(LuaVersion) ../c/xdb_util.c ../c/xdb_searcher.c xdb_searcher.c -fPIC -shared -o xdb_searcher.so
 
 install:
 	sudo mkdir -p $(LIB_DIR); \
