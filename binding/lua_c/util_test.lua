@@ -12,86 +12,103 @@ package.cpath = "./?.so" .. package.cpath
 local xdb = require("xdb_searcher")
 
 ---- ip checking testing
-print("--- testing check_ip and long2ip ... ")
-local ip_list = {
-    "1.2.3.4", "192.168.2.3", "120.24.78.129", "255.255.255.0",
-    "256.7.12.9", "12.56.78.320", "32.12.45.192", "222.221.220.219",
-    "192.168.1.101 ", "132.96.12.98a", "x23.12.2.12"
-}
+function test_parse_ip()
+    local ip_list = {
+        "1.2.3.4", "192.168.2.3", "120.24.78.129", "255.255.255.0",
+        "256.7.12.9", "12.56.78.320", "32.12.45.192", "222.221.220.219",
+        "192.168.1.101 ", "132.96.12.98a", "x23.12.2.12"
+    }
 
-local s_time = xdb.now()
-for _, ip_src in ipairs(ip_list) do
-    ip, err = xdb.check_ip(ip_src)
-    if err ~= nil then
-        print(string.format("invalid ip address `%s`: %s", ip_src, err))
-    else
-        ip_dst = xdb.long2ip(ip)
-        io.write(string.format("long(%-15s)=%10d, long2ip(%-10d)=%-15s", ip_src, ip, ip, ip_dst))
-        if ip_src ~= ip_dst then
-            print(" --[Failed]")
+    local s_time = xdb.now()
+    for _, ip_src in ipairs(ip_list) do
+        ip, err = xdb.parse_ip(ip_src)
+        if err ~= nil then
+            print(string.format("invalid ip address `%s`: %s", ip_src, err))
         else
-            print(" --[Ok]")
+            -- io.write(string.format("long(%-15s)=%10d, long2ip(%-10d)=%-15s", ip_src, ip, ip, ip_dst))
+            -- if ip_src ~= ip_dst then
+            --     print(" --[Failed]")
+            -- else
+            --     print(" --[Ok]")
+            -- end
         end
     end
 end
 
 ---- buffer loading test
-print("\n--- testing load header ... ")
-header, err = xdb.load_header("../../data/ip2region.xdb")
-if err ~= nil then
-    print("failed to load header: ", err)
-else
-    print(string.format("xdb header buffer `%s` loaded", header))
+function test_load_header() 
+    header, err = xdb.load_header("../../data/ip2region_v4.xdb")
+    if err ~= nil then
+        print("failed to load header: ", err)
+    else
+        print(string.format("xdb header buffer `%s` loaded", header))
 
-    local tpl = [[
-header: {
-    version: %d
-    index_policy: %d
-    created_at: %d
-    start_index_ptr: %d
-    end_index_ptr: %d
-}]]
+        local tpl = [[
+    header: {
+        version: %d
+        index_policy: %d
+        created_at: %d
+        start_index_ptr: %d
+        end_index_ptr: %d
+    }]]
 
-    local t = header:to_table()
-    print(string.format(tpl,
-        t["version"], t["index_policy"], t["created_at"], t["start_index_ptr"], t["end_index_ptr"])
-    )
+        local t = header:to_table()
+        print(string.format(tpl,
+            t["version"], t["index_policy"], t["created_at"], t["start_index_ptr"], t["end_index_ptr"])
+        )
+    end
 end
 
 
-print("\n--- testing load vector index ... ")
-v_index, err = xdb.load_vector_index("../../data/ip2region.xdb")
-if err ~= nil then
-    print("failed to load vector index: ", err)
-else
-    print(string.format("xdb vector index buffer `%s` loaded, info={name=%s, type=%d, length=%d}",
-            v_index, v_index:name(), v_index:type(), v_index:length()))
-    v_index:close()
+function test_load_vector_index()
+    v_index, err = xdb.load_vector_index("../../data/ip2region_v4.xdb")
+    if err ~= nil then
+        print("failed to load vector index: ", err)
+    else
+        print(string.format("xdb vector index buffer `%s` loaded, info={name=%s, type=%d, length=%d}",
+                v_index, v_index:name(), v_index:type(), v_index:length()))
+        v_index:close()
+    end
 end
 
 
-print("\n--- testing load content buffer ... ")
-c_buffer, err = xdb.load_content("../../data/ip2region.xdb")
-if err ~= nil then
-    print("failed to load content: ", err)
-else
-    print(string.format("xdb content buffer `%s` loaded, info={name=%s, type=%d, length=%d}",
-            c_buffer, c_buffer:name(), c_buffer:type(), c_buffer:length()))
-    c_buffer:close();
+function test_load_content()
+    c_buffer, err = xdb.load_content("../../data/ip2region_v4.xdb")
+    if err ~= nil then
+        print("failed to load content: ", err)
+    else
+        print(string.format("xdb content buffer `%s` loaded, info={name=%s, type=%d, length=%d}",
+                c_buffer, c_buffer:name(), c_buffer:type(), c_buffer:length()))
+        c_buffer:close();
+    end
 end
 
 
-print("\n--- testing search ... ")
-local ip_str = "1.2.3.4"
-searcher, err = xdb.new_with_file_only("../../data/ip2region.xdb")
-local t_start = xdb.now()
-region, err = searcher:search(ip_str)
-local c_time = xdb.now() - t_start
-print(string.format("search(%s): {region=%s, io_count: %d, took: %dμs, err=%s}",
-        ip_str, region, searcher:get_io_count(), c_time, err))
-print(string.format("searcher.tostring=%s", searcher))
-searcher:close()
+function test_search()
+    local ip_str = "1.2.3.4"
+    searcher, err = xdb.new_with_file_only(IPv4, "../../data/ip2region_v4.xdb")
+    local t_start = xdb.now()
+    region, err = searcher:search(ip_str)
+    local c_time = xdb.now() - t_start
+    print(string.format("search(%s): {region=%s, io_count: %d, took: %dμs, err=%s}",
+            ip_str, region, searcher:get_io_count(), c_time, err))
+    print(string.format("searcher.tostring=%s", searcher))
+    searcher:close()
+end
 
+local func_name = arg[1]
+if func_name == nil then
+    print("please specified the function to test\n")
+    return
+end
 
-print("")
-print(string.format("all tests done, elapsed %d μs", xdb.now() - s_time))
+if (_G[func_name] == nil) then
+    print(string.format("undefined function `%s` to call", func_name))
+    return
+end
+
+local s_time = xdb.now();
+print(string.format("+---calling test function %s ...", func_name))
+_G[func_name]();
+local cost_time = xdb.now() - s_time
+print(string.format("|---done, took: %.3fμs", cost_time))
