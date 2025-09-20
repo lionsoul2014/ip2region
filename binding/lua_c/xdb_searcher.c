@@ -18,7 +18,6 @@
 #define xdb_header_buffer 1
 #define xdb_vector_index_buffer 2
 #define xdb_content_buffer 3
-#define xdb_ip_buffer 4
 
 
 // --- xdb buffer interface impl
@@ -678,12 +677,11 @@ static const struct luaL_Reg xdb_searcher_functions[] = {
     {"load_content",          lua_xdb_load_content_from_file},
     {"verify",                lua_xdb_verify_from_file},
     {"version_from_header",   lua_xdb_version_from_header},
+    {"cleanup",               lua_xdb_cleanup},
     {"parse_ip",              lua_xdb_parse_ip},
     {"ip_to_string",          lua_xdb_ip_to_string},
     {"ip_compare",            lua_xdb_ip_compare},
     {"now",                   lua_xdb_now},
-    {"close",                 lua_xdb_close},
-    {"cleanup",               lua_xdb_cleanup},
     {NULL, NULL}
 };
 
