@@ -14,25 +14,27 @@ local xdb = require("xdb_searcher")
 ---- ip checking testing
 function test_parse_ip()
     local ip_list = {
-        "1.2.3.4", "192.168.2.3", "120.24.78.129", "255.255.255.0",
-        "256.7.12.9", "12.56.78.320", "32.12.45.192", "222.221.220.219",
-        "192.168.1.101 ", "132.96.12.98a", "x23.12.2.12"
+        "1.2.3.4", "192.168.2.3", "120.24.78.129", "255.255.255.0", "invalid-ipv.4",
+        "::", "3000::", "240e:3b7:3276:33b0:4844:6f28:f69c:1eee", "2001:4:112::", "invalid-ipv::6"
     }
 
     local s_time = xdb.now()
     for _, ip_src in ipairs(ip_list) do
-        ip, err = xdb.parse_ip(ip_src)
+        ip_bytes, err = xdb.parse_ip(ip_src)
         if err ~= nil then
             print(string.format("invalid ip address `%s`: %s", ip_src, err))
         else
-            -- io.write(string.format("long(%-15s)=%10d, long2ip(%-10d)=%-15s", ip_src, ip, ip, ip_dst))
-            -- if ip_src ~= ip_dst then
-            --     print(" --[Failed]")
-            -- else
-            --     print(" --[Ok]")
-            -- end
+            print(string.format("parse_ip(%s): %s", ip_src, xdb.ip_to_string(ip_bytes)))
         end
     end
+end
+
+function test_print_const()
+    print("ipv4: ", xdb.IPv4);
+    print("ipv6: ", xdb.IPv6);
+    print("header_buffer: ", xdb.header_buffer);
+    print("v_index_buffer: ", xdb.v_index_buffer);
+    print("content_buffer: ", xdb.content_buffer);
 end
 
 ---- buffer loading test
@@ -50,11 +52,14 @@ function test_load_header()
         created_at: %d
         start_index_ptr: %d
         end_index_ptr: %d
+        ip_version: %d
+        runtime_ptr_bytes: %d
     }]]
 
         local t = header:to_table()
         print(string.format(tpl,
-            t["version"], t["index_policy"], t["created_at"], t["start_index_ptr"], t["end_index_ptr"])
+            t["version"], t["index_policy"], t["created_at"], 
+            t["start_index_ptr"], t["end_index_ptr"], t["ip_version"], t["runtime_ptr_bytes"])
         )
     end
 end
@@ -86,7 +91,7 @@ end
 
 function test_search()
     local ip_str = "1.2.3.4"
-    searcher, err = xdb.new_with_file_only(IPv4, "../../data/ip2region_v4.xdb")
+    searcher, err = xdb.new_with_file_only(xdb.IPv4, "../../data/ip2region_v4.xdb")
     local t_start = xdb.now()
     region, err = searcher:search(ip_str)
     local c_time = xdb.now() - t_start
@@ -98,7 +103,7 @@ end
 
 local func_name = arg[1]
 if func_name == nil then
-    print("please specified the function to test\n")
+    print("please specified the function to test")
     return
 end
 

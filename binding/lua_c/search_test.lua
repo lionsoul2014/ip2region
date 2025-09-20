@@ -59,7 +59,7 @@ if string.len(dbFile) < 2 then
     return
 end
 
-local version = IPv4
+local version = xdb.IPv4
 
 -- create the searcher based on the cache-policy
 local searcher, v_index, content
@@ -116,7 +116,8 @@ while ( true ) do
         break
     end
 
-    version, err = xdb.parse_ip(line)
+    ip_bytes, err = xdb.parse_ip(line)
+    -- print(string.format("parse(%s): %s, err: %s", line, xdb.ip_to_string(ip_bytes), err))
     if err ~= nil then
         print(string.format("invalid ip address `%s`", line))
         goto continue
@@ -124,7 +125,7 @@ while ( true ) do
 
     -- do the search
     s_time = xdb.now()
-    region, err = searcher:search(line)
+    region, err = searcher:search(ip_bytes)
     c_time = xdb.now() - s_time
     if err ~= nil then
         print(string.format("{err: %s, io_count: %d}", err, searcher:get_io_count()))
