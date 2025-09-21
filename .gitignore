@@ -27,6 +27,7 @@ META-INF/
 # vim swp file #
 *.swp
 .idea
+.vscode
 
 # binding
 /v1.0//binding/java/classes/
