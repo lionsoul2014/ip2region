@@ -9,7 +9,7 @@ make
 sudo make install
 ```
 
-备注：Makefile 里面的 `LuaVersion` 变量代表你本地环境的 lua 的版本，默认为 5.3，如果你的版本不是 5.3，记得先修改为和你本地 lua 版本一致的版本号。
+备注：Makefile 里面的 `LuaVersion` 变量代表你本地环境的 lua 的版本，默认为 5.4，如果你的版本不是 5.4，记得先修改为和你本地 lua 版本一致的版本号。
 
 
 # 使用方式
