@@ -256,6 +256,15 @@ static int lua_xdb_load_content_from_file(lua_State *L) {
     return 2;
 }
 
+static int lua_xdb_verify_from_file(lua_State *L) {
+    const char *db_path;
+
+    luaL_argcheck(L, lua_gettop(L) == 1, 1, "call via '.' and the xdb file path expected");
+    db_path = luaL_checkstring(L, 1);
+    lua_pushboolean(L, xdb_verify_from_file(db_path) == 0 ? 1 : 0);
+    return 1;
+}
+
 static int lua_xdb_version_from_header(lua_State *L) {
     xdb_version_t *version;
     xdb_buffer_t *buffer;
@@ -272,19 +281,46 @@ static int lua_xdb_version_from_header(lua_State *L) {
         lua_pushnil(L);
         lua_pushstring(L, "failed to detect version from header");
     } else {
-        lua_pushlightuserdata(L, version);
+        lua_pushinteger(L, version->id);
         lua_pushnil(L);
     }
 
     return 2;
 }
 
-static int lua_xdb_verify_from_file(lua_State *L) {
-    const char *db_path;
+static xdb_version_t *_get_version(lua_State *L, int arg) {
+    int vid = luaL_checkinteger(L, arg);
+    if (vid == xdb_ipv4_id) {
+        return XDB_IPv4;
+    } else if (vid == xdb_ipv6_id) {
+        return XDB_IPv6;
+    } else {
+        return NULL;
+    }
+}
 
-    luaL_argcheck(L, lua_gettop(L) == 1, 1, "call via '.' and the xdb file path expected");
-    db_path = luaL_checkstring(L, 1);
-    lua_pushboolean(L, xdb_verify_from_file(db_path) == 0 ? 1 : 0);
+static int lua_xdb_version_info(lua_State *L) {
+    xdb_version_t *version;
+
+    luaL_argcheck(L, lua_gettop(L) == 1, 1, "call via '.' and version id expected");
+    // check the ip version
+    version = _get_version(L, 1);
+    if (version == NULL) {
+        return luaL_error(L, "invalid verison id specified");
+    }
+
+    lua_newtable(L);
+    lua_pushinteger(L, version->id);
+    lua_setfield(L, -2, "id");
+
+    lua_pushstring(L, version->name);
+    lua_setfield(L, -2, "name");
+
+    lua_pushinteger(L, version->bytes);
+    lua_setfield(L, -2, "bytes");
+
+    lua_pushinteger(L, version->segment_index_size);
+    lua_setfield(L, -2, "segment_index_size");
     return 1;
 }
 
@@ -422,7 +458,7 @@ static int lua_xdb_now(lua_State *L) {
 // --- xdb searcher api
 
 static int lua_xdb_new_with_file_only(lua_State *L) {
-    int err, vid;
+    int err;
     xdb_version_t *version;
     xdb_searcher_t *searcher;
     const char *db_path = NULL;
@@ -430,10 +466,9 @@ static int lua_xdb_new_with_file_only(lua_State *L) {
     luaL_argcheck(L, lua_gettop(L) == 2, 1, "call via '.' and ip version / xdb file path expected");
 
     // check the ip version
-    if (!lua_islightuserdata(L, 1)) {
-        return luaL_error(L, "invalid verison resouce specified");
-    } else {
-        version = (xdb_version_t *) lua_touserdata(L, 1);
+    version = _get_version(L, 1);
+    if (version == NULL) {
+        return luaL_error(L, "invalid verison id specified");
     }
 
     // check the db path
@@ -472,10 +507,9 @@ static int lua_xdb_new_with_vector_index(lua_State *L) {
     luaL_argcheck(L, lua_gettop(L) == 3, 1, "call via '.', ip version / xdb file path / vector index buffer expected");
 
     // check the ip version
-    if (!lua_islightuserdata(L, 1)) {
-        return luaL_error(L, "invalid verison resouce specified");
-    } else {
-        version = (xdb_version_t *) lua_touserdata(L, 1);
+    version = _get_version(L, 1);
+    if (version == NULL) {
+        return luaL_error(L, "invalid verison id specified");
     }
 
     // db_path checking
@@ -519,10 +553,9 @@ static int lua_xdb_new_with_buffer(lua_State *L) {
     luaL_argcheck(L, lua_gettop(L) == 2, 1, "call via '.' and ip version / xdb content buffer expected");
 
     // check the ip version
-    if (!lua_islightuserdata(L, 1)) {
-        return luaL_error(L, "invalid verison resouce specified");
-    } else {
-        version = (xdb_version_t *) lua_touserdata(L, 1);
+    version = _get_version(L, 1);
+    if (version == NULL) {
+        return luaL_error(L, "invalid verison id specified");
     }
 
     // content buffer checking
@@ -647,7 +680,11 @@ static int lua_xdb_get_io_count(lua_State *L) {
 }
 
 static int lua_xdb_tostring(lua_State *L) {
-    lua_pushliteral(L, "xdb searcher object");
+    xdb_searcher_t *searcher;
+
+    luaL_argcheck(L, lua_gettop(L) == 1, 1, "call via ':' or xdb searcher was broken");
+    searcher = (xdb_searcher_t *) luaL_checkudata(L, 1, XDB_METATABLE_NAME);
+    lua_pushfstring(L, "xdb %s searcher object", xdb_get_version(searcher)->name);
     return 1;
 }
 
@@ -677,6 +714,7 @@ static const struct luaL_Reg xdb_searcher_functions[] = {
     {"load_content",          lua_xdb_load_content_from_file},
     {"verify",                lua_xdb_verify_from_file},
     {"version_from_header",   lua_xdb_version_from_header},
+    {"version_info",          lua_xdb_version_info},
     {"cleanup",               lua_xdb_cleanup},
     {"parse_ip",              lua_xdb_parse_ip},
     {"ip_to_string",          lua_xdb_ip_to_string},
@@ -708,9 +746,9 @@ int luaopen_xdb_searcher(lua_State *L)
     luaL_setfuncs(L, xdb_searcher_functions, 0);
 
     // register the constants attributes
-    lua_pushlightuserdata(L, XDB_IPv4);
+    lua_pushinteger(L, xdb_ipv4_id);
     lua_setfield(L, -2, "IPv4");
-    lua_pushlightuserdata(L, XDB_IPv6);
+    lua_pushinteger(L, xdb_ipv6_id);
     lua_setfield(L, -2, "IPv6");
     lua_pushinteger(L, xdb_header_buffer);
     lua_setfield(L, -2, "header_buffer");

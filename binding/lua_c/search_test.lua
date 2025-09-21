@@ -59,7 +59,7 @@ if string.len(dbFile) < 2 then
     return
 end
 
--- verify the xdb from header
+-- verify the xdb
 if xdb.verify(dbFile) == false then
     print(string.format("failed to verify the xdb file: %s", dbFile))
     return
@@ -119,7 +119,7 @@ end
 print(string.format([[
 ip2region xdb searcher test program
 source xdb: %s (%s, %s)
-type 'quit' to exit]], dbFile, "IPv4", cachePolicy))
+type 'quit' to exit]], dbFile, xdb.version_info(version).name, cachePolicy))
 local region, err = "", nil
 local ip_int, s_time, c_time =  0, 0, 0
 while ( true ) do

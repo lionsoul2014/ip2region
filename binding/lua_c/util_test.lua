@@ -65,6 +65,13 @@ function test_load_header()
     end
 end
 
+function test_version_info()
+    local v4 = xdb.version_info(xdb.IPv4)
+    print(string.format("{id:%d, name: %s, bytes: %d, segment_index_size: %d}", v4.id, v4.name, v4.bytes, v4.segment_index_size))
+    local v6 = xdb.version_info(xdb.IPv6)
+    print(string.format("{id:%d, name: %s, bytes: %d, segment_index_size: %d}", v6.id, v6.name, v6.bytes, v6.segment_index_size))
+    local vx = xdb.version_info(3)
+end
 
 function test_load_vector_index()
     v_index, err = xdb.load_vector_index("../../data/ip2region_v4.xdb")
@@ -91,14 +98,26 @@ end
 
 
 function test_search()
+    -- ipv4
     local ip_str = "1.2.3.4"
     searcher, err = xdb.new_with_file_only(xdb.IPv4, "../../data/ip2region_v4.xdb")
+    print(string.format("searcher.tostring=%s", searcher))
     local t_start = xdb.now()
     region, err = searcher:search(ip_str)
     local c_time = xdb.now() - t_start
     print(string.format("search(%s): {region=%s, io_count: %d, took: %dμs, err=%s}",
             ip_str, region, searcher:get_io_count(), c_time, err))
+    searcher:close()
+
+    -- IPv6
+    ip_str = "240e:3b7:3276:33b0:958f:f34c:d04f:f6a"
+    searcher, err = xdb.new_with_file_only(xdb.IPv6, "../../data/ip2region_v6.xdb")
     print(string.format("searcher.tostring=%s", searcher))
+    t_start = xdb.now()
+    region, err = searcher:search(ip_str)
+    c_time = xdb.now() - t_start
+    print(string.format("search(%s): {region=%s, io_count: %d, took: %dμs, err=%s}",
+            ip_str, region, searcher:get_io_count(), c_time, err))
     searcher:close()
 end
 
