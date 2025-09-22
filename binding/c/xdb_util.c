@@ -12,6 +12,8 @@
 // for Linux
 #ifdef XDB_LINUX
 #include "sys/time.h"
+#elif XDB_WINDOWS
+#include <time.h>
 #endif
 
 // @Note: since 2023/10/13 to compatible with the windows system
