@@ -1,62 +1,60 @@
-use std::net::Ipv4Addr;
+use std::borrow::Cow;
+use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use std::str::FromStr;
 
-use crate::error::Result;
+use crate::error::{Ip2RegionError, Result};
 
-pub trait ToUIntIP {
-    fn to_u32_ip(&self) -> Result<u32>;
+pub trait IpValueExt {
+    fn to_ipaddr(self) -> Result<IpAddr>;
 }
 
-impl ToUIntIP for u32 {
-    fn to_u32_ip(&self) -> Result<u32> {
-        Ok(self.to_owned())
+impl IpValueExt for &str {
+    fn to_ipaddr(self) -> Result<IpAddr> {
+        IpAddr::from_str(self).map_err(|_| Ip2RegionError::ParseIpaddressFailed)
     }
 }
 
-impl ToUIntIP for &str {
-    fn to_u32_ip(&self) -> Result<u32> {
-        if let Ok(ip_addr) = Ipv4Addr::from_str(self) {
-            return Ok(u32::from(ip_addr));
+impl IpValueExt for u32 {
+    fn to_ipaddr(self) -> Result<IpAddr> {
+        Ok(IpAddr::V4(Ipv4Addr::from(self)))
+    }
+}
+
+impl IpValueExt for Ipv4Addr {
+    fn to_ipaddr(self) -> Result<IpAddr> {
+        Ok(IpAddr::V4(self))
+    }
+}
+
+impl IpValueExt for Ipv6Addr {
+    fn to_ipaddr(self) -> Result<IpAddr> {
+        Ok(IpAddr::V6(self))
+    }
+}
+
+impl IpValueExt for u128 {
+    fn to_ipaddr(self) -> Result<IpAddr> {
+        Ok(IpAddr::V6(Ipv6Addr::from(self)))
+    }
+}
+
+pub trait CompareExt {
+    fn ip_lt(&self, other: Cow<'_, [u8]>) -> bool;
+    fn ip_gt(&self, other: Cow<'_, [u8]>) -> bool;
+}
+
+impl CompareExt for IpAddr {
+    fn ip_lt(&self, other: Cow<'_, [u8]>) -> bool {
+        match self {
+            IpAddr::V4(ip) => ip.octets() < [other[3], other[2], other[1], other[0]],
+            IpAddr::V6(ip) => ip.octets() < other[0..16].try_into().unwrap(),
         }
-        Ok(self.parse::<u32>()?)
-    }
-}
-
-impl ToUIntIP for Ipv4Addr {
-    fn to_u32_ip(&self) -> Result<u32> {
-        Ok(u32::from(*self))
-    }
-}
-
-#[cfg(test)]
-mod test_ip {
-    use super::*;
-
-    #[test]
-    fn test_ip_str_2_u32() {
-        let ip_str = "1.1.1.1";
-        let result = ip_str.to_u32_ip().unwrap();
-        assert_eq!(result, 1 << 24 | 1 << 16 | 1 << 8 | 1);
     }
 
-    #[test]
-    fn test_ip_u32_str() {
-        let ip = "12";
-        let result = ip.to_u32_ip().unwrap();
-        assert_eq!(result, 12);
-    }
-
-    #[test]
-    fn test_ip_u32() {
-        let ip: u32 = 33;
-        let result = ip.to_u32_ip().unwrap();
-        assert_eq!(result, 33);
-    }
-
-    #[test]
-    fn test_ip_addr() {
-        let ip = Ipv4Addr::from_str("0.0.3.12").unwrap();
-        let result = ip.to_u32_ip().unwrap();
-        assert_eq!(result, 3 << 8 | 12)
+    fn ip_gt(&self, other: Cow<'_, [u8]>) -> bool {
+        match self {
+            IpAddr::V4(ip) => ip.octets() > [other[3], other[2], other[1], other[0]],
+            IpAddr::V6(ip) => ip.octets() > other[0..16].try_into().unwrap(),
+        }
     }
 }

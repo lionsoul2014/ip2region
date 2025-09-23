@@ -10,14 +10,14 @@ use clap::{Parser, Subcommand, ValueEnum};
 ///
 /// export CHECK='../../../data/ipv4_source.txt'
 ///
-/// cargo run -- --xdb=$XDB bench $CHECK
+/// cargo run -r -- --xdb=$XDB bench $CHECK
 ///
-/// cargo run -- --xdb=$XDB query
+/// cargo run -r -- --xdb=$XDB query
 ///
 /// ```
 #[derive(Parser)]
 pub struct Command {
-    /// xdb filepath, e.g. `../../../data/ip2region_v4.xdb`
+    /// xdb filepath, e.g. `../../../data/ip2region_v4.xdb` or `../../../data/ip2region_v6.xdb`
     #[arg(long, env = "XDB")]
     pub xdb: String,
     #[arg(long, value_enum, default_value_t = CmdCachePolicy::FullMemory)]
@@ -29,7 +29,7 @@ pub struct Command {
 #[derive(Subcommand)]
 pub enum Action {
     /// Bench the ip search and output performance info
-    Bench { check_file: String},
+    Bench { check_file: String },
     /// Interactive input and output, querying one IP and get result at a time
     Query,
 }

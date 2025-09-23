@@ -1,17 +1,59 @@
 extern crate core;
 
 use std::fs::File;
-use std::io::{BufRead, BufReader};
 use std::io::Write;
-use std::net::Ipv4Addr;
+use std::io::{BufRead, BufReader};
+use std::net::IpAddr;
 use std::str::FromStr;
 use std::time::Instant;
 
-use clap::Parser;
-use ip2region::{Searcher, CachePolicy};
 use crate::cmd::{Action, CmdCachePolicy, Command};
+use clap::Parser;
+use ip2region::{CachePolicy, Searcher};
 
 mod cmd;
+
+fn check(searcher: &Searcher, start_ip: IpAddr, end_ip: IpAddr, check: &str) -> usize {
+    match (start_ip, end_ip) {
+        (IpAddr::V4(start_ip), IpAddr::V4(end_ip)) => {
+            let start_ip = u32::from(start_ip);
+            let end_ip = u32::from(end_ip);
+            let mid_ip = (start_ip >> 1) + (end_ip >> 1);
+
+            let checks = [
+                start_ip,
+                (start_ip >> 1) + (mid_ip >> 1),
+                mid_ip,
+                (mid_ip >> 1) + (end_ip >> 1),
+                end_ip,
+            ];
+            for ip in checks.iter() {
+                let result = searcher.search(*ip).unwrap();
+                assert_eq!(result.as_str(), check);
+            }
+            checks.len()
+        }
+        (IpAddr::V6(start_ip), IpAddr::V6(end_ip)) => {
+            let start_ip = u128::from(start_ip);
+            let end_ip = u128::from(end_ip);
+            let mid_ip = (start_ip >> 1) + (end_ip >> 1);
+
+            let checks = [
+                start_ip,
+                (start_ip >> 1) + (mid_ip >> 1),
+                mid_ip,
+                (mid_ip >> 1) + (end_ip >> 1),
+                end_ip,
+            ];
+            for ip in checks.iter() {
+                let result = searcher.search(*ip).unwrap();
+                assert_eq!(result.as_str(), check);
+            }
+            checks.len()
+        }
+        _ => panic!("invalid start ip and end ip"),
+    }
+}
 
 fn bench(searcher: &Searcher, check_filepath: &str) {
     let file = File::open(check_filepath).unwrap();
@@ -30,24 +72,13 @@ fn bench(searcher: &Searcher, check_filepath: &str) {
         if ip_test_line.len() != 3 {
             panic!("this line {line} don`t have enough `|` for spilt");
         }
-        let start_ip = Ipv4Addr::from_str(ip_test_line[0]).unwrap();
-        let end_ip = Ipv4Addr::from_str(ip_test_line[1]).unwrap();
+        let start_ip = IpAddr::from_str(ip_test_line[0]).unwrap();
+        let end_ip = IpAddr::from_str(ip_test_line[1]).unwrap();
         if end_ip < start_ip {
             panic!("start ip({start_ip}) should not be greater than end ip({end_ip})")
         }
-        let start_ip = u32::from(start_ip);
-        let end_ip = u32::from(end_ip);
-        let mid_ip = (((start_ip as u64) + (end_ip as u64)) >> 1) as u32;
-        for ip in [
-            start_ip,
-            ((start_ip as u64 + mid_ip as u64) >> 1) as u32,
-            mid_ip,
-            ((mid_ip as u64 + end_ip as u64) >> 1) as u32,
-            end_ip,
-        ] {
-            let result = searcher.search(ip).unwrap();
-            assert_eq!(result.as_str(), ip_test_line[2]);
-            count += 1;
+        {
+            count += check(searcher, start_ip, end_ip, ip_test_line[2]);
         }
     }
     println!(
@@ -55,7 +86,7 @@ fn bench(searcher: &Searcher, check_filepath: &str) {
      took: {:?} ,\
       cost: {:?}/op",
         now.elapsed(),
-        now.elapsed() / count
+        now.elapsed() / count as u32
     )
 }
 
@@ -84,12 +115,12 @@ fn main() {
     let cache_policy = match cmd.cache_policy {
         CmdCachePolicy::FullMemory => CachePolicy::FullMemory,
         CmdCachePolicy::VectorIndex => CachePolicy::VectorIndex,
-        CmdCachePolicy::NoCache => CachePolicy::NoCache
+        CmdCachePolicy::NoCache => CachePolicy::NoCache,
     };
-    
-    let searcher = Searcher::new(cmd.xdb, cache_policy);
+
+    let searcher = Searcher::new(cmd.xdb, cache_policy).unwrap();
     match cmd.action {
-        Action::Bench{ check_file} => bench(&searcher, &check_file),
-        Action::Query => query(&searcher)
+        Action::Bench { check_file } => bench(&searcher, &check_file),
+        Action::Query => query(&searcher),
     }
 }

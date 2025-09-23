@@ -11,6 +11,8 @@ license = "Apache-2.0"
 [dependencies]
 tracing = "0.1"
 thiserror = "2"
+num-traits = "0.2"
+num-derive = "0.4"
 
 [dev-dependencies]
 criterion = "0.7"
