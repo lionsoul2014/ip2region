@@ -6,9 +6,11 @@ use clap::{Parser, Subcommand, ValueEnum};
 ///
 /// ```
 ///
-/// export XDB='../../../data/ip2region_v4.xdb'
+/// export XDB='../../../data/ip2region_v4.xdb'  ## or export XDB='../../../data/ip2region_v6.xdb'
 ///
-/// export CHECK='../../../data/ipv4_source.txt'
+/// export CHECK='../../../data/ipv4_source.txt'  ## or export CHECK='../../../data/ipv6_source.txt'
+///
+/// cd binding/rust/example
 ///
 /// cargo run -r -- --xdb=$XDB bench $CHECK
 ///
