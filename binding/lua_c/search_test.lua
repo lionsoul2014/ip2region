@@ -134,6 +134,12 @@ while ( true ) do
         break
     end
 
+    -- empty string ignore
+    line = line:gsub("^%s*(.-)%s*$", "%1")
+    if string.len(line) < 1 then
+        goto continue
+    end
+
     ip_bytes, err = xdb.parse_ip(line)
     -- print(string.format("parse(%s): %s, err: %s", line, xdb.ip_to_string(ip_bytes), err))
     if err ~= nil then
