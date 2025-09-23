@@ -1,2 +1,3 @@
 [workspace]
-members = ["example", "xdb"]
+resolver = "2"
+members = ["example", "ip2region"]

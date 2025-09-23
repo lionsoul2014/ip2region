@@ -1,19 +1,20 @@
-use std::error::Error;
 use std::net::Ipv4Addr;
 use std::str::FromStr;
 
+use crate::error::Result;
+
 pub trait ToUIntIP {
-    fn to_u32_ip(&self) -> Result<u32, Box<dyn Error>>;
+    fn to_u32_ip(&self) -> Result<u32>;
 }
 
 impl ToUIntIP for u32 {
-    fn to_u32_ip(&self) -> Result<u32, Box<dyn Error>> {
+    fn to_u32_ip(&self) -> Result<u32> {
         Ok(self.to_owned())
     }
 }
 
 impl ToUIntIP for &str {
-    fn to_u32_ip(&self) -> Result<u32, Box<dyn Error>> {
+    fn to_u32_ip(&self) -> Result<u32> {
         if let Ok(ip_addr) = Ipv4Addr::from_str(self) {
             return Ok(u32::from(ip_addr));
         }
@@ -22,7 +23,7 @@ impl ToUIntIP for &str {
 }
 
 impl ToUIntIP for Ipv4Addr {
-    fn to_u32_ip(&self) -> Result<u32, Box<dyn Error>> {
+    fn to_u32_ip(&self) -> Result<u32> {
         Ok(u32::from(*self))
     }
 }

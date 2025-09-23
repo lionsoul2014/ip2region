@@ -7,26 +7,16 @@ use std::net::Ipv4Addr;
 use std::str::FromStr;
 use std::time::Instant;
 
-use clap::ArgMatches;
-
-use xdb::{search_by_ip, searcher_init};
+use clap::Parser;
+use ip2region::{Searcher, CachePolicy};
+use crate::cmd::{Action, CmdCachePolicy, Command};
 
 mod cmd;
 
-/// set rust log level, if you don`t want print log, you can skip this
-fn log_init() {
-    let rust_log_key = "RUST_LOG";
-    std::env::var(rust_log_key).unwrap_or_else(|_| {
-        std::env::set_var(rust_log_key, "INFO");
-        std::env::var(rust_log_key).unwrap()
-    });
-    tracing_subscriber::fmt::init();
-}
-
-fn bench_test(src_filepath: &str) {
+fn bench(searcher: &Searcher, check_filepath: &str) {
     let now = Instant::now();
     let mut count = 0;
-    let mut file = File::open(src_filepath).unwrap();
+    let mut file = File::open(check_filepath).unwrap();
     let mut contents = String::new();
     file.read_to_string(&mut contents).unwrap();
 
@@ -53,7 +43,7 @@ fn bench_test(src_filepath: &str) {
             ((mid_ip as u64 + end_ip as u64) >> 1) as u32,
             end_ip,
         ] {
-            let result = search_by_ip(ip).unwrap();
+            let result = searcher.search(ip).unwrap();
             assert_eq!(result.as_str(), ip_test_line[2]);
             count += 1;
         }
@@ -67,7 +57,7 @@ fn bench_test(src_filepath: &str) {
     )
 }
 
-fn query_test() {
+fn query(searcher: &Searcher) {
     println!("ip2region xdb searcher test program, type `quit` or `Ctrl + c` to exit");
     loop {
         print!("ip2region>> ");
@@ -79,32 +69,25 @@ fn query_test() {
         }
         let line = line.trim();
         let now = Instant::now();
-        let result = search_by_ip(line);
+        let result = searcher.search(line);
         let cost = now.elapsed();
         println!("region: {result:?}, took: {cost:?}",);
     }
 }
 
-fn matches_for_searcher(matches: &ArgMatches) {
-    if let Some(xdb_filepath) = matches.get_one::<String>("db") {
-        searcher_init(Some(xdb_filepath.to_owned()))
-    } else {
-        searcher_init(None);
-    }
-}
-
 fn main() {
-    log_init();
-    let matches = cmd::get_matches();
-    if let Some(sub_matches) = matches.subcommand_matches("bench") {
-        matches_for_searcher(sub_matches);
-        let src_filepath = sub_matches.get_one::<String>("src").unwrap();
+    tracing_subscriber::fmt::init();
 
-        bench_test(src_filepath);
-    }
-
-    if let Some(sub_matches) = matches.subcommand_matches("query") {
-        matches_for_searcher(sub_matches);
-        query_test()
+    let cmd = Command::parse();
+    let cache_policy = match cmd.cache_policy {
+        CmdCachePolicy::FullMemory => CachePolicy::FullMemory,
+        CmdCachePolicy::VectorIndex => CachePolicy::VectorIndex,
+        CmdCachePolicy::NoCache => CachePolicy::NoCache
+    };
+    
+    let searcher = Searcher::new(cmd.xdb, cache_policy);
+    match cmd.action {
+        Action::Bench{ check_file} => bench(&searcher, &check_file),
+        Action::Query => query(&searcher)
     }
 }
