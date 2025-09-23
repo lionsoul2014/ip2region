@@ -1,0 +1,24 @@
+[package]
+name = "xdb-parse"
+version = "0.1.0"
+edition = "2024"
+authors = ["RuntimeBroker"]
+description = "A parser to xdb files like ip2region"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/RuntimeBroker/xdb_parse"
+homepage = "https://github.com/RuntimeBroker/xdb_parse" # 可选
+documentation = "https://docs.rs/xdb_parse" # 可选
+readme = "README.md"  # 指定 README 文件
+
+[dependencies]
+anyhow = "1.0.100"
+thiserror = "2.0.16"
+
+[dev-dependencies]
+criterion = "0.7.0"
+rand = "0.9.2"
+
+[[bench]]
+name = "search"
+harness = false
+
