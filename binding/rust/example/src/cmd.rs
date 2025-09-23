@@ -2,10 +2,19 @@ use clap::{Parser, Subcommand, ValueEnum};
 
 /// Rust binding example for ip2region
 ///
-/// `cargo run -- --xdb=../../../data/ip2region_v4.xdb bench ../../../data/ip.test.txt`
+/// e.g
 ///
-/// `cargo run -- --xdb=../../../data/ip2region_v4.xdb query`
+/// ```
 ///
+/// export XDB='../../../data/ip2region_v4.xdb'
+///
+/// export CHECK='../../../data/ipv4_source.txt'
+///
+/// cargo run -- --xdb=$XDB bench $CHECK
+///
+/// cargo run -- --xdb=$XDB query
+///
+/// ```
 #[derive(Parser)]
 pub struct Command {
     /// xdb filepath, e.g. `../../../data/ip2region_v4.xdb`

@@ -1,7 +1,7 @@
 extern crate core;
 
 use std::fs::File;
-use std::io::Read;
+use std::io::{BufRead, BufReader};
 use std::io::Write;
 use std::net::Ipv4Addr;
 use std::str::FromStr;
@@ -14,13 +14,15 @@ use crate::cmd::{Action, CmdCachePolicy, Command};
 mod cmd;
 
 fn bench(searcher: &Searcher, check_filepath: &str) {
+    let file = File::open(check_filepath).unwrap();
+    let reader = BufReader::new(file);
+
+    let lines = reader.lines().take(100_000).collect::<Vec<_>>();
     let now = Instant::now();
     let mut count = 0;
-    let mut file = File::open(check_filepath).unwrap();
-    let mut contents = String::new();
-    file.read_to_string(&mut contents).unwrap();
 
-    for line in contents.split('\n') {
+    for line in lines {
+        let line = line.unwrap();
         if !line.contains('|') {
             continue;
         }
