@@ -305,10 +305,10 @@ XDB_PRIVATE(int) _ipv4_sub_compare(const bytes_ip_t *ip_bytes, int bytes, const 
 
 static xdb_version_t _ip_version_list[] = {
     // 14 = 4 + 4 + 2 + 4
-    {xdb_ipv4_id, "IPv4", xdb_ipv4_bytes, 14, _ipv4_sub_compare},
+    {xdb_ipv4_id, "IPv4", xdb_ipv4_bytes, xdb_v4_index_size, _ipv4_sub_compare},
 
     // 38 = 16 + 16 + 2 + 4
-    {xdb_ipv6_id, "IPv6", xdb_ipv6_bytes, 38, xdb_ip_sub_compare},
+    {xdb_ipv6_id, "IPv6", xdb_ipv6_bytes, xdb_v6_index_size, xdb_ip_sub_compare},
 
     // END
     {0, NULL, 0, 0, NULL}

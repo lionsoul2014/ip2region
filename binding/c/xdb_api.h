@@ -41,7 +41,8 @@
 #define xdb_vector_index_rows  256
 #define xdb_vector_index_cols  256
 #define xdb_vector_index_size  8
-#define xdb_segment_index_size 14
+#define xdb_v4_index_size 14    // 4 + 4 + 2 + 4
+#define xdb_v6_index_size 38    // 16 + 16 + 2 + 4
 
 // --- ip version info
 #define xdb_ipv4_id 4

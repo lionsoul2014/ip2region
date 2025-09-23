@@ -132,7 +132,7 @@ XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, const bytes_ip_t *ip_bytes, int 
     register int seg_index_size, l, h, m, p;
     unsigned int s_ptr, e_ptr, data_ptr, data_len;
     char vector_buffer[xdb_vector_index_size];
-    char *segment_buffer = NULL;
+    char segment_buffer[xdb_v6_index_size];
 
     // ip version check
     if (ip_len != xdb->version->bytes) {
@@ -168,12 +168,8 @@ XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, const bytes_ip_t *ip_bytes, int 
 
     // printf("s_ptr=%u, e_ptr=%u\n", s_ptr, e_ptr);
     // binary search to get the final region info
+    // segment_buffer = xdb_malloc(seg_index_size);
     seg_index_size = xdb->version->segment_index_size;
-    segment_buffer = xdb_malloc(seg_index_size);
-    if (segment_buffer == NULL) {
-        return -2;
-    }
-
     data_len = 0, data_ptr = 0;
     l = 0, h = ((int) (e_ptr - s_ptr)) / seg_index_size;
     while (l <= h) {
@@ -183,8 +179,7 @@ XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, const bytes_ip_t *ip_bytes, int 
         // read the segment index item
         err = read(xdb, p, segment_buffer, seg_index_size);
         if (err != 0) {
-            err += 20;
-            goto defer;
+            return 20 + err;
         }
 
         // decode the data fields as needed
@@ -201,28 +196,18 @@ XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, const bytes_ip_t *ip_bytes, int 
 
     // printf("data_len=%u, data_ptr=%u\n", data_len, data_ptr);
     if (data_len == 0) {
-        err = 100;
-        goto defer;
+        return 100;
     }
 
     // buffer alloc checking
     err = xdb_region_buffer_alloc(region, data_len);
     if (err != 0) {
-        err += 100;
-        goto defer;
+        return 100 + err;
     }
 
     err = read(xdb, data_ptr, region->value, data_len);
     if (err != 0) {
-        err += 30;
-        goto defer;
-    }
-
-defer:
-    // checn and free the segment buffer
-    if (segment_buffer != NULL) {
-        xdb_free(segment_buffer);
-        segment_buffer = NULL;
+        return 30 + err;
     }
 
     return err;
