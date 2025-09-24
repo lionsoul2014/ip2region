@@ -6,8 +6,8 @@ use std::str::FromStr;
 use std::time::Instant;
 
 use clap::Parser;
-use tracing::info;
 use ip2region::{CachePolicy, Searcher};
+use tracing::info;
 
 use crate::cmd::{Action, CmdCachePolicy, Command};
 
