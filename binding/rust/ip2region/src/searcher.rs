@@ -86,10 +86,13 @@ impl Searcher {
             } else if ip.ip_gt(Cow::Borrowed(&buffer_ip_value[ip_bytes_len..ip_end_offset])) {
                 left = mid + 1;
             } else {
-                let data_length =
-                    u16::from_le_bytes([buffer_ip_value[ip_end_offset], buffer_ip_value[ip_end_offset + 1]]);
-                let data_offset =
-                    u32::from_le_bytes(buffer_ip_value[ip_end_offset + 2..ip_end_offset + 6].try_into()?);
+                let data_length = u16::from_le_bytes([
+                    buffer_ip_value[ip_end_offset],
+                    buffer_ip_value[ip_end_offset + 1],
+                ]);
+                let data_offset = u32::from_le_bytes(
+                    buffer_ip_value[ip_end_offset + 2..ip_end_offset + 6].try_into()?,
+                );
                 let result = String::from_utf8(
                     self.read_buf(data_offset as usize, data_length as usize)?
                         .to_vec(),
