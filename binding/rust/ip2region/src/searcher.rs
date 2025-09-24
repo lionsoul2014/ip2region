@@ -71,7 +71,8 @@ impl Searcher {
 
         // Binary search the segment index to get the region
         let segment_index_size = self.header.segment_index_size();
-        let bytes_len = self.header.bytes_len();
+        let ip_bytes_len = self.header.ip_bytes_len();
+        let ip_end_offset = ip_bytes_len * 2;
 
         let mut left: usize = 0;
         let mut right: usize = (end_ptr - start_ptr) / segment_index_size;
@@ -80,16 +81,15 @@ impl Searcher {
             let mid = (left + right) >> 1;
             let offset = start_ptr + mid * segment_index_size;
             let buffer_ip_value = self.read_buf(offset, segment_index_size)?;
-            if ip.ip_lt(Cow::Borrowed(&buffer_ip_value[0..bytes_len])) {
+            if ip.ip_lt(Cow::Borrowed(&buffer_ip_value[0..ip_bytes_len])) {
                 right = mid - 1;
-            } else if ip.ip_gt(Cow::Borrowed(&buffer_ip_value[bytes_len..bytes_len * 2])) {
+            } else if ip.ip_gt(Cow::Borrowed(&buffer_ip_value[ip_bytes_len..ip_end_offset])) {
                 left = mid + 1;
             } else {
-                let start_id = bytes_len * 2;
                 let data_length =
-                    u16::from_le_bytes([buffer_ip_value[start_id], buffer_ip_value[start_id + 1]]);
+                    u16::from_le_bytes([buffer_ip_value[ip_end_offset], buffer_ip_value[ip_end_offset + 1]]);
                 let data_offset =
-                    u32::from_le_bytes(buffer_ip_value[start_id + 2..start_id + 6].try_into()?);
+                    u32::from_le_bytes(buffer_ip_value[ip_end_offset + 2..ip_end_offset + 6].try_into()?);
                 let result = String::from_utf8(
                     self.read_buf(data_offset as usize, data_length as usize)?
                         .to_vec(),

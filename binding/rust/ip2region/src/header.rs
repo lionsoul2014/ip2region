@@ -66,7 +66,7 @@ pub enum IpVersion {
 }
 
 impl Header {
-    pub fn bytes_len(&self) -> usize {
+    pub fn ip_bytes_len(&self) -> usize {
         match &self.ip_version {
             IpVersion::V4 => 4,
             IpVersion::V6 => 16,
