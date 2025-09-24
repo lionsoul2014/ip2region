@@ -1,6 +1,6 @@
 [package]
-name = "rust-example"
-default-run = "rust-example"
+name = "searcher"
+default-run = "searcher"
 version = "0.2.0"
 edition = "2024"
 rust-version = "1.89.0"
@@ -13,3 +13,4 @@ license = "Apache-2.0"
 ip2region = { path = "../ip2region" }
 clap = { version = "4.5", features = ["derive", "env"] }
 tracing-subscriber = "0.3"
+tracing = "0.1"

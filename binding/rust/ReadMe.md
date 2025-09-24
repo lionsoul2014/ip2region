@@ -66,7 +66,7 @@ fn main() {
 }
 ```
 
-## Benchmark 测试
+## Cache policy benchmark
 
 ```bash
 $ git lfs pull
@@ -110,4 +110,54 @@ Found 6 outliers among 100 measurements (6.00%)
   2 (2.00%) high mild
   4 (4.00%) high severe
 // --snip--
+```
+
+## 测试与结果验证，benchmark
+```bash
+$ git lfs pull
+$ cd binding/rust/example
+$ cargo build -r
+```
+构建的执行程序位置 `binding/rust/target/release/searcher`
+
+#### 测试 IPv6
+```bash
+$ cd binding/rust
+$ ./target/release/searcher --xdb='../../data/ip2region_v6.xdb' query
+
+ip2region xdb searcher test program, type `quit` or `Ctrl + c` to exit
+ip2region>> 2001:5:4::
+region: Ok("荷兰|北荷兰省|阿姆斯特丹|专线用户"), took: 284.80775ms
+ip2region>> 2001::
+region: Ok("美国|加利福尼亚州|洛杉矶|专线用户"), took: 12.75µs
+ip2region>> 2001:5:6::
+region: Ok("荷兰|北荷兰省|阿姆斯特丹|专线用户"), took: 52.958µs
+ip2region>> 2001:5:5::
+region: Ok("比利时|弗拉芒大区|泽勒|专线用户"), took: 123.375µs
+ip2region>>
+```
+
+#### 测试 IPv4
+```bash
+$ cd binding/rust
+$  ./target/release/searcher --xdb='../../data/ip2region_v4.xdb' query
+ip2region xdb searcher test program, type `quit` or `Ctrl + c` to exit
+ip2region>> 1.1.2.1
+region: Ok("中国|福建省|福州市|电信"), took: 5.342625ms
+ip2region>> 2.2.21.1
+region: Ok("法国|0|0|橘子电信"), took: 25.667µs
+ip2region>>
+```
+
+#### Benchmark 与验证结果
+
+通过 searcher 程序来测试性能，同时依据 ip sources 文件对比查询结果，检测是否存在错误
+
+```bash
+$ cd binding/rust/example
+$ cargo build -r
+## 通过 data/ip2region_v4.xdb 和 data/ipv4_source.txt 进行 ipv4 的 bench 测试：
+$ RUST_LOG=debug ../target/release/searcher --xdb='../../../data/ip2region_v4.xdb' bench '../../../data/ipv4_source.txt'
+## 通过 data/ip2region_v6.xdb 和 data/ipv6_source.txt 进行 ipv6 的 bench 测试：
+$ RUST_LOG=debug ../target/release/searcher --xdb='../../../data/ip2region_v6.xdb' bench '../../../data/ipv6_source.txt'
 ```

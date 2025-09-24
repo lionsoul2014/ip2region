@@ -12,9 +12,9 @@ use clap::{Parser, Subcommand, ValueEnum};
 ///
 /// cd binding/rust/example
 ///
-/// cargo run -r -- --xdb=$XDB bench $CHECK
+/// ./searcher --xdb=$XDB bench $CHECK
 ///
-/// cargo run -r -- --xdb=$XDB query
+/// ./searcher --xdb=$XDB query
 ///
 /// ```
 #[derive(Parser)]
