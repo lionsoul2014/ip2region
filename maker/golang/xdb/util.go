@@ -142,9 +142,10 @@ func IterateSegments(handle *os.File, before func(l string), cb func(seg *Segmen
 			return fmt.Errorf("start ip(%s) should not be greater than end ip(%s)", ps[0], ps[1])
 		}
 
-		if len(ps[2]) < 1 {
-			return fmt.Errorf("empty region info in segment line `%s`", l)
-		}
+		// Allow empty region info since 2024/09/24
+		// if len(ps[2]) < 1 {
+		// 	return fmt.Errorf("empty region info in segment line `%s`", l)
+		// }
 
 		var seg = &Segment{
 			StartIP: sip,

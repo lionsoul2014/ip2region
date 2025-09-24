@@ -169,10 +169,11 @@ public class Segment {
                 throw new Exception("start ip("+ps[0]+") should not be greater than end ip("+ps[1]+")");
             }
 
-            if (ps[2].isEmpty()) {
-                br.close();
-                throw new Exception("empty region info in segment line `"+ps[2]+"`");
-            }
+            // allow empty region info
+            // if (ps[2].isEmpty()) {
+            //     br.close();
+            //     throw new Exception("empty region info in segment line `"+ps[2]+"`");
+            // }
 
             final Segment seg = new Segment(sip, eip, ps[2]);
             // check and set the last segment

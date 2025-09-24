@@ -178,9 +178,11 @@ public class Maker {
 
                 // apply the field filtering
                 final String region = Util.regionFiltering(seg.region, fields);
-                if (region.length() < 1) {
-                    throw new Exception("empty region info for segment `"+seg+"`");
-                }
+
+                // allow empty region
+                // if (region.length() < 1) {
+                //     throw new Exception("empty region info for segment `"+seg+"`");
+                // }
 
                 segments.add(new Segment(seg.startIP, seg.endIP, region));
                 last = seg;
@@ -235,7 +237,8 @@ public class Maker {
             // get the utf-8 bytes of the region info
             final byte[] regionBuff = seg.region.getBytes(bytesCharset);
             if (regionBuff.length < 1) {
-                throw new Exception("empty region info for segment `"+seg+"`");
+                // allow empty region info
+                // throw new Exception("empty region info for segment `"+seg+"`");
             } else if (regionBuff.length > 0xFFFF) {
                 throw new Exception("too long region info `"+seg.region+"`: should be less than 65535 bytes");
             }

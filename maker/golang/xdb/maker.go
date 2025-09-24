@@ -285,7 +285,8 @@ func (m *Maker) Start() error {
 		var dataLen = len(seg.Region)
 		if dataLen < 1 {
 			// @TODO: could this even be a case ?
-			return fmt.Errorf("empty region info for segment '%s'", seg)
+			// 	return fmt.Errorf("empty region info for segment '%s'", seg)
+			// Allow empty region info since 2024/09/24
 		}
 
 		var _offset = 0
