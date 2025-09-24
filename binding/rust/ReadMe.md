@@ -5,13 +5,17 @@
 - 支持 IPv4 和 IPv6
 - 支持无缓存，Vector 索引缓存，全部数据缓存三种模式
 
-## 缓存策略对比
+## 缓存策略对比与说明
 | 缓存模式         | IPv4 数据内存占用 | IPv6 数据内存占用 | IPv4 benchmark 查询耗时 | IPv6 benchmark 查询耗时 |
-| ------------ | ----------- | ----------- | ------------------- | ------------------- |
-| 无缓存          | 1-2MB       | 1-2MB       | 54 us               | 47us                |
-| vector index | 1-2MB       | 1-2MB       | 27 us               | 19us                |
-| 全部缓存         | 20 MB       | 200 MB      | 120 ns              | 638 ns              |
+| ------------ | ----------- | ----------- | ------------------- |---------------------|
+| 无缓存          | 1-2MB       | 1-2MB       | 54 us               | 122us               |
+| vector index | 1-2MB       | 1-2MB       | 27 us               | 100us               |
+| 全部缓存         | 20 MB       | 200 MB      | 120 ns              | 178 ns              |
 
+- 在 `ip2region::Searcher` 初始化的时候会产生一次 IO, 读取 `xdb` 的 header 信息以初始化 `Searcher`，header 信息主要包含了 `xdb` 的 IP 版本，该操作对后续 IP 的查询不产生性能，耗时影响，多占用约 20 Byte 的内存
+- 在无缓存模式与 `vector index` 缓存模式下，所有 `xdb` 的 IO 读取都是按需（按照 bytes offset, bytes length）读取少量信息, 都是线程安全的，可以 benchmark 测试验证
+- 在全部缓存模式下，`xdb` 文件会一次读取，加载到内存中，测试 `IPv6 xdb` 文件大约占用内存 200MB 左右，查询不频繁的话，占用内存会逐渐降低
+- 所有缓存模式下，包括初始化 `ip2region::Searcher` 过程当中，程序都是线程安全的，不存在某个全局可修改的中间变量，`ip2region::Searcher` 初始化完成以后，调用函数`search`都是使用不可变引用，同时 `ip2region::Searcher` 也可以通过 `Arc` 方式传递给不同线程使用
 
 ## 使用方式
 
@@ -71,39 +75,39 @@ $ cargo test
 $ cargo bench
 
 // --snip---
-ipv4_no_memory_bench    time:   [53.020 µs 54.810 µs 57.837 µs]
-Found 14 outliers among 100 measurements (14.00%)
-  1 (1.00%) low mild
-  3 (3.00%) high mild
-  10 (10.00%) high severe
+ipv4_no_memory_bench    time:   [54.699 µs 57.401 µs 61.062 µs]
+Found 16 outliers among 100 measurements (16.00%)
+  10 (10.00%) high mild
+  6 (6.00%) high severe
 
 ipv4_vector_index_cache_bench
-                        time:   [26.411 µs 27.070 µs 28.078 µs]
-Found 8 outliers among 100 measurements (8.00%)
-  1 (1.00%) low mild
-  2 (2.00%) high mild
-  5 (5.00%) high severe
+                        time:   [25.972 µs 26.151 µs 26.360 µs]
+Found 9 outliers among 100 measurements (9.00%)
+  1 (1.00%) low severe
+  6 (6.00%) high mild
+  2 (2.00%) high severe
 
 ipv4_full_memory_cache_bench
-                        time:   [124.26 ns 126.01 ns 128.21 ns]
-Found 8 outliers among 100 measurements (8.00%)
-  5 (5.00%) high mild
+                        time:   [132.04 ns 139.48 ns 149.20 ns]
+Found 10 outliers among 100 measurements (10.00%)
+  4 (4.00%) high mild
+  6 (6.00%) high severe
+
+ipv6_no_memory_bench    time:   [121.00 µs 122.14 µs 123.40 µs]
+Found 5 outliers among 100 measurements (5.00%)
+  2 (2.00%) high mild
   3 (3.00%) high severe
 
-ipv6_no_memory_bench    time:   [46.541 µs 47.365 µs 48.518 µs]
-Found 9 outliers among 100 measurements (9.00%)
-  4 (4.00%) high mild
-  5 (5.00%) high severe
-
 ipv6_vector_index_cache_bench
-                        time:   [19.596 µs 19.777 µs 19.967 µs]
-Found 3 outliers among 100 measurements (3.00%)
-  3 (3.00%) high mild
+                        time:   [96.830 µs 100.23 µs 104.81 µs]
+Found 8 outliers among 100 measurements (8.00%)
+  2 (2.00%) high mild
+  6 (6.00%) high severe
 
 ipv6_full_memory_cache_bench
-                        time:   [603.73 ns 638.19 ns 683.22 ns]
-Found 12 outliers among 100 measurements (12.00%)
-  4 (4.00%) high mild
-  8 (8.00%) high severe
+                        time:   [175.29 ns 178.82 ns 183.77 ns]
+Found 6 outliers among 100 measurements (6.00%)
+  2 (2.00%) high mild
+  4 (4.00%) high severe
 // --snip--
 ```
