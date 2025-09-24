@@ -20,6 +20,7 @@ macro_rules! perform_check {
 
         let mid_ip = (start_ip >> 1) + (end_ip >> 1);
 
+        let mut checked = 0;
         let checks = [
             start_ip,
             (start_ip >> 1) + (mid_ip >> 1),
@@ -28,15 +29,16 @@ macro_rules! perform_check {
             end_ip,
         ];
         for ip in checks.iter() {
-            if *ip > start_ip || *ip < end_ip {
+            if *ip < start_ip || *ip > end_ip {
                 // IP not in start - end ip
                 // This happens when start ip equals end ip
                 continue;
             }
             let result = $searcher.search(*ip).unwrap();
             assert_eq!(result.as_str(), $check);
+            checked += 1;
         }
-        checks.len()
+        checked
     }};
 }
 
