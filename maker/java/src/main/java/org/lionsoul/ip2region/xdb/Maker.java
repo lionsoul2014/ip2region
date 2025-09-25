@@ -165,6 +165,11 @@ public class Maker {
             }
 
             @Override
+            public String filter(String region) {
+                return Util.regionFiltering(region, fields);
+            }
+
+            @Override
             public void handle(Segment seg) throws Exception {
                 // ip version check
                 if (seg.startIP.length != version.bytes) {
@@ -176,18 +181,14 @@ public class Maker {
                         + Util.ipToString(last.endIP)+")+1 != seg.sip("+ Util.ipToString(seg.startIP) + ", "+ seg.region +")");
                 }
 
-                // apply the field filtering
-                final String region = Util.regionFiltering(seg.region, fields);
-
                 // allow empty region
                 // if (region.length() < 1) {
                 //     throw new Exception("empty region info for segment `"+seg+"`");
                 // }
 
-                segments.add(new Segment(seg.startIP, seg.endIP, region));
+                segments.add(seg);
                 last = seg;
             }
-
         });
 
         log.infof("all segments loaded, length: %d, elapsed: %d ms", segments.size(), System.currentTimeMillis() - tStart);

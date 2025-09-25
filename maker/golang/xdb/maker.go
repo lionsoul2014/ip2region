@@ -162,6 +162,9 @@ func (m *Maker) loadSegments() error {
 
 	var iErr = IterateSegments(m.srcHandle, func(l string) {
 		slog.Debug("loaded", "segment", l)
+	}, func(region string) (string, error) {
+		// apply the field filter
+		return RegionFiltering(region, m.fields)
 	}, func(seg *Segment) error {
 		// ip version check
 		if len(seg.StartIP) != m.version.Bytes {
@@ -173,14 +176,6 @@ func (m *Maker) loadSegments() error {
 			return err
 		}
 
-		// apply the field filter
-		region, err := RegionFiltering(seg.Region, m.fields)
-		if err != nil {
-			return err
-		}
-
-		// slog.Info("filtered", "region", region)
-		seg.Region = region
 		m.segments = append(m.segments, seg)
 		last = seg
 		return nil

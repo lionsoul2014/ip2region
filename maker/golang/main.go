@@ -442,7 +442,7 @@ func testBench() {
 
 	var count, errCount, tStart = 0, 0, time.Now()
 	slog.Info("Bench start", "xdbPath", dbFile, "srcPath", srcFile)
-	var iErr = xdb.IterateSegments(handle, nil, func(seg *xdb.Segment) error {
+	var iErr = xdb.IterateSegments(handle, nil, nil, func(seg *xdb.Segment) error {
 		var l = fmt.Sprintf("%d|%d|%s", seg.StartIP, seg.EndIP, seg.Region)
 		slog.Debug("try to bench", "segment", l)
 		// mip := xdb.IPMiddle(seg.StartIP, seg.EndIP)

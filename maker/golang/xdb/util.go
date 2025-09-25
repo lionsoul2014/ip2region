@@ -101,7 +101,7 @@ func IPMiddle(sip, eip []byte) []byte {
 	return result
 }
 
-func IterateSegments(handle *os.File, before func(l string), cb func(seg *Segment) error) error {
+func IterateSegments(handle *os.File, before func(l string), filter func(region string) (string, error), done func(seg *Segment) error) error {
 	var last *Segment = nil
 	var scanner = bufio.NewScanner(handle)
 	scanner.Split(bufio.ScanLines)
@@ -147,10 +147,19 @@ func IterateSegments(handle *os.File, before func(l string), cb func(seg *Segmen
 		// 	return fmt.Errorf("empty region info in segment line `%s`", l)
 		// }
 
+		// check and do the region filter
+		var region = ps[2]
+		if filter != nil {
+			region, err = filter(ps[2])
+			if err != nil {
+				return fmt.Errorf("failed to filter region `%s`: %s", ps[2], err)
+			}
+		}
+
 		var seg = &Segment{
 			StartIP: sip,
 			EndIP:   eip,
-			Region:  ps[2],
+			Region:  region,
 		}
 
 		// check and automatic merging the Consecutive Segments, which means:
@@ -166,7 +175,7 @@ func IterateSegments(handle *os.File, before func(l string), cb func(seg *Segmen
 			}
 		}
 
-		if err = cb(last); err != nil {
+		if err = done(last); err != nil {
 			return err
 		}
 
@@ -176,7 +185,7 @@ func IterateSegments(handle *os.File, before func(l string), cb func(seg *Segmen
 
 	// process the last segment
 	if last != nil {
-		return cb(last)
+		return done(last)
 	}
 
 	return nil

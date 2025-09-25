@@ -59,7 +59,7 @@ func (e *Editor) loadSegments() error {
 
 	var iErr = IterateSegments(e.srcHandle, func(l string) {
 		// do nothing here
-	}, func(seg *Segment) error {
+	}, nil, func(seg *Segment) error {
 		// version check
 		if len(seg.StartIP) != e.verison.Bytes {
 			return fmt.Errorf("invalid ip segment(%s expected)", e.verison.Name)
@@ -240,7 +240,7 @@ func (e *Editor) PutFile(src string) (int, int, error) {
 	var oldRows, newRows = 0, 0
 	iErr := IterateSegments(handle, func(l string) {
 		// do nothing here
-	}, func(seg *Segment) error {
+	}, nil, func(seg *Segment) error {
 		o, n, err := e.PutSegment(seg)
 		if err == nil {
 			oldRows += o

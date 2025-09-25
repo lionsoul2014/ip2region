@@ -122,6 +122,7 @@ public class Segment {
     // static class to handler the iterate callback
     public static interface IterateAction {
         public void before(final String line);
+        public String filter(final String region);
         public void handle(final Segment seg) throws Exception;
     }
 
@@ -175,7 +176,7 @@ public class Segment {
             //     throw new Exception("empty region info in segment line `"+ps[2]+"`");
             // }
 
-            final Segment seg = new Segment(sip, eip, ps[2]);
+            final Segment seg = new Segment(sip, eip, action.filter(ps[2]));
             // check and set the last segment
             if (last == null) {
                 last = seg;

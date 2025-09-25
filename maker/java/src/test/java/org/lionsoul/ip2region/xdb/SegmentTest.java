@@ -55,6 +55,11 @@ public class SegmentTest {
             }
 
             @Override
+            public String filter(String region) {
+                return region;
+            }
+
+            @Override
             public void handle(Segment seg) throws Exception {
                 log.infof("handle segment: `%s`", seg.toString());
             }

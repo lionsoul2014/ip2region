@@ -52,20 +52,15 @@ func (p *Processor) loadSegments() error {
 
 	var iErr = IterateSegments(p.srcHandle, func(l string) {
 		slog.Debug("loaded", "segment", l)
+	}, func(region string) (string, error) {
+		return RegionFiltering(region, p.fields)
 	}, func(seg *Segment) error {
 		// check the continuity of the data segment
 		// if err := seg.AfterCheck(last); err != nil {
 		// 	return err
 		// }
 
-		// apply the field filter
-		region, err := RegionFiltering(seg.Region, p.fields)
-		if err != nil {
-			return err
-		}
-
 		// slog.Info("filtered", "source", seg.Region, "filtered", region)
-		seg.Region = region
 		p.segments = append(p.segments, seg)
 		return nil
 	})
