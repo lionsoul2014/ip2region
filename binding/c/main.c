@@ -15,7 +15,7 @@ struct searcher_test_entry {
     xdb_content_t *c_buffer;
 
     // xdb region buffer
-    char region_buffer[256];
+    // char region_buffer[256];
     xdb_region_buffer_t region;
 };
 typedef struct searcher_test_entry searcher_test_t;
@@ -95,7 +95,8 @@ int init_searcher_test(searcher_test_t *test, char *db_path, char *cache_policy)
     }
 
     // init the region buffer
-    err = xdb_region_buffer_init(&test->region, test->region_buffer, sizeof(test->region_buffer));
+    // err = xdb_region_buffer_init(&test->region, test->region_buffer, sizeof(test->region_buffer));
+    err = xdb_region_buffer_init(&test->region, NULL, 0);
     if (err != 0) {
         printf("failed to init the region buffer with err=%d\n", err);
         errcode = 7;
@@ -162,8 +163,7 @@ void test_search(int argc, char *argv[]) {
 
     // for search
     long s_time, c_time;
-    unsigned int ip;
-    char line[512] = {'\0'}, region[512] = {'\0'};
+    char line[512] = {'\0'};
 
     // ip parse
     xdb_version_t *version;
@@ -370,7 +370,7 @@ void test_bench(int argc, char *argv[]) {
             return;
         }
 
-        if (xdb_ip_sub_compare(sip_bytes, s_version->bytes, eip_bytes, 0) > 0) {
+        if (xdb_ip_sub_compare(sip_bytes, s_version->bytes, (string_ip_t *) eip_bytes, 0) > 0) {
             printf("start ip(%s) should not be greater than end ip(%s)\n", sip_str, eip_str);
             return;
         }

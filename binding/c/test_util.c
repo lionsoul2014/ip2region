@@ -121,7 +121,7 @@ void test_ip_compare() {
     bytes_ip_t sip_bytes[16] = {'\0'};
     bytes_ip_t eip_bytes[16] = {'\0'};
     xdb_version_t *s_version, *e_version;
-    int bytes, errcode;
+    int errcode;
 
     // init the sock env (for windows)
     if ((errcode = xdb_init_winsock()) != 0) {
@@ -155,7 +155,7 @@ void test_ip_compare() {
         printf(
             "ip_sub_compare(%s, %s): %d\n", 
             pair_ptr->sip, pair_ptr->eip, 
-            xdb_ip_sub_compare(sip_bytes, s_version->bytes, eip_bytes, 0)
+            xdb_ip_sub_compare(sip_bytes, s_version->bytes, (string_ip_t *) eip_bytes, 0)
         );
     }
 
