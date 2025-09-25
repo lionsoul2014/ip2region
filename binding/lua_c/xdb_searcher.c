@@ -325,7 +325,6 @@ static int lua_xdb_version_info(lua_State *L) {
 }
 
 static int lua_xdb_parse_ip(lua_State *L) {
-    int err;
     const char *ip_str;
     bytes_ip_t ip_bytes[19] = {'\0'};
     xdb_version_t *version;
@@ -344,14 +343,14 @@ static int lua_xdb_parse_ip(lua_State *L) {
     // printf("ip:%s, version->id: %d\n", ip_str, version->id);
     ip_bytes[0] = '&';
     ip_bytes[1] = (bytes_ip_t) version->id;
-    lua_pushlstring(L, ip_bytes, version->bytes + 2);
+    lua_pushlstring(L, (string_ip_t *) ip_bytes, version->bytes + 2);
     lua_pushnil(L);
     return 2;
 }
 
 static int lua_xdb_ip_to_string(lua_State *L) {
     int err, vid, bytes;
-    const bytes_ip_t *ip_bytes;
+    const string_ip_t *ip_bytes;
     char ip_string[INET6_ADDRSTRLEN + 1] = {'\0'};
 
     luaL_argcheck(L, lua_gettop(L) == 1, 1, "call via '.' and bytes ip expected");
@@ -381,7 +380,7 @@ static int lua_xdb_ip_to_string(lua_State *L) {
         return 2;
     }
 
-    err = xdb_ip_to_string(ip_bytes + 2, bytes, ip_string, sizeof(ip_string));
+    err = xdb_ip_to_string(((bytes_ip_t *) ip_bytes) + 2, bytes, ip_string, sizeof(ip_string));
     if (err != 0) {
         lua_pushnil(L);
         lua_pushstring(L, "failed to conver the ip bytes to string");
@@ -393,7 +392,7 @@ static int lua_xdb_ip_to_string(lua_State *L) {
     return 2;
 }
 
-static int _validate_bytes_ip(const bytes_ip_t *ip_bytes) {
+static int _validate_bytes_ip(const string_ip_t *ip_bytes) {
     if (strlen(ip_bytes) < 2) {
         return 1;
     }
@@ -411,8 +410,8 @@ static int _validate_bytes_ip(const bytes_ip_t *ip_bytes) {
 }
 
 static int lua_xdb_ip_compare(lua_State *L) {
-    int err, vid, bytes;
-    const bytes_ip_t *ip1_bytes, *ip2_bytes;
+    int err;
+    const string_ip_t *ip1_bytes, *ip2_bytes;
 
     luaL_argcheck(L, lua_gettop(L) == 2, 1, "call via '.' bytes ip1 and ip2 expected");
     ip1_bytes = luaL_checkstring(L, 1);
@@ -440,7 +439,7 @@ static int lua_xdb_ip_compare(lua_State *L) {
         return 2;
     }
 
-    err = xdb_ip_sub_compare(ip1_bytes + 2, (ip1_bytes[1] & 0xFF), ip2_bytes, 2);
+    err = xdb_ip_sub_compare(((bytes_ip_t *)ip1_bytes) + 2, (ip1_bytes[1] & 0xFF), ip2_bytes, 2);
     lua_pushinteger(L, err);
     lua_pushnil(L);
     return 2;
@@ -635,7 +634,7 @@ static int lua_xdb_search(lua_State *L) {
             return 2;
         }
 
-        ip_bytes = ip_string + 2;
+        ip_bytes = (bytes_ip_t *)ip_string + 2;
         // printf("ip_len: %d, vid: %d\n", ip_len, vid);
     } else {
         version = xdb_parse_ip(ip_string, ip_buffer, sizeof(ip_buffer));
