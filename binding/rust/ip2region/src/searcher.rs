@@ -6,13 +6,13 @@ use std::net::IpAddr;
 use std::path::Path;
 use std::sync::OnceLock;
 
+use maker::{
+    HEADER_INFO_LENGTH, Header, IpVersion, VECTOR_INDEX_COLS, VECTOR_INDEX_LENGTH,
+    VECTOR_INDEX_SIZE,
+};
 use tracing::{debug, trace, warn};
 
 use crate::error::{Ip2RegionError, Result};
-use maker::{
-    HEADER_INFO_LENGTH, Header, IpVersion, VECTOR_INDEX_LENGTH, VECTOR_INDEX_COLS,
-    VECTOR_INDEX_SIZE
-};
 use crate::ip_value::{CompareExt, IpValueExt};
 
 pub struct Searcher {
