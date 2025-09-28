@@ -62,14 +62,14 @@ API 介绍，使用文档和测试程序请参考对应 `searcher` 查询客户�
 
 API 介绍，使用文档和测试程序请参考如下 `maker` 生成程序下的 ReadMe 文档：
 
-| 编程语言                | 描述                 | IPv4 支持          | IPv6 支持          | 贡献者                                     |
-| :---------------------- | :------------------- |:-------------------|:-------------------| :----------------------------------------- |
-| [Golang](maker/golang)  | golang xdb 生成程序  | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)    |
-| [Java](maker/java)      | java xdb 生成程序    | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)    |
-| [Python](maker/python)  | python xdb 生成程序  | :white_check_mark: | :x:                | [leolin49](https://github.com/leolin49)    |
-| [Csharp](maker/csharp)  | csharp xdb 生成程序  | :white_check_mark: | :x:                | [Alan Lee](https://github.com/malus2077)   |
-| [Rust](maker/rust)      | rust xdb 生成程序    | :white_check_mark: | :x:                | [KevinWang](https://github.com/KevinWL)    |
-| [C++](maker/cpp)        | C++ xdb 生成程序     | :white_check_mark: | :x:                | [Yunbin Liu](https://github.com/liuyunbin) |
+| 编程语言                | 描述                 | IPv4 支持          | IPv6 支持          | 贡献者                                                                                      |
+| :---------------------- | :------------------- |:-------------------|:-------------------| :------------------------------------------------------------------------------------------ |
+| [Golang](maker/golang)  | golang xdb 生成程序  | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)                                                     |
+| [Java](maker/java)      | java xdb 生成程序    | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)                                                     |
+| [Python](maker/python)  | python xdb 生成程序  | :white_check_mark: | :x:                | [leolin49](https://github.com/leolin49)                                                     |
+| [Csharp](maker/csharp)  | csharp xdb 生成程序  | :white_check_mark: | :x:                | [Alan Lee](https://github.com/malus2077)                                                    |
+| [Rust](maker/rust)      | rust xdb 生成程序    | :white_check_mark: | :white_check_mark: | [KevinWang](https://github.com/KevinWL) & [gongzhengyang](https://github.com/gongzhengyang) |
+| [C++](maker/cpp)        | C++ xdb 生成程序     | :white_check_mark: | :x:                | [Yunbin Liu](https://github.com/liuyunbin)                                                  |
                                                  
                                                 
 # `xdb` 数据更新
