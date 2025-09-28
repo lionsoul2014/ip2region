@@ -123,6 +123,7 @@ $ cargo build -r
 #### 测试 IPv6
 ```bash
 $ cd binding/rust
+$ cargo build -r
 $ ./target/release/searcher --xdb='../../data/ip2region_v6.xdb' query
 
 ip2region xdb searcher test program, type `quit` or `Ctrl + c` to exit
@@ -140,6 +141,7 @@ ip2region>>
 #### 测试 IPv4
 ```bash
 $ cd binding/rust
+$ cargo build -r
 $  ./target/release/searcher --xdb='../../data/ip2region_v4.xdb' query
 ip2region xdb searcher test program, type `quit` or `Ctrl + c` to exit
 ip2region>> 1.1.2.1

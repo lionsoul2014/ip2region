@@ -12,9 +12,6 @@ pub enum Ip2RegionError {
     #[error("No matched Ipaddress")]
     NoMatchedIP,
 
-    #[error("Header parse error: {0}")]
-    HeaderParsed(String),
-
     #[error("Searcher load IPv4 data, couldn't search IPv6 data")]
     OnlyIPv4Version,
 
@@ -23,6 +20,9 @@ pub enum Ip2RegionError {
 
     #[error("Try from slice failed")]
     TryFromSliceFailed(#[from] std::array::TryFromSliceError),
+
+    #[error("Maker crate error: {0}")]
+    MakerError(#[from] maker::MakerError),
 }
 
 pub type Result<T> = std::result::Result<T, Ip2RegionError>;
