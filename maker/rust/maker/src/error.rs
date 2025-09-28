@@ -24,9 +24,6 @@ pub enum MakerError {
     #[error("Try from int failed")]
     TryFromIntError(#[from] std::num::TryFromIntError),
 
-    #[error("Invalid IP Network")]
-    InvalidIPNetwork(#[from] ipnetwork::IpNetworkError),
-
     #[error("Try from slice failed")]
     TryFromSliceFailed(#[from] std::array::TryFromSliceError),
 
