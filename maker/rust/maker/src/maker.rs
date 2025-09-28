@@ -74,7 +74,7 @@ impl Maker {
 
     pub fn start(&mut self) -> Result<()> {
         let start_index_ptr = u32::try_from(self.dst_file.stream_position()?)?;
-        let mut count = 0;
+        let mut segment_count = 0;
         let mut buf =
             BytesMut::with_capacity(self.ip_version.segment_index_size() * self.segments.len());
 
@@ -96,11 +96,14 @@ impl Maker {
                 buf.put_slice(&seg.end_ip.encode_ipaddr_bytes());
                 buf.put_u16_le(region_len);
                 buf.put_u32_le(region_ptr);
-                count += 1;
+                segment_count += 1;
             }
         }
 
-        info!("Write segment index buffer");
+        info!(
+            region_pool_len = self.region_pool.len(),
+            segment_count, "Write segment index buffer"
+        );
         self.dst_file
             .seek(SeekFrom::Start(start_index_ptr as u64))?;
         self.dst_file.write_all(buf.as_ref())?;
@@ -113,19 +116,11 @@ impl Maker {
         self.dst_file.seek(SeekFrom::Start(0))?;
         self.dst_file.write_all(header_buf.as_ref())?;
 
+        info!("Write vector index buffer");
         self.dst_file
             .seek(SeekFrom::Start(HEADER_INFO_LENGTH as u64))?;
         self.dst_file
             .write_all(self.vector_index.as_flattened().as_flattened())?;
-
-        info!(
-            start_index_ptr,
-            current_index_ptr = start_index_ptr + buf.len() as u32,
-            region_pool_len = self.region_pool.len(),
-            count,
-            "Write done"
-        );
-
         Ok(())
     }
 }
