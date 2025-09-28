@@ -6,15 +6,14 @@ use std::net::IpAddr;
 use std::path::Path;
 use std::sync::OnceLock;
 
+use maker::{
+    HEADER_INFO_LENGTH, Header, IpVersion, VECTOR_INDEX_COLS, VECTOR_INDEX_LENGTH,
+    VECTOR_INDEX_SIZE,
+};
 use tracing::{debug, trace, warn};
 
 use crate::error::{Ip2RegionError, Result};
-use crate::header::{HEADER_INFO_LENGTH, Header, IpVersion};
 use crate::ip_value::{CompareExt, IpValueExt};
-
-const VECTOR_INDEX_LENGTH: usize = 256 * 256 * 8;
-const VECTOR_INDEX_COLS: usize = 256;
-const VECTOR_INDEX_SIZE: usize = 8;
 
 pub struct Searcher {
     pub filepath: String,

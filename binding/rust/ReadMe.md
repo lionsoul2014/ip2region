@@ -123,6 +123,7 @@ $ cargo build -r
 #### 测试 IPv6
 ```bash
 $ cd binding/rust
+$ cargo build -r
 $ ./target/release/searcher --xdb='../../data/ip2region_v6.xdb' query
 
 ip2region xdb searcher test program, type `quit` or `Ctrl + c` to exit
@@ -140,6 +141,7 @@ ip2region>>
 #### 测试 IPv4
 ```bash
 $ cd binding/rust
+$ cargo build -r
 $  ./target/release/searcher --xdb='../../data/ip2region_v4.xdb' query
 ip2region xdb searcher test program, type `quit` or `Ctrl + c` to exit
 ip2region>> 1.1.2.1
@@ -158,6 +160,16 @@ $ cd binding/rust/example
 $ cargo build -r
 ## 通过 data/ip2region_v4.xdb 和 data/ipv4_source.txt 进行 ipv4 的 bench 测试：
 $ RUST_LOG=debug ../target/release/searcher --xdb='../../../data/ip2region_v4.xdb' bench '../../../data/ipv4_source.txt'
+2025-09-24T07:02:07.840535Z DEBUG ip2region::searcher: Load xdb file with header header=Header { version: 3, index_policy: VectorIndex, create_time: 1757125456, start_index_ptr: 955933, end_index_ptr: 11042415, ip_version: V4, runtime_ptr_bytes: 4 }
+2025-09-24T07:02:07.840894Z DEBUG ip2region::searcher: Load vector index cache
+2025-09-24T07:02:07.840905Z DEBUG ip2region::searcher: Load full cache filepath="../../../data/ip2region_v4.xdb"
+2025-09-24T07:02:08.409990Z  INFO searcher: Benchmark finished count=3404406 took=569.388667ms avg_took=167ns
+
 ## 通过 data/ip2region_v6.xdb 和 data/ipv6_source.txt 进行 ipv6 的 bench 测试：
 $ RUST_LOG=debug ../target/release/searcher --xdb='../../../data/ip2region_v6.xdb' bench '../../../data/ipv6_source.txt'
+2025-09-24T07:01:48.991835Z DEBUG ip2region::searcher: Load xdb file with header header=Header { version: 3, index_policy: VectorIndex, create_time: 1756970508, start_index_ptr: 6585371, end_index_ptr: 647078145, ip_version: V6, runtime_ptr_bytes: 4 }
+2025-09-24T07:01:48.992557Z DEBUG ip2region::searcher: Load vector index cache
+2025-09-24T07:01:48.992563Z DEBUG ip2region::searcher: Load full cache filepath="../../../data/ip2region_v6.xdb"
+2025-09-24T07:01:59.775879Z  INFO searcher: Benchmark finished count=38335905 took=10.784124584s avg_took=281ns
+
 ```
