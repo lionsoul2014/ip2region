@@ -12,7 +12,9 @@
 // for Linux
 #ifdef XDB_LINUX
 #include "sys/time.h"
-#elif XDB_WINDOWS
+#endif
+
+#ifdef XDB_WINDOWS
 #include <time.h>
 #endif
 
