@@ -77,6 +77,13 @@ target
 /binding/nodejs/.nyc_output
 /binging/nodejs/package-lock.json
 
+# Javascript
+/binding/javascript/tests/unitTests/__snapshots__
+/binding/javascript/coverage
+/binding/javascript/node_modules
+/binding/javascript/.nyc_output
+/binging/javascript/package-lock.json
+
 # maker
 ## golang
 /maker/golang/dbmaker
