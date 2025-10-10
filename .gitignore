@@ -82,7 +82,7 @@ target
 /binding/javascript/coverage
 /binding/javascript/node_modules
 /binding/javascript/.nyc_output
-/binging/javascript/package-lock.json
+/binding/javascript/package-lock.json
 
 # maker
 ## golang
