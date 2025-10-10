@@ -54,6 +54,7 @@ API 介绍，使用文档和测试程序请参考对应 `searcher` 查询客户�
 | 编程语言                                                        | 描述                    | 贡献者                                         |
 |:--------------------------------------------------------------- |:------------------------|:-----------------------------------------------|
 | [ip2region-composer](https://github.com/zoujingli/ip2region)    | php composer 管理客户端 | [邹景立](https://github.com/zoujingli)         |
+| [ip2region-ts](https://github.com/Steven-Qiang/ts-ip2region2)   | node.js addon 理客户端  | [Steven Qiang](https://github.com/Steven-Qiang)|
 | [ruby-ip2region](https://github.com/jicheng1014/ruby-ip2region) | ruby xdb 查询客户端实现 | [jicheng1014](https://github.com/jicheng1014)  |
 | [Ip2regionTool](https://github.com/orestonce/Ip2regionTool)     | ip2region 数据转换工具  | [orestonce](https://github.com/orestonce)      |
 
