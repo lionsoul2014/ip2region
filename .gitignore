@@ -41,7 +41,7 @@ META-INF/
 
 # clang
 /binding/c/xdb_searcher
-/binding/c/util_test
+/binding/c/test_util
 /binding/c/cmake-build-debug
 
 # lua/luc_c
