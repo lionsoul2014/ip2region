@@ -5,19 +5,109 @@
 // util functions
 // @Author Lion <chenxin619315@gmail.com>
 
+const { exec } = require('child_process');
 const header = require('./header');
 const fs = require('fs');
 
+// --
 // parse the specified string ip and return its bytes
-// @param  ip string
-// @return Buffer
-function parseIP(ipString) {
+
+// parse ipv4 address
+function _parse_ipv4_addr(v4String) {
+    let ps = v4String.split('.', 4);
+    if (ps.length != 4) {
+        throw new Error('invalid ipv4 address');
+    }
+
+    var v;
+    const ipBytes =  Buffer.alloc(4);
+    for (var i = 0; i < ps.length; i++) {
+        v = parseInt(ps[i], 10);
+        if (isNaN(v)) {
+            throw new Error(`invalid ipv4 part '${ps[i]}'`);
+        }
+
+        if (v < 0 || v > 255) {
+            throw new Error(`invalid ipv4 part '${ps[i]}' should >= 0 and <= 255`);
+        }
+
+        ipBytes[i] = (v & 0xFF);
+    }
+
+    return ipBytes;
+}
+
+// parse ipv6 address
+function _parse_ipv6_addr(v6String) {
+    let ps = v6String.split(':', 8);
+    if (ps.length < 3) {
+        throw new Error('invalid ipv6 address');
+    }
+
+    var s, v, dc_num = 0;
+    const ipBytes = Buffer.alloc(16);
+    for (var i = 0; i < ps.length; i++) {
+        s = ps[i].trim();
+        if (s.length == 0) {    // Double colon
+            dc_num++;
+        }
+
+        v = parseInt(s, 16);
+        if (v < 0 || v > 0xFFFE) {
+            throw new Error(`invalid ipv6 part '${ps[i]}' should >= 0 and <= 65534`);
+        }
+
+        // @TODO: keep coding
+        ipBytes.writeUint16BE(v, i);
+    }
+
+    return ipBytes;
 }
 
 
-// bytes ip to humen-readable string ip
-function ipToString(ipBytes) {
+// @param  ip string
+// @return Buffer
+function parseIP(ipString) {
+    let sDot = ipString.indexOf('.');
+    let cDot = ipString.indexOf(':');
+    if (sDot > -1 && cDot == -1) {
+        return _parse_ipv4_addr(ipString);
+    } else if (cDot > -1) {
+        return _parse_ipv6_addr(ipString);
+    } else {
+        return null;
+    }
+}
 
+// ---
+
+
+// ---
+// bytes ip to humen-readable string ip
+
+// ipv4 bytes to string
+// function _ipv4_to_string(v4Bytes) {
+//     return v4Bytes.join('.');
+// }
+
+// ipv6 bytes to string
+function _ipv6_to_string(v6Bytes) {
+    return null;
+}
+
+function ipToString(ipBytes) {
+    if (!Buffer.isBuffer(ipBytes)) {
+        throw new Error('invalid bytes ip, not Buffer');
+    }
+
+    if (ipBytes.length == 4) {
+        // return _ipv4_to_string(ipBytes);
+        return ipBytes.join('.');
+    } else if (ipBytes.length == 16) {
+        return _ipv6_to_string(ipBytes);
+    } else {
+        throw new Error('invalid bytes ip with length not 4 or 16');
+    }
 }
 
 // compare two byte ips
