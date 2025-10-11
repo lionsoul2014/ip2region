@@ -7,9 +7,6 @@
 
 const header = require('./header');
 
-const xdb_ipv4_id = 4;
-const xdb_ipv6_id = 6;
-
 class Version {
     constructor(id, name, bytes, indexSize, ip_compare_func) {
         this.id = id;
@@ -49,11 +46,11 @@ class Version {
 }
 
 // 14 = 4 + 4 + 2 + 4
-const IPv4 = new Version(xdb_ipv4_id, "IPv4", 4, 14, function(ip1, ip2){
+const IPv4 = new Version(header.xdbIPv4Id, "IPv4", 4, 14, function(ip1, ip2){
 });
 
 // 38 = 16 + 16 + 2 + 4
-const IPv6 = new Version(xdb_ipv6_id, "IPv6", 6, 38, function(ip1, ip2){
+const IPv6 = new Version(header.xdbIPv6Id, "IPv6", 6, 38, function(ip1, ip2){
 });
 
 function versionFromName(name) {
@@ -71,19 +68,19 @@ function versionFromHeader(h) {
     let v = h.version();
 
     // old structure with ONLY IPv4 supporting
-    if (v == header.xdb_structure_20) {
+    if (v == header.XdbStructure20) {
         return IPv4;
     }
 
     // structure 3.0 with IPv6 supporting
-    if (v != header.xdb_structure_30) {
+    if (v != header.XdbStructure30) {
         return null;
     }
 
     let ipVer = h.ipVersion();
-    if (ipVer == xdb_ipv4_id) {
+    if (ipVer == header.xdbIPv4Id) {
         return IPv4;
-    } else if (ipVer == xdb_ipv6_id) {
+    } else if (ipVer == header.xdbIPv6Id) {
         return IPv6;
     } else {
         return null;
@@ -91,7 +88,6 @@ function versionFromHeader(h) {
 }
 
 module.exports = {
-    xdb_ipv4_id, xdb_ipv6_id,
     Version, IPv4, IPv6,
     versionFromName, versionFromHeader
 }

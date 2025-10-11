@@ -5,8 +5,15 @@
 // xdb header class
 // @Author Lion <chenxin619315@gmail.com>
 
-const xdb_structure_20 = 2;
-const xdb_structure_30 = 3;
+const XdbStructure20 = 2;
+const XdbStructure30 = 3;
+const xdbIPv4Id = 4;
+const xdbIPv6Id = 6;
+
+const HeaderInfoLength = 256;
+const VectorIndexRows  = 256;
+const VectorIndexCols  = 256;
+const VectorIndexSize  = 8;
 
 class Header {
     constructor(buff) {
@@ -69,6 +76,7 @@ class Header {
 }
 
 module.exports = {
-    xdb_structure_20, xdb_structure_30,
+    XdbStructure20, XdbStructure30, xdbIPv4Id, xdbIPv6Id,
+    HeaderInfoLength, VectorIndexRows, VectorIndexCols, VectorIndexSize,
     Header
 }

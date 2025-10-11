@@ -2,6 +2,9 @@
 // Use of this source code is governed by a Apache2.0-style
 // license that can be found in the LICENSE file.
 
+// version test script
+// @Author Lion <chenxin619315@gmail.com>
+
 const version = require('../version');
 
 test('const print', () => {
