@@ -392,10 +392,12 @@ XDB_PUBLIC(int) xdb_le_get_uint16(const char *buffer, int offset) {
 }
 
 XDB_PUBLIC(xdb_version_t *) xdb_parse_ip(const string_ip_t *ip_string, bytes_ip_t *buffer, size_t length) {
+    char *d_ptr = strchr(ip_string, '.');
+    char *c_ptr = strchr(ip_string, ':');
     // version check
-    if (strchr(ip_string, '.') != NULL && strchr(ip_string, ':') == NULL) {
+    if (d_ptr != NULL && c_ptr == NULL) {
         return xdb_parse_v4_ip(ip_string, buffer, length);
-    } else if (strchr(ip_string, ':') != NULL) {
+    } else if (c_ptr != NULL) {
         return xdb_parse_v6_ip(ip_string, buffer, length);
     }
 
