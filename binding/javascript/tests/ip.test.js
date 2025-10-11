@@ -23,8 +23,8 @@ test('parse ip address', () => {
             return;
         }
 
-        let to_Str = ipBytes == null ? '0' : util.ipToString(ipBytes);
+        let to_Str = ipBytes == null ? '0' : util.ipToString(ipBytes, true);
         let toByte = ipBytes == null ? '0' : util.ipBytesString(ipBytes);
-        console.log(`parseIP(${ipString}): {Bytes: ${toByte}, String: ${to_Str}`);
+        console.log(`parseIP(${ipString}): {Bytes: ${toByte}, String: ${to_Str}}`);
     });
 });

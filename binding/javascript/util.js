@@ -23,7 +23,7 @@ function _parse_ipv4_addr(v4String) {
     for (var i = 0; i < ps.length; i++) {
         v = parseInt(ps[i], 10);
         if (isNaN(v)) {
-            throw new Error(`invalid ipv4 part '${ps[i]}'`);
+            throw new Error(`invalid ipv4 part '${ps[i]}', a valid number expected`);
         }
 
         if (v < 0 || v > 255) {
@@ -47,7 +47,9 @@ function _parse_ipv6_addr(v6String) {
     const ipBytes = Buffer.alloc(16);
     for (var i = 0; i < ps.length; i++) {
         let s = ps[i].trim();
-        if (s.length == 0) {    // Double colon
+
+        // Double colon check and auto padding
+        if (s.length == 0) {
             // ONLY one double colon allow
             if (dc_num > 0) {
                 throw new Error('invalid ipv6 address: multi double colon detected');
@@ -78,6 +80,10 @@ function _parse_ipv6_addr(v6String) {
         }
 
         let v = parseInt(s, 16);
+        if (isNaN(v)) {
+            throw new Error(`invalid ipv6 part '${ps[i]}', a valid hex number expected`);
+        }
+
         if (v < 0 || v > 0xFFFF) {
             throw new Error(`invalid ipv6 part '${ps[i]}' should >= 0 and <= 65534`);
         }
@@ -117,24 +123,67 @@ function _ipv4_to_string(v4Bytes) {
 }
 
 // ipv6 bytes to string
-function _ipv6_to_string(v6Bytes) {
-    // @TODO: double colon compress
+function _ipv6_to_string(v6Bytes, compress) {
     let ps = [];
     for (var i = 0; i < v6Bytes.length; i += 2) {
         ps.push(v6Bytes.readUint16BE(i).toString(16));
     }
-    return ps.join(':');
+
+    if (compress === false) {
+        return ps.join(':');
+    }
+
+    // auto compression of consecutive zero
+    let j = 0, mi = ps.length - 1;
+    let _ = [];
+    for (i = 0; i < ps.length; i++) {
+        // console.log(`i=${i}, v=${ps[i]}`);
+        if (i >= mi || j > 0) {
+            _.push(ps[i]);
+            continue;
+        }
+
+        if (ps[i] != '0' || ps[i+1] != '0') {
+            _.push(ps[i]);
+            continue;
+        }
+
+        // find the first two zero part
+        // and keep find all the zero part
+        for (i += 2; i < ps.length;) {
+            if (ps[i] != '0') {
+                i--;
+                break;
+            }
+            i++;
+        }
+
+        // make sure there is an empty head.
+        if (_.length == 0) {
+            _.push('');
+        }
+
+        _.push(''); // empty for double colon
+
+        // make sure there is an empty tail
+        if (i == ps.length && _.length == 2) {
+            _.push('');
+        }
+    }
+
+    // console.log(`ps.length=${ps.length}, _.length=${_.length}`);
+    return _.join(':');
 }
 
-function ipToString(ipBytes) {
+function ipToString(ipBytes, compress) {
     if (!Buffer.isBuffer(ipBytes)) {
         throw new Error('invalid bytes ip, not a Buffer');
     }
 
     if (ipBytes.length == 4) {
-        return _ipv4_to_string(ipBytes);
+        return _ipv4_to_string(ipBytes, compress);
     } else if (ipBytes.length == 16) {
-        return _ipv6_to_string(ipBytes);
+        return _ipv6_to_string(ipBytes, compress);
     } else {
         throw new Error('invalid bytes ip with length not 4 or 16');
     }
@@ -151,6 +200,7 @@ function ipBytesString(ipBytes) {
         ps.push(ipBytes[i] & 0xFF);
     }
 
+    // 
     return ps.join('.');
 }
 
