@@ -5,7 +5,6 @@
 // util functions
 // @Author Lion <chenxin619315@gmail.com>
 
-const { exec } = require('child_process');
 const header = require('./header');
 const fs = require('fs');
 
@@ -44,21 +43,48 @@ function _parse_ipv6_addr(v6String) {
         throw new Error('invalid ipv6 address');
     }
 
-    var s, v, dc_num = 0;
+    let dc_num = 0, offset = 0;
     const ipBytes = Buffer.alloc(16);
     for (var i = 0; i < ps.length; i++) {
-        s = ps[i].trim();
+        let s = ps[i].trim();
         if (s.length == 0) {    // Double colon
-            dc_num++;
+            // ONLY one double colon allow
+            if (dc_num > 0) {
+                throw new Error('invalid ipv6 address: multi double colon detected');
+            }
+
+            let start = i, mIdx = ps.length - 1;
+            // clear all the consecutive spaces
+            for (i++;;) {
+                s = ps[i].trim();
+                if (s.length > 0) {
+                    i--;
+                    break;
+                }
+
+                if (i >= mIdx) {
+                    break;
+                }
+
+                i++;
+            }
+
+            dc_num = 1;
+            // padding = 8 - start - left
+            let padding = 8 - start - (mIdx - i);
+            // console.log(`i=${i}, padding=${padding}`);
+            offset += 2 * padding;
+            continue;
         }
 
-        v = parseInt(s, 16);
-        if (v < 0 || v > 0xFFFE) {
+        let v = parseInt(s, 16);
+        if (v < 0 || v > 0xFFFF) {
             throw new Error(`invalid ipv6 part '${ps[i]}' should >= 0 and <= 65534`);
         }
 
-        // @TODO: keep coding
-        ipBytes.writeUint16BE(v, i);
+        // console.log(`${i}: v=${v}, offset=${offset}`);
+        ipBytes.writeUint16BE(v, offset);
+        offset += 2;
     }
 
     return ipBytes;
@@ -86,28 +112,46 @@ function parseIP(ipString) {
 // bytes ip to humen-readable string ip
 
 // ipv4 bytes to string
-// function _ipv4_to_string(v4Bytes) {
-//     return v4Bytes.join('.');
-// }
+function _ipv4_to_string(v4Bytes) {
+    return v4Bytes.join('.');
+}
 
 // ipv6 bytes to string
 function _ipv6_to_string(v6Bytes) {
-    return null;
+    // @TODO: double colon compress
+    let ps = [];
+    for (var i = 0; i < v6Bytes.length; i += 2) {
+        ps.push(v6Bytes.readUint16BE(i).toString(16));
+    }
+    return ps.join(':');
 }
 
 function ipToString(ipBytes) {
     if (!Buffer.isBuffer(ipBytes)) {
-        throw new Error('invalid bytes ip, not Buffer');
+        throw new Error('invalid bytes ip, not a Buffer');
     }
 
     if (ipBytes.length == 4) {
-        // return _ipv4_to_string(ipBytes);
-        return ipBytes.join('.');
+        return _ipv4_to_string(ipBytes);
     } else if (ipBytes.length == 16) {
         return _ipv6_to_string(ipBytes);
     } else {
         throw new Error('invalid bytes ip with length not 4 or 16');
     }
+}
+
+// print ip bytes
+function ipBytesString(ipBytes) {
+    if (!Buffer.isBuffer(ipBytes)) {
+        throw new Error('invalid bytes ip, not a Buffer');
+    }
+
+    let ps = [];
+    for (var i = 0; i < ipBytes.length; i++) {
+        ps.push(ipBytes[i] & 0xFF);
+    }
+
+    return ps.join('.');
 }
 
 // compare two byte ips
@@ -168,7 +212,7 @@ function loadContentFromFile(dbPath) {
 }
 
 module.exports = {
-    parseIP, ipToString, ipCompare,
+    parseIP, ipToString, ipBytesString, ipCompare,
     loadHeader, loadHeaderFromFile,
     loadVectorIndex, loadVectorIndexFromFile,
     loadContent, loadContentFromFile
