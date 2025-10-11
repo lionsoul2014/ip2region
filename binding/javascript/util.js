@@ -55,7 +55,7 @@ function _parse_ipv6_addr(v6String) {
                 throw new Error('invalid ipv6 address: multi double colon detected');
             }
 
-            let start = i, mIdx = ps.length - 1;
+            let start = i, mi = ps.length - 1;
             // clear all the consecutive spaces
             for (i++;;) {
                 s = ps[i].trim();
@@ -64,7 +64,7 @@ function _parse_ipv6_addr(v6String) {
                     break;
                 }
 
-                if (i >= mIdx) {
+                if (i >= mi) {
                     break;
                 }
 
@@ -73,7 +73,7 @@ function _parse_ipv6_addr(v6String) {
 
             dc_num = 1;
             // padding = 8 - start - left
-            let padding = 8 - start - (mIdx - i);
+            let padding = 8 - start - (mi - i);
             // console.log(`i=${i}, padding=${padding}`);
             offset += 2 * padding;
             continue;
