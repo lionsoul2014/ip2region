@@ -55,8 +55,14 @@ impl Searcher {
         let ip = ip.to_ipaddr()?;
 
         let (il0, il1) = match (ip, self.header.ip_version()) {
-            (IpAddr::V6(ip), IpVersion::V6) => (ip.octets()[0], ip.octets()[1]),
-            (IpAddr::V4(ip), IpVersion::V4) => (ip.octets()[0], ip.octets()[1]),
+            (IpAddr::V6(ip), IpVersion::V6) => {
+                let octets = ip.octets();
+                (octets[0], octets[1])
+            },
+            (IpAddr::V4(ip), IpVersion::V4) => {
+                let octets = ip.octets();
+                (octets[0], octets[1])
+            },
             (_, IpVersion::V4) => return Err(Ip2RegionError::OnlyIPv4Version),
             (_, IpVersion::V6) => return Err(Ip2RegionError::OnlyIPv6Version),
         };
@@ -76,10 +82,13 @@ impl Searcher {
         let mut left: usize = 0;
         let mut right: usize = (end_ptr - start_ptr) / segment_index_size;
 
+        let binary_index = self.read_buf(start_ptr, end_ptr - start_ptr)?;
+
         while left <= right {
             let mid = (left + right) >> 1;
-            let offset = start_ptr + mid * segment_index_size;
-            let buffer_ip_value = self.read_buf(offset, segment_index_size)?;
+            let offset = mid * segment_index_size;
+            let buffer_ip_value = &binary_index[offset..offset + segment_index_size];
+
             if ip.ip_lt(Cow::Borrowed(&buffer_ip_value[0..ip_bytes_len])) {
                 right = mid - 1;
             } else if ip.ip_gt(Cow::Borrowed(&buffer_ip_value[ip_bytes_len..ip_end_offset])) {
