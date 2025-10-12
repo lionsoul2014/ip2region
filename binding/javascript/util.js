@@ -33,38 +33,6 @@ class Header {
         this.buff = buff;
     }
 
-    version() {
-        return this.version;
-    }
-
-    indexPolicy() {
-        return this.indexPolicy;
-    }
-
-    createdAt() {
-        return this.createdAt;
-    }
-
-    startIndexPtr() {
-        return this.startIndexPtr;
-    }
-
-    endIndexPtr() {
-        return this.endIndexPtr;
-    }
-
-    ipVersion() {
-        return this.ipVersion;
-    }
-
-    runtimePtrBytes() {
-        return this.runtimePtrBytes;
-    }
-
-    buff() {
-        return this.buff;
-    }
-
     toString() {
         return `{
             "version":${this.version}, 
@@ -86,26 +54,6 @@ class Version {
         this.bytes = bytes;
         this.indexSize = indexSize;
         this.ipCompareFunc = ipCompareFunc;
-    }
-
-    id() {
-        return this.id;
-    }
-
-    name() {
-        return this.name;
-    }
-
-    bytes() {
-        return this.bytes;
-    }
-
-    indexSize() {
-        return this.indexSize;
-    }
-
-    compareFunc() {
-        return this.ipCompareFunc;
     }
 
     ipCompare(ip1, ip2) {

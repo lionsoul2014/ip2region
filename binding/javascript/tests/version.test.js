@@ -16,7 +16,13 @@ test("test version from name", () => {
     let vs = ["v4", "ipv4", "v4x", "v6", "ipv6", "v6x"];
     vs.forEach(ele => {
         let v = util.versionFromName(ele);
-        console.log(`versionFrom(${ele})`, v == null ? null : v.toString());
+        if (v == null) {
+            console.log(`invalid version name ${ele}`);
+            return;
+        }
+
+        console.log(`versionFrom(${ele})`, v.toString());
+        console.log(`version.id=${v.id}, version.name=${v.name}`);
     });
 });
 
