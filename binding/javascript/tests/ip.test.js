@@ -28,3 +28,22 @@ test('parse ip address', () => {
         console.log(`parseIP(${ipString}): {Bytes: ${toByte}, String: ${to_Str}}`);
     });
 });
+
+test('ip compare', () => {
+    let ip_list = [
+        ["1.0.0.0", "1.0.0.1", -1],
+        ["192.168.1.101", "192.168.1.90", 1],
+        ["219.133.111.87", "114.114.114.114", 1],
+        ["2000::", "2000:ffff:ffff:ffff:ffff:ffff:ffff:ffff", -1],
+        ["2001:4:112::", "2001:4:112:ffff:ffff:ffff:ffff:ffff", -1],
+        ["ffff::", "2001:4:ffff:ffff:ffff:ffff:ffff:ffff", 1]
+    ];
+
+    ip_list.forEach(ips => {
+        const ip1 = util.parseIP(ips[0]);
+        const ip2 = util.parseIP(ips[1]);
+        const cmp = util.ipCompare(ip1, ip2);
+        expect(cmp).toBe(ips[2]);
+        console.log(`compare(${ips[0]}, ${ips[1]}): ${cmp}`);
+    });
+});

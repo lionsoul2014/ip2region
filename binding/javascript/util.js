@@ -7,7 +7,6 @@
 
 const fs = require('fs');
 
-// --- header
 const XdbStructure20 = 2;
 const XdbStructure30 = 3;
 const XdbIPv4Id = 4;
@@ -80,15 +79,13 @@ class Header {
 
 // ---
 
-// ---
-// version
 class Version {
-    constructor(id, name, bytes, indexSize, ip_compare_func) {
+    constructor(id, name, bytes, indexSize, ipCompareFunc) {
         this.id = id;
         this.name = name;
         this.bytes = bytes;
         this.indexSize = indexSize;
-        this.ip_compare_func = ip_compare_func;
+        this.ipCompareFunc = ipCompareFunc;
     }
 
     id() {
@@ -108,11 +105,15 @@ class Version {
     }
 
     compareFunc() {
-        return this.ip_compare_func;
+        return this.ipCompareFunc;
     }
 
     ipCompare(ip1, ip2) {
-        return this.ip_compare_func(ip1, ip2);
+        return this.ipCompareFunc(ip1, ip2, 0);
+    }
+
+    ipSubCompare(ip1, ip2, offset) {
+        return this.ipCompareFunc(ip1, ip2, offset);
     }
 
     toString() {
@@ -121,12 +122,28 @@ class Version {
 }
 
 // 14 = 4 + 4 + 2 + 4
-const IPv4 = new Version(XdbIPv4Id, "IPv4", 4, 14, function(ip1, ip2){
+const IPv4 = new Version(XdbIPv4Id, "IPv4", 4, 14, function(ip1, buff, offset){
+    // ip1: Big endian byte order parsed from input
+    // ip2: Little endian byte order read from xdb index.
+    // @Note: to compatible with the old Litten endian index encode implementation.
+    let i, j = offset + ip1.length - 1;
+    for (i = 0; i < ip1.length; i++, j--) {
+        const i1 = ip1[i] & 0xFF;
+        const i2 = buff[j] & 0xFF;
+        if (i1 < i2) {
+            return -1;
+        }
+
+        if (i1 > i2) {
+            return 1;
+        }
+    }
+
+    return 0;
 });
 
 // 38 = 16 + 16 + 2 + 4
-const IPv6 = new Version(XdbIPv6Id, "IPv6", 6, 38, function(ip1, ip2){
-});
+const IPv6 = new Version(XdbIPv6Id, "IPv6", 6, 38, ipSubCompare);
 
 function versionFromName(name) {
     let n = name.toUpperCase();
@@ -162,9 +179,6 @@ function versionFromHeader(h) {
     }
 }
 // ---
-
-// ---
-// parse the specified string ip and return its bytes
 
 // parse ipv4 address
 function _parse_ipv4_addr(v4String) {
@@ -229,7 +243,6 @@ function _parse_ipv6_addr(v6String) {
             dc_num = 1;
             // padding = 8 - start - left
             let padding = 8 - start - (mi - i);
-            // console.log(`i=${i}, padding=${padding}`);
             offset += 2 * padding;
             continue;
         }
@@ -243,7 +256,6 @@ function _parse_ipv6_addr(v6String) {
             throw new Error(`invalid ipv6 part '${ps[i]}' should >= 0 and <= 65534`);
         }
 
-        // console.log(`${i}: v=${v}, offset=${offset}`);
         ipBytes.writeUint16BE(v, offset);
         offset += 2;
     }
@@ -252,6 +264,7 @@ function _parse_ipv6_addr(v6String) {
 }
 
 
+// parse the specified string ip and return its bytes
 // @param  ip string
 // @return Buffer
 function parseIP(ipString) {
@@ -267,9 +280,6 @@ function parseIP(ipString) {
 }
 
 // ---
-
-// ---
-// bytes ip to humen-readable string ip
 
 // ipv4 bytes to string
 function _ipv4_to_string(v4Bytes) {
@@ -291,7 +301,6 @@ function _ipv6_to_string(v6Bytes, compress) {
     let j = 0, mi = ps.length - 1;
     let _ = [];
     for (i = 0; i < ps.length; i++) {
-        // console.log(`i=${i}, v=${ps[i]}`);
         if (i >= mi || j > 0) {
             _.push(ps[i]);
             continue;
@@ -325,10 +334,10 @@ function _ipv6_to_string(v6Bytes, compress) {
         }
     }
 
-    // console.log(`ps.length=${ps.length}, _.length=${_.length}`);
     return _.join(':');
 }
 
+// bytes ip to humen-readable string ip
 function ipToString(ipBytes, compress) {
     if (!Buffer.isBuffer(ipBytes)) {
         throw new Error('invalid bytes ip, not a Buffer');
@@ -343,7 +352,6 @@ function ipToString(ipBytes, compress) {
     }
 }
 
-// print ip bytes
 function ipBytesString(ipBytes) {
     if (!Buffer.isBuffer(ipBytes)) {
         throw new Error('invalid bytes ip, not a Buffer');
@@ -354,17 +362,20 @@ function ipBytesString(ipBytes) {
         ps.push(ipBytes[i] & 0xFF);
     }
 
-    // 
     return ps.join('.');
 }
 
 // compare two byte ips
+// ip2 = buff[offset:ip1.length]
 // returns: -1 if ip1 < ip2, 1 if ip1 > ip2 or 0
-function ipCompare(ip1, ip2) {
-
+function ipSubCompare(ip1, buff, offset) {
+    return ip1.compare(buff, offset, offset + ip1.length);
 }
 
-// load header from xdb file
+function ipCompare(ip1, ip2) {
+    return ipSubCompare(ip1, ip2, 0);
+}
+
 function loadHeader(fd) {
     const buffer = Buffer.alloc(HeaderInfoLength);
     const rBytes = fs.readSync(fd, buffer, 0, HeaderInfoLength, 0);
@@ -420,14 +431,14 @@ module.exports = {
     // header
     XdbStructure20, XdbStructure30, XdbIPv4Id, XdbIPv6Id,
     HeaderInfoLength, VectorIndexRows, VectorIndexCols, VectorIndexSize,
-    Header,
 
     // version
-    Version, IPv4, IPv6,
+    IPv4, IPv6,
     versionFromName, versionFromHeader,
 
     // utils
-    parseIP, ipToString, ipBytesString, ipCompare,
+    parseIP, ipToString, ipBytesString, 
+    ipSubCompare, ipCompare,
     loadHeader, loadHeaderFromFile,
     loadVectorIndex, loadVectorIndexFromFile,
     loadContent, loadContentFromFile
