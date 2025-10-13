@@ -8,7 +8,8 @@
 const fs = require('fs');
 const {
     parseIP, 
-    HeaderInfoLength, VectorIndexCols, VectorIndexSize
+    HeaderInfoLength, VectorIndexCols, VectorIndexSize,
+    ipToString
 } = require('./util');
 
 class Searcher {
@@ -30,17 +31,13 @@ class Searcher {
         return this.ioCount;
     }
 
-    async search(ip) {
-        let ipBytes;
-        if (Buffer.isBuffer(ip)) {
-            ipBytes = ip;
-        } else {
-            ipBytes = parseIP(ip);
-        }
+    search(ip) {
+        // check and parse the string ip
+        const ipBytes = Buffer.isBuffer(ip) ? ip : parseIP(ip);
 
         // ip version check
         if (ipBytes.length != this.version.bytes) {
-            throw new Error(`invalid ip address (${this.version.name} expected)`);
+            throw new Error(`invalid ip address '${ipToString(ipBytes)}' (${this.version.name} expected)`);
         }
 
         // reset the global counter
@@ -48,14 +45,14 @@ class Searcher {
 
         // located the segment index block based on the vector index
         let sPtr = 0, ePtr = 0;
-        let il0 = ipBytes[0] & 0xFF, il1 = ipBytes[1] & 0xFF;
+        let il0 = ipBytes[0], il1 = ipBytes[1];
         let idx = il0 * VectorIndexCols * VectorIndexSize + il1 * VectorIndexSize;
         if (this.vectorIndex != null) {
             sPtr = this.vectorIndex.readUint32LE(idx);
             ePtr = this.vectorIndex.readUint32LE(idx + 4);
         } else if (this.cBuffer != null) {
-            sPtr = this.vectorIndex.readUint32LE(HeaderInfoLength + idx);
-            ePtr = this.vectorIndex.readUint32LE(HeaderInfoLength + idx + 4);
+            sPtr = this.cBuffer.readUint32LE(HeaderInfoLength + idx);
+            ePtr = this.cBuffer.readUint32LE(HeaderInfoLength + idx + 4);
         } else {
             const buff = Buffer.alloc(VectorIndexSize);
             this.read(HeaderInfoLength + idx, buff);
@@ -67,7 +64,7 @@ class Searcher {
         // binary search the segment index block to get the region info
         const bytes = ipBytes.length, dBytes = ipBytes.length << 1;
         const indexSize = this.version.indexSize;
-        let buff = Buffer.alloc(indexSize);
+        const buff = Buffer.alloc(indexSize);
         let dLen = -1, dPtr = -1, l = 0, h = (ePtr - sPtr) / indexSize;
         while (l <= h) {
             const m = (l + h) >> 1;
@@ -77,7 +74,7 @@ class Searcher {
             this.read(p, buff);
             if (this.version.ipSubCompare(ipBytes, buff, 0) < 0) {
                 h = m - 1;
-            } else if (this.version.ipSubCompare(ip, buff, bytes) > 0) {
+            } else if (this.version.ipSubCompare(ipBytes, buff, bytes) > 0) {
                 l = m + 1;
             } else {
                 dLen = buff.readUint16LE(dBytes);
@@ -87,12 +84,6 @@ class Searcher {
         }
 
         // console.log(`dLen: ${dLen}, dPtr: ${dPtr}`);
-        // empty match interception
-        // @Note: could this even be a case ?
-        if (dPtr < 0) {
-            return null;
-        }
-
         const region = Buffer.alloc(dLen);
         this.read(dPtr, region);
         return region.toString('utf-8');

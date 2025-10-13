@@ -5,7 +5,7 @@
 // util test script
 // @Author Lion <chenxin619315@gmail.com>
 
-const util = require('../util');
+const util = require('../util.js');
 const path = require('path');
 
 const dbPath = path.join(__dirname, '..', '..', '..', 'data', 'ip2region_v4.xdb')

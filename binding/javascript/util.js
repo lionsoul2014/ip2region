@@ -47,87 +47,6 @@ class Header {
 
 // ---
 
-class Version {
-    constructor(id, name, bytes, indexSize, ipCompareFunc) {
-        this.id = id;
-        this.name = name;
-        this.bytes = bytes;
-        this.indexSize = indexSize;
-        this.ipCompareFunc = ipCompareFunc;
-    }
-
-    ipCompare(ip1, ip2) {
-        return this.ipCompareFunc(ip1, ip2, 0);
-    }
-
-    ipSubCompare(ip1, ip2, offset) {
-        return this.ipCompareFunc(ip1, ip2, offset);
-    }
-
-    toString() {
-        return `{"id": ${this.id}, "name": "${this.name}", "bytes":${this.bytes}, "index_size": ${this.indexSize}}`;
-    }
-}
-
-// 14 = 4 + 4 + 2 + 4
-const IPv4 = new Version(XdbIPv4Id, "IPv4", 4, 14, function(ip1, buff, offset){
-    // ip1: Big endian byte order parsed from input
-    // ip2: Little endian byte order read from xdb index.
-    // @Note: to compatible with the old Litten endian index encode implementation.
-    let i, j = offset + ip1.length - 1;
-    for (i = 0; i < ip1.length; i++, j--) {
-        const i1 = ip1[i] & 0xFF;
-        const i2 = buff[j] & 0xFF;
-        if (i1 < i2) {
-            return -1;
-        }
-
-        if (i1 > i2) {
-            return 1;
-        }
-    }
-
-    return 0;
-});
-
-// 38 = 16 + 16 + 2 + 4
-const IPv6 = new Version(XdbIPv6Id, "IPv6", 6, 38, ipSubCompare);
-
-function versionFromName(name) {
-    let n = name.toUpperCase();
-    if (n == "V4" || n == "IPV4") {
-        return IPv4;
-    } else if (n == "V6" || n == "IPV6") {
-        return IPv6;
-    } else {
-        return null;
-    }
-}
-
-function versionFromHeader(h) {
-    let v = h.version();
-
-    // old structure with ONLY IPv4 supporting
-    if (v == XdbStructure20) {
-        return IPv4;
-    }
-
-    // structure 3.0 with IPv6 supporting
-    if (v != XdbStructure30) {
-        return null;
-    }
-
-    let ipVer = h.ipVersion();
-    if (ipVer == XdbIPv4Id) {
-        return IPv4;
-    } else if (ipVer == XdbIPv6Id) {
-        return IPv6;
-    } else {
-        return null;
-    }
-}
-// ---
-
 // parse ipv4 address
 function _parse_ipv4_addr(v4String) {
     let ps = v4String.split('.', 4);
@@ -223,7 +142,7 @@ function parseIP(ipString) {
     } else if (cDot > -1) {
         return _parse_ipv6_addr(ipString);
     } else {
-        return null;
+        throw new Error(`invalid ip address '${ipString}'`);
     }
 }
 
@@ -323,6 +242,90 @@ function ipSubCompare(ip1, buff, offset) {
 function ipCompare(ip1, ip2) {
     return ipSubCompare(ip1, ip2, 0);
 }
+
+// ---
+
+class Version {
+    constructor(id, name, bytes, indexSize, ipCompareFunc) {
+        this.id = id;
+        this.name = name;
+        this.bytes = bytes;
+        this.indexSize = indexSize;
+        this.ipCompareFunc = ipCompareFunc;
+    }
+
+    ipCompare(ip1, ip2) {
+        return this.ipCompareFunc(ip1, ip2, 0);
+    }
+
+    ipSubCompare(ip1, ip2, offset) {
+        return this.ipCompareFunc(ip1, ip2, offset);
+    }
+
+    toString() {
+        return `{"id": ${this.id}, "name": "${this.name}", "bytes":${this.bytes}, "index_size": ${this.indexSize}}`;
+    }
+}
+
+// 14 = 4 + 4 + 2 + 4
+const IPv4 = new Version(XdbIPv4Id, "IPv4", 4, 14, function(ip1, buff, offset){
+    // ip1: Big endian byte order parsed from input
+    // ip2: Little endian byte order read from xdb index.
+    // @Note: to compatible with the old Litten endian index encode implementation.
+    let i, j = offset + ip1.length - 1;
+    for (i = 0; i < ip1.length; i++, j--) {
+        const i1 = ip1[i] & 0xFF;
+        const i2 = buff[j] & 0xFF;
+        if (i1 < i2) {
+            return -1;
+        }
+
+        if (i1 > i2) {
+            return 1;
+        }
+    }
+
+    return 0;
+});
+
+// 38 = 16 + 16 + 2 + 4
+const IPv6 = new Version(XdbIPv6Id, "IPv6", 16, 38, ipSubCompare);
+
+function versionFromName(name) {
+    let n = name.toUpperCase();
+    if (n == "V4" || n == "IPV4") {
+        return IPv4;
+    } else if (n == "V6" || n == "IPV6") {
+        return IPv6;
+    } else {
+        return null;
+    }
+}
+
+function versionFromHeader(h) {
+    let v = h.version();
+
+    // old structure with ONLY IPv4 supporting
+    if (v == XdbStructure20) {
+        return IPv4;
+    }
+
+    // structure 3.0 with IPv6 supporting
+    if (v != XdbStructure30) {
+        return null;
+    }
+
+    let ipVer = h.ipVersion();
+    if (ipVer == XdbIPv4Id) {
+        return IPv4;
+    } else if (ipVer == XdbIPv6Id) {
+        return IPv6;
+    } else {
+        return null;
+    }
+}
+
+// ---
 
 function loadHeader(fd) {
     const buffer = Buffer.alloc(HeaderInfoLength);
