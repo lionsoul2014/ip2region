@@ -5,7 +5,7 @@
 // version test script
 // @Author Lion <chenxin619315@gmail.com>
 
-const util = require('../util');
+import * as util from '../util.js';
 
 test('const print', () => {
     console.log("IPv4: ", util.IPv4.toString());

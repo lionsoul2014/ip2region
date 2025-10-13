@@ -5,10 +5,12 @@
 // searcher new tester
 // @Author Lion <chenxin619315@gmail.com>
 
-const {IPv4, IPv6, loadVectorIndexFromFile, XdbIPv4Id, loadContentFromFile} = require('../util');
-const {newWithFileOnly, newWithVectorIndex, newWithBuffer} = require('../searcher');
-const path = require('path');
+import {IPv4, IPv6, loadVectorIndexFromFile, XdbIPv4Id, loadContentFromFile} from '../util.js';
+import {newWithFileOnly, newWithVectorIndex, newWithBuffer} from '../searcher.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const dbPath = {
     v4: path.join(__dirname, '..', '..', '..', 'data', 'ip2region_v4.xdb'),
     v6: path.join(__dirname, '..', '..', '..', 'data', 'ip2region_v6.xdb')

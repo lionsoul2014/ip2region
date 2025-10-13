@@ -5,9 +5,11 @@
 // util test script
 // @Author Lion <chenxin619315@gmail.com>
 
-const util = require('../util.js');
-const path = require('path');
+import * as util from '../util.js';
+import path from 'node:path';
+import { fileURLToPath } from 'url';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const dbPath = path.join(__dirname, '..', '..', '..', 'data', 'ip2region_v4.xdb')
 
 test('test load header', () => {

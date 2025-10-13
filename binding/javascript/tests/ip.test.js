@@ -5,7 +5,7 @@
 // util test script
 // @Author Lion <chenxin619315@gmail.com>
 
-const util = require('../util.js');
+import * as util from '../util.js';
 
 test('parse ip address', () => {
     let ip_list = [

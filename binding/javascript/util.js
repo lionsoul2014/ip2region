@@ -5,19 +5,19 @@
 // util functions
 // @Author Lion <chenxin619315@gmail.com>
 
-const fs = require('fs');
+import fs from 'fs';
 
-const XdbStructure20 = 2;
-const XdbStructure30 = 3;
-const XdbIPv4Id = 4;
-const XdbIPv6Id = 6;
+export const XdbStructure20 = 2;
+export const XdbStructure30 = 3;
+export const XdbIPv4Id = 4;
+export const XdbIPv6Id = 6;
 
-const HeaderInfoLength = 256;
-const VectorIndexRows  = 256;
-const VectorIndexCols  = 256;
-const VectorIndexSize  = 8;
+export const HeaderInfoLength = 256;
+export const VectorIndexRows  = 256;
+export const VectorIndexCols  = 256;
+export const VectorIndexSize  = 8;
 
-class Header {
+export class Header {
     constructor(buff) {
         this.version = buff.readUInt16LE(0);
         this.indexPolicy = buff.readUInt16LE(2);
@@ -134,7 +134,7 @@ function _parse_ipv6_addr(v6String) {
 // parse the specified string ip and return its bytes
 // @param  ip string
 // @return Buffer
-function parseIP(ipString) {
+export function parseIP(ipString) {
     let sDot = ipString.indexOf('.');
     let cDot = ipString.indexOf(':');
     if (sDot > -1 && cDot == -1) {
@@ -205,7 +205,7 @@ function _ipv6_to_string(v6Bytes, compress) {
 }
 
 // bytes ip to humen-readable string ip
-function ipToString(ipBytes, compress) {
+export function ipToString(ipBytes, compress) {
     if (!Buffer.isBuffer(ipBytes)) {
         throw new Error('invalid bytes ip, not a Buffer');
     }
@@ -219,7 +219,7 @@ function ipToString(ipBytes, compress) {
     }
 }
 
-function ipBytesString(ipBytes) {
+export function ipBytesString(ipBytes) {
     if (!Buffer.isBuffer(ipBytes)) {
         throw new Error('invalid bytes ip, not a Buffer');
     }
@@ -235,17 +235,17 @@ function ipBytesString(ipBytes) {
 // compare two byte ips
 // ip2 = buff[offset:ip1.length]
 // returns: -1 if ip1 < ip2, 1 if ip1 > ip2 or 0
-function ipSubCompare(ip1, buff, offset) {
+export function ipSubCompare(ip1, buff, offset) {
     return ip1.compare(buff, offset, offset + ip1.length);
 }
 
-function ipCompare(ip1, ip2) {
+export function ipCompare(ip1, ip2) {
     return ipSubCompare(ip1, ip2, 0);
 }
 
 // ---
 
-class Version {
+export class Version {
     constructor(id, name, bytes, indexSize, ipCompareFunc) {
         this.id = id;
         this.name = name;
@@ -268,7 +268,7 @@ class Version {
 }
 
 // 14 = 4 + 4 + 2 + 4
-const IPv4 = new Version(XdbIPv4Id, "IPv4", 4, 14, function(ip1, buff, offset){
+export const IPv4 = new Version(XdbIPv4Id, "IPv4", 4, 14, function(ip1, buff, offset){
     // ip1: Big endian byte order parsed from input
     // ip2: Little endian byte order read from xdb index.
     // @Note: to compatible with the old Litten endian index encode implementation.
@@ -289,9 +289,9 @@ const IPv4 = new Version(XdbIPv4Id, "IPv4", 4, 14, function(ip1, buff, offset){
 });
 
 // 38 = 16 + 16 + 2 + 4
-const IPv6 = new Version(XdbIPv6Id, "IPv6", 16, 38, ipSubCompare);
+export const IPv6 = new Version(XdbIPv6Id, "IPv6", 16, 38, ipSubCompare);
 
-function versionFromName(name) {
+export function versionFromName(name) {
     let n = name.toUpperCase();
     if (n == "V4" || n == "IPV4") {
         return IPv4;
@@ -302,7 +302,7 @@ function versionFromName(name) {
     }
 }
 
-function versionFromHeader(h) {
+export function versionFromHeader(h) {
     let v = h.version();
 
     // old structure with ONLY IPv4 supporting
@@ -327,7 +327,7 @@ function versionFromHeader(h) {
 
 // ---
 
-function loadHeader(fd) {
+export function loadHeader(fd) {
     const buffer = Buffer.alloc(HeaderInfoLength);
     const rBytes = fs.readSync(fd, buffer, 0, HeaderInfoLength, 0);
     if (rBytes != HeaderInfoLength) {
@@ -336,14 +336,14 @@ function loadHeader(fd) {
     return new Header(buffer);
 }
 
-function loadHeaderFromFile(dbPath) {
+export function loadHeaderFromFile(dbPath) {
     const fd = fs.openSync(dbPath, "r");
     const header = loadHeader(fd);
     fs.closeSync(fd);
     return header;
 }
 
-function loadVectorIndex(fd) {
+export function loadVectorIndex(fd) {
     const vBytes = VectorIndexCols * VectorIndexRows * VectorIndexSize;
     const buffer = Buffer.alloc(vBytes);
     const rBytes = fs.readSync(fd, buffer, 0, vBytes, HeaderInfoLength);
@@ -353,14 +353,14 @@ function loadVectorIndex(fd) {
     return buffer;
 }
 
-function loadVectorIndexFromFile(dbPath) {
+export function loadVectorIndexFromFile(dbPath) {
     const fd = fs.openSync(dbPath, "r");
     const vIndex = loadVectorIndex(fd);
     fs.closeSync(fd);
     return vIndex;
 }
 
-function loadContent(fd) {
+export function loadContent(fd) {
     const stats = fs.fstatSync(fd);
     const buffer = Buffer.alloc(stats.size);
     const rBytes = fs.readSync(fd, buffer, 0, buffer.length, 0);
@@ -370,27 +370,9 @@ function loadContent(fd) {
     return buffer;
 }
 
-function loadContentFromFile(dbPath) {
+export function loadContentFromFile(dbPath) {
     const fd = fs.openSync(dbPath, "r");
     const content = loadContent(fd);
     fs.close(fd, function(){});
     return content;
-}
-
-
-module.exports = {
-    // header
-    XdbStructure20, XdbStructure30, XdbIPv4Id, XdbIPv6Id,
-    HeaderInfoLength, VectorIndexRows, VectorIndexCols, VectorIndexSize,
-
-    // version
-    IPv4, IPv6,
-    versionFromName, versionFromHeader,
-
-    // utils
-    parseIP, ipToString, ipBytesString, 
-    ipSubCompare, ipCompare,
-    loadHeader, loadHeaderFromFile,
-    loadVectorIndex, loadVectorIndexFromFile,
-    loadContent, loadContentFromFile
 }

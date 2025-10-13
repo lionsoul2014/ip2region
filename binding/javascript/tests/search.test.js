@@ -5,10 +5,12 @@
 // searcher search tester
 // @Author Lion <chenxin619315@gmail.com>
 
-const {IPv4, IPv6, parseIP, ipToString} = require('../util');
-const {newWithFileOnly} = require('../searcher');
-const path = require('path');
+import {IPv4, IPv6, parseIP, ipToString} from '../util.js';
+import {newWithFileOnly} from '../searcher.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const dbPath = {
     v4: path.join(__dirname, '..', '..', '..', 'data', 'ip2region_v4.xdb'),
     v6: path.join(__dirname, '..', '..', '..', 'data', 'ip2region_v6.xdb')

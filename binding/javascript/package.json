@@ -5,7 +5,7 @@
   "type": "module",
   "main": "ip2region.js",
   "scripts": {
-    "test": "jest"
+    "test": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' jest"
   },
   "repository": {
     "type": "git",

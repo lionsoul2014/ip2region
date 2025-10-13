@@ -5,3 +5,6 @@
 // ip2region.js
 // @Author Lion <chenxin619315@gmail.com>
 
+// Re-export all utilities and searcher functions
+export * from './util.js';
+export * from './searcher.js';

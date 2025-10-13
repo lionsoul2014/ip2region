@@ -5,14 +5,14 @@
 // searcher implementation
 // @Author Lion <chenxin619315@gmail.com>
 
-const fs = require('fs');
-const {
+import fs from 'fs';
+import {
     parseIP, 
     HeaderInfoLength, VectorIndexCols, VectorIndexSize,
     ipToString
-} = require('./util');
+} from './util.js';
 
-class Searcher {
+export class Searcher {
     constructor(version, dbPath, vectorIndex, cBuffer) {
         this.ioCount = 0;
         this.version = version;
@@ -114,20 +114,14 @@ class Searcher {
     }
 }
 
-function newWithFileOnly(version, dbPath) {
+export function newWithFileOnly(version, dbPath) {
     return new Searcher(version, dbPath, null, null);
 }
 
-function newWithVectorIndex(version, dbPath, vectorIndex) {
+export function newWithVectorIndex(version, dbPath, vectorIndex) {
     return new Searcher(version, dbPath, vectorIndex, null);
 }
 
-function newWithBuffer(version, cBuffer) {
+export function newWithBuffer(version, cBuffer) {
     return new Searcher(version, null, null, cBuffer);
-}
-
-module.exports = {
-    newWithFileOnly,
-    newWithVectorIndex,
-    newWithBuffer
 }
