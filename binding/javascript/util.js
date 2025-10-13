@@ -196,7 +196,7 @@ function _ipv6_to_string(v6Bytes, compress) {
         _.push(''); // empty for double colon
 
         // make sure there is an empty tail
-        if (i == ps.length && _.length == 2) {
+        if (i == ps.length && _.length < ps.length) {
             _.push('');
         }
     }
@@ -376,3 +376,6 @@ export function loadContentFromFile(dbPath) {
     fs.close(fd, function(){});
     return content;
 }
+
+const ipBytes = parseIP("2a02:26f7:c409:4001::");
+console.log(ipToString(ipBytes));

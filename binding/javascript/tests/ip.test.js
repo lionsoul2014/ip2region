@@ -10,7 +10,7 @@ import * as util from '../util.js';
 test('parse ip address', () => {
     let ip_list = [
         "1.0.0.0", "58.251.30.115", "192.168.1.100", "126.255.32.255", "219.xx.xx.11", 
-        "::", "::1", "fffe::", "2c0f:fff0::", "2c0f:fff0::1", 
+        "::", "::1", "fffe::", "2c0f:fff0::", "2c0f:fff0::1", "2a02:26f7:c409:4001::",
         "2fff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", "240e:982:e617:ffff:ffff:ffff:ffff:ffff", "::xx:ffff"
     ];
 
@@ -26,6 +26,7 @@ test('parse ip address', () => {
         let to_Str = ipBytes == null ? '0' : util.ipToString(ipBytes, true);
         let toByte = ipBytes == null ? '0' : util.ipBytesString(ipBytes);
         console.log(`parseIP(${ipString}): {Bytes: ${toByte}, String: ${to_Str}}`);
+        expect(ipString).toBe(to_Str);
     });
 });
 
