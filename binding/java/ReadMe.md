@@ -126,14 +126,14 @@ public class SearcherTest {
         // 4、关闭资源
         searcher.close();
 
-        // 备注：每个线程需要单独创建一个独立的 Searcher 对象，但是都共享全局的制度 vIndex 缓存。
+        // 备注：每个线程需要单独创建一个独立的 Searcher 对象，但是都共享全局的只读 vIndex 缓存。
     }
 }
 ```
 
 ### 缓存整个 `xdb` 数据
 
-我们也可以预先加载整个 ip2region.xdb 的数据到内存，然后基于这个数据创建查询对象来实现完全基于文件的查询，类似之前的 memory search。
+我们也可以预先加载整个 xdb 文件的数据到内存，然后基于这个数据创建查询对象来实现完全基于文件的查询，类似之前的 memory search。
 ```java
 import org.lionsoul.ip2region.xdb.Searcher;
 import java.io.*;

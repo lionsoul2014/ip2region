@@ -32,24 +32,30 @@ test('ipv4 search test', async () => {
             console.log(`${err.message}`);
         });
     }
+
+    // close searcher
+    searcher.close();
 });
 
 test('ipv6 search test', async () => {
-        let searcher = newWithFileOnly(IPv6, dbPath.v6);
-        let ip_list  = [
-            '2a02:26f7:c409:4001::',
-            parseIP('2a11:8080:200::a:a05c'),
-            '240e:3b7::',
-            '120.229.45.92'
-        ];
+    let searcher = newWithFileOnly(IPv6, dbPath.v6);
+    let ip_list  = [
+        '2a02:26f7:c409:4001::',
+        parseIP('2a11:8080:200::a:a05c'),
+        '240e:3b7::',
+        '120.229.45.92'
+    ];
 
-        for (var i = 0; i < ip_list.length; i++) {
-            let ip = ip_list[i];
-            searcher.search(ip).then((region)=>{
-                let ipStr = Buffer.isBuffer(ip) ? ipToString(ip) : ip;
-                console.log(`search(${ipStr}): {region: ${region}, ioCount: ${searcher.getIOCount()}}`);
-            }).catch((err) => {
-                console.log(`${err.message}`);
-            });
-        }
+    for (var i = 0; i < ip_list.length; i++) {
+        let ip = ip_list[i];
+        searcher.search(ip).then((region)=>{
+            let ipStr = Buffer.isBuffer(ip) ? ipToString(ip) : ip;
+            console.log(`search(${ipStr}): {region: ${region}, ioCount: ${searcher.getIOCount()}}`);
+        }).catch((err) => {
+            console.log(`${err.message}`);
+        });
+    }
+
+    // close searcher
+    searcher.close();
 });

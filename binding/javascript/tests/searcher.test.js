@@ -45,6 +45,9 @@ test('ipv4 searcher test', async () => {
             }
             bRegion = region;
             console.log(`${meta[0]}.search(${ip_Str}): ${region}`);
+
+            // searcher close
+            meta[1].close();
         }
     } catch (e) {
         console.error(`${e.message}`);
@@ -64,6 +67,9 @@ test('ipv6 searcher test', async () => {
             }
             bRegion = region;
             console.log(`${meta[0]}.search(${ip_Str}): ${region}`);
+
+            // searcher close
+            meta[1].close();
         }
     } catch (e) {
         console.error(`${e.message}`);
