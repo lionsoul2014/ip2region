@@ -373,9 +373,42 @@ export function loadContent(fd) {
 export function loadContentFromFile(dbPath) {
     const fd = fs.openSync(dbPath, "r");
     const content = loadContent(fd);
-    fs.close(fd, function(){});
+    fs.closeSync(fd);
     return content;
 }
 
-const ipBytes = parseIP("2a02:26f7:c409:4001::");
-console.log(ipToString(ipBytes));
+// --- 
+
+// Verify if the current Searcher could be used to search the specified xdb file.
+// Why do we need this check ?
+// The future features of the xdb impl may cause the current searcher not able to work properly.
+//
+// @Note: You Just need to check this ONCE when the service starts
+// Or use another process (eg, A command) to check once Just to confirm the suitability.
+export function verify(fd) {
+    const header = loadHeader(fd);
+
+    // get the runtime ptr bytes
+    let runtimePtrBytes = 0;
+    if (header.version == XdbStructure20) {
+        runtimePtrBytes = 4;
+    } else if (header.version == XdbStructure30) {
+        runtimePtrBytes = header.runtimePtrBytes;
+    } else {
+        throw new Error(`invalid structure version ${header.version}`);
+    }
+
+    // 1, confirm the xdb file size
+    // to ensure that the maximum file pointer does not overflow
+    const maxFilePtr = (1n << BigInt(runtimePtrBytes * 8)) - 1n;
+    const _fileBytes = BigInt(fs.fstatSync(fd).size);
+    if (_fileBytes > maxFilePtr) {
+        throw new Error(`xdb file exceeds the maximum supported bytes: ${maxFilePtr}`);
+    }
+}
+
+export function verifyFromFile(dbPath) {
+    const fd = fs.openSync(dbPath, "r");
+    verify(fd);
+    fs.closeSync(fd);
+}

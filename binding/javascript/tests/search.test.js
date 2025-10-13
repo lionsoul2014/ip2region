@@ -5,7 +5,7 @@
 // searcher search tester
 // @Author Lion <chenxin619315@gmail.com>
 
-import {IPv4, IPv6, parseIP, ipToString, newWithFileOnly} from '../index.js';
+import {IPv4, IPv6, parseIP, ipToString, newWithFileOnly, verifyFromFile} from '../index.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -16,6 +16,18 @@ const dbPath = {
 }
 
 test('ipv4 search test', async () => {
+    // verify the xdb file
+    // @Note: do NOT call it every time you create a searcher since this will slow
+    // down the search response.
+    // @see the verify function for details.
+    try {
+        verifyFromFile(dbPath.v4);
+        console.log(`xdb file '${dbPath.v4}' verified`);
+    } catch (e) {
+        console.log(`binding is not applicable for xdb file '${dbPath.v4}': ${e.message}`);
+        return;
+    }
+
     let searcher = newWithFileOnly(IPv4, dbPath.v4);
     let ip_list  = [
         '1.0.0.0',
@@ -38,6 +50,18 @@ test('ipv4 search test', async () => {
 });
 
 test('ipv6 search test', async () => {
+    // verify the xdb file
+    // @Note: do NOT call it every time you create a searcher since this will slow
+    // down the search response.
+    // @see the verify function for details.
+    try {
+        verifyFromFile(dbPath.v6);
+        console.log(`xdb file '${dbPath.v6}' verified`);
+    } catch (e) {
+        console.log(`binding is not applicable for xdb file '${dbPath.v6}': ${e.message}`);
+        return;
+    }
+
     let searcher = newWithFileOnly(IPv6, dbPath.v6);
     let ip_list  = [
         '2a02:26f7:c409:4001::',

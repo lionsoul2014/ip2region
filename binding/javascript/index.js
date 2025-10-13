@@ -30,7 +30,9 @@ export {
     loadVectorIndex,
     loadVectorIndexFromFile,
     loadContent,
-    loadContentFromFile
+    loadContentFromFile,
+    verify,
+    verifyFromFile
 } from './util.js';
 
 export { 
