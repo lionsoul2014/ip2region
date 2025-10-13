@@ -5,13 +5,6 @@
 // ip2region JavaScript binding with IPv4 and IPv6 support.
 // @Author Lion <chenxin619315@gmail.com>
 
-export { 
-    Searcher, 
-    newWithFileOnly, 
-    newWithVectorIndex, 
-    newWithBuffer 
-} from './searcher.js';
-
 export {
     Header,
     Version,
@@ -39,3 +32,10 @@ export {
     loadContent,
     loadContentFromFile
 } from './util.js';
+
+export { 
+    Searcher, 
+    newWithFileOnly, 
+    newWithVectorIndex, 
+    newWithBuffer 
+} from './searcher.js';
