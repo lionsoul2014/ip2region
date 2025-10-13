@@ -5,10 +5,13 @@
 // searcher new tester
 // @Author Lion <chenxin619315@gmail.com>
 
-import {IPv4, IPv6, loadVectorIndexFromFile, XdbIPv4Id, loadContentFromFile} from '../util.js';
-import {newWithFileOnly, newWithVectorIndex, newWithBuffer} from '../searcher.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import {
+    IPv4, IPv6, XdbIPv4Id, 
+    loadVectorIndexFromFile, loadContentFromFile, 
+    newWithFileOnly, newWithVectorIndex, newWithBuffer
+} from '../index.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const dbPath = {
@@ -29,14 +32,14 @@ function _get_creater_list(version) {
     }];
 }
 
-test('ipv4 searcher test', () => {
+test('ipv4 searcher test', async () => {
     const ip_Str = '120.229.45.92';
     const c_list = _get_creater_list(IPv4);
     try {
         let bRegion = null;
         for (var i = 0; i < c_list.length; i++) {
             const meta = c_list[i]();
-            const region = meta[1].search(ip_Str);
+            const region = await meta[1].search(ip_Str);
             if (bRegion != null) {
                 expect(region).toBe(region);
             }
@@ -55,7 +58,7 @@ test('ipv6 searcher test', async () => {
         let bRegion = null;
         for (var i = 0; i < c_list.length; i++) {
             const meta = c_list[i]();
-            const region = meta[1].search(ip_Str);
+            const region = await meta[1].search(ip_Str);
             if (bRegion != null) {
                 expect(region).toBe(region);
             }

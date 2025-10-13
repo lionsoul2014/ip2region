@@ -31,7 +31,7 @@ export class Searcher {
         return this.ioCount;
     }
 
-    search(ip) {
+    async search(ip) {
         // check and parse the string ip
         const ipBytes = Buffer.isBuffer(ip) ? ip : parseIP(ip);
 
