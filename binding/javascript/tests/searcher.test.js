@@ -9,15 +9,87 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import {
     IPv4, IPv6, XdbIPv4Id, 
+    parseIP, ipToString, verifyFromFile,
     loadVectorIndexFromFile, loadContentFromFile, 
     newWithFileOnly, newWithVectorIndex, newWithBuffer
 } from '../index.js';
+import { fail } from 'assert';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const dbPath = {
     v4: path.join(__dirname, '..', '..', '..', 'data', 'ip2region_v4.xdb'),
     v6: path.join(__dirname, '..', '..', '..', 'data', 'ip2region_v6.xdb')
 }
+test('xdb file verify', () => {
+    // verify the xdb file
+    // @Note: do NOT call it every time you create a searcher since this will slow
+    // down the search response.
+    // @see the verify function for details.
+    for (k in dbPath) {
+        if (!dbPath.hasOwnProperty(k)) {
+            continue;
+        }
+
+        try {
+            verifyFromFile(dbPath[k]);
+            console.log(`xdb file '${dbPath[k]}' verified`);
+        } catch (e) {
+            throw new Error(`binding is not applicable for xdb file '${dbPath[k]}': ${e.message}`);
+        }
+    }
+});
+
+// ---
+// search api testing
+
+test('ipv4 search test', async () => {
+    let searcher = newWithFileOnly(IPv4, dbPath.v4);
+    let ip_list  = [
+        '1.0.0.0',
+        parseIP('113.118.112.93'),
+        '240e:3b7::'
+    ];
+
+    for (var i = 0; i < ip_list.length; i++) {
+        let ip = ip_list[i];
+        searcher.search(ip).then((region)=>{
+            let ipStr = Buffer.isBuffer(ip) ? ipToString(ip) : ip;
+            console.log(`search(${ipStr}): {region: ${region}, ioCount: ${searcher.getIOCount()}}`);
+        }).catch((err) => {
+            console.log(`${err.message}`);
+        });
+    }
+
+    // close searcher
+    searcher.close();
+});
+
+test('ipv6 search test', async () => {
+    let searcher = newWithFileOnly(IPv6, dbPath.v6);
+    let ip_list  = [
+        '2a02:26f7:c409:4001::',
+        parseIP('2a11:8080:200::a:a05c'),
+        '240e:3b7::',
+        '120.229.45.92'
+    ];
+
+    for (var i = 0; i < ip_list.length; i++) {
+        let ip = ip_list[i];
+        searcher.search(ip).then((region)=>{
+            let ipStr = Buffer.isBuffer(ip) ? ipToString(ip) : ip;
+            console.log(`search(${ipStr}): {region: ${region}, ioCount: ${searcher.getIOCount()}}`);
+        }).catch((err) => {
+            console.log(`${err.message}`);
+        });
+    }
+
+    // close searcher
+    searcher.close();
+});
+
+
+// ---
+// searcher with different cache policy testing
 
 function _get_creater_list(version) {
     let dbFile = version.id == XdbIPv4Id ? dbPath.v4 : dbPath.v6;
