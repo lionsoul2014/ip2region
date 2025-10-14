@@ -82,9 +82,9 @@ const _split = (line) => {
     return ps;
 }
 
-const getMs = () => {
-    const hrTime = process.hrtime();
-    return hrTime[0] * 1000000 + hrTime[1] / 1000;
+const getMillSecs = () => {
+    const t = process.hrtime();
+    return t[0] * 1_000 + t[1] / 1_000_000;
 }
 
 // console.log(`dbPath=${dbPath}, src=${src}, cachePolicy=${cachePolicy}`);
@@ -97,7 +97,7 @@ const main = () => {
     const searcher = createSearcher();
     console.log(`Searcher: ${searcher.toString()}`);
 
-    let totalNs = 0, count = 0;
+    let totalMicroSecs = 0, count = 0;
 
     // read the source line and do the search bench
     const rl = readline.createInterface({
@@ -106,7 +106,7 @@ const main = () => {
     });
     rl.on('line', async (l) => {
         const ps  = _split(l);
-        const sTime  = process.hrtime();
+        const st  = process.hrtime();
         const sip = xdb.parseIP(ps[0]);
         const eip = xdb.parseIP(ps[1]);
         if (xdb.ipCompare(sip, eip) > 0) {
@@ -121,16 +121,18 @@ const main = () => {
             }
             count++;
         }
-        totalNs += process.hrtime(sTime);
+
+        const diff = process.hrtime(st);
+        totalMicroSecs += (diff[0] * 1_000_1000 + (diff[1] / 1e6));
     }).on('error', (err) => {
         console.log(err);
         process.exit(1);
     });
 
     process.on('exit', (code) => {
-        const tookSec = totalNs / 1e9;
-        const _eachUs = count == 0 ? 0 : totalNs / 1e3 / count;
-        console.log(`Bench finished, {cachePolicy: ${cachePolicy}, total: ${count}, took: ${tookSec}s, cost: ${_eachUs} μs/op}`);
+        const tookSec = totalMicroSecs / 1_000_000;
+        const _eachUs = count == 0 ? 0 : totalMicroSecs / count;
+        console.log(`Bench finished, {cachePolicy: ${cachePolicy}, total: ${count}, took: ${tookSec} s, cost: ${_eachUs} µs/op}`);
     });
 }
 

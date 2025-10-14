@@ -169,16 +169,29 @@ try {
 
 # bench 测试
 
-可以通过 `` 命令来进行 bench 测试，一方面确保 `xdb` 文件没有错误，一方面可以评估查询性能：
+可以通过 `node tests/bench.app.js` 命令来进行 bench 测试，一方面确保 `xdb` 文件没有错误，一方面可以评估查询性能：
 ```bash
+➜  javascript git:(fr_javascript_ipv6) ✗ node tests/bench.app.js 
+usage: Usage node tests/bench.app.js [command options]
+
+ip2region bench script
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --db DB               ip2region binary xdb file path
+  --src SRC             source ip text file path
+  --cache-policy CACHE_POLICY
+                        cache policy: file/vectorIndex/content, default: vectorIndex
 ```
 
 例如：通过默认的 data/ip2region_v4.xdb 和 data/ipv4_source.txt 文件进行 IPv4 的 bench 测试：
 ```bash
+node tests/bench.app.js --db=../../data/ip2region_v4.xdb --src=../../data/ipv4_source.txt
 ```
 
 例如：通过默认的 data/ip2region_v6.xdb 和 data/ipv6_source.txt 文件进行 IPv6 的 bench 测试：
 ```bash
+node tests/bench.app.js --db=../../data/ip2region_v6.xdb --src=../../data/ipv6_source.txt
 ```
 
 可以通过分别设置 `cache-policy` 为 file/vectorIndex/content 来测试三种不同缓存实现的效果。
