@@ -38,6 +38,7 @@
   "homepage": "https://github.com/lionsoul2014/ip2region#readme",
   "devDependencies": {
     "@types/jest": "^30.0.0",
+    "argparse": "^2.0.1",
     "jest": "^30.2.0",
     "ts-jest": "^29.4.5",
     "typescript": "^5.9.3"

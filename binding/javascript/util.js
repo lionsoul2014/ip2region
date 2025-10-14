@@ -303,19 +303,17 @@ export function versionFromName(name) {
 }
 
 export function versionFromHeader(h) {
-    let v = h.version();
-
     // old structure with ONLY IPv4 supporting
-    if (v == XdbStructure20) {
+    if (h.version == XdbStructure20) {
         return IPv4;
     }
 
     // structure 3.0 with IPv6 supporting
-    if (v != XdbStructure30) {
+    if (h.version != XdbStructure30) {
         return null;
     }
 
-    let ipVer = h.ipVersion();
+    let ipVer = h.ipVersion;
     if (ipVer == XdbIPv4Id) {
         return IPv4;
     } else if (ipVer == XdbIPv6Id) {

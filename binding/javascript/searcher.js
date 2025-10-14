@@ -15,6 +15,7 @@ import {
 export class Searcher {
     constructor(version, dbPath, vectorIndex, cBuffer) {
         this.ioCount = 0;
+        this.dbPath  = dbPath;
         this.version = version;
         if (cBuffer != null) {
             this.handle = null;
@@ -111,6 +112,13 @@ export class Searcher {
         if (this.handle != null) {
             fs.close(this.handle);
         }
+    }
+
+    toString() {
+        const vn = this.version.name;
+        const vi = this.vectorIndex == null ? 'null' : this.vectorIndex.length;
+        const cf = this.cBuffer == null ? 'null' : this.cBuffer.length;
+        return `{"version": ${vn}, "dbPath": ${this.dbPath}, "handle": ${this.handle}, "vectorIndex": ${vi} "cBuffer": ${cf}}`;
     }
 }
 
