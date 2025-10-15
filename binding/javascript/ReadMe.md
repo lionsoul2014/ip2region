@@ -152,16 +152,38 @@ try {
 
 # 查询测试
 
-可以通过 `` 命令来测试查询：
+可以通过 `node tests/search.app.js` 命令来测试查询：
 ```bash
+➜  javascript git:(fr_javascript_ipv6) node tests/search.app.js                                                                 
+usage: Usage node tests/search.app.js [command options]
+
+ip2region search script
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --db DB               ip2region binary xdb file path
+  --cache-policy CACHE_POLICY
+                        cache policy: file/vectorIndex/content, default: vectorIndex
 ```
 
 例如：使用默认的 data/ip2region_v4.xdb 文件进行 IPv4 的查询测试：
 ```bash
+➜  javascript git:(fr_javascript_ipv6) ✗ node tests/search.app.js --db=../../data/ip2region_v4.xdb                                
+ip2region xdb searcher test program
+source xdb: ../../data/ip2region_v4.xdb (IPv4, vectorIndex)
+type 'quit' to exit
+ip2region>> 1.2.3.4
+{region: 美国|华盛顿|0|谷歌, ioCount: 7, took: 0.430357 μs}
 ```
 
 例如：使用默认的 data/ip2region_v6.xdb 文件进行 IPv6 的查询测试：
 ```bash
+➜  javascript git:(fr_javascript_ipv6) ✗ node tests/search.app.js --db=../../data/ip2region_v6.xdb
+ip2region xdb searcher test program
+source xdb: ../../data/ip2region_v6.xdb (IPv6, vectorIndex)
+type 'quit' to exit
+ip2region>> 240e:3b7:3272:d8d0:db09:c067:8d59:539e
+{region: 中国|广东省|深圳市|家庭宽带, ioCount: 14, took: 4.727663 μs}
 ```
 
 输入 ip 即可进行查询测试，也可以分别设置 `cache-policy` 为 file/vectorIndex/content 来测试三种不同缓存实现的查询效果。
