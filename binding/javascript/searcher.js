@@ -28,6 +28,10 @@ export class Searcher {
         }
     }
 
+    getIPVersion() {
+        return this.version;
+    }
+
     getIOCount() {
         return this.ioCount;
     }

@@ -40,6 +40,7 @@ export declare class Searcher {
     cBuffer: Buffer | null;
     
     constructor(version: Version, dbPath: string | null, vectorIndex: Buffer | null, cBuffer: Buffer | null);
+    getIPVersion(): Version;
     getIOCount(): number;
     search(ip: string | Buffer): string;
     read(offset: number, buff: Buffer, stats?: any): void;
