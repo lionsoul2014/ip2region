@@ -7,7 +7,7 @@
 
 import * as xdb from '../index.js';
 import {ArgumentParser} from 'argparse';
-import readline from 'node:readline';
+import LineByLine from 'n-readlines';
 import fs from 'fs';
 
 
@@ -82,7 +82,7 @@ const _split = (line) => {
     return ps;
 }
 
-const main = () => {
+const main = async () => {
     if (dbPath.length < 1 || srcPath.length < 1) {
         parser.print_help();
         return;
@@ -91,16 +91,12 @@ const main = () => {
     const searcher = createSearcher();
     console.log(`Searcher: ${searcher.toString()}`);
 
-    let totalMicroSecs = 0, count = 0;
-
     // read the source line and do the search bench
-    const rl = readline.createInterface({
-        input: fs.createReadStream(srcPath),
-        crlfDelay: Infinity
-    });
-    rl.on('line', async (l) => {
-        const ps  = _split(l);
-        const st  = process.hrtime();
+    let totalMicroSecs = 0, count = 0, line = null;
+    const rl = new LineByLine(srcPath);
+    while (line = rl.next()) {
+        const ps  = _split(line.toString('utf-8'));
+        const sTime  = process.hrtime();
         const sip = xdb.parseIP(ps[0]);
         const eip = xdb.parseIP(ps[1]);
         if (xdb.ipCompare(sip, eip) > 0) {
@@ -115,19 +111,14 @@ const main = () => {
             }
             count++;
         }
+        const diff = process.hrtime(sTime);
+        const took = diff[0] * 1_000_000 + diff[1] / 1e3;
+        totalMicroSecs += took;
+    }
 
-        const diff = process.hrtime(st);
-        totalMicroSecs += (diff[0] * 1_000_1000 + diff[1] / 1e6);
-    }).on('error', (err) => {
-        console.log(err);
-        process.exit(1);
-    });
-
-    process.on('exit', (code) => {
-        const tookSec = totalMicroSecs / 1_000_000;
-        const _eachUs = count == 0 ? 0 : totalMicroSecs / count;
-        console.log(`Bench finished, {cachePolicy: ${cachePolicy}, total: ${count}, took: ${tookSec} s, cost: ${_eachUs} µs/op}`);
-    });
+    const tookSec = totalMicroSecs / 1e6;
+    const _eachUs = count == 0 ? 0 : totalMicroSecs / count;
+    console.log(`Bench finished, {cachePolicy: ${cachePolicy}, total: ${count}, took: ${tookSec} s, cost: ${_eachUs} μs/op}`);
 }
 
 main();

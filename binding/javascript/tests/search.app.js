@@ -8,8 +8,6 @@
 import * as xdb from '../index.js';
 import {ArgumentParser} from 'argparse';
 import fs from 'fs';
-import { parseIP } from '../util.js';
-
 
 const parser = new ArgumentParser({
     add_help: true,
@@ -62,10 +60,10 @@ const createSearcher = () => {
 
 const readlineSync = () => {
     return new Promise((resolve, reject) => {
-        process.stdin.resume()
+        process.stdin.resume();
         process.stdin.on('data', (buff) => {
             process.stdin.pause();
-            resolve(buff.toString('utf-8'))
+            resolve(buff.toString('utf-8'));
         });
     });
 }
@@ -95,7 +93,6 @@ type 'quit' to exit`);
         }
 
         // parse the ip address
-        const sTime = process.hrtime();
         let ipBytes = null;
         try {
             ipBytes = xdb.parseIP(ipString);
@@ -105,6 +102,7 @@ type 'quit' to exit`);
         }
 
         // do the search
+        const sTime = process.hrtime();
         let region = null;
         try {
             region = await searcher.search(ipBytes);
@@ -114,7 +112,7 @@ type 'quit' to exit`);
         }
 
         const diff = process.hrtime(sTime);
-        const took = diff[0] * 1_000_000 + diff[1] / 1e6;
+        const took = diff[0] * 1_000_000 + diff[1] / 1e3;
         console.log(`{region: ${region}, ioCount: ${searcher.getIOCount()}, took: ${took} μs}`);
     }
 }
