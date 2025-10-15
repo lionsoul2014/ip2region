@@ -2,10 +2,15 @@
 
 # 使用方式
 
+### 安装
+```bash
+npm install ip2region.js --save 
+```
+
 ### 关于 IPv4 和 IPv6
 该 xdb 查询客户端实现同时支持对 IPv4 和 IPv6 的查询，使用方式如下：
 ```javascript
-import {IPv4, IPv6} from './index.js';
+import {IPv4, IPv6} from 'ip2region.js';
 
 // 如果是 IPv4: 设置 xdb 路径为 v4 的 xdb 文件，IP版本指定为 Version.IPv4
 let dbPath  = "../../data/ip2region_v4.xdb";  // 或者你的 ipv4 xdb 的路径
@@ -22,7 +27,7 @@ let version = IPv6;
 ### 文件验证
 建议您主动去验证 xdb 文件的适用性，因为后期的一些新功能可能会导致目前的 Searcher 版本无法适用你使用的 xdb 文件，验证可以避免运行过程中的一些不可预测的错误。 你不需要每次都去验证，例如在服务启动的时候，或者手动调用命令验证确认版本匹配即可，不要在每次创建的 Searcher 的时候运行验证，这样会影响查询的响应速度，尤其是高并发的使用场景。
 ```javascript
-import verifyFromFile from './index.js';
+import verifyFromFile from 'ip2region.js';
 
 try {
     verifyFromFile(dbPath);
@@ -40,7 +45,7 @@ try {
 ### 完全基于文件的查询
 
 ```javascript
-import {newWithFileOnly} from './index.js';
+import {newWithFileOnly} from 'ip2region.js';
 
 // 1，使用上述的 version 和 dbPath 创建完全基于文件的查询对象
 let searcher;
@@ -72,7 +77,7 @@ searcher.close();
 
 我们可以提前从 `xdb` 文件中加载出来 `VectorIndex` 数据，然后全局缓存，每次创建 Searcher 对象的时候使用全局的 VectorIndex 缓存可以减少一次固定的 IO 操作，从而加速查询，减少 IO 压力。
 ```javascript
-import {loadVectorIndexFromFile, newWithVectorIndex} from './index.js';
+import {loadVectorIndexFromFile, newWithVectorIndex} from 'ip2region.js';
 
 // 1、从 dbPath 中预先加载 VectorIndex 缓存，并且把这个得到的数据作为全局变量，后续反复使用。
 let vIndex;
@@ -113,7 +118,7 @@ searcher.close();
 
 我们也可以预先加载整个 xdb 文件的数据到内存，然后基于这个数据创建查询对象来实现完全基于文件的查询，类似之前的 memory search。
 ```javascript
-import {loadContentFromFile, newWithBuffer} from './index.js';
+import {loadContentFromFile, newWithBuffer} from 'ip2region.js';
 
 // 1、从 dbPath 加载整个 xdb 到内存。
 let cBuffer;

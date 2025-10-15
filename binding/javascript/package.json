@@ -1,7 +1,7 @@
 {
-  "name": "ip2region",
-  "version": "3.0.0",
-  "description": "javascript binding for ip2region with both IPv4 and IPv6 supported ",
+  "name": "ip2region.js",
+  "version": "3.1.0",
+  "description": "official javascript binding for ip2region with both IPv4 and IPv6 supported ",
   "type": "module",
   "main": "index.js",
   "types": "index.d.ts",
