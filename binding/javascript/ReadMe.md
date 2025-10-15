@@ -2,7 +2,7 @@
 
 # 使用方式
 
-### 安装
+### 安装 `ip2region.js`
 ```bash
 npm install ip2region.js --save 
 ```
@@ -27,7 +27,7 @@ let version = IPv6;
 ### 文件验证
 建议您主动去验证 xdb 文件的适用性，因为后期的一些新功能可能会导致目前的 Searcher 版本无法适用你使用的 xdb 文件，验证可以避免运行过程中的一些不可预测的错误。 你不需要每次都去验证，例如在服务启动的时候，或者手动调用命令验证确认版本匹配即可，不要在每次创建的 Searcher 的时候运行验证，这样会影响查询的响应速度，尤其是高并发的使用场景。
 ```javascript
-import verifyFromFile from 'ip2region.js';
+import {verifyFromFile} from 'ip2region.js';
 
 try {
     verifyFromFile(dbPath);
@@ -116,7 +116,7 @@ searcher.close();
 
 ### 缓存整个 `xdb` 数据
 
-我们也可以预先加载整个 xdb 文件的数据到内存，然后基于这个数据创建查询对象来实现完全基于文件的查询，类似之前的 memory search。
+我们也可以预先加载整个 xdb 文件的数据到内存，然后基于这个数据创建查询对象来实现完全基于内存的查询，类似之前的 memory search。
 ```javascript
 import {loadContentFromFile, newWithBuffer} from 'ip2region.js';
 
