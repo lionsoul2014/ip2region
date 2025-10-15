@@ -82,12 +82,6 @@ const _split = (line) => {
     return ps;
 }
 
-const getMillSecs = () => {
-    const t = process.hrtime();
-    return t[0] * 1_000 + t[1] / 1_000_000;
-}
-
-// console.log(`dbPath=${dbPath}, src=${src}, cachePolicy=${cachePolicy}`);
 const main = () => {
     if (dbPath.length < 1 || srcPath.length < 1) {
         parser.print_help();
