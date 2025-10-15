@@ -117,7 +117,7 @@ const main = () => {
         }
 
         const diff = process.hrtime(st);
-        totalMicroSecs += (diff[0] * 1_000_1000 + (diff[1] / 1e6));
+        totalMicroSecs += (diff[0] * 1_000_1000 + diff[1] / 1e6);
     }).on('error', (err) => {
         console.log(err);
         process.exit(1);
