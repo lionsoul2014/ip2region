@@ -88,6 +88,12 @@ export class Searcher {
             }
         }
 
+        // empty match interception.
+        // and this could be a case.
+        if (dPtr == -1) {
+            return null;
+        }
+
         // console.log(`dLen: ${dLen}, dPtr: ${dPtr}`);
         const region = Buffer.alloc(dLen);
         this.read(dPtr, region);
