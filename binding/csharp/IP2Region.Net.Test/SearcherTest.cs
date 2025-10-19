@@ -5,7 +5,7 @@ namespace IP2Region.Net.Test;
 [TestFixture]
 public class SearcherTest
 {
-    private readonly string _xdbPath = Path.Combine(AppContext.BaseDirectory, "TestData", "ip2region.xdb");
+    private readonly string _xdbPath = Path.Combine(AppContext.BaseDirectory, "TestData", "ip2region_v4.xdb");
     
     public static IEnumerable<string> Ips()
     {
@@ -49,7 +49,7 @@ public class SearcherTest
     public void TestBenchSearch(CachePolicy cachePolicy)
     {
         Searcher searcher = new Searcher(cachePolicy,_xdbPath);
-        var srcPath = Path.Combine(AppContext.BaseDirectory, "TestData", "ip.merge.txt");
+        var srcPath = Path.Combine(AppContext.BaseDirectory, "TestData", "ipv4_source.txt");
 
         foreach (var line in File.ReadLines(srcPath))
         {

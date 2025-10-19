@@ -7,7 +7,7 @@ BenchmarkRunner.Run(typeof(Program).Assembly);
 
 public class CachePolicyCompare
 {
-    private static readonly string XdbPath = Path.Combine(AppContext.BaseDirectory, "IP2Region", "ip2region.xdb");
+    private static readonly string XdbPath = Path.Combine(AppContext.BaseDirectory, "IP2Region", "ip2region_v4.xdb");
     private readonly ISearcher _contentSearcher = new Searcher(CachePolicy.Content, XdbPath);
     private readonly ISearcher _vectorSearcher = new Searcher(CachePolicy.VectorIndex,XdbPath);
     private readonly ISearcher _fileSearcher = new Searcher(CachePolicy.File,XdbPath);
