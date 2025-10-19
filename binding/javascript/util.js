@@ -176,8 +176,7 @@ function _ipv6_to_string(v6Bytes, compress) {
     }
 
     // auto compression of consecutive zero
-    let mi = ps.length - 1;
-    let _ = [];
+    let _ = [], mi = ps.length - 1;
     for (i = 0; i < ps.length; i++) {
         if (i >= mi) {
             _.push(ps[i]);
