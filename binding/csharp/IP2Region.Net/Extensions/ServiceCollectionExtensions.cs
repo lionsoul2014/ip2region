@@ -4,9 +4,9 @@ using IP2Region.Net.XDB;
 namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
-/// BootstrapBlazor 服务扩展类
+/// IP2Region 服务扩展类
 /// </summary>
-public static class BootstrapBlazoIP2RegionExtensions
+public static class IP2RegionExtensions
 {
     /// <summary>
     /// 添加 IP2RegionService 服务
