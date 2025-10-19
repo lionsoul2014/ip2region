@@ -10,9 +10,11 @@ namespace Microsoft.Extensions.DependencyInjection;
 public static class IP2RegionExtensions
 {
     /// <summary>
-    /// 添加 IP2RegionService 服务
+    /// 添加 IP2RegionService 服务。
     /// </summary>
-    /// <param name="services"></param>
+    /// <param name="services"><see cref="IServiceCollection"/> 集合</param>
+    /// <param name="path">IP2Region 数据库文件的路径。</param>
+    /// <param name="cachePolicy">缓存策略，默认为 <see cref="CachePolicy.Content"/>。</param>
     public static IServiceCollection AddIP2RegionService(this IServiceCollection services, string path, CachePolicy cachePolicy = CachePolicy.Content)
     {
         services.TryAddSingleton<ISearcher>(provider =>
