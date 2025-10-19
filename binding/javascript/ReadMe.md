@@ -2,6 +2,9 @@
 
 # 使用方式
 
+第三方支持地址：
+1. [ts-ip2region2](https://github.com/Steven-Qiang/ts-ip2region2) - 基于 C 扩展，比纯 JS 有更高的运行效率。
+
 ### 安装 `ip2region.js`
 ```bash
 npm install ip2region.js --save 
