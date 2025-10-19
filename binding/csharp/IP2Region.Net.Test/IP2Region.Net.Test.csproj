@@ -25,8 +25,8 @@
       <Link>TestData/ip.merge.txt</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\..\..\data\ip2region.xdb">
-      <Link>TestData/ip2region.xdb</Link>
+    <Content Include="..\..\..\data\ip2region_v4.xdb">
+      <Link>TestData/ip2region_v4.xdb</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
