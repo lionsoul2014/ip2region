@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <id>IP2Region.Net</id>
-        <version>2.0.2</version>
+        <version>2.1.0</version>
         <title>IP2Region.Net</title>
         <authors>Alan Lee</authors>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
@@ -15,17 +15,44 @@
         <RepositoryType>git</RepositoryType>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <TargetFrameworks>netstandard2.0;netstandard2.1;net6.0;net7.0</TargetFrameworks>
-        <LangVersion>10.0</LangVersion>
+        <TargetFrameworks>netstandard2.0;netstandard2.1;net6.0;net7.0;net8.0;net9.0</TargetFrameworks>
+        <LangVersion>latest</LangVersion>
         <UserSecretsId>c2f07fe1-a300-4de3-8200-1278ed8cb5b7</UserSecretsId>
     </PropertyGroup>
+	
     <ItemGroup>
         <None Include="..\README.md" Pack="true" PackagePath="\" />
     </ItemGroup>
+	
     <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
       <PackageReference Include="System.Buffers" Version="4.5.1" />
       <PackageReference Include="System.Memory" Version="4.5.5" />
     </ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net7.0'">
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
+	</ItemGroup>
+	
     <ItemGroup>
       <None Include="..\CHANGELOG.md">
         <Link>CHANGELOG.md</Link>

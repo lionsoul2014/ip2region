@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="README.md" />
+  </Folder>
+  <Project Path="IP2Region.Net.BenchMark/IP2Region.Net.BenchMark.csproj" />
+  <Project Path="IP2Region.Net.Test/IP2Region.Net.Test.csproj" />
+  <Project Path="IP2Region.Net/IP2Region.Net.csproj" />
+</Solution>
