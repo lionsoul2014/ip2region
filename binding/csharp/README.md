@@ -30,28 +30,33 @@ Generate using [maker](https://github.com/lionsoul2014/ip2region/tree/master/mak
 ## ASP.NET Core Usage
 
 ```csharp
-services.AddSingleton<ISearcher>(new Searcher(CachePolicy , "your xdb file path"));
+services.AddIP2RegionService("your xdb file path", cachePolicy: CachePolicy.Content);
+```
+
+NET6/7
+```csharp
+provider.GetRequiredService<ISearcher>()
+```
+
+NET8+ support keyed service
+```csharp
+provider.GetRequiredKeyedService<ISearcher>("IP2Region.Net");
 ```
 
 ## Performance
 
 ``` ini
-
 BenchmarkDotNet=v0.13.2, OS=macOS 13.4.1 (c) (22F770820d) [Darwin 22.5.0]
 Apple M1, 1 CPU, 8 logical and 8 physical cores
 .NET SDK=7.0.306
   [Host]     : .NET 6.0.20 (6.0.2023.32017), Arm64 RyuJIT AdvSIMD
   DefaultJob : .NET 6.0.20 (6.0.2023.32017), Arm64 RyuJIT AdvSIMD
-
-
 ```
-| Method                  |       Mean |    Error |   StdDev |
-|-------------------------|-----------:|---------:|---------:|
-| CachePolicy_Content     |   155.7 ns |  0.46 ns |  0.39 ns |
-| CachePolicy_File        | 2,186.8 ns | 34.27 ns | 32.06 ns |
-| CachePolicy_VectorIndex | 1,570.3 ns | 27.53 ns | 22.99 ns |
-
-
+|                  Method |         Mean |     Error |    StdDev |
+|------------------------ |-------------:|----------:|----------:|
+|     CachePolicy_Content |     58.32 ns |  0.182 ns |  0.170 ns |
+|        CachePolicy_File | 16,417.56 ns | 50.569 ns | 47.302 ns |
+| CachePolicy_VectorIndex |  9,348.11 ns | 38.492 ns | 65.363 ns |
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
