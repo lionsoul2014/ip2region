@@ -1,5 +1,6 @@
 ﻿using IP2Region.Net.Abstractions;
 using IP2Region.Net.XDB;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -14,12 +15,12 @@ public static class IP2RegionExtensions
     /// <param name="services"></param>
     public static IServiceCollection AddIP2RegionService(this IServiceCollection services, string path, CachePolicy cachePolicy = CachePolicy.Content)
     {
-        services.AddSingleton<ISearcher>(provider =>
+        services.TryAddSingleton<ISearcher>(provider =>
         {
             return new Searcher(cachePolicy, path);
         });
 #if NET8_0_OR_GREATER
-        services.AddKeyedSingleton("IP2Region.Net", (provider, _) =>
+        services.TryAddKeyedSingleton("IP2Region.Net", (provider, _) =>
         {
             return provider.GetRequiredService<ISearcher>();
         });
