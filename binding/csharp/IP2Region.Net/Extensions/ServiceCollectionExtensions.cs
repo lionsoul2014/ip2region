@@ -19,9 +19,9 @@ public static class IP2RegionExtensions
             return new Searcher(cachePolicy, path);
         });
 #if NET8_0_OR_GREATER
-        services.AddKeyedSingleton<ISearcher>("IP2Region.Net", (provider, _) =>
+        services.AddKeyedSingleton("IP2Region.Net", (provider, _) =>
         {
-            return new Searcher(cachePolicy, path);
+            return provider.GetRequiredService<ISearcher>();
         });
 #endif
 
