@@ -103,7 +103,7 @@ Ip2Region 官方社区正式上线于 `2025/06/12` 日，一方面提供了稳�
 ### 1、并发查询必读
 xdb 整个缓存的查询都 <b>是</b> 并发安全的，基于文件的查询都 <b>不是</b> 并发安全的实现，不同进程/线程/协程需要通过创建不同的查询对象来安全使用，并发量很大的情况下，基于文件查询的方式可能会导致打开文件数过多的错误，请修改内核的最大允许打开文件数(fs.file-max=一个更高的值)，或者将整个xdb加载到内存进行安全并发使用。
 
-### 2、技术资源分享
+### 2、xdb 技术资源：
 1. xdb 数据结构分析：[“ip2region xdb-数据结构描述“](https://ip2region.net/doc/xdb/structure)
 2. xdb 查询过程分析：[“ip2region xdb-查询过程描述”](https://ip2region.net/doc/xdb/search)
 3. xdb 生成过程分析：[“ip2region xdb-生成过程描述”](https://ip2region.net/doc/xdb/generate)
@@ -111,5 +111,5 @@ xdb 整个缓存的查询都 <b>是</b> 并发安全的，基于文件的查询�
 5. xdb 数据更新方法：[“ip2region 数据更新和 xdb 数据编辑器的使用”](https://mp.weixin.qq.com/s/cZH5qIn4E5rQFy6N32RCzA)
 
 ### 3、技术信息博客
-1. [Ip2Region 官方社区](https://ip2region.net)
-2. 请先关注微信公众号 lionsoul-org (狮子的魂)
+1. 微信公众号 - lionsoul-org，作者活跃的技术分享渠道
+2. [Ip2Region 官方社区](https://ip2region.net)
