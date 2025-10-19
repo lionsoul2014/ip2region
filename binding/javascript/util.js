@@ -155,20 +155,30 @@ function _ipv4_to_string(v4Bytes) {
 
 // ipv6 bytes to string
 function _ipv6_to_string(v6Bytes, compress) {
-    let ps = [];
+    let ps = [], needCompress = false;
+    let last_hex = -1, hex = 0;
     for (var i = 0; i < v6Bytes.length; i += 2) {
-        ps.push(v6Bytes.readUint16BE(i).toString(16));
+        hex = v6Bytes.readUint16BE(i).toString(16);
+        ps.push(hex);
+     
+        // check the necessity for compress
+        if (last_hex > -1 
+            && hex == 0 && last_hex == 0) {
+            needCompress = true;
+        }
+
+        // reset the last hex
+        last_hex = hex;
     }
 
-    if (compress === false) {
+    if (needCompress == false || compress === false) {
         return ps.join(':');
     }
 
     // auto compression of consecutive zero
-    let j = 0, mi = ps.length - 1;
-    let _ = [];
+    let _ = [], mi = ps.length - 1;
     for (i = 0; i < ps.length; i++) {
-        if (i >= mi || j > 0) {
+        if (i >= mi) {
             _.push(ps[i]);
             continue;
         }
