@@ -17,7 +17,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Content Include="..\..\..\data\ip2region.xdb">
+      <Content Include="..\..\..\data\ip2region_v4.xdb">
         <Link>IP2Region/ip2region.xdb</Link>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
