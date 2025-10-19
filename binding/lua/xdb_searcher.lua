@@ -103,11 +103,11 @@ function _xdb:search(ip_src)
     local idx = il0 * VectorIndexCols * VectorIndexSize + il1 * VectorIndexSize
     local s_ptr, e_ptr = 0, 0
     if vector_index ~= nil then
-        s_ptr = le_getUint32(vector_index, idx + 1)
-        e_ptr = le_getUint32(vector_index, idx + 5)
+        s_ptr = le_get_uint32(vector_index, idx + 1)
+        e_ptr = le_get_uint32(vector_index, idx + 5)
     elseif content_buff ~= nil then
-        s_ptr = le_getUint32(content_buff, HeaderInfoLength + idx + 1)
-        e_ptr = le_getUint32(content_buff, HeaderInfoLength + idx + 5)
+        s_ptr = le_get_uint32(content_buff, HeaderInfoLength + idx + 1)
+        e_ptr = le_get_uint32(content_buff, HeaderInfoLength + idx + 5)
     else
         -- load from the file
         buff, err = read_data(self, HeaderInfoLength + idx, SegmentIndexSize)
@@ -115,8 +115,8 @@ function _xdb:search(ip_src)
             return "", string.format("read buffer: %s", err)
         end
 
-        s_ptr = le_getUint32(buff, 1)
-        e_ptr = le_getUint32(buff, 5)
+        s_ptr = le_get_uint32(buff, 1)
+        e_ptr = le_get_uint32(buff, 5)
     end
 
     -- print(string.format("s_ptr: %d, e_ptr: %d", s_ptr, e_ptr))
@@ -134,16 +134,16 @@ function _xdb:search(ip_src)
             return "", string.format("read segment index at %d", p)
         end
 
-        sip = le_getUint32(buff, 1)
+        sip = le_get_uint32(buff, 1)
         if ip < sip then
             h = m - 1
         else
-            eip = le_getUint32(buff, 5)
+            eip = le_get_uint32(buff, 5)
             if ip > eip then
                 l = m + 1
             else
-                data_len = le_getUint16(buff, 9)
-                data_ptr = le_getUint32(buff, 11)
+                data_len = le_get_uint16(buff, 9)
+                data_ptr = le_get_uint32(buff, 11)
                 break
             end
         end
@@ -227,15 +227,15 @@ function _xdb.load_header(dbPath)
 
     handle:close()
     return {
-        ["version"] = le_getUint16(c, 1),
-        ["index_policy"] = le_getUint16(c, 3),
-        ["created_at"] = le_getUint32(c, 5),
-        ["start_index_ptr"] = le_getUint32(c, 9),
-        ["end_index_ptr"] = le_getUint32(c, 13),
+        ["version"] = le_get_uint16(c, 1),
+        ["index_policy"] = le_get_uint16(c, 3),
+        ["created_at"] = le_get_uint32(c, 5),
+        ["start_index_ptr"] = le_get_uint32(c, 9),
+        ["end_index_ptr"] = le_get_uint32(c, 13),
 
         -- xdb 3.0 since IPv6 supporting
-        ["ip_version"] = le_getUint16(c, 17),
-        ["runtime_ptr_bytes"] = le_getUint16(c, 19),
+        ["ip_version"] = le_get_uint16(c, 17),
+        ["runtime_ptr_bytes"] = le_get_uint16(c, 19),
 
         ["raw_data"] = c
     }, nil
@@ -444,24 +444,133 @@ function _xdb.parse_ip(ip_str)
         return nil, string.format("invalid ip address `%s`", ip_str)
     end
 end
--- end ip parse
+
 --
+-- ip to string
+--
+function _ipv4_to_string(ip_bytes)
+    return string.format(
+        "%d.%d.%d.%d", 
+        string.byte(ip_bytes, 1), 
+        string.byte(ip_bytes, 2),
+        string.byte(ip_bytes, 3),
+        string.byte(ip_bytes, 4)
+    ), nil
+end
+
+function _ipv6_to_string(ip_bytes, compress)
+    local ps, i, hex = {}, 0, 0
+    local last_hex, need_compress = -1, false
+    for i = 1, #ip_bytes, 2 do
+        hex = (string.byte(ip_bytes, i) << 8) | string.byte(ip_bytes, i + 1)
+        table.insert(ps, string.format("%x", hex))
+
+        -- check the necessity for compress
+        if last_hex > -1 
+            and hex == 0 
+            and last_hex == 0 then
+            need_compress = true
+        end
+
+        -- reset the last hex
+        last_hex = hex
+    end
+
+    -- print('need_compress', need_compress)
+    if need_compress == false
+        or (compress ~= nil and compress == false) then
+        return table.concat(ps, ':'), nil
+    end
+
+    -- auto compression of consecutive zero
+    local i, j, length, mi = 1, 0, #ps, #ps + 1
+    local _ = {}
+    while i <= length do
+        if i >= length or j > 0 then
+            table.insert(_, ps[i])
+            goto continue
+        end
+
+        if ps[i] ~= '0' or ps[i+1] ~= '0' then
+            table.insert(_, ps[i])
+            goto continue
+        end
+
+        -- find the first two zero part
+        -- and keep find all the zero part
+        i = i + 2
+        while i <= length do
+            if ps[i] ~= '0' then
+                i = i - 1
+                break
+            end
+            i = i + 1
+        end
+
+        -- make sure there is an empty head.
+        if #_ == 0 then
+            table.insert(_, '')
+        end
+
+        table.insert(_, '') -- empty for double colon
+
+        -- make sure there is an empty tail
+        if i == mi and #_ < length then
+            table.insert(_, '')
+        end
+        
+        --continue
+        ::continue::
+        i = i + 1
+    end
+
+    return table.concat(_, ':')
+end
+
+function _xdb.ip_to_string(ip_bytes, compress)
+    local len = #ip_bytes
+    if len == 4 then
+        return _ipv4_to_string(ip_bytes)
+    elseif len == 16 then
+        return _ipv6_to_string(ip_bytes, compress)
+    else
+        return nil, string.format("invalid bytes ip with length not 4 or 6")
+    end
+end
+
+-- 
+-- ip bytes compare
+
+function _xdb.ip_sub_compare(ip1, buff, offset)
+    local ip2 = string.sub(buff, offset, offset + #ip1)
+    if ip1 > ip2 then
+        return 1
+    elseif ip1 < ip2 then
+        return -1
+    else
+        return 0
+    end
+end
+
+function _xdb.ip_compare(ip1, ip2)
+    return _xdb.ip_sub_compare(ip1, ip2, 1)
+end
 
 -- End of util functions
 
 --internal function to get a integer from a binary string
 
-function le_getUint32(buff, idx)
-    local i1 = (string.byte(string.sub(buff, idx, idx)))
-    local i2 = (string.byte(string.sub(buff, idx+1, idx+1)) << 8)
-    local i3 = (string.byte(string.sub(buff, idx+2, idx+2)) << 16)
-    local i4 = (string.byte(string.sub(buff, idx+3, idx+3)) << 24)
+function le_get_uint32(buff, idx)
+    local i1 = (string.byte(buff, idx))
+    local i2 = (string.byte(buff, idx+1) << 8)
+    local i3 = (string.byte(buff, idx+2) << 16)
+    local i4 = (string.byte(buff, idx+3) << 24)
     return (i1 | i2 | i3 | i4)
 end
 
-function le_getUint16(buff, idx)
-    local i1 = (string.byte(string.sub(buff, idx, idx)))
-    local i2 = (string.byte(string.sub(buff, idx+1, idx+1)) << 8)
+function le_get_uint16(buff, idx)
+    local i1 = (string.byte(buff, idx))
+    local i2 = (string.byte(buff, idx+1) << 8)
     return (i1 | i2)
 end
 

@@ -22,8 +22,30 @@ function test_parse_ip()
         if err ~= nil then
             print(string.format("failed to parse ip address `%s`: %s", ip_str, err))
         else
-            print(string.format("`%s`.bytes=%d", ip_str, #ip_bytes))
+            local ip_to_str = xdb.ip_to_string(ip_bytes)
+            print(string.format(
+                "parse_ip(`%s`)->{bytes:%d, to_string:%s, equal:%s}", 
+                ip_str, #ip_bytes, ip_to_str, tostring(ip_str == ip_to_str)
+            ))
         end
+    end
+end
+
+function test_ip_compare()
+    local ip_list = {
+        {"1.0.0.0", "1.0.0.1", -1},
+        {"192.168.1.101", "192.168.1.90", 1},
+        {"219.133.111.87", "114.114.114.114", 1},
+        {"2000::", "2000:ffff:ffff:ffff:ffff:ffff:ffff:ffff", -1},
+        {"2001:4:112::", "2001:4:112:ffff:ffff:ffff:ffff:ffff", -1},
+        {"ffff::", "2001:4:ffff:ffff:ffff:ffff:ffff:ffff", 1}
+    }
+
+    for _,ip_pair in ipairs(ip_list) do
+        local ip1 = xdb.parse_ip(ip_pair[1])
+        local ip2 = xdb.parse_ip(ip_pair[2])
+        local cmp = xdb.ip_compare(ip1, ip2)
+        print(string.format("compare(%s, %s): %d ? %s", ip_pair[1], ip_pair[2], cmp, tostring(cmp == ip_pair[3])))
     end
 end
 
