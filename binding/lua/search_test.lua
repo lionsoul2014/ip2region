@@ -59,10 +59,23 @@ if string.len(dbFile) < 2 then
     return
 end
 
+-- load the header and define the ip version
+local header, err = xdb.load_header(dbFile)
+if err ~= nil then
+    print(string.format("failed to load the header: %s", err))
+    return
+end
+
+local version, err = xdb.version_from_header(header)
+if err ~= nil then
+    print(string.format("failed to detect version from header: %s", err))
+    return
+end
+
 -- create the searcher based on the cache-policy
 local searcher, v_index, content
 if cachePolicy == "file" then
-    searcher, err = xdb.new_with_file_only(dbFile)
+    searcher, err = xdb.new_with_file_only(version, dbFile)
     if err ~= nil then
         print(string.format("failed to create searcher: %s", err))
         return
@@ -74,7 +87,7 @@ elseif cachePolicy == "vectorIndex" then
         return
     end
 
-    searcher, err = xdb.new_with_vector_index(dbFile, v_index)
+    searcher, err = xdb.new_with_vector_index(version, dbFile, v_index)
     if err ~= nil then
         print(string.format("failed to create vector index searcher: %s", err))
         return
@@ -86,7 +99,7 @@ elseif cachePolicy == "content" then
         return
     end
 
-    searcher, err = xdb.new_with_buffer(content)
+    searcher, err = xdb.new_with_buffer(version, content)
     if err ~= nil then
         print(string.format("failed to create content buffer searcher: %s", err))
         return

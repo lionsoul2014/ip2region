@@ -10,6 +10,22 @@ package.path = "./?.lua" .. package.path
 package.cpath = "./?.so" .. package.cpath
 local xdb = require("xdb_searcher")
 
+function test_version_parse()
+    print("IPv4", xdb.IPv4)
+    print("IPv6", xdb.IPv6)
+
+    -- version name parse
+    local v_list = {"v4", "ipv4", "v4x", "v6", "ipv6", "v6x"}
+    for _, name in ipairs(v_list) do
+        local version, err = xdb.version_from_name(name)
+        if err ~= nil then
+            print(string.format("version_from_name(%s): %s", name, err))
+        else
+            print(string.format("version_from_name(%s): %s", name, version))
+        end
+    end
+end
+
 function test_parse_ip()
     local ip_list = {
         "1.0.0.0", "58.251.30.115", "192.168.1.100", "126.255.32.255", "219.xx.xx.11", 
@@ -46,30 +62,6 @@ function test_ip_compare()
         local ip2 = xdb.parse_ip(ip_pair[2])
         local cmp = xdb.ip_compare(ip1, ip2)
         print(string.format("compare(%s, %s): %d ? %s", ip_pair[1], ip_pair[2], cmp, tostring(cmp == ip_pair[3])))
-    end
-end
-
-function test_check_ip()
-    local ip_list = {
-        "1.2.3.4", "192.168.2.3", "120.24.78.129", "255.255.255.0",
-        "256.7.12.9", "12.56.78.320", "32.12.45.192", "222.221.220.219",
-        "192.168.1.101 ", "132.96.12.98a", "x23.12.2.12"
-    }
-
-    local s_time = xdb.now()
-    for _, ip_src in ipairs(ip_list) do
-        ip, err = xdb.check_ip(ip_src)
-        if err ~= nil then
-            print(string.format("invalid ip address `%s`: %s", ip_src, err))
-        else
-            ip_dst = xdb.long2ip(ip)
-            io.write(string.format("long(%-15s)=%10d, long2ip(%-10d)=%-15s", ip_src, ip, ip, ip_dst))
-            if ip_src ~= ip_dst then
-                print(" --[Failed]")
-            else
-                print(" --[Ok]")
-            end
-        end
     end
 end
 
@@ -119,20 +111,31 @@ function test_load_content()
 end
 
 
-function test_search()
-    local ip_str = "1.2.3.4"
-    searcher, err = xdb.new_with_file_only("../../data/ip2region_v4.xdb")
-    local t_start = xdb.now()
-    region, err = searcher:search(ip_str)
-    if err ~= nil then
-        print(string.format("search(%s) failed: %s", ip_str, err))
-    else
-        local c_time = xdb.now() - t_start
-        print(string.format("search(%s): {region=%s, io_count: %d, took: %dμs, err=%s}",
-                ip_str, region, searcher:get_io_count(), c_time, err))
-        print(string.format("searcher.tostring=%s", searcher))
+function test_ip_search()
+    local test_list = {
+        -- ipv4
+        {"1.2.3.4", xdb.IPv4, "../../data/ip2region_v4.xdb"},
+        -- ipv6
+        {"240e:3b7:3272:d8d0:db09:c067:8d59:539e", xdb.IPv6, "../../data/ip2region_v6.xdb"}
+    }
+
+    for _, test in ipairs(test_list) do
+        -- ipv6
+        local ip_str = test[1]
+        searcher, err = xdb.new_with_file_only(test[2], test[3])
+        t_start = xdb.now()
+        region, err = searcher:search_by_string(ip_str)
+        if err ~= nil then
+            print(string.format("failed to search(%s): %s", ip_str, err))
+        else
+            local c_time = xdb.now() - t_start
+            print(string.format(
+                "search(%s): {region:%s, io_count:%d, took:%dμs}", 
+                ip_str, region, searcher:get_io_count(), c_time
+            ))
+        end
+        searcher:close()
     end
-    searcher:close()
 end
 
 

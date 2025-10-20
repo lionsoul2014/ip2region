@@ -62,10 +62,23 @@ if string.len(dbFile) < 2 or string.len(srcFile) < 2 then
     return
 end
 
+-- load the header and define the ip version
+local header, err = xdb.load_header(dbFile)
+if err ~= nil then
+    print(string.format("failed to load the header: %s", err))
+    return
+end
+
+local version, err = xdb.version_from_header(header)
+if err ~= nil then
+    print(string.format("failed to detect version from header: %s", err))
+    return
+end
+
 -- create the searcher based on the cache-policy
 local searcher, v_index, content
 if cachePolicy == "file" then
-    searcher, err = xdb.new_with_file_only(dbFile)
+    searcher, err = xdb.new_with_file_only(version, dbFile)
     if err ~= nil then
         print(string.format("failed to create searcher: %s", err))
         return
@@ -77,7 +90,7 @@ elseif cachePolicy == "vectorIndex" then
         return
     end
 
-    searcher, err = xdb.new_with_vector_index(dbFile, v_index)
+    searcher, err = xdb.new_with_vector_index(version, dbFile, v_index)
     if err ~= nil then
         print(string.format("failed to create vector index searcher: %s", err))
         return
@@ -89,7 +102,7 @@ elseif cachePolicy == "content" then
         return
     end
 
-    searcher, err = xdb.new_with_buffer(content)
+    searcher, err = xdb.new_with_buffer(version, content)
     if err ~= nil then
         print(string.format("failed to create content buffer searcher: %s", err))
         return
@@ -109,51 +122,51 @@ end
 local lines = handle:lines()
 local sip_str, eip_str, s_region, region = "", "", "", ""
 local sip, mip, eip, err = 0, 0, 0, 0
-local count, t_time, c_time = 0, 0, 0
+local count, c_time = 0, 0, 0
 local s_time = xdb.now()
 for l in lines do
     if string.len(l) < 1 then
         goto continue
     end
 
-    for v1, v2, v3 in string.gmatch(l, "([%d%.]+)|([%d%.]+)|([^\n]+)") do
-        -- print(sip_str, eip_str, region)
+    for v1, v2, v3 in string.gmatch(l, "([^|]+)|([^|]+)|([^\n]+)") do
         sip_str = v1
         eip_str = v2
         s_region = v3
         break
     end
+    print('sip', sip_str, 'eip', eip_str, 'region', s_region)
 
-    sip, err = xdb.check_ip(sip_str)
+    local t_time = xdb.now()
+    sip, err = xdb.parse_ip(sip_str)
     if err ~= nil then
         print(string.format("invalid start ip `%s`", sip_str))
         return
     end
 
-    eip, err = xdb.check_ip(eip_str)
+    eip, err = xdb.parse_ip(eip_str)
     if err ~= nil then
         print(string.format("invalid end ip `%s`", sip_str))
         return
     end
 
-    if sip > eip then
+    if xdb.ip_compare(sip, eip) > 0 then
         print(string.format("start ip(%s) should not be greater than end ip(%s)\n", sip_str, eip_str))
         return
     end
 
-    mip = (sip + eip) >> 1
-    for _, ip in ipairs({sip, (sip + mip) >> 1, mip, (mip + eip) >> 1, eip}) do
-        t_time = xdb.now()
+    for _, ip in ipairs({sip, eip}) do
         region, err = searcher:search(ip)
+        print(string.format('search(%s): %s', xdb.ip_to_string(ip), region))
         c_time = c_time + xdb.now() - t_time
         if err ~= nil then
-            print(string.format("failed to search ip `%s`", xdb.long2ip(ip)))
+            print(string.format("failed to search ip `%s`", xdb.ip_to_string(ip)))
             return
         end
 
         -- check the region
         if region ~= s_region then
-            print(string.format("failed search(%s) with (%s != %s)\n", xdb.long2ip(ip), region, s_region))
+            print(string.format("failed search(%s) with (%s != %s)\n", xdb.ip_to_string(ip), region, s_region))
             return
         end
 
@@ -167,9 +180,12 @@ end
 searcher:close()
 
 -- print the stats
+local total_costs = (xdb.now() - s_time) / 1e6
 local avg_costs = 0
 if count > 0 then
     avg_costs = c_time / count
 end
-print(string.format("Bench finished, {cachePolicy: %s, total: %d, took: %.3f s, cost: %.3f μs/op}",
-         cachePolicy, count, (xdb.now() - s_time)/1e6, c_time / count))
+print(string.format(
+    "Bench finished, {cachePolicy: %s, total: %d, took: %.3f s, cost: %.3f μs/op}", 
+    cachePolicy, count, total_costs, avg_costs
+))

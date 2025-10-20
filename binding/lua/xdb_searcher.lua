@@ -7,15 +7,21 @@
 -- @Date   2022/07/05
 
 -- constants define
-local HeaderInfoLength = 256
-local VectorIndexRows  = 256
-local VectorIndexCols  = 256
-local VectorIndexSize  = 8
-local SegmentIndexSize = 14
-local VectorIndexLength = 524288
+local header_info_length  = 256
+local vector_index_rows   = 256
+local vector_index_cols   = 256
+local vector_index_size   = 8
+local vector_index_length = 524288  -- cols x rows * 8
 
+local xdb_structure_20 = 2
+local xdb_structure_30 = 3
+local xdb_ipv4_id = 4
+local xdb_ipv6_id = 6
 
-local _xdb = {
+local xdb = {
+    -- ip version
+    version = nil,
+
     -- xdb file handle
     handle = nil,
 
@@ -31,63 +37,66 @@ local _xdb = {
 }
 
 -- index and to string attribute set
-_xdb.__index = _xdb
-_xdb.__tostring = function(self)
+xdb.__index = xdb
+xdb.__tostring = function(self)
     return "xdb searcher object (lua)"
 end
 
-
 -- construct functions
-
-function newBase(dbPath, vIndex, cBuffer)
-    local obj = setmetatable({}, _xdb)
-    if cBuffer ~= nil then
+function new_base(version, db_path, v_index, c_buffer)
+    local obj = setmetatable({}, xdb)
+    obj.version = version
+    if c_buffer ~= nil then
         obj.io_count = 0
         obj.vector_index = nil
-        obj.content_buff = cBuffer
+        obj.content_buff = c_buffer
     else
         obj.io_count = 0
-        obj.vector_index = vIndex
-        obj.handle = io.open(dbPath, "r")
+        obj.vector_index = v_index
+        obj.handle = io.open(db_path, "r")
         if obj.handle == nil then
-            return nil, string.format("failed to open xdb file `%s`", dbPath)
+            return nil, string.format("failed to open xdb file `%s`", db_path)
         end
     end
 
     return obj, nil
 end
 
-function _xdb.new_with_file_only(dbPath)
-    return newBase(dbPath, nil, nil)
+function xdb.new_with_file_only(version, db_path)
+    return new_base(version, db_path, nil, nil)
 end
 
-function _xdb.new_with_vector_index(dbPath, vIndex)
-    return newBase(dbPath, vIndex, nil)
+function xdb.new_with_vector_index(version, db_path, v_index)
+    return new_base(version, db_path, v_index, nil)
 end
 
-function _xdb.new_with_buffer(cBuffer)
-    return newBase(nil, nil, cBuffer)
+function xdb.new_with_buffer(version, c_buffer)
+    return new_base(version, nil, nil, c_buffer)
 end
 
 -- End of constructors
 
 -- object api impl, must call via ':'
 
-function _xdb:search(ip_src)
-    -- check and convert string ip to long ip
-    local t, ip = type(ip_src), 0
-    if t == nil then
-        return "", string.format("invalid ip address `%s`", ip_src)
-    elseif t == "string" then
-        ip, err = self.check_ip(ip_src)
-        if err ~= nil then
-            return "", string.format("check ip `%s`: %s", ip_src, err)
-        end
-    elseif t ~= "number" then
-        return "", "invalid number or string ip"
-    else
-        -- use the original value
-        ip = ip_src
+function xdb:search_by_string(ip_str)
+    local ip_bytes, err = xdb.parse_ip(ip_str)
+    if err ~= nil then
+        return "", string.format("failed to parse string ip `%s`: %s", ip_str, err)
+    end
+
+    return self:search(ip_bytes)
+end
+
+function xdb:search(ip_bytes)
+    -- check the bytes ip
+    if type(ip_bytes) ~= "string" then
+        return "", string.format("invalid bytes ip `%s`", ip_bytes)
+    end
+
+    -- ip version check
+    local version = self.version
+    if #ip_bytes ~= version.bytes then
+        return "", string.format("invalid ip address `%s` (%s expected)", xdb.ip_to_string(ip_bytes), version.name);
     end
 
     -- reset the global counter
@@ -98,19 +107,19 @@ function _xdb:search(ip_src)
     local read_data = self.read
 
     -- locate the segment index based on the vector index
-    local il0 = (ip >> 24) & 0xFF
-    local il1 = (ip >> 16) & 0xFF
-    local idx = il0 * VectorIndexCols * VectorIndexSize + il1 * VectorIndexSize
+    local il0 = string.byte(ip_bytes, 1) & 0xFF
+    local il1 = string.byte(ip_bytes, 2) & 0xFF
+    local idx = il0 * vector_index_cols * vector_index_size + il1 * vector_index_size
     local s_ptr, e_ptr = 0, 0
     if vector_index ~= nil then
         s_ptr = le_get_uint32(vector_index, idx + 1)
         e_ptr = le_get_uint32(vector_index, idx + 5)
     elseif content_buff ~= nil then
-        s_ptr = le_get_uint32(content_buff, HeaderInfoLength + idx + 1)
-        e_ptr = le_get_uint32(content_buff, HeaderInfoLength + idx + 5)
+        s_ptr = le_get_uint32(content_buff, header_info_length + idx + 1)
+        e_ptr = le_get_uint32(content_buff, header_info_length + idx + 5)
     else
         -- load from the file
-        buff, err = read_data(self, HeaderInfoLength + idx, SegmentIndexSize)
+        buff, err = read_data(self, header_info_length + idx, vector_index_size)
         if err ~= nil then
             return "", string.format("read buffer: %s", err)
         end
@@ -121,36 +130,43 @@ function _xdb:search(ip_src)
 
     -- print(string.format("s_ptr: %d, e_ptr: %d", s_ptr, e_ptr))
     -- binary search to get the data
+    local index_size, ip_sub_compare = version.index_size, version.ip_sub_compare
+    local bytes, d_bytes = version.bytes, version.bytes << 1
+    print("index_size", index_size, "bytes", bytes, "d_bytes", d_bytes)
     local data_ptr, data_len, p = 0, 0, 0
     local sip, eip, err, buff = 0, 0, ""
-    local l, m, h = 0, 0, (e_ptr - s_ptr) / SegmentIndexSize
+    local l, m, h = 0, 0, (e_ptr - s_ptr) / index_size
     while l <= h do
         m = (l + h) >> 1
-        p = s_ptr + m * SegmentIndexSize
+        p = s_ptr + m * index_size
 
         -- read the segment index
-        buff, err = read_data(self, p, SegmentIndexSize)
+        buff, err = read_data(self, p, index_size)
         if err ~= nil then
             return "", string.format("read segment index at %d", p)
         end
 
-        sip = le_get_uint32(buff, 1)
-        if ip < sip then
+        print(string.format(
+            "{ip=%s, sip=%s, eip=%s}",
+            xdb.ip_to_string(ip_bytes),
+            xdb.ip_to_string(string.sub(buff, 1, bytes)),
+            xdb.ip_to_string(string.sub(buff, bytes + 1, d_bytes))
+        ))
+
+        -- check the index
+        if ip_sub_compare(ip_bytes, buff, 1) < 0 then
             h = m - 1
+        elseif ip_sub_compare(ip_bytes, buff, bytes + 1) > 0 then
+            l = m + 1
         else
-            eip = le_get_uint32(buff, 5)
-            if ip > eip then
-                l = m + 1
-            else
-                data_len = le_get_uint16(buff, 9)
-                data_ptr = le_get_uint32(buff, 11)
-                break
-            end
+            data_len = le_get_uint16(buff, d_bytes + 1)
+            data_ptr = le_get_uint32(buff, d_bytes + 3)
+            break
         end
     end
 
     -- matching nothing interception
-    -- print(string.format("data_len=%d, data_ptr=%d", data_len, data_ptr))
+    print(string.format("data_len=%d, data_ptr=%d", data_len, data_ptr))
     if data_len == 0 then
         return "", nil
     end
@@ -167,7 +183,7 @@ end
 
 -- read specified bytes from the specified index
 
-function _xdb:read(offset, length)
+function xdb:read(offset, length)
     -- local cache
     local content_buff = self.content_buff
     local handle = self.handle
@@ -192,25 +208,38 @@ function _xdb:read(offset, length)
     return buff, nil
 end
 
-function _xdb:get_io_count()
+function xdb:get_io_count()
     return self.io_count
 end
 
-function _xdb:close()
+function xdb:close()
     if self.handle ~= nil then
         self.handle:close()
     end
 end
 
--- End of search api
+---
+-- internal function to decode buffer
+function le_get_uint32(buff, idx)
+    local i1 = (string.byte(buff, idx))
+    local i2 = (string.byte(buff, idx+1) << 8)
+    local i3 = (string.byte(buff, idx+2) << 16)
+    local i4 = (string.byte(buff, idx+3) << 24)
+    return (i1 | i2 | i3 | i4)
+end
 
+function le_get_uint16(buff, idx)
+    local i1 = (string.byte(buff, idx))
+    local i2 = (string.byte(buff, idx+1) << 8)
+    return (i1 | i2)
+end
 
 -- static util functions
 
-function _xdb.load_header(dbPath)
-    local handle = io.open(dbPath, "r")
+function xdb.load_header(db_path)
+    local handle = io.open(db_path, "r")
     if handle == nil then
-        return nil, string.format("failed to open xdb file `%s`", dbPath)
+        return nil, string.format("failed to open xdb file `%s`", db_path)
     end
 
     local r = handle:seek("set", 0)
@@ -219,10 +248,10 @@ function _xdb.load_header(dbPath)
         return nil, "failed to seek to 0"
     end
 
-    local c = handle:read(HeaderInfoLength)
+    local c = handle:read(header_info_length)
     if c == nil then
         handle:close()
-        return nil, string.format("failed to read %d bytes", HeaderInfoLength)
+        return nil, string.format("failed to read %d bytes", header_info_length)
     end
 
     handle:close()
@@ -241,32 +270,32 @@ function _xdb.load_header(dbPath)
     }, nil
 end
 
-function _xdb.load_vector_index(dbPath)
-    local handle = io.open(dbPath, "r")
+function xdb.load_vector_index(db_path)
+    local handle = io.open(db_path, "r")
     if handle == nil then
-        return nil, string.format("failed to open xdb file `%s`", dbPath)
+        return nil, string.format("failed to open xdb file `%s`", db_path)
     end
 
-    local r = handle:seek("set", HeaderInfoLength)
+    local r = handle:seek("set", header_info_length)
     if r == nil then
         handle:close()
-        return nil, string.format("failed to seek to %d", HeaderInfoLength)
+        return nil, string.format("failed to seek to %d", header_info_length)
     end
 
-    local c = handle:read(VectorIndexLength)
+    local c = handle:read(vector_index_length)
     if c == nil then
         handle:close()
-        return nil, string.format("failed to read %d bytes", VectorIndexLength)
+        return nil, string.format("failed to read %d bytes", vector_index_length)
     end
 
     handle:close()
     return c, nil
 end
 
-function _xdb.load_content(dbPath)
-    local handle = io.open(dbPath, "r")
+function xdb.load_content(db_path)
+    local handle = io.open(db_path, "r")
     if handle == nil then
-        return nil, string.format("failed to open xdb file `%s`", dbPath)
+        return nil, string.format("failed to open xdb file `%s`", db_path)
     end
 
     local c = handle:read("*a")
@@ -279,46 +308,8 @@ function _xdb.load_content(dbPath)
     return c, nil
 end
 
---- ip parse and compare
-
-function _xdb.check_ip(ip_str)
-    local ip, id, v = 0, 1, 0
-    local offset_arr = {24, 16, 8, 0}
-    for p in string.gmatch(ip_str..".", "([%d]+)%.") do
-        -- match pattern checking
-        if p == nil then
-            return 0, "err=1"
-        end
-
-        -- count checking
-        if id > 4 then
-            return 0, "err=1"
-        end
-
-        -- value checking
-        v = tonumber(p)
-        if v > 255 then
-            return 0, "err=2"
-        end
-
-        ip = ip | (v << offset_arr[id])
-        id = id + 1
-    end
-
-    if id ~= 5 then
-        return 0, "err=1"
-    end
-
-    return ip, nil
-end
-
-function _xdb.long2ip(ip)
-    return string.format("%d.%d.%d.%d", (ip >> 24) & 0xFF, (ip >> 16) & 0xFF, (ip >> 8 ) & 0xFF, ip & 0xFF)
-end
-
 -- 
 -- parse ip string
---
 function split(str, sep)
     local ps, sIndex, length = {}, 1, #str
     -- loop to find all parts
@@ -378,7 +369,7 @@ function _parse_ipv6_addr(v6_str)
         0x00, 0x00, 0x00, 0x00
     }
 
-    local i, dc_num, offset, length = 1, 0, 1, #ps
+    local i, v, dc_num, offset, length = 1, 0, 0, 1, #ps
 
     -- process the v6 parts
     while i <= length do
@@ -412,28 +403,30 @@ function _parse_ipv6_addr(v6_str)
             local padding = 9 - start - (length - i)
             offset = offset + 2 * padding
             -- print("-> i ", i, "start", start, "padding: ", padding, "offset", offset)
-            i = i + 1
-        else
-            local v = tonumber(s, 16);
-            if v == nil then
-                return nil, string.format("invalid ipv6 part `%s`, a valid hex number expected", ps[i])
-            end
-
-            if v < 0 or v > 0xFFFF then
-                return nil, string.format("invalid ipv6 part `%s` should >= 0 and <= 65534", ps[i])
-            end
-
-            bytes[offset    ] = (v >> 8) & 0xFF
-            bytes[offset + 1] = (v  & 0xFF)
-            offset = offset + 2
-            i = i + 1
+            goto continue
         end
+
+        v = tonumber(s, 16);
+        if v == nil then
+            return nil, string.format("invalid ipv6 part `%s`, a valid hex number expected", ps[i])
+        end
+
+        if v < 0 or v > 0xFFFF then
+            return nil, string.format("invalid ipv6 part `%s` should >= 0 and <= 65534", ps[i])
+        end
+
+        bytes[offset] = (v >> 8) & 0xFF
+        bytes[offset+1] = (v  & 0xFF)
+        offset = offset + 2
+
+        ::continue::
+        i = i + 1
     end
 
     return string.char(table.unpack(bytes))
 end
 
-function _xdb.parse_ip(ip_str)
+function xdb.parse_ip(ip_str)
     local s_dot = string.find(ip_str, ".", 1, true)
     local c_dot = string.find(ip_str, ":", 1, true)
     if s_dot ~= nil and c_dot == nil then
@@ -447,7 +440,6 @@ end
 
 --
 -- ip to string
---
 function _ipv4_to_string(ip_bytes)
     return string.format(
         "%d.%d.%d.%d", 
@@ -527,11 +519,11 @@ function _ipv6_to_string(ip_bytes, compress)
     return table.concat(_, ':')
 end
 
-function _xdb.ip_to_string(ip_bytes, compress)
-    local len = #ip_bytes
-    if len == 4 then
+function xdb.ip_to_string(ip_bytes, compress)
+    local l = #ip_bytes
+    if l == 4 then
         return _ipv4_to_string(ip_bytes)
-    elseif len == 16 then
+    elseif l == 16 then
         return _ipv6_to_string(ip_bytes, compress)
     else
         return nil, string.format("invalid bytes ip with length not 4 or 6")
@@ -540,8 +532,7 @@ end
 
 -- 
 -- ip bytes compare
-
-function _xdb.ip_sub_compare(ip1, buff, offset)
+function xdb.ip_sub_compare(ip1, buff, offset)
     local ip2 = string.sub(buff, offset, offset + #ip1)
     if ip1 > ip2 then
         return 1
@@ -552,31 +543,106 @@ function _xdb.ip_sub_compare(ip1, buff, offset)
     end
 end
 
-function _xdb.ip_compare(ip1, ip2)
-    return _xdb.ip_sub_compare(ip1, ip2, 1)
+function xdb.ip_compare(ip1, ip2)
+    return xdb.ip_sub_compare(ip1, ip2, 1)
 end
 
--- End of util functions
-
---internal function to get a integer from a binary string
-
-function le_get_uint32(buff, idx)
-    local i1 = (string.byte(buff, idx))
-    local i2 = (string.byte(buff, idx+1) << 8)
-    local i3 = (string.byte(buff, idx+2) << 16)
-    local i4 = (string.byte(buff, idx+3) << 24)
-    return (i1 | i2 | i3 | i4)
-end
-
-function le_get_uint16(buff, idx)
-    local i1 = (string.byte(buff, idx))
-    local i2 = (string.byte(buff, idx+1) << 8)
-    return (i1 | i2)
-end
-
--- this is a bit weird, but we have no better choice for now
-function _xdb.now()
+-- this is a bit weird
+-- but we have no better choice for now
+function xdb.now()
     return os.time() * 1e6
 end
 
-return _xdb
+---
+-- ip version
+
+local Version = {
+    __tostring = function(t)
+        return string.format(
+            '{id:%d, name:%s, bytes:%d, index_size:%d}',
+            t.id, t.name, t.bytes, t.index_size
+        )
+    end
+}
+
+local IPv4 = {
+    id = xdb_ipv4_id,
+    name = "IPv4",
+    bytes = 4,
+    index_size = 14,  -- 14 = 4 + 4 + 2 + 4
+    ip_sub_compare = function(ip1, buff, offset)
+        -- ip1: Big endian byte order parsed from input
+        -- ip2: Little endian byte order read from xdb index.
+        -- @Note: to compatible with the old Litten endian index encode implementation.
+        local l = #ip1
+        local j = offset + l - 1
+        for i = 1, l, 1 do
+            local i1 = string.byte(ip1, i)
+            local i2 = string.byte(buff, j)
+            if i1 > i2 then
+                return 1
+            end
+
+            if i1 < i2 then
+                return -1
+            end
+            
+            j = j - 1
+        end
+
+        return 0
+    end
+}
+
+local IPv6 = {
+    id = xdb_ipv6_id,
+    name = "IPv6",
+    bytes = 16,
+    index_size = 38,  -- 38 = 16 + 16 + 2 + 4
+    ip_sub_compare = xdb.ip_sub_compare
+}
+
+setmetatable(IPv4, Version)
+setmetatable(IPv6, Version)
+
+xdb.version_from_name = function(name)
+    local n = string.upper(name)
+    if n == "V4" or n == "IPV4" then
+        return IPv4, nil
+    elseif n == "V6" or n == "IPV6" then
+        return IPv6, nil
+    else
+        return nil, string.format("invalid version name `%s`", name)
+    end
+end
+
+xdb.version_from_header = function(header)
+    -- old structure with ONLY IPv4 supporting
+    if header.version == xdb_structure_20 then
+        return IPv4, nil
+    end
+
+    -- structure 3.0 with IPv6 supporting
+    if header.version ~= xdb_structure_30 then
+        return nil, string.format("unsupported structure version `%d`", header.version)
+    end
+
+    local ip_ver = header.ip_version
+    if ip_ver == xdb_ipv4_id then
+        return IPv4, nil
+    elseif ip_ver == xdb_ipv6_id then
+        return IPv6, nil
+    else
+        return nil, string.format("unkown ip version id `%d`", ip_ver)
+    end
+end
+
+-- constants register
+xdb.ipv4_id = xdb_ipv4_id
+xdb.ipv6_id = xdb_ipv6_id
+xdb.structure_20 = xdb_structure_20
+xdb.structure_30 = xdb_structure_30
+xdb.IPv4 = IPv4
+xdb.IPv6 = IPv6
+
+return xdb
