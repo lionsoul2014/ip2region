@@ -156,19 +156,19 @@ function _ipv4_to_string(v4Bytes) {
 // ipv6 bytes to string
 function _ipv6_to_string(v6Bytes, compress) {
     let ps = [], needCompress = false;
-    let last_hex = -1, hex = 0;
+    let lastHex = -1, hex = 0;
     for (var i = 0; i < v6Bytes.length; i += 2) {
         hex = v6Bytes.readUint16BE(i).toString(16);
         ps.push(hex);
      
         // check the necessity for compress
-        if (last_hex > -1 
-            && hex == 0 && last_hex == 0) {
+        if (lastHex > -1 
+            && hex == 0 && lastHex == 0) {
             needCompress = true;
         }
 
         // reset the last hex
-        last_hex = hex;
+        lastHex = hex;
     }
 
     if (needCompress == false || compress === false) {
