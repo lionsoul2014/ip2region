@@ -2,9 +2,6 @@
 
 # 使用方式
 
-第三方支持地址：
-1. [ts-ip2region2](https://github.com/Steven-Qiang/ts-ip2region2) - 基于 C 扩展，比纯 JS 有更高的运行效率。
-
 ### 安装 `ip2region.js`
 ```bash
 npm install ip2region.js --save 
@@ -226,3 +223,6 @@ node tests/bench.app.js --db=../../data/ip2region_v6.xdb --src=../../data/ipv6_s
 
 可以通过分别设置 `cache-policy` 为 file/vectorIndex/content 来测试三种不同缓存实现的效果。
 @Note: 注意 bench 使用的 src 文件要是生成对应 xdb 文件相同的源文件。
+
+### 第三方库支持：
+1. [ts-ip2region2](https://github.com/Steven-Qiang/ts-ip2region2) - 基于官方的 C 扩展，比纯 JS 有更高的运行效率。
