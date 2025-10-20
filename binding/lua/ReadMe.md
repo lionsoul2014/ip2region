@@ -21,6 +21,23 @@ local version = xdb.IPv6
 -- 备注：以下演示直接使用 dbPath 和 version 变量
 ```
 
+### 文件验证
+建议您主动去验证 xdb 文件的适用性，因为后期的一些新功能可能会导致目前的 Searcher 版本无法适用你使用的 xdb 文件，验证可以避免运行过程中的一些不可预测的错误。 你不需要每次都去验证，例如在服务启动的时候，或者手动调用命令验证确认版本匹配即可，不要在每次创建的 Searcher 的时候运行验证，这样会影响查询的响应速度，尤其是高并发的使用场景。
+```lua
+local xdb = require('xdb_searcher')
+
+local err = xdb.verify(dbPath);
+if err ~= nil then
+    -- 适用性验证失败！！！
+    -- 当前查询客户端实现不适用于 dbPath 指定的 xdb 文件的查询.
+    -- 应该停止启动服务，使用合适的 xdb 文件或者升级到适合 dbPath 的 Searcher 实现。
+    print(string.format("binding is not applicable for xdb file '%s': %s", dbPath, err))
+    return
+end
+
+-- 验证通过，当前使用的 Searcher 可以安全的用于对 dbPath 指向的 xdb 的查询操作
+```
+
 ### 完全基于文件的查询
 ```lua
 local xdb = require("xdb_searcher")

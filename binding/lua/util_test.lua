@@ -97,7 +97,7 @@ function test_load_vector_index()
     if err ~= nil then
         print("failed to load vector index: ", err)
     else
-        print("xdb vector index buffer loaded")
+        print("xdb vector index buffer loaded, length=", #v_index)
     end
 end
 
@@ -106,10 +106,25 @@ function test_load_content()
     if err ~= nil then
         print("failed to load content: ", err)
     else
-        print("xdb content buffer loaded")
+        print("xdb content buffer loaded, length=", #c_buffer)
     end
 end
 
+function test_verify()
+    local xdb_files = {
+        "../../data/ip2region_v4.xdb",
+        "../../data/ip2region_v6.xdb"
+    }
+
+    for _, path in ipairs(xdb_files) do
+        local err = xdb.verify(path)
+        if err ~= nil then
+            print(string.format("verify(%s): %s", path, err))
+        else
+            print(string.format("verify(%s): Ok", path))
+        end
+    end
+end
 
 function test_ip_search()
     local test_list = {

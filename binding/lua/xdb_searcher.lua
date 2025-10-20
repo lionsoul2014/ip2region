@@ -232,25 +232,45 @@ end
 
 -- static util functions
 
+function xdb.open_file(db_path, mode)
+    local t, handle = type(db_path), nil
+    local _closer = nil
+    if t == "userdata" then
+        handle = db_path   -- file handle
+        _closer = function(caller) end
+    elseif t == "string" then
+        handle = io.open(db_path, mode)
+        if handle == nil then
+            return nil, nil, string.format("failed to open xdb file `%s`", db_path)
+        end
+
+        _closer = function(caller) 
+            handle:close()
+        end
+    end
+
+    return handle, _closer, nil
+end
+
 function xdb.load_header(db_path)
-    local handle = io.open(db_path, "r")
-    if handle == nil then
-        return nil, string.format("failed to open xdb file `%s`", db_path)
+    local handle, closer, err = xdb.open_file(db_path, "rb")
+    if err ~= nil then
+        return nil, err
     end
 
     local r = handle:seek("set", 0)
     if r == nil then
-        handle:close()
+        closer("load_header")
         return nil, "failed to seek to 0"
     end
 
     local c = handle:read(header_info_length)
     if c == nil then
-        handle:close()
+        closer("load_header")
         return nil, string.format("failed to read %d bytes", header_info_length)
     end
 
-    handle:close()
+    closer("load_header")
     return {
         ["version"] = le_get_uint16(c, 1),
         ["index_policy"] = le_get_uint16(c, 3),
@@ -267,41 +287,81 @@ function xdb.load_header(db_path)
 end
 
 function xdb.load_vector_index(db_path)
-    local handle = io.open(db_path, "r")
-    if handle == nil then
-        return nil, string.format("failed to open xdb file `%s`", db_path)
+    local handle, closer, err = xdb.open_file(db_path, "rb")
+    if err ~= nil then
+        return nil, err
     end
 
     local r = handle:seek("set", header_info_length)
     if r == nil then
-        handle:close()
+        closer("load_vector_index")
         return nil, string.format("failed to seek to %d", header_info_length)
     end
 
     local c = handle:read(vector_index_length)
     if c == nil then
-        handle:close()
+        closer("load_vector_index")
         return nil, string.format("failed to read %d bytes", vector_index_length)
     end
 
-    handle:close()
+    closer("load_vector_index")
     return c, nil
 end
 
 function xdb.load_content(db_path)
-    local handle = io.open(db_path, "r")
-    if handle == nil then
-        return nil, string.format("failed to open xdb file `%s`", db_path)
-    end
-
+    local handle, closer, err = xdb.open_file(db_path, "rb")
     local c = handle:read("*a")
     if c == nil then
-        handle:close()
+        closer("load_content")
         return nil, string.format("failed to read xdb content")
     end
 
-    handle:close()
+    closer("load_content")
     return c, nil
+end
+
+-- Verify if the current Searcher could be used to search the specified xdb file.
+-- Why do we need this check ?
+-- The future features of the xdb impl may cause the current searcher not able to work properly.
+--
+-- @Note: You Just need to check this ONCE when the service starts
+-- Or use another process (eg, A command) to check once Just to confirm the suitability.
+function xdb.verify(db_path)
+    local handle, closer, err = xdb.open_file(db_path, "rb")
+    if err ~= nil then
+        return err
+    end
+
+    -- load the header from handle
+    local header, err = xdb.load_header(handle)
+    if err ~= nil then
+        closer()
+        return string.format("failed to load header: %s", err)
+    end
+
+    -- get the runtime ptr bytes
+    local runtime_ptr_bytes = 0
+    if header.version == xdb_structure_20 then
+        runtime_ptr_bytes = 4
+    elseif header.version == xdb_structure_30 then
+        runtime_ptr_bytes = header.runtime_ptr_bytes
+    else
+        closer()
+        return string.format("invalid structure version %d", header.version);
+    end
+
+    -- 1, confirm the xdb file size
+    -- to ensure that the maximum file pointer does not overflow
+    local max_file_ptr = ((1 << (runtime_ptr_bytes * 8)) & 0xFFFFFFFFFFFFFFFF) - 1
+    local _file_bytes  = handle:seek("end", 0)
+    -- print("max_file_ptr=", max_file_ptr, "_file_bytes", _file_bytes)
+    if _file_bytes > max_file_ptr then
+        closer()
+        return string.format("xdb file exceeds the maximum supported bytes: %d", max_file_ptr);
+    end
+
+    closer()
+    return nil
 end
 
 -- 

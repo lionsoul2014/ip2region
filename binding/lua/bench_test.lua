@@ -62,18 +62,39 @@ if string.len(dbFile) < 2 or string.len(srcFile) < 2 then
     return
 end
 
--- load the header and define the ip version
-local header, err = xdb.load_header(dbFile)
+-- open the dbFile
+local handle, closer, err = xdb.open_file(dbFile, "rb")
 if err ~= nil then
+    print(string.format("failed to open %s: %s", dbFile, err))
+    return
+end
+
+-- verify the xdb
+err = xdb.verify(handle)
+if err ~= nil then
+    closer()
+    print(string.format("verify(%s): %s", dbFile, err))
+    return
+end
+
+-- load the header and define the ip version
+local header, err = xdb.load_header(handle)
+if err ~= nil then
+    closer()
     print(string.format("failed to load the header: %s", err))
     return
 end
 
 local version, err = xdb.version_from_header(header)
 if err ~= nil then
+    closer()
     print(string.format("failed to detect version from header: %s", err))
     return
 end
+
+-- file close
+closer("bench_test")
+
 
 -- create the searcher based on the cache-policy
 local searcher, v_index, content
