@@ -122,7 +122,7 @@ end
 local lines = handle:lines()
 local sip_str, eip_str, s_region, region = "", "", "", ""
 local sip, mip, eip, err = 0, 0, 0, 0
-local count, c_time = 0, 0, 0
+local count, c_time = 0, 0
 local s_time = xdb.now()
 for l in lines do
     if string.len(l) < 1 then
@@ -135,9 +135,8 @@ for l in lines do
         s_region = v3
         break
     end
-    print('sip', sip_str, 'eip', eip_str, 'region', s_region)
+    -- print('sip', sip_str, 'eip', eip_str, 'region', s_region)
 
-    local t_time = xdb.now()
     sip, err = xdb.parse_ip(sip_str)
     if err ~= nil then
         print(string.format("invalid start ip `%s`", sip_str))
@@ -155,10 +154,9 @@ for l in lines do
         return
     end
 
+    local t_time = xdb.now()
     for _, ip in ipairs({sip, eip}) do
         region, err = searcher:search(ip)
-        print(string.format('search(%s): %s', xdb.ip_to_string(ip), region))
-        c_time = c_time + xdb.now() - t_time
         if err ~= nil then
             print(string.format("failed to search ip `%s`", xdb.ip_to_string(ip)))
             return
@@ -172,6 +170,7 @@ for l in lines do
 
         count = count + 1
     end
+    c_time = c_time + xdb.now() - t_time
 
     ::continue::
 end
@@ -186,6 +185,6 @@ if count > 0 then
     avg_costs = c_time / count
 end
 print(string.format(
-    "Bench finished, {cachePolicy: %s, total: %d, took: %.3f s, cost: %.3f μs/op}", 
-    cachePolicy, count, total_costs, avg_costs
+    "Bench finished, {cachePolicy: %s, total: %d, took: {total: %0.3fs, search: %0.3fs}, cost: %.3f μs/op}", 
+    cachePolicy, count, total_costs, c_time/1e6, avg_costs
 ))

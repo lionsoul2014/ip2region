@@ -18,7 +18,7 @@ function printHelp()
     print(" --cache-policy string   cache policy: file/vectorIndex/content")
 end
 
-if #arg < 2 then
+if #arg < 1 then
     printHelp(arg)
     return
 end
@@ -111,31 +111,36 @@ end
 
 -- do the search
 print(string.format([[
-ip2region xdb searcher test program, cachePolicy: %s
-type 'quit' to exit]], cachePolicy))
+ip2region xdb searcher test program
+source xdb: %s (%s, %s)
+type 'quit' to exit]], dbFile, version.name, cachePolicy))
 local region, err = "", nil
-local ip_int, s_time, c_time =  0, 0, 0
-while ( true ) do
+local ip_bytes, s_time, c_time = nil, 0, 0
+while true do
     io.write("ip2region>> ");
     io.input(io.stdin);
     local line = io.read();
-    if (line == nil) then
+    if line == nil then
         break
     end
 
-    if ( line == "quit" ) then
+    if #line < 1 then
+        goto continue
+    end
+
+    if line == "quit" then
         break
     end
 
-    ip_int, err = xdb.check_ip(line)
+    s_time = xdb.now()
+    ip_bytes, err = xdb.parse_ip(line)
     if err ~= nil then
-        print(string.format("invalid ip address `%s`", line))
+        print(string.format("failed to parse ip `%s`: %s", line, err))
         goto continue
     end
 
     -- do the search
-    s_time = xdb.now()
-    region, err = searcher:search(line)
+    region, err = searcher:search(ip_bytes)
     if err ~= nil then
         print(string.format("{err: %s, io_count: %d}", err, searcher:get_io_count()))
     else

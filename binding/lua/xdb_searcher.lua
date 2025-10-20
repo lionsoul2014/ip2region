@@ -132,7 +132,6 @@ function xdb:search(ip_bytes)
     -- binary search to get the data
     local index_size, ip_sub_compare = version.index_size, version.ip_sub_compare
     local bytes, d_bytes = version.bytes, version.bytes << 1
-    print("index_size", index_size, "bytes", bytes, "d_bytes", d_bytes)
     local data_ptr, data_len, p = 0, 0, 0
     local sip, eip, err, buff = 0, 0, ""
     local l, m, h = 0, 0, (e_ptr - s_ptr) / index_size
@@ -145,13 +144,6 @@ function xdb:search(ip_bytes)
         if err ~= nil then
             return "", string.format("read segment index at %d", p)
         end
-
-        print(string.format(
-            "{ip=%s, sip=%s, eip=%s}",
-            xdb.ip_to_string(ip_bytes),
-            xdb.ip_to_string(string.sub(buff, 1, bytes)),
-            xdb.ip_to_string(string.sub(buff, bytes + 1, d_bytes))
-        ))
 
         -- check the index
         if ip_sub_compare(ip_bytes, buff, 1) < 0 then
@@ -166,7 +158,7 @@ function xdb:search(ip_bytes)
     end
 
     -- matching nothing interception
-    print(string.format("data_len=%d, data_ptr=%d", data_len, data_ptr))
+    -- print(string.format("data_len=%d, data_ptr=%d", data_len, data_ptr))
     if data_len == 0 then
         return "", nil
     end
@@ -206,6 +198,10 @@ function xdb:read(offset, length)
     end
 
     return buff, nil
+end
+
+function xdb:get_ip_version()
+    return self.version
 end
 
 function xdb:get_io_count()
@@ -533,7 +529,7 @@ end
 -- 
 -- ip bytes compare
 function xdb.ip_sub_compare(ip1, buff, offset)
-    local ip2 = string.sub(buff, offset, offset + #ip1)
+    local ip2 = string.sub(buff, offset, offset + #ip1 - 1)
     if ip1 > ip2 then
         return 1
     elseif ip1 < ip2 then
