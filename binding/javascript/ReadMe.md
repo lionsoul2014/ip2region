@@ -7,6 +7,13 @@
 npm install ip2region.js --save 
 ```
 
+### 关于查询 API
+查询 API 的原型为：
+```javascript
+search(ip: string | Buffer): string;
+```
+如果查询出错会抛异常，查询成功则会返回字符的 `region` 信息，如果指定的 IP 查询不到则会返回空字符串 `""`。
+
 ### 关于 IPv4 和 IPv6
 该 xdb 查询客户端实现同时支持对 IPv4 和 IPv6 的查询，使用方式如下：
 ```javascript

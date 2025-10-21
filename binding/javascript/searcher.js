@@ -70,7 +70,7 @@ export class Searcher {
         const bytes = ipBytes.length, dBytes = ipBytes.length << 1;
         const indexSize = this.version.indexSize;
         const buff = Buffer.alloc(indexSize);
-        let dLen = -1, dPtr = -1, l = 0, h = (ePtr - sPtr) / indexSize;
+        let dLen = 0, dPtr = 0, l = 0, h = (ePtr - sPtr) / indexSize;
         while (l <= h) {
             const m = (l + h) >> 1;
             const p = sPtr + m * indexSize;
@@ -90,8 +90,8 @@ export class Searcher {
 
         // empty match interception.
         // and this could be a case.
-        if (dPtr == -1) {
-            return null;
+        if (dLen == 0) {
+            return "";
         }
 
         // console.log(`dLen: ${dLen}, dPtr: ${dPtr}`);
