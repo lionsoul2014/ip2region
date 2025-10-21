@@ -9,7 +9,8 @@ npm install ip2region.js --save
 
 ### 关于查询 API
 查询 API 的原型为：
-```javascript
+```javascript 
+// 通过字符串 IP 或者 parseIP 解析得到的二进制 IP (Buffer类型) 进行查询
 search(ip: string | Buffer): string;
 ```
 如果查询出错会抛异常，查询成功则会返回字符的 `region` 信息，如果指定的 IP 查询不到则会返回空字符串 `""`。

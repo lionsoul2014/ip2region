@@ -13,7 +13,7 @@ go get github.com/lionsoul2014/ip2region/binding/golang
 SearchByStr(string) (string, error)
 Search([]byte) (string, error)
 ```
-查询出错则 error 会包含错误的信息，查询成功会返回字符串的 `region` 信息，如果指定的 IP 查询不到则会返回空字符串 `""`。
+查询出错则 error 会包含具体的错误信息，查询成功会返回字符串的 `region` 信息，如果指定的 IP 查询不到则会返回空字符串 `""`。
 
 ### 关于 IPv4 / IPv6
 该 xdb 查询客户端实现同时支持对 IPv4 和 IPv6 的查询，使用方式如下：
@@ -160,9 +160,10 @@ ip2region>>
 ip2region xdb searcher test program
 source xdb: ../../data/ip2region_v6.xdb (IPv6, vectorIndex)
 type 'quit' to exit
+ip2region>> ::
+{region: , ioCount: 1, took: 42.157µs}
 ip2region>> 240e:87c:892:ffff:ffff:ffff:ffff:ffff
-{region: 中国|广东省|深圳市|专线用户, ioCount: 12, took: 130.294µs}
-ip2region>>
+{region: 中国|北京市|北京市|专线用户, ioCount: 10, took: 88.769µs}
 ```
 
 输入对应版本的 ip 地址进行查询即可，输入 quit 退出测试程序。可以设置 `cache-policy` 为 file/vectorIndex/content 来测试不同的查询缓存机制。

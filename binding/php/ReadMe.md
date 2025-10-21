@@ -192,14 +192,14 @@ ip2region>> 120.229.45.2
 
 例如：使用默认的 data/ip2region_v6.xdb 进行 IPv6 的查询测试：
 ```bash
-➜  php git:(fr_php_ipv6) ✗ php search_test.php --db=../../data/ip2region_v6.xdb
+➜  php git:(master) ✗ php ./search_test.php --db=../../data/ip2region_v6.xdb
 ip2region xdb searcher test program
 source xdb file: ../../data/ip2region_v6.xdb (IPv6, vectorIndex)
 type 'quit' to exit
 ip2region>> ::
-{region: |||, ioCount: 2, took: 0.06982 ms}
-ip2region>> 2604:bc80:8001:11a4:ffff:ffff:ffff:ffff
-{region: 中国|广东省|深圳市|数据中心, ioCount: 13, took: 0.19409 ms}
+{region: , ioCount: 1, took: 0.08887 ms}
+ip2region>> 240e:3b7:3272:d8d0:db09:c067:8d59:539e
+{region: 中国|广东省|深圳市|家庭宽带, ioCount: 8, took: 0.09595 ms}
 ```
 
 输入 ip 即可进行查询测试。也可以分别设置 `cache-policy` 为 file/vectorIndex/content 来测试三种不同缓存实现的效率。
