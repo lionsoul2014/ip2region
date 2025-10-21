@@ -120,21 +120,31 @@ $ cargo build -r
 ```
 构建的执行程序位置 `binding/rust/target/release/searcher`
 
+测试 IPv6 以及 IPv4 需要结合 ipv6_source.txt 以及 ipv4_source.txt 的内容进行查询结果校验
+
+**此处展示的查询结果只表示当前时间数据的查询，后续查询结果可能会由于 ip_source.txt 以及 xdb 二进制数据的 IP region 段更新修正导致不同**
+
 #### 测试 IPv6
+
 ```bash
 $ cd binding/rust
 $ cargo build -r
 $ ./target/release/searcher --xdb='../../data/ip2region_v6.xdb' query
-
 ip2region xdb searcher test program, type `quit` or `Ctrl + c` to exit
 ip2region>> 2001:5:4::
-region: Ok("荷兰|北荷兰省|阿姆斯特丹|专线用户"), took: 284.80775ms
+region: Ok("0|0|内网IP|内网IP"), took: 16.941042ms
 ip2region>> 2001::
-region: Ok("美国|加利福尼亚州|洛杉矶|专线用户"), took: 12.75µs
-ip2region>> 2001:5:6::
-region: Ok("荷兰|北荷兰省|阿姆斯特丹|专线用户"), took: 52.958µs
-ip2region>> 2001:5:5::
-region: Ok("比利时|弗拉芒大区|泽勒|专线用户"), took: 123.375µs
+region: Ok("日本|东京都|千代田区|专线用户"), took: 231.75µs
+ip2region>> 2001:268:989e::1
+region: Ok("日本|东京都||移动网络"), took: 12.167µs
+ip2region>> 2001:268:9a02:8888::
+region: Ok("日本|静冈县|菊川市|移动网络"), took: 107.834µs
+ip2region>> 2001:268:9b87:5f00::
+region: Ok("日本|爱知县|高滨市|移动网络"), took: 812.625µs
+ip2region>> 2a02:26f7:b408:a6c2::
+region: Ok("美国|弗吉尼亚州|恩波里亚|数据中心"), took: 132.333µs
+ip2region>> 2c99::
+region: Ok("0|0|内网IP|内网IP"), took: 861.25µs
 ip2region>>
 ```
 

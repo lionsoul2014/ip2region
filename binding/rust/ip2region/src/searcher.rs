@@ -81,7 +81,10 @@ impl Searcher {
             let offset = start_ptr + mid * segment_index_size;
             let buffer_ip_value = self.read_buf(offset, segment_index_size)?;
             if ip.ip_lt(Cow::Borrowed(&buffer_ip_value[0..ip_bytes_len])) {
-                right = mid - 1;
+                let Some(m) = mid.checked_sub(1) else {
+                    break
+                };
+                right = m;
             } else if ip.ip_gt(Cow::Borrowed(&buffer_ip_value[ip_bytes_len..ip_end_offset])) {
                 left = mid + 1;
             } else {
@@ -99,7 +102,11 @@ impl Searcher {
                 return Ok(result);
             }
         }
-        Err(Ip2RegionError::NoMatchedIP)
+        // From xdb 3.0 version no matched IP result change to empty string,
+        // so users should check string is empty.
+        //
+        // Err(Ip2RegionError::NoMatchedIP)
+        Ok(String::new())
     }
 
     pub fn vector_index(&self) -> Result<Cow<'_, [u8]>> {
