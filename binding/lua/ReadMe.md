@@ -5,6 +5,16 @@
 
 # 使用方式
 
+### 关于查询 API
+查询 API 的原型如下：
+```lua
+-- 通过字符串 IP 查询
+search_by_string(ip_string) (region, error)
+-- 通过 parse_ip 返回的 bytes IP 查询
+search(ip_bytes) (region, error)
+```
+如果查询出错则会返回非 `nil` 的 error 字符串信息，如果查询成功则会返回字符串的 `region` 信息，如果查询的 IP 地址找不到则会返回空字符串 `""`。
+
 ### 关于 IPv4 和 IPv6
 ```lua
 local xdb = require("xdb_searcher")
