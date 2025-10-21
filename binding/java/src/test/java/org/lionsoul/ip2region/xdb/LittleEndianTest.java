@@ -18,18 +18,18 @@ public class LittleEndianTest {
         LittleEndian.put(buff, 4, 2L, 4);
 
         // putUint32
-        LittleEndian.putInt2(buff, 8, 24);
+        LittleEndian.putUint16(buff, 8, 24);
         LittleEndian.putUint32(buff, 10, 1024L);
 
         // decode
         assertEquals(LittleEndian.getUint32(buff, 0), 1);
         assertEquals(LittleEndian.getUint32(buff, 4), 2);
-        assertEquals(LittleEndian.getInt2(buff, 8), 24);
+        assertEquals(LittleEndian.getUint16(buff, 8), 24);
         assertEquals(LittleEndian.getUint32(buff, 10), 1024);
 
         log.debugf("uint32(buff, 0): %d", LittleEndian.getUint32(buff, 0));
         log.debugf("uint32(buff, 4): %d", LittleEndian.getUint32(buff, 4));
-        log.debugf("int2(buff, 8): %d", LittleEndian.getInt2(buff, 8));
+        log.debugf("int2(buff, 8): %d", LittleEndian.getUint16(buff, 8));
         log.debugf("uint32(buff, 10): %d", LittleEndian.getUint32(buff, 10));
     }
 

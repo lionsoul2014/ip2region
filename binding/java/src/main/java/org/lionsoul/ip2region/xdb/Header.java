@@ -21,13 +21,13 @@ public class Header {
 
     public Header(byte[] buff) {
         assert buff.length >= 16;
-        version = LittleEndian.getInt2(buff, 0);
-        indexPolicy = LittleEndian.getInt2(buff, 2);
+        version = LittleEndian.getUint16(buff, 0);
+        indexPolicy = LittleEndian.getUint16(buff, 2);
         createdAt = LittleEndian.getUint32(buff, 4);
         startIndexPtr = LittleEndian.getUint32(buff, 8);
         endIndexPtr = LittleEndian.getUint32(buff, 12);
-        ipVersion = LittleEndian.getInt2(buff, 16);
-        runtimePtrBytes = LittleEndian.getInt2(buff, 18);
+        ipVersion = LittleEndian.getUint16(buff, 16);
+        runtimePtrBytes = LittleEndian.getUint16(buff, 18);
         buffer = buff;
     }
 

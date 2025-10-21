@@ -137,7 +137,7 @@ public class Searcher {
             } else if (version.ipSubCompare(ip, buff, bytes) > 0) {
                 l = m + 1;
             } else {
-                dataLen = LittleEndian.getInt2(buff, dBytes);
+                dataLen = LittleEndian.getUint16(buff, dBytes);
                 dataPtr = LittleEndian.getUint32(buff, dBytes + 2);
                 break;
             }

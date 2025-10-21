@@ -32,7 +32,7 @@ public class LittleEndian {
     }
 
     // put a 2-bytes int to the buffer from the specified offset
-    public static void putInt2(final byte[] buff, int offset, int value) {
+    public static void putUint16(final byte[] buff, int offset, int value) {
         buff[offset++] = (byte) (value & 0xFF);
         buff[offset  ] = (byte) ((value >>  8) & 0xFF);
     }
@@ -48,7 +48,7 @@ public class LittleEndian {
     }
 
     // get an 2 bytes int from a byte array from the specified offset
-    public static int getInt2(final byte[] buff, int offset) {
+    public static int getUint16(final byte[] buff, int offset) {
         return (
             ((buff[offset++]) & 0x000000FF) |
             ((buff[offset  ] << 8) & 0x0000FF00)

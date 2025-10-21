@@ -114,7 +114,7 @@ public class LongByteArray {
     public int getInt2(long offset) {
         final byte[] b = new byte[4];
         copy(offset, b, 0, 4);
-        return LittleEndian.getInt2(b, 0);
+        return LittleEndian.getUint16(b, 0);
     }
 
     // position entry class
