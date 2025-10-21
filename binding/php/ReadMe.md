@@ -2,9 +2,18 @@
 
 # 使用方式
 
-第三方 composer 地址：
-1. [https://github.com/zoujingli/ip2region](https://github.com/zoujingli/ip2region) - 已提供 IPv6 支持。
-2. [https://github.com/chinayin/ip2region-core-php](https://github.com/chinayin/ip2region-core-php)
+### 关于查询 API
+查询 API 的原型如下：
+```
+// 通过字符串 IP 进行查询
+// @throw Exception
+search($ip_string) string
+
+// 通过 Util.parseIP 返回的二进制 IP 进行查询
+// @throw Exception
+searchByBytes($ip_bytes) string
+```
+如果查询失败则会抛出异常，如果查询成功则会返回字符串的 `region` 信息，如果查询的 IP 找不到则会返回空字符串 `""`。
 
 
 ### 关于 IPv4 和 IPv6
@@ -219,3 +228,7 @@ php bench_test.php --db=../../data/ip2region_v6.xdb --src=../../data/ipv6_source
 
 可以通过设置 `cache-policy` 参数来分别测试 file/vectorIndex/content 三种不同的缓存实现的的性能。
 @Note：请注意 bench 使用的 src 文件需要是生成对应的 xdb 文件的相同的源文件。
+
+
+### 第三方仓库支持
+1. composer 支持的 [zoujingli/ip2region](https://github.com/zoujingli/ip2region) - 已提供 IPv6 支持。
