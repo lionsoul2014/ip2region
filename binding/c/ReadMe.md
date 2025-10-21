@@ -3,6 +3,16 @@
 
 # 使用方式
 
+### 关于查询 API
+查询 API 的原型如下：
+```c
+// 通过字符串 IP 进行查询
+int xdb_search_by_string(xdb_searcher_t *, const string_ip_t *, xdb_region_buffer_t *);
+// 通过 xdb_parse_ip 返回的二进制 IP 进行查询
+int xdb_search(xdb_searcher_t *, const bytes_ip_t *, int, xdb_region_buffer_t *);
+```
+如果查询失败将会返回非 `0` 的错误代码，如果查询成功 xdb_region_buffer_t 可以获取到字符串的 `region` 信息，如果输入的 IP 找不到相关的信息，xdb_region_buffer_t 将会得到一个空的字符串 `""`。
+
 ### 关于 IPv4 和 IPv6
 该 xdb 查询客户端实现同时支持对 IPv4 和 IPv6 的查询，使用方式如下：
 ```c
@@ -305,9 +315,11 @@ ip2region xdb searcher test program
 source xdb: ../../data/ip2region_v6.xdb (IPv6, vectorIndex)
 type 'quit' to exit
 ip2region>> ::
-{region: |||, io_count: 2, took: 38 μs}
+{region: , io_count: 1, took: 38 μs}
 ip2region>> 2604:bc80:8001:11a4:ffff:ffff:ffff:ffff
-{region: 中国|广东省|深圳市|数据中心, io_count: 13, took: 77 μs}
+{region: 美国|特拉华州|刘易斯|数据中心, io_count: 14, took: 77 μs}
+ip2region>> 240e:3b7:3272:d8d0:db09:c067:8d59:539e
+{region: 中国|广东省|深圳市|家庭宽带, io_count: 8, took: 46 μs}
 ```
 
 输入 ip 即可进行查询，输入 quit 即可退出测试程序。也可以分别设置 `cache-policy` 为 file/vectorIndex/content 来测试三种不同的缓存实现的效率。
