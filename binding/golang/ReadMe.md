@@ -7,6 +7,14 @@
 go get github.com/lionsoul2014/ip2region/binding/golang
 ```
 
+### 关于查询 API
+定位信息查询 API 原型为：
+```golang
+SearchByStr(string) (string, error)
+Search([]byte) (string, error)
+```
+查询出错则 error 会包含错误的信息，查询成功会返回字符串的 `region` 信息，如果指定的 IP 查询不到则会返回空字符串 `""`。
+
 ### 关于 IPv4 / IPv6
 该 xdb 查询客户端实现同时支持对 IPv4 和 IPv6 的查询，使用方式如下：
 ```golang
