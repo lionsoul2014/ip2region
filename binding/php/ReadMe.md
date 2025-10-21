@@ -4,7 +4,7 @@
 
 ### 关于查询 API
 查询 API 的原型如下：
-```
+```php
 // 通过字符串 IP 进行查询
 // @throw Exception
 search($ip_string) string
