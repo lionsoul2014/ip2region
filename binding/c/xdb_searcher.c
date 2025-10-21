@@ -57,9 +57,38 @@ XDB_PUBLIC(int) xdb_region_buffer_alloc(xdb_region_buffer_t *region, int length)
     return 0;
 }
 
+// fixed internal empty string ptr
+static char * _empty_region_string = "\0";
+
+XDB_PUBLIC(int) xdb_region_buffer_empty(xdb_region_buffer_t *region) {
+    // no allocation supports for the buffer wapper
+    if (region->type == xdb_region_buffer_wrapper) {
+        region->value[0] = '\0';
+        return 0;
+    }
+
+    // ensure that the value were freed
+    // by calling #xdb_region_buffer_free
+    if (region->value != NULL) {
+        return 3;
+    }
+
+    region->value  = _empty_region_string;
+    region->length = 0;
+    return 0;
+}
+
 XDB_PUBLIC(void) xdb_region_buffer_free(xdb_region_buffer_t *region) {
     if (region->type == xdb_region_buffer_auto) {
-        xdb_free(region->value);
+        // empty string interception
+        if (region->length == 0 
+            || region->value == _empty_region_string) {
+            // do nothing for empty string
+        } else {
+            xdb_free(region->value);
+        }
+
+        // reset the value
         region->value = NULL;
     }
 }
@@ -196,7 +225,9 @@ XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, const bytes_ip_t *ip_bytes, int 
 
     // printf("data_len=%u, data_ptr=%u\n", data_len, data_ptr);
     if (data_len == 0) {
-        return 100;
+        // return 100;
+        xdb_region_buffer_empty(region);
+        return err;
     }
 
     // buffer alloc checking

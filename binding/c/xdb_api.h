@@ -221,6 +221,10 @@ XDB_PUBLIC(int) xdb_region_buffer_init(xdb_region_buffer_t *, char *, size_t);
 // returns: 0 for ok or failed
 XDB_PUBLIC(int) xdb_region_buffer_alloc(xdb_region_buffer_t *, int);
 
+// empty alloc - empty string
+// returns:  0 - always
+XDB_PUBLIC(int) xdb_region_buffer_empty(xdb_region_buffer_t *);
+
 XDB_PUBLIC(void) xdb_region_buffer_free(xdb_region_buffer_t *);
 
 // xdb searcher structure
