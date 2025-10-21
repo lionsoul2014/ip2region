@@ -499,10 +499,6 @@ class Searcher {
         } else {
             // read the vector index block
             $buff = $this->read(HeaderInfoLength + $idx, 8);
-            if ($buff === null) {
-                throw new Exception("failed to read vector index at ${idx}");
-            }
-
             $sPtr = Util::le_getUint32($buff, 0);
             $ePtr = Util::le_getUint32($buff, 4);
         }
@@ -512,18 +508,15 @@ class Searcher {
 
         // binary search the segment index to get the region info
         $idxSize = $this->version->segmentIndexSize;
-        [$dataLen, $dataPtr] = [0, null];
-        [$l, $h] = [0, ($ePtr - $sPtr) / $idxSize];
+        [$dataLen, $dataPtr, $l, $h] = [0, 0, 0, ($ePtr - $sPtr) / $idxSize];
         while ($l <= $h) {
             $m = ($l + $h) >> 1;
             $p = $sPtr + $m * $idxSize;
 
             // read the segment index
             $buff = $this->read($p, $idxSize);
-            if ($buff == null) {
-                throw new Exception("failed to read segment index with ptr={$p}");
-            }
 
+            // compare the segment index
             if ($this->version->ipSubCompare($ipBytes, $buff, 0) < 0) {
                 $h = $m - 1;
             } else if ($this->version->ipSubCompare($ipBytes, $buff, $bytes) > 0) {
@@ -535,20 +528,14 @@ class Searcher {
             }
         }
 
-        // match nothing interception.
-        // @TODO: could this even be a case ?
+        // empty match interception.
         // printf("dataLen: %d, dataPtr: %d\n", $dataLen, $dataPtr);
-        if ($dataPtr == null) {
-            return null;
+        if ($dataLen == 0) {
+            return "";
         }
 
         // load and return the region data
-        $buff = $this->read($dataPtr, $dataLen);
-        if ($buff == null) {
-            return null;
-        }
-
-        return $buff;
+        return $this->read($dataPtr, $dataLen);
     }
 
     // read specified bytes from the specified index
@@ -561,17 +548,17 @@ class Searcher {
         // read from the file
         $r = fseek($this->handle, $offset);
         if ($r == -1) {
-            return null;
+            throw new Exception("failed to fseek to {$offset}");
         }
 
         $this->ioCount++;
         $buff = fread($this->handle, $len);
         if ($buff === false) {
-            return null;
+            throw new Exception("failed to fread from {$len}");
         }
 
         if (strlen($buff) != $len) {
-            return null;
+            throw new Exception("incomplete read: read bytes should be {$len}");
         }
 
         return $buff;
