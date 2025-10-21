@@ -124,8 +124,8 @@ public class Searcher {
         final int bytes = ip.length, dBytes = ip.length << 1;
         final int segIndexSize = version.segmentIndexSize;
         final byte[] buff = new byte[segIndexSize];
-        int dataLen = -1;
-        long dataPtr = -1, l = 0, h = (ePtr - sPtr) / segIndexSize;
+        int dataLen = 0;
+        long dataPtr = 0, l = 0, h = (ePtr - sPtr) / segIndexSize;
         while (l <= h) {
             long m = (l + h) >> 1;
             long p = sPtr + m * segIndexSize;
@@ -145,8 +145,8 @@ public class Searcher {
 
         // empty match interception
         // System.out.printf("dataLen: %d, dataPtr: %d\n", dataLen, dataPtr);
-        if (dataPtr < 0) {
-            return null;
+        if (dataLen == 0) {
+            return "";
         }
 
         // load and return the region data

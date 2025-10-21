@@ -7,9 +7,17 @@
 <dependency>
     <groupId>org.lionsoul</groupId>
     <artifactId>ip2region</artifactId>
-    <version>3.1.0</version>
+    <version>3.1.1</version>
 </dependency>
 ```
+
+### 关于查询结果
+定位信息查询 API 的原型为：
+```java
+String search(String ipStr) throw Exception;
+String search(byte[] ip) throw Exception;
+```
+查询出错会抛出异常，如果查询成功会返回字符串的 `region` 信息，如果指定的 ip 查询不到会返回空字符串 `""`，这对于自定义数据或者数据不完整的情况会出现。
 
 ### 关于 IPv4 和 IPv6
 该 xdb 查询客户端实现同时支持对 IPv4 和 IPv6 的查询，使用方式如下：
