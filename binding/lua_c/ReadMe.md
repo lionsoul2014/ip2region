@@ -14,6 +14,14 @@ sudo make install
 
 # 使用方式
 
+### 关于查询 API
+查询 API 的原型如下：
+```lua
+-- 通过字符串 IP 或者 xdb.parse_ip 解析得到的二进制 IP 进行查询
+search(ip_string | ip_bytes) (region, error)
+```
+如果查询失败则 error 将会为一个非 `nil` 的错误描述字符串，查询成功将会返回字符串的 `region` 信息，如果查询的 IP 地址没找到则会返回一个空字符 `""`。
+
 ### 关于 IPv4 和 IPv6
 该 xdb 查询客户端实现同时支持对 IPv4 和 IPv6 的查询，使用方式如下：
 ```lua
@@ -196,12 +204,14 @@ ip2region>> 120.229.45.2
 
 例如：使用默认的 data/ip2region_v6.xdb 进行 IPv6 查询测试：
 ```bash
-➜  lua_c git:(fr_lua_c_ipv6) ✗ lua ./search_test.lua --db=../../data/ip2region_v6.xdb
+➜  lua_c git:(master) lua ./search_test.lua --db=../../data/ip2region_v6.xdb
 ip2region xdb searcher test program
 source xdb: ../../data/ip2region_v6.xdb (IPv6, vectorIndex)
 type 'quit' to exit
+ip2region>> ::
+{region: , io_count: 1, took: 48μs}
 ip2region>> 240e:3b7:3276:33b0:958f:f34c:d04f:f6a 
-{region: 中国|广东省|深圳市|家庭宽带, io_count: 14, took: 79μs}
+{region: 中国|广东省|深圳市|家庭宽带, io_count: 8, took: 51μs}
 ```
 
 输入 ip 即可进行查询测试。也可以分别设置 `cache-policy` 为 file/vectorIndex/content 来测试三种不同缓存实现的效率。
