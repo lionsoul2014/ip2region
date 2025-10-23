@@ -30,8 +30,6 @@ func main() {
 		cmd.Edit()
 	case "process":
 		cmd.Process()
-	case "stat":
-		cmd.Stats()
 	default:
 		cmd.PrintHelp()
 	}
