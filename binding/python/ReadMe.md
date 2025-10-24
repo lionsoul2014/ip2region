@@ -9,7 +9,7 @@ from xdbSearcher import XdbSearcher
 
 def searchWithFile():
     # 1. 创建查询对象
-    dbPath = "../../data/ip2region.xdb"
+    dbPath = "../../data/ip2region_v4.xdb"
     searcher = XdbSearcher(dbfile=dbPath)
     
     # 2. 执行查询
@@ -30,7 +30,7 @@ from xdbSearcher import XdbSearcher
 
 def searchWithVectorIndex():
      # 1. 预先加载整个 xdb
-    dbPath = "../../data/ip2region.xdb"
+    dbPath = "../../data/ip2region_v4.xdb"
     vi = XdbSearcher.loadVectorIndexFromFile(dbfile=dbPath)
 
     # 2. 使用上面的缓存创建查询对象, 同时也要加载 xdb 文件
@@ -47,14 +47,14 @@ def searchWithVectorIndex():
 
 ### 缓存整个 `xdb` 数据
 
-我们也可以预先加载整个 ip2region.xdb 的数据到内存，然后基于这个数据创建查询对象来实现完全基于文件的查询，类似之前的 memory search。
+我们也可以预先加载整个 xdb 文件的数据到内存，然后基于这个数据创建查询对象来实现完全基于文件的查询，类似之前的 memory search。
 
 ```python
 from xdbSearcher import XdbSearcher
 
 def searchWithContent():
     # 1. 预先加载整个 xdb
-    dbPath = "../../data/ip2region.xdb";
+    dbPath = "../../data/ip2region_v4.xdb";
     cb = XdbSearcher.loadContentFromFile(dbfile=dbPath)
     
     # 2. 仅需要使用上面的全文件缓存创建查询对象, 不需要传源 xdb 文件
@@ -79,9 +79,9 @@ options:
  --cache-policy string   cache policy: file/vectorIndex/content
 ```
 
-例如：使用默认的 data/ip2region.xdb 进行查询测试：
+例如：使用默认的 data/ip2region_v4.xdb 进行查询测试：
 ```bash
-➜  python git:(python_dev) ✗ python3 ./search_test.py --db=../../data/ip2region.xdb --cache-policy=content
+➜  python git:(python_dev) ✗ python3 ./search_test.py --db=../../data/ip2region_v4.xdb --cache-policy=content
 ip2region xdb searcher test program, cachePolicy: content
 type 'quit' to exit
 ip2region>> 1.2.3.4
@@ -106,7 +106,7 @@ options:
 
 例如：通过默认的 data/ip2region.xdb 和 data/ip.merge.txt 来进行 bench 测试：
 ```bash
-➜  python git:(python_dev) ✗ python3 ./bench_test.py --db=../../data/ip2region.xdb --src=../../data/ip.merge.txt --cache-policy=content
+➜  python git:(python_dev) ✗ python3 ./bench_test.py --db=../../data/ip2region_v4.xdb --src=../../data/ipv4_source.txt --cache-policy=content
 Bench finished, [cachePolicy: content, total: 3417955, took: 34.93 s, cost: 0.0094 ms/op]
 ```
 
