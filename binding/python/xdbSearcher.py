@@ -177,7 +177,7 @@ if __name__ == '__main__':
         "192.168.1.1"
     ]
     # 1. 缓存
-    dbPath = "./data/ip2region.xdb";
+    dbPath = "./data/ip2region_v4.xdb";
     cb = XdbSearcher.loadContentFromFile(dbfile=dbPath)
 
     # 2. 创建查询对象
