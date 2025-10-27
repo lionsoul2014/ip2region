@@ -19,7 +19,7 @@ function printHelp()
 end
 
 if #arg < 1 then
-    printHelp(arg)
+    printHelp()
     return
 end
 
@@ -135,7 +135,7 @@ print(string.format([[
 ip2region xdb searcher test program
 source xdb: %s (%s, %s)
 type 'quit' to exit]], dbFile, version.name, cachePolicy))
-local region, err = "", nil
+local region, err = nil, nil
 local ip_bytes, s_time, c_time = nil, 0, 0
 while true do
     io.write("ip2region>> ");

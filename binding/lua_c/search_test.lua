@@ -19,7 +19,7 @@ function printHelp()
 end
 
 if #arg < 1 then
-    printHelp(arg)
+    printHelp()
     return
 end
 

@@ -20,7 +20,7 @@ function printHelp()
 end
 
 if #arg < 2 then
-    printHelp(arg)
+    printHelp()
     return
 end
 
@@ -171,7 +171,7 @@ for l in lines do
 
         -- check the region
         if region ~= s_region then
-            printf(string.format("failed search(%s) with (%s != %s)\n", xdb.ip_to_string(ip_bytes), region, s_region))
+            print(string.format("failed search(%s) with (%s != %s)\n", xdb.ip_to_string(ip_bytes), region, s_region))
             return
         end
 

@@ -20,7 +20,7 @@ function printHelp()
 end
 
 if #arg < 2 then
-    printHelp(arg)
+    printHelp()
     return
 end
 
@@ -141,8 +141,8 @@ if handle == nil then
 end
 
 local lines = handle:lines()
-local sip_str, eip_str, s_region, region = "", "", "", ""
-local sip, mip, eip, err = 0, 0, 0, 0
+local sip_str, eip_str, s_region, region = "", "", "", nil
+local sip, eip, err = nil, nil, nil
 local count, c_time = 0, 0
 local s_time = xdb.now()
 for l in lines do

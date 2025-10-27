@@ -133,7 +133,7 @@ function xdb:search(ip_bytes)
     local index_size, ip_sub_compare = version.index_size, version.ip_sub_compare
     local bytes, d_bytes = version.bytes, version.bytes << 1
     local data_ptr, data_len, p = 0, 0, 0
-    local sip, eip, err, buff = 0, 0, ""
+    local buff, err = nil, nil
     local l, m, h = 0, 0, (e_ptr - s_ptr) / index_size
     while l <= h do
         m = (l + h) >> 1
