@@ -11,7 +11,7 @@
 </dependency>
 ```
 
-### 关于查询结果
+### 关于查询 API
 定位信息查询 API 的原型为：
 ```java
 String search(String ipStr) throw Exception;
