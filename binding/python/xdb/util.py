@@ -48,7 +48,15 @@ class Header(object):
     "endIndexPtr": {},
     "ipVersion": {},
     "runtimePtrBytes": {}
-}}'''.format(self.version, self.indexPolicy, self.createdAt, self.startIndexPtr, self.endIndexPtr, self.ipVersion, self.runtimePtrBytes)
+}}'''.format(
+        self.version, 
+        self.indexPolicy, 
+        self.createdAt, 
+        self.startIndexPtr, 
+        self.endIndexPtr, 
+        self.ipVersion, 
+        self.runtimePtrBytes
+    )
 
 
 class Version(object):
@@ -69,7 +77,12 @@ class Version(object):
         pass
 
     def __str__(self):
-        return '{{"id": {}, "name": "{}", "bytes": {}, "index_size": {}}}'.format(self.id, self.name, self.byte_num, self.index_size)
+        return '{{"id": {}, "name": "{}", "bytes": {}, "index_size": {}}}'.format(
+            self.id, 
+            self.name, 
+            self.byte_num, 
+            self.index_size
+        )
 
 
 # IPv4 and IPv6 version constants
