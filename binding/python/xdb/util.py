@@ -6,7 +6,6 @@
 # Author Leon<chenxin619315@gmail.com>
 
 import io
-import struct
 
 # global constants
 XdbStructure20 = 2
@@ -18,21 +17,24 @@ HeaderInfoLength = 256
 VectorIndexRows  = 256
 VectorIndexCols  = 256
 VectorIndexSize  = 8
+# cache of VectorIndexCols × VectorIndexRows × VectorIndexSize
+VectorIndexLength = 524288
 
 class Header(object):
     '''
     header class
     '''
     def __init__(self, buff):
-        self.version = struct.unpack_from("<H", buff, 0)[0]
-        self.indexPolicy = struct.unpack_from("<H", buff, 2)[0]
-        self.createdAt = struct.unpack_from("<I", buff, 4)[0]
-        self.startIndexPtr = struct.unpack_from("<I", buff, 8)[0]
-        self.endIndexPtr = struct.unpack_from("<I", buff, 12)[0]
+        self.version = le_get_uint16(buff, 0)
+        self.indexPolicy = le_get_uint16(buff, 2)
+        self.createdAt = le_get_uint32(buff, 4)
+        self.startIndexPtr = le_get_uint32(buff, 8)
+        self.endIndexPtr = le_get_uint32(buff, 12)
 
         # since IPv6 supporting
-        self.ipVersion = struct.unpack_from("<H", buff, 16)[0]
-        self.runtimePtrBytes = struct.unpack_from("<H", buff, 18)[0]
+        self.ipVersion = le_get_uint16(buff, 16)
+        self.runtimePtrBytes = le_get_uint16(buff, 18)
+
 
         # keep the raw data
         self.buff = buff
@@ -99,6 +101,48 @@ def version_from_header(header):
 
 
 # ---
+# ip parse and convert functions
+
+def parse_ip(ip_string):
+    pass
+
+def ip_to_string(ip_bytes):
+    pass
+
+def ip_compare(ip1, ip2):
+    pass
+
+def ip_sub_compare(ip1, ip2, offset):
+    pass
+
+
+# ---
+# buffer decode functions
+
+def le_get_uint32(buff, offset):
+    '''
+    decode an unsinged 4-bytes int from a buffer started from offset
+    with little byte endian
+    '''
+    return (
+        ((buff[offset  ]) & 0x000000FF) |
+        ((buff[offset+1] <<  8) & 0x0000FF00) | 
+        ((buff[offset+2] << 16) & 0x00FF0000) |
+        ((buff[offset+3] << 24) & 0xFF000000)
+    )
+
+def le_get_uint16(buff, offset):
+    '''
+    decode an unsinged 2-bytes short from a buffer started from offset
+    with little byte endian
+    '''
+    return (
+        ((buff[offset  ]) & 0x000000FF) |
+        ((buff[offset+1] <<  8) & 0x0000FF00)
+    )
+
+
+# ---
 # xdb buffer load functions
 
 def load_header(handle):
@@ -106,8 +150,7 @@ def load_header(handle):
     load xdb header from a specified file handle
     '''
     handle.seek(0)
-    buff = handle.read(HeaderInfoLength)
-    return Header(buff)
+    return Header(handle.read(HeaderInfoLength))
 
 def load_header_from_file(db_file):
     handle = io.open(db_file, "rb")
@@ -115,15 +158,28 @@ def load_header_from_file(db_file):
     handle.close()
     return header
 
+def load_vector_index(handle):
+    '''
+    load xdb vector index from a specified file handle
+    '''
+    handle.seek(HeaderInfoLength)
+    return handle.read(VectorIndexLength)
 
-if __name__ == "__main__":
-    # header class test
-    header = load_header_from_file("../../../data/ip2region_v4.xdb")
-    print(header)
+def load_vector_index_from_file(db_file):
+    handle = io.open(db_file, "rb")
+    v_index = load_vector_index(handle)
+    handle.close()
+    return v_index
 
-    # verison class test
-    print("IPv4 ->", IPv4)
-    print("IPv6 ->", IPv6)
-    print("version_from_name(v4) ->", version_from_name("v4"))
-    print("version_from_name(v6) ->", version_from_name("v4"))
-    print("version_from_header() ->", version_from_header(header))
+def load_content(handle):
+    '''
+    load the whole xdb content from a specified file handle
+    '''
+    handle.seek(0)
+    return handle.read()
+
+def load_content_from_file(db_file):
+    handle = io.open(db_file, "rb")
+    c_buff = load_content(handle)
+    handle.close()
+    return c_buff
