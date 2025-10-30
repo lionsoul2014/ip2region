@@ -98,7 +98,7 @@ class Searcher(object):
     def read(self, offset: int, length: int):
         # check the content buffer first
         if self.c_buffer != None:
-            return self.c_buffer[offset, offset + length]
+            return self.c_buffer[offset:offset+length]
         
         # load the buffer from file
         self.__handle.seek(offset)
