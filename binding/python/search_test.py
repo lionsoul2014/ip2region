@@ -62,7 +62,7 @@ type 'quit' to exit'''.format(db_path, searcher.get_ip_version().name, cache_pol
 
     # get input ip address and do the search
     while True:
-        ip_str = input("ip2region>> ")
+        ip_str = input("ip2region>> ").strip()
 
         if len(ip_str) < 2:
             continue
