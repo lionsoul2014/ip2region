@@ -6,7 +6,6 @@
 *.log
 *.la
 *.so
-*.xdb
 *.iml
 META-INF/
 .DS_Store
@@ -38,6 +37,9 @@ META-INF/
 /binding/java/doc/
 /binding/java/target/
 /binding/java/*.jar
+
+# python
+/**/__pycache__
 
 # clang
 /binding/c/xdb_searcher
