@@ -6,6 +6,9 @@
 # Author Leon<chenxin619315@gmail.com>
 
 import io
+import os
+import ipaddress
+from collections.abc import Callable
 
 # global constants
 XdbStructure20 = 2
@@ -21,9 +24,6 @@ VectorIndexSize  = 8
 VectorIndexLength = 524288
 
 class Header(object):
-    '''
-    header class
-    '''
     def __init__(self, buff):
         self.version = le_get_uint16(buff, 0)
         self.indexPolicy = le_get_uint16(buff, 2)
@@ -59,22 +59,55 @@ class Header(object):
     )
 
 
+# ---
+# ip parse and convert functions
+
+def parse_ip(ip_string: str):
+    try:
+        return ipaddress.ip_address(ip_string).packed
+    except:
+        raise ValueError("invalid ip address `{}`".format(ip_string))
+
+def ip_to_string(ip_bytes: bytes):
+    if isinstance(ip_bytes, bytes):
+        return str(ipaddress.ip_address(ip_bytes))
+    else:
+        raise ValueError("invalid bytes ip `{}`".format(ip_bytes))
+
+def ip_compare(ip1: bytes, ip2: bytes):
+    if ip1 > ip2:
+        return 1
+    elif ip1 < ip2:
+        return -1
+    else:
+        return 0
+
+def ip_sub_compare(ip1: bytes, buff: bytes, offset: int):
+    ip2 = buff[offset:offset+len(ip1)]
+    if ip1 > ip2:
+        return 1
+    elif ip1 < ip2:
+        return -1
+    else:
+        return 0
+
+
+# ---
+# ip version class and functions
+
 class Version(object):
-    '''
-    version class
-    '''
-    def __init__(self, id, name, byte_num, index_size, ip_compare_func):
+    def __init__(self, id, name, byte_num, index_size, ip_compare_func: Callable[[bytes, bytes, int], int]):
         self.id = id
         self.name = name
         self.byte_num = byte_num
         self.index_size = index_size
         self.ip_compare_func = ip_compare_func
 
-    def ip_compare(self, ip1, ip2):
+    def ip_compare(self, ip1: bytes, ip2: bytes):
         return self.ip_sub_compare(ip1, ip2, 0)
 
-    def ip_sub_compare(self, ip1, ip2, offset):
-        pass
+    def ip_sub_compare(self, ip1: bytes, buff: bytes, offset: int):
+        return self.ip_sub_compare(ip1, buff, offset)
 
     def __str__(self):
         return '{{"id": {}, "name": "{}", "bytes": {}, "index_size": {}}}'.format(
@@ -84,10 +117,29 @@ class Version(object):
             self.index_size
         )
 
+def _v4_sub_compare(ip1: bytes, buff: bytes, offset: int):
+    # ip1: Big endian byte order parsed from input
+    # ip2: Little endian byte order read from xdb index.
+    # @Note: to compatible with the old Litten endian index encode implementation.
+    j = offset + len(ip1) - 1
+    for i in range(len(ip1)):
+        i1 = ip1[i]
+        i2 = buff[j]
+        if i1 < i2:
+            return -1
+        
+        if i1 > i2:
+            return 1
 
+    return 0
+
+
+# ---
 # IPv4 and IPv6 version constants
-IPv4 = Version(XdbIPv4Id, "IPv4", 4, 14, None)
-IPv6 = Version(XdbIPv6Id, "IPv6", 16, 38, None)
+# 14 = 4 + 4 + 2 + 4
+IPv4 = Version(XdbIPv4Id, "IPv4", 4, 14, _v4_sub_compare)
+# 38 = 16 + 16 + 2 + 4
+IPv6 = Version(XdbIPv6Id, "IPv6", 16, 38, ip_sub_compare)
 
 def version_from_name(name):
     u_name = name.upper()
@@ -111,22 +163,6 @@ def version_from_header(header):
         return IPv6
     else:
         return None
-
-
-# ---
-# ip parse and convert functions
-
-def parse_ip(ip_string):
-    pass
-
-def ip_to_string(ip_bytes):
-    pass
-
-def ip_compare(ip1, ip2):
-    pass
-
-def ip_sub_compare(ip1, ip2, offset):
-    pass
 
 
 # ---
@@ -196,3 +232,36 @@ def load_content_from_file(db_file):
     c_buff = load_content(handle)
     handle.close()
     return c_buff
+
+# ---
+# Verify if the current Searcher could be used to search the specified xdb file.
+# Why do we need this check ?
+# The future features of the xdb impl may cause the current searcher not able to work properly.
+# 
+# @Note: You Just need to check this ONCE when the service starts
+# Or use another process (eg, A command) to check once Just to confirm the suitability.
+def verify(handle):
+    header = load_header(handle)
+
+    # get the runtime ptr bytes
+    runtime_ptr_bytes = 0
+    if header.version == XdbStructure20:
+        runtime_ptr_bytes = 4
+    elif header.version == XdbStructure30:
+        runtime_ptr_bytes = header.runtimePtrBytes
+    else:
+        # Higher versions of the structure are usually incompatible.
+        raise ValueError("invalid structure version {}".format(header.version))
+
+    # 1, confirm the xdb file size
+    # to ensure that the maximum file pointer does not overflow
+    max_file_ptr = (1 << (runtime_ptr_bytes * 8)) - 1
+    __file_bytes = os.stat(handle.fileno()).st_size
+    # print("max_file_ptr: {}, file_bytes: {}".format(max_file_ptr, __file_bytes))
+    if __file_bytes > max_file_ptr:
+        raise Exception("xdb file exceeds the maximum supported bytes: {}".format(max_file_ptr))
+
+def verify_from_file(db_file):
+    handle = io.open(db_file, "rb")
+    verify(handle)
+    handle.close()
