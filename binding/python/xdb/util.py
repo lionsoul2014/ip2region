@@ -104,10 +104,10 @@ class Version(object):
         self.ip_compare_func = ip_compare_func
 
     def ip_compare(self, ip1: bytes, ip2: bytes):
-        return self.ip_sub_compare(ip1, ip2, 0)
+        return ip_sub_compare(ip1, ip2, 0)
 
     def ip_sub_compare(self, ip1: bytes, buff: bytes, offset: int):
-        return self.ip_sub_compare(ip1, buff, offset)
+        return ip_sub_compare(ip1, buff, offset)
 
     def __str__(self):
         return '{{"id": {}, "name": "{}", "bytes": {}, "index_size": {}}}'.format(
@@ -152,7 +152,7 @@ def version_from_name(name):
 
 def version_from_header(header):
     # old xdb 2.0 with IPv4 supports ONLY
-    if header.version <= XdbStructure30:
+    if header.version < XdbStructure30:
         return IPv4
 
     # xdb 3.0 or later version
