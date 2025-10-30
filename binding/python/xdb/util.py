@@ -24,7 +24,7 @@ VectorIndexSize  = 8
 VectorIndexLength = 524288
 
 class Header(object):
-    def __init__(self, buff):
+    def __init__(self, buff: bytes):
         self.version = le_get_uint16(buff, 0)
         self.indexPolicy = le_get_uint16(buff, 2)
         self.createdAt = le_get_uint32(buff, 4)
@@ -96,18 +96,18 @@ def ip_sub_compare(ip1: bytes, buff: bytes, offset: int):
 # ip version class and functions
 
 class Version(object):
-    def __init__(self, id, name, byte_num, index_size, ip_compare_func: Callable[[bytes, bytes, int], int]):
+    def __init__(self, id: int, name: str, byte_num: int, index_size: int, ip_compare: Callable[[bytes, bytes, int], int]):
         self.id = id
         self.name = name
         self.byte_num = byte_num
         self.index_size = index_size
-        self.ip_compare_func = ip_compare_func
+        self.ip_compare = ip_compare
 
     def ip_compare(self, ip1: bytes, ip2: bytes):
-        return ip_sub_compare(ip1, ip2, 0)
+        return self.ip_compare(ip1, ip2, 0)
 
     def ip_sub_compare(self, ip1: bytes, buff: bytes, offset: int):
-        return ip_sub_compare(ip1, buff, offset)
+        return self.ip_compare(ip1, buff, offset)
 
     def __str__(self):
         return '{{"id": {}, "name": "{}", "bytes": {}, "index_size": {}}}'.format(
@@ -131,6 +131,9 @@ def _v4_sub_compare(ip1: bytes, buff: bytes, offset: int):
         if i1 > i2:
             return 1
 
+        # increase the j
+        j = j - 1
+
     return 0
 
 
@@ -141,7 +144,7 @@ IPv4 = Version(XdbIPv4Id, "IPv4", 4, 14, _v4_sub_compare)
 # 38 = 16 + 16 + 2 + 4
 IPv6 = Version(XdbIPv6Id, "IPv6", 16, 38, ip_sub_compare)
 
-def version_from_name(name):
+def version_from_name(name: str):
     u_name = name.upper()
     if u_name == "IPV4" or u_name == "V4":
         return IPv4
@@ -150,7 +153,7 @@ def version_from_name(name):
     else:
         return None
 
-def version_from_header(header):
+def version_from_header(header: bytes):
     # old xdb 2.0 with IPv4 supports ONLY
     if header.version < XdbStructure30:
         return IPv4
@@ -168,7 +171,7 @@ def version_from_header(header):
 # ---
 # buffer decode functions
 
-def le_get_uint32(buff, offset):
+def le_get_uint32(buff: bytes, offset: int):
     '''
     decode an unsinged 4-bytes int from a buffer started from offset
     with little byte endian
@@ -180,7 +183,7 @@ def le_get_uint32(buff, offset):
         ((buff[offset+3] << 24) & 0xFF000000)
     )
 
-def le_get_uint16(buff, offset):
+def le_get_uint16(buff: bytes, offset: int):
     '''
     decode an unsinged 2-bytes short from a buffer started from offset
     with little byte endian
@@ -201,7 +204,7 @@ def load_header(handle):
     handle.seek(0)
     return Header(handle.read(HeaderInfoLength))
 
-def load_header_from_file(db_file):
+def load_header_from_file(db_file: str):
     handle = io.open(db_file, "rb")
     header = load_header(handle)
     handle.close()
@@ -214,7 +217,7 @@ def load_vector_index(handle):
     handle.seek(HeaderInfoLength)
     return handle.read(VectorIndexLength)
 
-def load_vector_index_from_file(db_file):
+def load_vector_index_from_file(db_file: str):
     handle = io.open(db_file, "rb")
     v_index = load_vector_index(handle)
     handle.close()
@@ -227,7 +230,7 @@ def load_content(handle):
     handle.seek(0)
     return handle.read()
 
-def load_content_from_file(db_file):
+def load_content_from_file(db_file: str):
     handle = io.open(db_file, "rb")
     c_buff = load_content(handle)
     handle.close()
@@ -261,7 +264,7 @@ def verify(handle):
     if __file_bytes > max_file_ptr:
         raise Exception("xdb file exceeds the maximum supported bytes: {}".format(max_file_ptr))
 
-def verify_from_file(db_file):
+def verify_from_file(db_file: str):
     handle = io.open(db_file, "rb")
     verify(handle)
     handle.close()

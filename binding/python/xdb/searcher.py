@@ -95,7 +95,7 @@ class Searcher(object):
         # read and return the region info
         return self.read(d_ptr, d_len).decode("utf-8")
 
-    def read(self, offset, length):
+    def read(self, offset: int, length: int):
         # check the content buffer first
         if self.c_buffer != None:
             return self.c_buffer[offset, offset + length]
