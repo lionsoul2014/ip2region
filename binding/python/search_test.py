@@ -45,7 +45,7 @@ def create_searcher(db_path, cache_policy):
     return searcher
 
 
-def run(db_path: str, cache_policy: str):
+def run_search_test(db_path: str, cache_policy: str):
     # create the searcher
     searcher = None
     try:
@@ -106,4 +106,4 @@ if __name__ == "__main__":
         sys.exit()
 
     # run the search test
-    run(args.db, args.cache_policy)
+    run_search_test(args.db, args.cache_policy)
