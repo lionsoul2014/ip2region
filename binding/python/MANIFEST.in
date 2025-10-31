@@ -1,3 +1,5 @@
 ﻿include LICENSE
 include ReadMe.md
-recursive-include tests *_test.py *_test.v
+include search_test.py
+include bench_test.py
+recursive-include tests
