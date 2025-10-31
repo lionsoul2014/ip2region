@@ -2,6 +2,11 @@
 
 # 使用方式
 
+### 安装 `ip2region`
+```bash
+pip3 install ip2region
+```
+
 ### 关于查询 API
 查询 API 的原型为：
 ```python 
@@ -69,7 +74,7 @@ except Exception as e:
 # 3、关闭资源
 searcher.close()
 
-# 备注：每个线程需要单独创建一个独立的 Searcher 对象，但是都共享全局的制度 vIndex 缓存。
+# 备注：每个线程需要单独创建一个独立的 Searcher 对象
 ```
 
 ### 缓存 `VectorIndex` 索引
