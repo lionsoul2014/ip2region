@@ -8,7 +8,8 @@
 import os
 import sys
 import time
-from xdb import util
+import xdb.util as util
+import xdb.searcher as xdb
 
 script_dir = os.path.dirname(__file__)
 data_dir = os.path.join(script_dir, '../../data/')
@@ -98,6 +99,50 @@ def test_ip_compare():
         cmp = util.ip_compare(ip1, ip2)
         print("compare({}, {}) -> {} ? {}".format(util.ip_to_string(ip1), util.ip_to_string(ip2), cmp, cmp == ip_pair[2]))
 
+def _get_searcher_list(version: util.Version):
+    db_path  = xdb_v4_path if version.id == util.XdbIPv4Id else xdb_v6_path
+    return [
+        ["new_with_file_only", lambda: xdb.new_with_file_only(version, db_path)],
+        ["new_with_vector_index", lambda: xdb.new_with_vector_index(version, db_path, util.load_vector_index_from_file(db_path))],
+        ["new_with_buffer", lambda: xdb.new_with_buffer(version, util.load_content_from_file(db_path))]
+    ]
+
+def test_ip_search():
+    # ipv4 search test
+    print("---ipv4 search test:")
+    ip_str = "120.229.45.92"
+    s_list = _get_searcher_list(util.IPv4)
+    try:
+        b_region = None
+        for meta in s_list:
+            searcher = meta[1]()
+            region = searcher.search(ip_str)
+            if b_region != None:
+                assert b_region == region, f"region and b_region is not the same"
+            print(f"{meta[0]}.search({ip_str}): {region}")
+
+            # searcher close
+            searcher.close()
+    except Exception as e:
+        print(f"failed to search({ip_str}): {str(e)}")
+
+    # ipv6 search test
+    print("---ipv6 search test:")
+    ip_str = "240e:3b7:3272:d8d0:db09:c067:8d59:539e"
+    s_list = _get_searcher_list(util.IPv6)
+    try:
+        b_region = None
+        for meta in s_list:
+            searcher = meta[1]()
+            region = searcher.search(ip_str)
+            if b_region != None:
+                assert b_region == region, f"region and b_region is not the same"
+            print(f"{meta[0]}.search({ip_str}): {region}")
+
+            # searcher close
+            searcher.close()
+    except Exception as e:
+        print(f"failed to search({ip_str}): {str(e)}")
 
 if __name__ == "__main__":
     # check and call the specified function
