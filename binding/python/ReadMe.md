@@ -13,7 +13,7 @@ search(ip: str | bytes)
 ### 关于 IPv4 和 IPv6
 该 xdb 查询客户端实现同时支持对 IPv4 和 IPv6 的查询，使用方式如下：
 ```python
-import xdb.util as util
+import ip2region.util as util
 
 # 如果是 IPv4: 设置 xdb 路径为 v4 的 xdb 文件，IP版本指定为 util.IPv4
 db_path = "../../data/ip2region_v4.xdb"  # 或者你的 ipv4 xdb 的路径
@@ -30,7 +30,7 @@ version = util.IPv6
 ### 文件验证
 建议您主动去验证 xdb 文件的适用性，因为后期的一些新功能可能会导致目前的 Searcher 版本无法适用你使用的 xdb 文件，验证可以避免运行过程中的一些不可预测的错误。 你不需要每次都去验证，例如在服务启动的时候，或者手动调用命令验证确认版本匹配即可，不要在每次创建的 Searcher 的时候运行验证，这样会影响查询的响应速度，尤其是高并发的使用场景。
 ```python
-import xdb.util as util
+import ip2region.util as util
 
 try:
     util.verify_from_file(db_path)
@@ -47,7 +47,7 @@ except Exception e:
 ### 完全基于文件的查询
 
 ```python
-import xdb.searcher as xdb
+import ip2region.searcher as xdb
 
 # 1，使用上述的 version 和 db_path 创建完全基于文件的查询对象
 try:
@@ -76,8 +76,8 @@ searcher.close()
 
 我们可以提前从 `xdb` 文件中加载出来 `VectorIndex` 数据，然后全局缓存，每次创建 Searcher 对象的时候使用全局的 VectorIndex 缓存可以减少一次固定的 IO 操作，从而加速查询，减少 IO 压力。
 ```python
-import xdb.util as util
-import xdb.searcher as xdb
+import ip2region.util as util
+import ip2region.searcher as xdb
 
 # 1、从 db_path 中预先加载 VectorIndex 缓存，并且把这个得到的数据作为全局变量，后续反复使用。
 try:
@@ -113,8 +113,8 @@ searcher.close()
 
 我们也可以预先加载整个 xdb 文件的数据到内存，然后基于这个数据创建查询对象来实现完全基于内存的查询，类似之前的 memory search。
 ```python
-import xdb.util as util
-import xdb.searcher as xdb
+import ip2region.util as util
+import ip2region.searcher as xdb
 
 # 1、从 db_path 加载整个 xdb 到内存。
 try:

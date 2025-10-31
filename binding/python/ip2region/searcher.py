@@ -6,7 +6,7 @@
 # Author Leon<chenxin619315@gmail.com>
 
 import io
-import xdb.util as util
+import ip2region.util as util
 
 class Searcher(object):
     '''

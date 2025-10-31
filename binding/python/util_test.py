@@ -8,8 +8,8 @@
 import os
 import sys
 import time
-import xdb.util as util
-import xdb.searcher as xdb
+import ip2region.util as util
+import ip2region.searcher as xdb
 
 script_dir = os.path.dirname(__file__)
 data_dir = os.path.join(script_dir, '../../data/')

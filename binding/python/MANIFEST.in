@@ -1,0 +1,3 @@
+﻿include LICENSE
+include ReadMe.md
+recursive-include tests *_test.py *_test.v

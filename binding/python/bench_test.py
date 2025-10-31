@@ -9,8 +9,8 @@ import io
 import sys
 import argparse
 import time
-import xdb.util as util
-import xdb.searcher as xdb
+import ip2region.util as util
+import ip2region.searcher as xdb
 
 def create_searcher(db_path, cache_policy):
     # open the source xdb file
