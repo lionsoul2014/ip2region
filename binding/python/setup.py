@@ -20,4 +20,22 @@ setuptools.setup(
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
     ),
+    keywords=(
+        "ip2region",
+        "ip-address",
+        "ip-region",
+        "ip-location",
+        "ip-lookup",
+        "ip-search",
+        "ipv4-address",
+        "ipv4-region",
+        "ipv4-location",
+        "ipv4-lookup",
+        "ipv4-search",
+        "ipv6-address",
+        "ipv6-region",
+        "ipv6-location",
+        "ipv6-lookup",
+        "ipv6-search"
+    )
 )
