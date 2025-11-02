@@ -96,8 +96,8 @@ def run_bench_test(db_path: str, src_path: str, cache_policy: str):
         return
 
     # print the stats info
-    each_ms = total_secs * 1000 / count
-    print(f"Bench finished, {{cachePolicy: {cache_policy}, total: {count}, took: {total_secs:.3f} s, cost: {each_ms:.3f} ms/op}}");
+    each_us = total_secs * 1000_000 / count
+    print(f"Bench finished, {{cachePolicy: {cache_policy}, total: {count}, took: {total_secs:.3f} s, cost: {each_us:.0f} μs/op}}");
 
     # resource cleanup
     searcher.close()

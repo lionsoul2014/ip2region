@@ -82,8 +82,8 @@ type 'quit' to exit'''.format(db_path, searcher.get_ip_version().name, cache_pol
             print("failed to search({}): {}".format(util.ip_to_string(ip_bytes), str(e)))
             continue
 
-        took = (time.time() - s_time) * 1000
-        print(f"{{region: {region}, ioCount: {searcher.get_io_count()}, took: {took:.3f} ms}}");
+        took = (time.time() - s_time) * 1000_000
+        print(f"{{region: {region}, ioCount: {searcher.get_io_count()}, took: {took:.0f} μs}}");
 
     # close the searcher
     searcher.close()
