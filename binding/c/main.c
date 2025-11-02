@@ -236,7 +236,7 @@ void test_search(int argc, char *argv[]) {
             continue;
         }
 
-        if (strcasecmp( line, "quit") == 0 ) {
+        if (strcmp(line, "quit") == 0 ) {
             break;
         }
 
