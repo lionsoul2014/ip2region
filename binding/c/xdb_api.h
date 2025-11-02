@@ -21,13 +21,16 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #pragma comment(lib, "ws2_32.lib")
-#elif ( defined(linux) || defined(_UNIX) || defined(__APPLE__) )
+#elif (defined(linux) || defined(_UNIX) || defined(__APPLE__) || defined(unix) || defined(__unix) || defined(__unix__) || defined(__linux__) || defined(linux) || defined(__linux))
 #   define XDB_PUBLIC(type)    extern type
 #   define XDB_PRIVATE(type)   static inline type
 #   define XDB_LINUX
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#else
+#   define XDB_PUBLIC(type) type
+#   define XDB_PRIVATE(type) static type
 #endif
 
 #define xdb_calloc( _blocks, _bytes )  calloc( _blocks, _bytes )
