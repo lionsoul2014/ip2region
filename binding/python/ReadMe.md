@@ -2,9 +2,9 @@
 
 # 使用方式
 
-### 安装 `ip2region`
+### 安装 `py-ip2region`
 ```bash
-pip3 install ip2region
+pip3 install py-ip2region
 ```
 
 ### 关于查询 API
