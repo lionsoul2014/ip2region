@@ -8,7 +8,6 @@
 import io
 import os
 import ipaddress
-from collections.abc import Callable
 
 # global constants
 XdbStructure20 = 2
@@ -96,7 +95,7 @@ def ip_sub_compare(ip1: bytes, buff: bytes, offset: int):
 # ip version class and functions
 
 class Version(object):
-    def __init__(self, id: int, name: str, byte_num: int, index_size: int, ip_compare: Callable[[bytes, bytes, int], int]):
+    def __init__(self, id: int, name: str, byte_num: int, index_size: int, ip_compare):
         self.id = id
         self.name = name
         self.byte_num = byte_num
