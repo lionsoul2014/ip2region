@@ -7,8 +7,8 @@
 -- @Date   2022/06/30
 
 -- set the package to load the current xdb_searcher.so
-package.path = "./?.lua" .. package.path
-package.cpath = "./?.so" .. package.cpath
+package.path = "./?.lua;" .. package.path
+package.cpath = "./?.so;" .. package.cpath
 local xdb = require("xdb_searcher")
 
 function printHelp()
@@ -29,31 +29,26 @@ local dbFile, srcFile = "", ""
 local cachePolicy = "vectorIndex"
 for _, r in ipairs(arg) do
     if string.len(r) < 5 then
-        goto continue
-    end
+        -- continue and do nothing here
+    elseif string.sub(r, 1, 2) ~= "--" then
+        -- continue and do nothing here
+    else
+        for k, v in string.gmatch(string.sub(r, 3), "([^=]+)=([^%s]+)") do
+            if k == "db" then
+                dbFile = v
+            elseif k == "src" then
+                srcFile = v
+            elseif k == "cache-policy" then
+                cachePolicy = v
+            else
+                print(string.format("undefined option `%s`", r))
+                return
+            end
 
-    if string.sub(r, 1, 2) ~= "--" then
-        goto continue
-    end
-
-    for k, v in string.gmatch(string.sub(r, 3), "([^=]+)=([^%s]+)") do
-        if k == "db" then
-            dbFile = v
-        elseif k == "src" then
-            srcFile = v
-        elseif k == "cache-policy" then
-            cachePolicy = v
-        else
-            print(string.format("undefined option `%s`", r))
-            return
+            -- break the match iterate
+            break
         end
-
-        -- break the match iterate
-        break
     end
-
-    -- continue this loop
-    ::continue::
 end
 
 -- print(string.format("dbFile=%s, srcFile=%s, cachePolicy=%s", dbFile, srcFile, cachePolicy))
@@ -126,59 +121,58 @@ if handle == nil then
 end
 
 local lines = handle:lines()
-local sip_str, eip_str, s_region, region = "", "", "", ""
-local sip, mip, eip, err = 0, 0, 0, 0
+local sip_str, eip_str, s_region, region, err = "", "", "", "", 0
 local count, t_time, c_time = 0, 0, 0
 local s_time = xdb.now()
 for l in lines do
     if string.len(l) < 1 then
-        goto continue
-    end
+        -- continue and do nothing here
+    else
+        for v1, v2, v3 in string.gmatch(l, "([^|]+)|([^|]+)|([^\n]+)") do
+            -- print(sip_str, eip_str, region)
+            sip_str = v1
+            eip_str = v2
+            s_region = v3
+            break
+        end
 
-    for v1, v2, v3 in string.gmatch(l, "([^|]+)|([^|]+)|([^\n]+)") do
-        -- print(sip_str, eip_str, region)
-        sip_str = v1
-        eip_str = v2
-        s_region = v3
-        break
-    end
-
-    sip_bytes, err = xdb.parse_ip(sip_str)
-    if err ~= nil then
-        print(string.format("invalid start ip `%s`", sip_str))
-        return
-    end
-
-    eip_bytes, err = xdb.parse_ip(eip_str)
-    if err ~= nil then
-        print(string.format("invalid end ip `%s`", sip_str))
-        return
-    end
-
-    if xdb.ip_compare(sip_bytes, eip_bytes) > 0 then
-        print(string.format("start ip(%s) should not be greater than end ip(%s)\n", sip_str, eip_str))
-        return
-    end
-
-    for _, ip_bytes in ipairs({sip_bytes, eip_bytes}) do
         t_time = xdb.now()
-        region, err = searcher:search(ip_bytes)
-        c_time = c_time + xdb.now() - t_time
+        sip_bytes, err = xdb.parse_ip(sip_str)
         if err ~= nil then
-            print(string.format("failed to search ip `%s`", xdb.ip_to_string(ip_bytes)))
+            print(string.format("invalid start ip `%s`", sip_str))
             return
         end
 
-        -- check the region
-        if region ~= s_region then
-            print(string.format("failed search(%s) with (%s != %s)\n", xdb.ip_to_string(ip_bytes), region, s_region))
+        eip_bytes, err = xdb.parse_ip(eip_str)
+        if err ~= nil then
+            print(string.format("invalid end ip `%s`", sip_str))
             return
         end
 
-        count = count + 1
+        if xdb.ip_compare(sip_bytes, eip_bytes) > 0 then
+            print(string.format("start ip(%s) should not be greater than end ip(%s)\n", sip_str, eip_str))
+            return
+        end
+
+        for _, ip_bytes in ipairs({sip_bytes, eip_bytes}) do
+            region, err = searcher:search(ip_bytes)
+            if err ~= nil then
+                print(string.format("failed to search ip `%s`", xdb.ip_to_string(ip_bytes)))
+                return
+            end
+
+            -- check the region
+            if region ~= s_region then
+                print(string.format("failed search(%s) with (%s != %s)\n", xdb.ip_to_string(ip_bytes), region, s_region))
+                return
+            end
+
+            count = count + 1
+        end
+
+        -- increase the time costs
+        c_time = c_time + xdb.now() - t_time
     end
-
-    ::continue::
 end
 
 -- resource cleanup
@@ -190,7 +184,7 @@ if content ~= nil then
     content:close()
 end
 
-xdb.cleanup();
+xdb.cleanup()
 
 -- print the stats
 local avg_costs = 0

@@ -7,8 +7,8 @@
 -- @Date   2022/06/30
 
 -- set the package to load the current xdb_searcher.so
-package.path = "./?.lua" .. package.path
-package.cpath = "./?.so" .. package.cpath
+package.path = "./?.lua;" .. package.path
+package.cpath = "./?.so;" .. package.cpath
 local xdb = require("xdb_searcher")
 
 function printHelp()
@@ -28,29 +28,24 @@ local dbFile = ""
 local cachePolicy = "vectorIndex"
 for _, r in ipairs(arg) do
     if string.len(r) < 5 then
-        goto continue
-    end
+        -- continue and do nothing here
+    elseif string.sub(r, 1, 2) ~= "--" then
+        -- continue and do nothing here
+    else
+        for k, v in string.gmatch(string.sub(r, 3), "([^=]+)=([^%s]+)") do
+            if k == "db" then
+                dbFile = v
+            elseif k == "cache-policy" then
+                cachePolicy = v
+            else
+                print(string.format("undefined option `%s`", r))
+                return
+            end
 
-    if string.sub(r, 1, 2) ~= "--" then
-        goto continue
-    end
-
-    for k, v in string.gmatch(string.sub(r, 3), "([^=]+)=([^%s]+)") do
-        if k == "db" then
-            dbFile = v
-        elseif k == "cache-policy" then
-            cachePolicy = v
-        else
-            print(string.format("undefined option `%s`", r))
-            return
+            -- break the match iterate
+            break
         end
-
-        -- break the match iterate
-        break
     end
-
-    -- continue this loop
-    ::continue::
 end
 
 -- print(string.format("dbFile=%s, cachePolicy=%s", dbFile, cachePolicy))
@@ -121,7 +116,7 @@ ip2region xdb searcher test program
 source xdb: %s (%s, %s)
 type 'quit' to exit]], dbFile, xdb.version_info(version).name, cachePolicy))
 local region, err = "", nil
-local ip_int, s_time, c_time =  0, 0, 0
+local s_time, c_time =  0, 0
 while ( true ) do
     io.write("ip2region>> ");
     io.input(io.stdin);
@@ -137,27 +132,24 @@ while ( true ) do
     -- empty string ignore
     line = line:gsub("^%s*(.-)%s*$", "%1")
     if string.len(line) < 1 then
-        goto continue
-    end
-
-    ip_bytes, err = xdb.parse_ip(line)
-    -- print(string.format("parse(%s): %s, err: %s", line, xdb.ip_to_string(ip_bytes), err))
-    if err ~= nil then
-        print(string.format("invalid ip address `%s`", line))
-        goto continue
-    end
-
-    -- do the search
-    s_time = xdb.now()
-    region, err = searcher:search(ip_bytes)
-    c_time = xdb.now() - s_time
-    if err ~= nil then
-        print(string.format("{err: %s, io_count: %d}", err, searcher:get_io_count()))
+        -- continue and do nothing here
     else
-        print(string.format("{region: %s, io_count: %d, took: %dμs}", region, searcher:get_io_count(), c_time))
+        s_time = xdb.now()
+        ip_bytes, err = xdb.parse_ip(line)
+        -- print(string.format("parse(%s): %s, err: %s", line, xdb.ip_to_string(ip_bytes), err))
+        if err ~= nil then
+            print(string.format("invalid ip address `%s`", line))
+        else
+            -- do the search
+            region, err = searcher:search(ip_bytes)
+            c_time = xdb.now() - s_time
+            if err ~= nil then
+                print(string.format("{err: %s, io_count: %d}", err, searcher:get_io_count()))
+            else
+                print(string.format("{region: %s, io_count: %d, took: %dμs}", region, searcher:get_io_count(), c_time))
+            end
+        end
     end
-
-    ::continue::
 end
 
 -- resource cleanup

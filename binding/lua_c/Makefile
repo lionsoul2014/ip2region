@@ -1,4 +1,4 @@
-LuaVersion = 5.4
+LuaVersion ?= 5.4
 LIB_DIR = /usr/local/share/lua/$(LuaVersion)
 
 all: ../c/xdb_api.h ../c/xdb_util.c ../c/xdb_searcher.c xdb_searcher.c

@@ -7,8 +7,8 @@
 -- @Date   2022/06/30
 
 -- set the package to load the current xdb_searcher.so
-package.path = "./?.lua" .. package.path
-package.cpath = "./?.so" .. package.cpath
+package.path = "./?.lua;" .. package.path
+package.cpath = "./?.so;" .. package.cpath
 local xdb = require("xdb_searcher")
 
 ---- ip checking testing
@@ -25,7 +25,7 @@ function test_parse_ip()
             print(string.format("invalid ip address `%s`: %s", ip_src, err))
         else
             local ip_string = xdb.ip_to_string(ip_bytes);
-            print(string.format("parse_ip(%s)->%s ? %s", ip_src, ip_string, ip_src==ip_string))
+            print(string.format("parse_ip(%s)->%s ? %s", ip_src, ip_string, tostring(ip_src==ip_string)))
         end
     end
 end
@@ -44,7 +44,7 @@ function test_load_header()
     if err ~= nil then
         print("failed to load header: ", err)
     else
-        print(string.format("xdb header buffer `%s` loaded", header))
+        print(string.format("xdb header buffer `%s` loaded", tostring(header)))
 
         local tpl = [[
     header: {
@@ -79,7 +79,7 @@ function test_load_vector_index()
         print("failed to load vector index: ", err)
     else
         print(string.format("xdb vector index buffer `%s` loaded, info={name=%s, type=%d, length=%d}",
-                v_index, v_index:name(), v_index:type(), v_index:length()))
+                tostring(v_index), v_index:name(), v_index:type(), v_index:length()))
         v_index:close()
     end
 end
@@ -91,7 +91,7 @@ function test_load_content()
         print("failed to load content: ", err)
     else
         print(string.format("xdb content buffer `%s` loaded, info={name=%s, type=%d, length=%d}",
-                c_buffer, c_buffer:name(), c_buffer:type(), c_buffer:length()))
+                tostring(c_buffer), c_buffer:name(), c_buffer:type(), c_buffer:length()))
         c_buffer:close();
     end
 end
@@ -101,23 +101,23 @@ function test_search()
     -- ipv4
     local ip_str = "1.2.3.4"
     searcher, err = xdb.new_with_file_only(xdb.IPv4, "../../data/ip2region_v4.xdb")
-    print(string.format("searcher.tostring=%s", searcher))
+    print(string.format("searcher.tostring=%s", tostring(searcher)))
     local t_start = xdb.now()
     region, err = searcher:search(ip_str)
     local c_time = xdb.now() - t_start
     print(string.format("search(%s): {region=%s, io_count: %d, took: %dμs, err=%s}",
-            ip_str, region, searcher:get_io_count(), c_time, err))
+            ip_str, region, searcher:get_io_count(), c_time, tostring(err)))
     searcher:close()
 
     -- IPv6
     ip_str = "240e:3b7:3276:33b0:958f:f34c:d04f:f6a"
     searcher, err = xdb.new_with_file_only(xdb.IPv6, "../../data/ip2region_v6.xdb")
-    print(string.format("searcher.tostring=%s", searcher))
+    print(string.format("searcher.tostring=%s", tostring(searcher)))
     t_start = xdb.now()
     region, err = searcher:search(ip_str)
     c_time = xdb.now() - t_start
     print(string.format("search(%s): {region=%s, io_count: %d, took: %dμs, err=%s}",
-            ip_str, region, searcher:get_io_count(), c_time, err))
+            ip_str, region, searcher:get_io_count(), c_time, tostring(err)))
     searcher:close()
 end
 
@@ -134,7 +134,7 @@ end
 
 local s_time = xdb.now();
 print(string.format("+---calling test function %s ...", func_name))
-_G[func_name]();
+_G[func_name]()
 local cost_time = xdb.now() - s_time
 xdb.cleanup();
 print(string.format("|---done, took: %.3fμs", cost_time))

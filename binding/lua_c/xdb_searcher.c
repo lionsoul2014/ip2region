@@ -735,14 +735,27 @@ int luaopen_xdb_searcher(lua_State *L)
     luaL_newmetatable(L, XDB_BUFFER_METATABLE_NAME);
     lua_pushvalue(L, -1);
     lua_setfield(L, -2, "__index");
+#if defined(LUA_VERSION_NUM) && LUA_VERSION_NUM == 501
+    // lua 5.1
+    luaL_register(L, NULL, xdb_buffer_methods);
+#elif defined(LUA_VERSION_NUM) && LUA_VERSION_NUM >= 502
+    // lua version 5.2, 5.3, 5.4 ...
     luaL_setfuncs(L, xdb_buffer_methods, 0);
+#endif
 
     // create a metatable for xdb searcher object
     luaL_newmetatable(L, XDB_METATABLE_NAME);
     lua_pushvalue(L, -1);
     lua_setfield(L, -2, "__index");
+#if defined(LUA_VERSION_NUM) && LUA_VERSION_NUM == 501
+    // lua 5.1
+    luaL_register(L, NULL, xdb_searcher_methods);
+    luaL_register(L, NULL, xdb_searcher_functions);
+#elif defined(LUA_VERSION_NUM) && LUA_VERSION_NUM >= 502
+    // lua version 5.2, 5.3, 5.4 ...
     luaL_setfuncs(L, xdb_searcher_methods, 0);
     luaL_setfuncs(L, xdb_searcher_functions, 0);
+#endif
 
     // register the constants attributes
     lua_pushinteger(L, xdb_ipv4_id);

@@ -1,15 +1,26 @@
 # ip2region xdb lua c 扩展查询客户端实现
 
+# 版本兼容
+该实现兼容 lua `5.1`，`5.2`，`5.3`, `5.4`
+
 # 编译安装
 
-通过如下方式来编译安装该扩展：
+### 默认编译
+通过如下方式来编译安装默认的 `Lua5.4` 版本的扩展：
 ```bash
 # cd 到 lua_c binding 的根目录
 make
 sudo make install
 ```
 
-备注：Makefile 里面的 `LuaVersion` 变量代表你本地环境的 lua 的版本，默认为 5.4，如果你的版本不是 5.4，记得先修改为和你本地 lua 版本一致的版本号。
+### 指定 Lua 版本
+通过如下的 `LuaVersion` 参数指定 Lua 版本编译，例如：`5.1` / `5.2` / `5.3` / `5.4`
+```bash
+# cd 到 lua_c binding 的根目录
+# 例如，编译 5.1 版本兼容的扩展
+make LuaVersion=5.1
+sudo make install
+```
 
 
 # 使用方式
