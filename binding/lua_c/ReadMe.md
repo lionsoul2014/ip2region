@@ -22,6 +22,16 @@ make LuaVersion=5.1
 sudo make install
 ```
 
+备注：使用了指定的版本的 lua 编译的扩展就请使用相同版本的`lua`去运行以下的测试，例如：
+```bash
+# 使用 lua 5.1 编译扩展
+make LuaVersion=5.1
+
+# 使用 lua5.1 运行查询测试
+lua5.1 search_test.py --db=../../data/ip2region_v4.xdb
+```
+
+
 
 # 使用方式
 
