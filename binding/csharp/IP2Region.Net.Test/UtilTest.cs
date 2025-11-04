@@ -1,11 +1,11 @@
-using IP2Region.Net.XDB;
+using Xunit;
 
 namespace IP2Region.Net.Test;
 
-[TestFixture]
 public class UtilTest
 {
-    [TestCase("114.114.114.114")]
+    [Theory]
+    [InlineData("114.114.114.114")]
     public void TestIpAddressToUInt32(string value)
     {
         var uintIp = XDB.Util.IpAddressToUInt32(value);
