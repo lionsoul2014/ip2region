@@ -126,7 +126,7 @@ import ip2region.searcher as xdb
 
 # 1、从 db_path 加载整个 xdb 到内存。
 try:
-    c_buffer = xdb.load_content_from_file(db_path)
+    c_buffer = util.load_content_from_file(db_path)
 except Exception as e:
     print(f"failed to load content from {db_path}: {str(e)}")
     return
