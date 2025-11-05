@@ -1,5 +1,8 @@
 # ip2region xdb python 查询客户端实现
 
+# 版本兼容
+该实现兼容 Python `>=` **`3.7`**
+
 # 使用方式
 
 ### 安装 `py-ip2region`

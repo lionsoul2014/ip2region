@@ -2,7 +2,7 @@
 
 setuptools.setup(
     name="py-ip2region",
-    version="3.0.1",
+    version="3.0.2",
     description="ip2region official python binding with both IPv4 and IPv6 supported",
     long_description=open("ReadMe.md", encoding='utf-8').read(),
     long_description_content_type='text/markdown',

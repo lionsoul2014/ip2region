@@ -7,6 +7,7 @@
 
 import io
 import ip2region.util as util
+from typing import Union
 
 class Searcher(object):
     '''
@@ -33,7 +34,7 @@ class Searcher(object):
     def get_io_count(self):
         return self.__io_count
 
-    def search(self, ip: bytes | str):
+    def search(self, ip: Union[bytes, str]):
         # check and parse the string ip
         ip_bytes = None
         if isinstance(ip, str):

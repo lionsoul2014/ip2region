@@ -8,7 +8,7 @@
 import io
 import os
 import ipaddress
-from collections.abc import Callable
+from typing import Callable
 
 # global constants
 XdbStructure20 = 2
