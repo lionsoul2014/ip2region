@@ -281,9 +281,9 @@ xdb_region_buffer_free(&region);
 通过如下方式编译得到 xdb_searcher 可执行程序：
 ```bash
 # cd 到 c binding 根目录
-➜  c git:(fr_c_ipv6) ✗ make
-gcc -O2 -I./ xdb_util.c xdb_searcher.c main.c -o xdb_searcher
-gcc -O2 -I./ xdb_util.c test_util.c -o test_util
+➜  c git:(master) ✗ make
+gcc -std=c99 -Wall -O2 -I./ xdb_util.c xdb_searcher.c main.c -o xdb_searcher
+gcc -std=c99 -Wall -O2 -I./ xdb_util.c test_util.c -o test_util
 ```
 
 
@@ -328,7 +328,7 @@ ip2region>> 240e:3b7:3272:d8d0:db09:c067:8d59:539e
 
 # bench 测试
 
-通过 `xdb_searcher bench` 命令来进行 bench 测试，一方面确保查询程序和 `xdb` 文件没有错误，另一方面可以通过大量的查询得到评价的查询性能：
+通过 `xdb_searcher bench` 命令来进行 bench 测试，一方面确保查询程序和 `xdb` 文件没有错误，另一方面可以通过大量的查询得到平均的查询性能：
 ```bash
 ➜  c git:(fr_c_ipv6) ✗ ./xdb_searcher bench                                  
 ./xdb_searcher bench [command options]
