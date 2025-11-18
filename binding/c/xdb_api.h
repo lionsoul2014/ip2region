@@ -159,7 +159,7 @@ XDB_PUBLIC(xdb_version_t *) xdb_version_from_header(xdb_header_t *);
 
 // --- xdb util functions
 
-// to compatiable with the windows
+// to compatible with the windows
 // returns: 0 for ok and -1 for failed
 XDB_PUBLIC(int) xdb_init_winsock();
 XDB_PUBLIC(void) xdb_clean_winsock();
