@@ -1,6 +1,6 @@
 ﻿namespace IP2Region.Net.XDB;
 
-public record struct XdbVersion
+public struct XdbVersion
 {
     /// <summary>
     /// 获得/设置 版本号

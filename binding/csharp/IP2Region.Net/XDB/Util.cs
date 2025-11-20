@@ -1,3 +1,5 @@
+using System.Buffers;
+using System.Buffers.Binary;
 using System.Net;
 using System.Runtime.InteropServices;
 
@@ -10,7 +12,7 @@ public static class Util
         var address = IPAddress.Parse(ipAddress);
         return IpAddressToUInt32(address);
     }
-    
+
     public static uint IpAddressToUInt32(IPAddress ipAddress)
     {
         byte[] bytes = ipAddress.GetAddressBytes();
@@ -20,4 +22,55 @@ public static class Util
 
     public static uint GetMidIp(uint x, uint y)
         => (x & y) + ((x ^ y) >> 1);
+
+    public static async Task<XdbVersion> GetVersionAsync(string dbPath, CancellationToken token = default)
+    {
+        if (string.IsNullOrEmpty(dbPath))
+        {
+            throw new ArgumentNullException(nameof(dbPath));
+        }
+
+        if (!File.Exists(dbPath))
+        {
+            throw new FileNotFoundException("xdb file not fould.", dbPath);
+        }
+
+        XdbVersion ret = default;
+        using var reader = File.OpenRead(dbPath);
+        var buffer = ArrayPool<byte>.Shared.Rent(256);
+
+        try
+        {
+            var length = await reader.ReadAsync(buffer, 0, 256, token);
+            if (length == 256)
+            {
+                ret = Parse(buffer);
+            }
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(buffer);
+        }
+
+        return ret;
+    }
+
+    private static XdbVersion Parse(ReadOnlySpan<byte> buffer)
+    {
+        var ret = new XdbVersion
+        {
+            Ver = BinaryPrimitives.ReadUInt16LittleEndian(buffer.Slice(0, 2)),
+            CachePolice = BinaryPrimitives.ReadUInt16LittleEndian(buffer.Slice(2, 2)),
+            StartIndex = BinaryPrimitives.ReadUInt32LittleEndian(buffer.Slice(8, 4)),
+            EndIndex = BinaryPrimitives.ReadUInt32LittleEndian(buffer.Slice(12, 4)),
+            IPVer = BinaryPrimitives.ReadUInt16LittleEndian(buffer.Slice(16, 2)),
+            BytesCount = BinaryPrimitives.ReadUInt16LittleEndian(buffer.Slice(18, 2))
+        };
+
+        var createdAt = BinaryPrimitives.ReadUInt32LittleEndian(buffer.Slice(4, 4));
+        var dtm = new DateTimeOffset(1970, 1, 1, 0, 0, 0, TimeSpan.FromHours(8));
+        ret.CreatedTime = dtm.AddSeconds(createdAt);
+
+        return ret;
+    }
 }
