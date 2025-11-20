@@ -9,7 +9,6 @@ using IP2Region.Net.Internal;
 using IP2Region.Net.Internal.Abstractions;
 using System.Buffers.Binary;
 using System.Net;
-using System.Runtime.InteropServices;
 using System.Text;
 
 namespace IP2Region.Net.XDB;
@@ -17,6 +16,7 @@ namespace IP2Region.Net.XDB;
 public class Searcher : ISearcher
 {
     private readonly AbstractCacheStrategy _cacheStrategy;
+
     public int IoCount => _cacheStrategy.IoCount;
 
     public Searcher(CachePolicy cachePolicy, string dbPath)
@@ -27,56 +27,108 @@ public class Searcher : ISearcher
 
     public string? Search(string ipStr)
     {
-        var ip = Util.IpAddressToUInt32(ipStr);
-        return Search(ip);
+        var ipAddress = IPAddress.Parse(ipStr);
+        return Search(ipAddress);
     }
 
     public string? Search(IPAddress ipAddress)
     {
-        var ip = Util.IpAddressToUInt32(ipAddress);
-        return Search(ip);
+        return SearchCore(ipAddress.GetAddressBytes());
     }
 
-    public string? Search(uint ip)
+    public string? Search(uint ipAddress)
     {
-        var version = new Version() { Length = 4, IndexSize = 14 };
-        var index = _cacheStrategy.GetVectorIndex(ip);
-        uint sPtr = MemoryMarshal.Read<uint>(index.Span);
-        uint ePtr = MemoryMarshal.Read<uint>(index.Span.Slice(4));
+        var bytes = BitConverter.GetBytes(ipAddress);
+        bytes.Reverse();
+        return SearchCore(bytes);
+    }
 
-        uint dataLen = 0;
-        uint dataPtr = 0;
-        uint l = 0;
-        uint h = (ePtr - sPtr) / (uint)version.IndexSize;
+    string? SearchCore(byte[] ipBytes)
+    {
+        // 每个 vector 索引项的字节数
+        var vectorIndexSize = 8;
 
-        while (l <= h)
+        // vector 索引的列数
+        var vectorIndexCols = 256;
+
+        // 计算得到 vector 索引项的开始地址。
+        var il0 = ipBytes[0];
+        var il1 = ipBytes[1];
+        var idx = il0 * vectorIndexCols * vectorIndexSize + il1 * vectorIndexSize;
+
+        var data = _cacheStrategy.GetData(256 + idx, vectorIndexSize);
+        var sPtr = BinaryPrimitives.ReadUInt32LittleEndian(data.Span);
+        var ePtr = BinaryPrimitives.ReadUInt32LittleEndian(data.Span[4..]);
+
+        var length = ipBytes.Length;
+        var indexSize = length * 2 + 6;
+        var l = 0;
+        var h = (ePtr - sPtr) / indexSize;
+        var dataLen = 0;
+        long dataPtr = 0;
+
+        while (l < h)
         {
-            var mid = Util.GetMidIp(l, h);
-            var pos = sPtr + mid * version.IndexSize;
-            var buffer = _cacheStrategy.GetData((int)pos, version.IndexSize);
+            int m = (int)(l + h) >> 1;
 
-            if (ip < version.GetVectorIndexStartPos(buffer))
+            var p = (int)sPtr + m * indexSize;
+            var buff = _cacheStrategy.GetData(p, indexSize);
+
+            var s = buff.Span[..length];
+            var e = buff.Span.Slice(length, length);
+            if (ByteCompare(ipBytes, s) == -1)
             {
-                h = mid - 1;
+                h = m - 1;
             }
-            else if (ip > version.GetVectorIndexEndPos(buffer))
+            else if (ByteCompare(ipBytes, e) == 1)
             {
-                l = mid + 1;
+                l = m + 1;
             }
             else
             {
-                dataLen = BinaryPrimitives.ReadUInt16LittleEndian(buffer.Span.Slice(8));
-                dataPtr = BinaryPrimitives.ReadUInt32LittleEndian(buffer.Span.Slice(10));
+                dataLen = BinaryPrimitives.ReadUInt16LittleEndian(buff.Span.Slice(length * 2, 2));
+                dataPtr = BinaryPrimitives.ReadUInt32LittleEndian(buff.Span[(length * 2 + 2)..]);
                 break;
             }
         }
 
-        if (dataLen == 0)
-        {
-            return default;
-        }
+        var regionBuff = _cacheStrategy.GetData((int)dataPtr, dataLen);
+        return Encoding.UTF8.GetString(regionBuff.Span);
+    }
 
-        var regionBuff = _cacheStrategy.GetData((int)dataPtr, (int)dataLen);
-        return Encoding.UTF8.GetString(regionBuff.Span.ToArray());
+    static int ByteCompare(byte[] ip1, ReadOnlySpan<byte> ip2) => ip1.Length == 4 ? IPv4Compare(ip1, ip2) : IPv6Compare(ip1, ip2);
+
+    static int IPv4Compare(byte[] ip1, ReadOnlySpan<byte> ip2)
+    {
+        var ret = 0;
+        for (int i = 0; i < ip1.Length; i++)
+        {
+            if (ip1[i] < ip2[ip1.Length - 1 - i])
+            {
+                return -1;
+            }
+            else if (ip1[i] > ip2[ip1.Length - 1 - i])
+            {
+                return 1;
+            }
+        }
+        return ret;
+    }
+
+    static int IPv6Compare(byte[] ip1, ReadOnlySpan<byte> ip2)
+    {
+        var ret = 0;
+        for (int i = 0; i < ip1.Length; i++)
+        {
+            if (ip1[i] < ip2[i])
+            {
+                return -1;
+            }
+            else if (ip1[i] > ip2[i])
+            {
+                return 1;
+            }
+        }
+        return ret;
     }
 }
