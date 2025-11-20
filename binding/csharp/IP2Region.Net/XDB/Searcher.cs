@@ -58,7 +58,7 @@ public class Searcher : ISearcher
 
         var data = _cacheStrategy.GetData(256 + idx, vectorIndexSize);
         var sPtr = BinaryPrimitives.ReadUInt32LittleEndian(data.Span);
-        var ePtr = BinaryPrimitives.ReadUInt32LittleEndian(data.Span[4..]);
+        var ePtr = BinaryPrimitives.ReadUInt32LittleEndian(data.Span.Slice(4));
 
         var length = ipBytes.Length;
         var indexSize = length * 2 + 6;
@@ -74,7 +74,7 @@ public class Searcher : ISearcher
             var p = (int)sPtr + m * indexSize;
             var buff = _cacheStrategy.GetData(p, indexSize);
 
-            var s = buff.Span[..length];
+            var s = buff.Span.Slice(0, length);
             var e = buff.Span.Slice(length, length);
             if (ByteCompare(ipBytes, s) == -1)
             {
@@ -87,13 +87,13 @@ public class Searcher : ISearcher
             else
             {
                 dataLen = BinaryPrimitives.ReadUInt16LittleEndian(buff.Span.Slice(length * 2, 2));
-                dataPtr = BinaryPrimitives.ReadUInt32LittleEndian(buff.Span[(length * 2 + 2)..]);
+                dataPtr = BinaryPrimitives.ReadUInt32LittleEndian(buff.Span.Slice(length * 2 + 2));
                 break;
             }
         }
 
         var regionBuff = _cacheStrategy.GetData((int)dataPtr, dataLen);
-        return Encoding.UTF8.GetString(regionBuff.Span);
+        return Encoding.UTF8.GetString(regionBuff.Span.ToArray());
     }
 
     static int ByteCompare(byte[] ip1, ReadOnlySpan<byte> ip2) => ip1.Length == 4 ? IPv4Compare(ip1, ip2) : IPv6Compare(ip1, ip2);
