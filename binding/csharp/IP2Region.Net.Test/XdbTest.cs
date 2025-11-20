@@ -32,4 +32,11 @@ public class XdbTest
         Assert.Equal(6, version.IPVer);
         Assert.Equal(4, version.BytesCount);
     }
+
+    [Fact]
+    public async Task GetVersionAsync_Error()
+    {
+        await Assert.ThrowsAsync<ArgumentNullException>(async () => await XDB.Util.GetVersionAsync(null));
+        await Assert.ThrowsAsync<FileNotFoundException>(async () => await XDB.Util.GetVersionAsync(Path.Combine(AppContext.BaseDirectory, "test.xdb")));
+    }
 }
