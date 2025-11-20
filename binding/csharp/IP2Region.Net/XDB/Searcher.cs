@@ -67,7 +67,7 @@ public class Searcher : ISearcher
         var dataLen = 0;
         long dataPtr = 0;
 
-        while (l < h)
+        while (l <= h)
         {
             int m = (int)(l + h) >> 1;
 
@@ -76,18 +76,18 @@ public class Searcher : ISearcher
 
             var s = buff.Span.Slice(0, length);
             var e = buff.Span.Slice(length, length);
-            if (ByteCompare(ipBytes, s) == -1)
+            if (ByteCompare(ipBytes, s) < 0)
             {
                 h = m - 1;
             }
-            else if (ByteCompare(ipBytes, e) == 1)
+            else if (ByteCompare(ipBytes, e) > 0)
             {
                 l = m + 1;
             }
             else
             {
                 dataLen = BinaryPrimitives.ReadUInt16LittleEndian(buff.Span.Slice(length * 2, 2));
-                dataPtr = BinaryPrimitives.ReadUInt32LittleEndian(buff.Span.Slice(length * 2 + 2));
+                dataPtr = BinaryPrimitives.ReadUInt32LittleEndian(buff.Span.Slice(length * 2 + 2, 4));
                 break;
             }
         }
