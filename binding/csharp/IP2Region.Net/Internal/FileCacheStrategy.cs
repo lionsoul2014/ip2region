@@ -8,15 +8,6 @@ using IP2Region.Net.Internal.Abstractions;
 
 namespace IP2Region.Net.Internal;
 
-internal class FileCacheStrategy : AbstractCacheStrategy
+internal class FileCacheStrategy(string xdbPath) : AbstractCacheStrategy(xdbPath)
 {
-    public FileCacheStrategy(string xdbPath) : base(xdbPath)
-    {
-    }
-
-    internal override ReadOnlyMemory<byte> GetVectorIndex(uint ip)
-    {
-        var idx = GetVectorIndexStartPos(ip);
-        return GetData(HeaderInfoLength + idx, VectorIndexSize);
-    }
 }

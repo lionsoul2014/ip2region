@@ -26,16 +26,6 @@ internal abstract class AbstractCacheStrategy
             useAsync: true);
     }
 
-    protected int GetVectorIndexStartPos(uint ip)
-    {
-        var il0 = ip >> 24 & 0xFF;
-        var il1 = ip >> 16 & 0xFF;
-        var idx = il0 * VectorIndexCols * VectorIndexSize + il1 * VectorIndexSize;
-        return (int)idx;
-    }
-
-    internal abstract ReadOnlyMemory<byte> GetVectorIndex(uint ip);
-
     internal virtual ReadOnlyMemory<byte> GetData(int offset, int length)
     {
         byte[] buffer = ArrayPool<byte>.Shared.Rent(length);
@@ -45,14 +35,14 @@ internal abstract class AbstractCacheStrategy
             XdbFileStream.Seek(offset, SeekOrigin.Begin);
 
             int bytesRead;
-            do
+            while (totalBytesRead < length)
             {
                 int bytesToRead = Math.Min(BufferSize, length - totalBytesRead);
                 bytesRead = XdbFileStream.Read(buffer, totalBytesRead, bytesToRead);
                 totalBytesRead += bytesRead;
-            
+
                 IoCount++;
-            } while (bytesRead > 0 && totalBytesRead < length);
+            }
         }
         finally
         {

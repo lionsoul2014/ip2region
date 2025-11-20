@@ -17,10 +17,4 @@ internal class VectorIndexCacheStrategy : AbstractCacheStrategy
         var vectorLength = VectorIndexRows * VectorIndexCols * VectorIndexSize;
         _vectorIndex = base.GetData(HeaderInfoLength, vectorLength);
     }
-
-    internal override ReadOnlyMemory<byte> GetVectorIndex(uint ip)
-    {
-        var idx = GetVectorIndexStartPos(ip);
-        return _vectorIndex.Slice(idx, VectorIndexSize);
-    }
 }

@@ -19,12 +19,6 @@ internal class ContentCacheStrategy : AbstractCacheStrategy
         XdbFileStream.Dispose();
     }
 
-    internal override ReadOnlyMemory<byte> GetVectorIndex(uint ip)
-    {
-        int idx = GetVectorIndexStartPos(ip);
-        return _cacheData.Slice(HeaderInfoLength + idx, VectorIndexSize);
-    }
-
     internal override ReadOnlyMemory<byte> GetData(int offset, int length)
     {
         return _cacheData.Slice(offset, length);
