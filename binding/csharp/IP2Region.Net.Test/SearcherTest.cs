@@ -99,29 +99,29 @@ public class SearcherTest
         Assert.Equal(expected, region);
     }
 
-    //[Theory]
-    //[InlineData(CachePolicy.Content, "v4")]
-    //[InlineData(CachePolicy.VectorIndex, "v4")]
-    //[InlineData(CachePolicy.File, "v4")]
-    //[InlineData(CachePolicy.Content, "v6")]
-    //[InlineData(CachePolicy.VectorIndex, "v6")]
-    //[InlineData(CachePolicy.File, "v6")]
-    //public void TestBenchSearch(CachePolicy cachePolicy, string version)
-    //{
-    //    var _xdbPath = version == "v4" ? _xdbPathV4 : _xdbPathV6;
-    //    var searcher = new Searcher(cachePolicy, _xdbPath);
-    //    var srcPath = Path.Combine(AppContext.BaseDirectory, "TestData", $"ip{version}_source.txt");
+    [Theory]
+    [InlineData(CachePolicy.Content, "v4")]
+    [InlineData(CachePolicy.VectorIndex, "v4")]
+    [InlineData(CachePolicy.File, "v4")]
+    [InlineData(CachePolicy.Content, "v6")]
+    [InlineData(CachePolicy.VectorIndex, "v6")]
+    [InlineData(CachePolicy.File, "v6")]
+    public void TestBenchSearch(CachePolicy cachePolicy, string version)
+    {
+        var _xdbPath = version == "v4" ? _xdbPathV4 : _xdbPathV6;
+        var searcher = new Searcher(cachePolicy, _xdbPath);
+        var srcPath = Path.Combine(AppContext.BaseDirectory, "TestData", $"ip{version}_source.txt");
 
-    //    foreach (var line in File.ReadLines(srcPath))
-    //    {
-    //        var ps = line.Trim().Split("|", 3);
-    //        var sip = ps[0];
-    //        var eip = ps[1];
+        foreach (var line in File.ReadLines(srcPath))
+        {
+            var ps = line.Trim().Split("|", 3);
+            var sip = ps[0];
+            var eip = ps[1];
 
-    //        var s1 = searcher.Search(sip);
-    //        var s2 = searcher.Search(eip);
-    //        Assert.Equal(s1, ps[2]);
-    //        Assert.Equal(s2, ps[2]);
-    //    }
-    //}
+            var s1 = searcher.Search(sip);
+            var s2 = searcher.Search(eip);
+            Assert.Equal(s1, ps[2]);
+            Assert.Equal(s2, ps[2]);
+        }
+    }
 }
