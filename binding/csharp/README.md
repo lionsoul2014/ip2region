@@ -45,18 +45,14 @@ provider.GetRequiredKeyedService<ISearcher>("IP2Region.Net");
 
 ## Performance
 
-``` ini
-BenchmarkDotNet=v0.13.2, OS=macOS 13.4.1 (c) (22F770820d) [Darwin 22.5.0]
-Apple M1, 1 CPU, 8 logical and 8 physical cores
-.NET SDK=7.0.306
-  [Host]     : .NET 6.0.20 (6.0.2023.32017), Arm64 RyuJIT AdvSIMD
-  DefaultJob : .NET 6.0.20 (6.0.2023.32017), Arm64 RyuJIT AdvSIMD
-```
-|                  Method |         Mean |     Error |    StdDev |
-|------------------------ |-------------:|----------:|----------:|
-|     CachePolicy_Content |     58.32 ns |  0.182 ns |  0.170 ns |
-|        CachePolicy_File | 16,417.56 ns | 50.569 ns | 47.302 ns |
-| CachePolicy_VectorIndex |  9,348.11 ns | 38.492 ns | 65.363 ns |
+| Method      | Mean        | Error     | StdDev      | Median      |
+|------------ |------------:|----------:|------------:|------------:|
+| ContentIPv4 |    101.5 ns |   2.04 ns |     4.57 ns |    103.1 ns |
+| VectorIPv4  |  7,488.1 ns | 222.91 ns |   657.26 ns |  7,819.2 ns |
+| FileIPv4    | 11,686.9 ns |  59.81 ns |    55.95 ns | 11,707.6 ns |
+| ContentIPv6 |    296.1 ns |   1.84 ns |     1.72 ns |    296.2 ns |
+| VectorIPv6  | 15,025.1 ns | 938.17 ns | 2,766.21 ns | 16,642.9 ns |
+| FileIPv6    | 19,721.0 ns | 807.55 ns | 2,381.08 ns | 20,905.7 ns |
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
