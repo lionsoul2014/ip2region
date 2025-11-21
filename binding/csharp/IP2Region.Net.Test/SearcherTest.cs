@@ -63,12 +63,36 @@ public class SearcherTest
     }
 
     [Fact]
-    public void IoCount_Ok()
+    public void IoCount_File_Ok()
     {
         var searcher = new Searcher(CachePolicy.File, _xdbPathV4);
         searcher.Search("58.251.27.201");
+        Assert.Equal(3, searcher.IoCount);
 
-        Assert.True(searcher.IoCount > 0);
+        searcher.Search("58.251.27.201");
+        Assert.Equal(3, searcher.IoCount);
+    }
+
+    [Fact]
+    public void IoCount_Content_Ok()
+    {
+        var searcher = new Searcher(CachePolicy.Content, _xdbPathV4);
+        searcher.Search("58.251.27.201");
+        Assert.Equal(169, searcher.IoCount);
+
+        searcher.Search("58.251.27.201");
+        Assert.Equal(0, searcher.IoCount);
+    }
+
+    [Fact]
+    public void IoCount_Vector_Ok()
+    {
+        var searcher = new Searcher(CachePolicy.VectorIndex, _xdbPathV4);
+        searcher.Search("58.251.27.201");
+        Assert.Equal(10, searcher.IoCount);
+
+        searcher.Search("58.251.27.201");
+        Assert.Equal(2, searcher.IoCount);
     }
 
     [Theory]
