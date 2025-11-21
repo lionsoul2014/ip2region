@@ -8,16 +8,14 @@ using IP2Region.Net.Internal.Abstractions;
 
 namespace IP2Region.Net.Internal;
 
-internal class VectorIndexCacheStrategy(string xdbPath) : AbstractCacheStrategy(xdbPath)
+internal class VectorIndexCacheStrategy : AbstractCacheStrategy
 {
     ReadOnlyMemory<byte> _vectorCahe = default;
 
-    public override ReadOnlyMemory<byte> GetVectorIndexStartPos(int offset)
+    public VectorIndexCacheStrategy(string xdbPath) : base(xdbPath)
     {
-        if (_vectorCahe.IsEmpty)
-        {
-            _vectorCahe = base.GetData(256, 256 * 256 * 8);
-        }
-        return _vectorCahe.Slice(offset, 8);
+        _vectorCahe = base.GetData(256, 256 * 256 * 8);
     }
+
+    public override ReadOnlyMemory<byte> GetVectorIndexStartPos(int offset) => _vectorCahe.Slice(offset, 8);
 }

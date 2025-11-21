@@ -8,18 +8,18 @@ using IP2Region.Net.Internal.Abstractions;
 
 namespace IP2Region.Net.Internal;
 
-class ContentCacheStrategy(string xdbPath) : AbstractCacheStrategy(xdbPath)
+class ContentCacheStrategy : AbstractCacheStrategy
 {
     ReadOnlyMemory<byte> _cacheData = default;
 
+    public ContentCacheStrategy(string xdbPath) : base(xdbPath)
+    {
+        using var reader = base.GetXdbFileStream();
+        _cacheData = base.GetData(0, (int)reader.Length);
+    }
+
     public override ReadOnlyMemory<byte> GetData(int offset, int length)
     {
-        if (_cacheData.IsEmpty)
-        {
-            using var reader = base.GetXdbFileStream();
-            _cacheData = base.GetData(0, (int)reader.Length);
-        }
-
         return _cacheData.Slice(offset, length);
     }
 }
