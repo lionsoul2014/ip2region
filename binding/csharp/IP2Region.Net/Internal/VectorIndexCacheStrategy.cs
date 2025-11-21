@@ -18,7 +18,10 @@ class VectorIndexCacheStrategy : AbstractCacheStrategy
 
     public VectorIndexCacheStrategy(string xdbPath) : base(xdbPath)
     {
-        _vectorCache = GetData(HeaderInfoLength, VectorIndexRows * VectorIndexCols * VectorIndexSize);
+        XdbFileStream.Seek(HeaderInfoLength, SeekOrigin.Begin);
+        var buffer = new byte[VectorIndexRows * VectorIndexCols * VectorIndexSize];
+        var length = XdbFileStream.Read(buffer, 0, buffer.Length);
+        _vectorCache = new ReadOnlyMemory<byte>(buffer);
     }
 
     public override ReadOnlyMemory<byte> GetVectorIndex(int offset) => _vectorCache.Slice(offset, VectorIndexSize);

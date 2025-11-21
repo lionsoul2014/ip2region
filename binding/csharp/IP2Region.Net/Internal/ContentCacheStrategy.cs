@@ -15,8 +15,10 @@ class ContentCacheStrategy : AbstractCacheStrategy
 
     public ContentCacheStrategy(string xdbPath) : base(xdbPath)
     {
-        _cacheData = base.GetData();
+        _cacheData = base.GetData(0, (int)XdbFileStream.Length);
+        XdbFileStream.Close();
+        XdbFileStream.Dispose();
     }
 
-    public override ReadOnlyMemory<byte> GetData(int offset = 0, int length = 0) => _cacheData.Slice(offset, length);
+    public override ReadOnlyMemory<byte> GetData(long offset = 0, int length = 0) => _cacheData.Slice((int)offset, length);
 }

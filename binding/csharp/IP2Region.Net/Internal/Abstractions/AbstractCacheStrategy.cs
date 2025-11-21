@@ -15,9 +15,10 @@ internal abstract class AbstractCacheStrategy(string xdbPath)
     protected const int VectorIndexSize = 8;
 
     private const int BufferSize = 64 * 1024;
-    private readonly FileStream _xdbFileStream = new(xdbPath, FileMode.Open, FileAccess.Read, FileShare.Read, BufferSize, FileOptions.RandomAccess);
 
     public int IoCount { get; private set; }
+
+    protected FileStream XdbFileStream = new(xdbPath, FileMode.Open, FileAccess.Read, FileShare.Read, BufferSize, FileOptions.RandomAccess);
 
     public void ResetIoCount()
     {
@@ -26,24 +27,18 @@ internal abstract class AbstractCacheStrategy(string xdbPath)
 
     public virtual ReadOnlyMemory<byte> GetVectorIndex(int offset) => GetData(HeaderInfoLength + offset, VectorIndexSize);
 
-    public virtual ReadOnlyMemory<byte> GetData(int offset = 0, int length = 0)
+    public virtual ReadOnlyMemory<byte> GetData(long offset, int length)
     {
-        if (length == 0)
-        {
-            length = (int)_xdbFileStream.Length;
-        }
-
         byte[] buffer = ArrayPool<byte>.Shared.Rent(length);
         int totalBytesRead = 0;
         try
         {
-            _xdbFileStream.Seek(offset, SeekOrigin.Begin);
+            XdbFileStream.Seek(offset, SeekOrigin.Begin);
 
             int bytesRead;
             while (totalBytesRead < length)
             {
-                int bytesToRead = Math.Min(BufferSize, length - totalBytesRead);
-                bytesRead = _xdbFileStream.Read(buffer, totalBytesRead, bytesToRead);
+                bytesRead = XdbFileStream.Read(buffer, totalBytesRead, length);
                 totalBytesRead += bytesRead;
 
                 IoCount++;
