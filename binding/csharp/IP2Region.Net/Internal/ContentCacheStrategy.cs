@@ -1,14 +1,15 @@
-// Copyright 2023 The Ip2Region Authors. All rights reserved.
+// Copyright 2025 The Ip2Region Authors. All rights reserved.
 // Use of this source code is governed by a Apache2.0-style
 // license that can be found in the LICENSE file.
 // @Author Alan <lzh.shap@gmail.com>
 // @Date   2023/07/25
+// Updated by Argo Zhang <argo@live.ca> at 2025/11/21
 
 using IP2Region.Net.Internal.Abstractions;
 
 namespace IP2Region.Net.Internal;
 
-internal class ContentCacheStrategy : AbstractCacheStrategy
+class ContentCacheStrategy : AbstractCacheStrategy
 {
     private readonly ReadOnlyMemory<byte> _cacheData;
 
@@ -19,14 +20,5 @@ internal class ContentCacheStrategy : AbstractCacheStrategy
         XdbFileStream.Dispose();
     }
 
-    internal override ReadOnlyMemory<byte> GetVectorIndex(uint ip)
-    {
-        int idx = GetVectorIndexStartPos(ip);
-        return _cacheData.Slice(HeaderInfoLength + idx, VectorIndexSize);
-    }
-
-    internal override ReadOnlyMemory<byte> GetData(int offset, int length)
-    {
-        return _cacheData.Slice(offset, length);
-    }
+    public override ReadOnlyMemory<byte> GetData(long offset = 0, int length = 0) => _cacheData.Slice((int)offset, length);
 }

@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
     <File Path="README.md" />
   </Folder>
   <Project Path="IP2Region.Net.BenchMark/IP2Region.Net.BenchMark.csproj" />

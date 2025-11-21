@@ -1,29 +1,11 @@
-﻿using BenchmarkDotNet.Attributes;
+// Copyright 2025 The Ip2Region Authors. All rights reserved.
+// Use of this source code is governed by a Apache2.0-style
+// license that can be found in the LICENSE file.
+// @Author Alan <lzh.shap@gmail.com>
+// @Date   2023/07/25
+// Updated by Argo Zhang <argo@live.ca> at 2025/11/21
+
 using BenchmarkDotNet.Running;
-using IP2Region.Net.Abstractions;
-using IP2Region.Net.XDB;
+using IP2Region.Net.BenchMark;
 
-BenchmarkRunner.Run(typeof(Program).Assembly);
-
-public class CachePolicyCompare
-{
-    private static readonly string XdbPath = Path.Combine(AppContext.BaseDirectory, "IP2Region", "ip2region_v4.xdb");
-    private readonly ISearcher _contentSearcher = new Searcher(CachePolicy.Content, XdbPath);
-    private readonly ISearcher _vectorSearcher = new Searcher(CachePolicy.VectorIndex,XdbPath);
-    private readonly ISearcher _fileSearcher = new Searcher(CachePolicy.File,XdbPath);
-
-    private readonly string _testIpAddress = "114.114.114.114";
-
-    [Benchmark]
-    [BenchmarkCategory(nameof(CachePolicy.Content))]
-    public void CachePolicy_Content() => _contentSearcher.Search(_testIpAddress);
-
-    [Benchmark]
-    [BenchmarkCategory(nameof(CachePolicy.VectorIndex))]
-    public void CachePolicy_VectorIndex() => _vectorSearcher.Search(_testIpAddress);
-
-
-    [Benchmark]
-    [BenchmarkCategory(nameof(CachePolicy.File))]
-    public void CachePolicy_File() => _fileSearcher.Search(_testIpAddress);
-}
+BenchmarkRunner.Run<Benchmarks>();

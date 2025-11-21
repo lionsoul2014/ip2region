@@ -1,0 +1,25 @@
+root = true
+
+# To learn more about .editorconfig see https://aka.ms/editorconfigdocs
+[*]
+charset = utf-8
+indent_style = space
+trim_trailing_whitespace = true
+insert_final_newline = true
+spelling_exclusion_path = .\exclusion.dic
+
+[*.csproj]
+charset = utf-8
+insert_final_newline = true
+
+[*.{xml,config,csproj,nuspec,props,resx,targets,yml,tasks,json}]
+indent_size = 2
+
+[*.sh]
+end_of_line = lf
+
+[*.cs]
+csharp_style_namespace_declarations = file_scoped:silent
+
+[*.cs]
+file_header_template = Copyright 2025 The Ip2Region Authors. All rights reserved.\nUse of this source code is governed by a Apache2.0-style\nlicense that can be found in the LICENSE file.\n@Author Alan <lzh.shap@gmail.com>\n@Date   2023/07/25\nUpdated by Argo Zhang <argo@live.ca> at 2025/11/21
