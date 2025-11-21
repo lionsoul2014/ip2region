@@ -1,4 +1,4 @@
-﻿// Copyright 2022 The Ip2Region Authors. All rights reserved.
+// Copyright 2022 The Ip2Region Authors. All rights reserved.
 // Use of this source code is governed by a Apache2.0-style
 // license that can be found in the LICENSE file.
 
@@ -6,6 +6,7 @@ package org.lionsoul.ip2region;
 
 import java.io.IOException;
 
+import org.lionsoul.ip2region.xdb.Version;
 import org.lionsoul.ip2region.xdb.XdbException;
 
 /**
@@ -17,7 +18,7 @@ public class ConfigBuilder {
 
     // cache policy
     private int cachePolicy = Config.VIndexCache;
-    
+
     // xdb file path
     private String xdbPath = null;
 
@@ -53,8 +54,14 @@ public class ConfigBuilder {
         return this;
     }
 
-    // build the final #Config instance with the current config items
-    public Config build() throws IOException, XdbException {
-        return new Config(cachePolicy, xdbPath, minSearchers, maxSearchers);
+    // build the final #Config instance for IPv4
+    public Config asV4() throws IOException, XdbException {
+        return new Config(cachePolicy, Version.IPv4, xdbPath, minSearchers, maxSearchers);
     }
+
+    // build the final #Config instance for IPv6
+    public Config asV6() throws IOException, XdbException {
+        return new Config(cachePolicy, Version.IPv6, xdbPath, minSearchers, maxSearchers);
+    }
+
 }
