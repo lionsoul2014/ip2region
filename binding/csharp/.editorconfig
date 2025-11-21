@@ -19,8 +19,7 @@ indent_size = 2
 end_of_line = lf
 
 [*.cs]
-dotnet_analyzer_diagnostic.category-Style.severity = none
 csharp_style_namespace_declarations = file_scoped:silent
 
 [*.cs]
-file_header_template = Copyright 2023 The Ip2Region Authors. All rights reserved.\nUse of this source code is governed by a Apache2.0-style\nlicense that can be found in the LICENSE file.\n@Author Alan <lzh.shap@gmail.com>\n@Date   2023/07/25\nUpdated by Argo Zhang <argo@live.ca> at 2025/11/21
+file_header_template = Copyright 2025 The Ip2Region Authors. All rights reserved.\nUse of this source code is governed by a Apache2.0-style\nlicense that can be found in the LICENSE file.\n@Author Alan <lzh.shap@gmail.com>\n@Date   2023/07/25\nUpdated by Argo Zhang <argo@live.ca> at 2025/11/21
