@@ -10,9 +10,9 @@ namespace IP2Region.Net.Internal;
 
 class ContentCacheStrategy(string xdbPath) : AbstractCacheStrategy(xdbPath)
 {
-    ReadOnlyMemory<byte> _cacheData = ReadOnlyMemory<byte>.Empty;
+    ReadOnlyMemory<byte> _cacheData = default;
 
-    internal override ReadOnlyMemory<byte> GetData(int offset, int length)
+    public override ReadOnlyMemory<byte> GetData(int offset, int length)
     {
         if (_cacheData.IsEmpty)
         {

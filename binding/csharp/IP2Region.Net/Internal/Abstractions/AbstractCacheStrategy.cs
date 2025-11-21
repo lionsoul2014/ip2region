@@ -10,11 +10,21 @@ namespace IP2Region.Net.Internal.Abstractions;
 
 internal abstract class AbstractCacheStrategy(string xdbPath)
 {
-    private const int BufferSize = 4096;
+    private const int BufferSize = 64 * 1024;
 
-    internal int IoCount { get; private set; }
+    public int IoCount { get; private set; }
 
-    internal virtual ReadOnlyMemory<byte> GetData(int offset, int length)
+    public void ResetIoCount()
+    {
+        IoCount = 0;
+    }
+
+    public virtual ReadOnlyMemory<byte> GetVectorIndexStartPos(int offset)
+    {
+        return GetData(256 + offset, 8);
+    }
+
+    public virtual ReadOnlyMemory<byte> GetData(int offset, int length)
     {
         byte[] buffer = ArrayPool<byte>.Shared.Rent(length);
         int totalBytesRead = 0;

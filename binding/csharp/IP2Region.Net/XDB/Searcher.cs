@@ -40,7 +40,7 @@ public class Searcher : ISearcher
     public string? Search(string ipStr)
     {
         var ipAddress = IPAddress.Parse(ipStr);
-        return Search(ipAddress);
+        return SearchCore(ipAddress.GetAddressBytes());
     }
 
     /// <summary>
@@ -63,6 +63,9 @@ public class Searcher : ISearcher
 
     string? SearchCore(byte[] ipBytes)
     {
+        // 重置 IO 计数器
+        _cacheStrategy.ResetIoCount();
+
         // 每个 vector 索引项的字节数
         var vectorIndexSize = 8;
 
@@ -74,7 +77,7 @@ public class Searcher : ISearcher
         var il1 = ipBytes[1];
         var idx = il0 * vectorIndexCols * vectorIndexSize + il1 * vectorIndexSize;
 
-        var data = _cacheStrategy.GetData(256 + idx, vectorIndexSize);
+        var data = _cacheStrategy.GetVectorIndexStartPos(idx);
         var sPtr = BinaryPrimitives.ReadUInt32LittleEndian(data.Span);
         var ePtr = BinaryPrimitives.ReadUInt32LittleEndian(data.Span.Slice(4));
 
