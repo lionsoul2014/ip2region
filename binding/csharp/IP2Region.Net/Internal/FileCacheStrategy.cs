@@ -8,6 +8,7 @@ using IP2Region.Net.Internal.Abstractions;
 
 namespace IP2Region.Net.Internal;
 
-internal class FileCacheStrategy(string xdbPath) : AbstractCacheStrategy(xdbPath)
+class FileCacheStrategy(string xdbPath) : AbstractCacheStrategy(xdbPath)
 {
+
 }

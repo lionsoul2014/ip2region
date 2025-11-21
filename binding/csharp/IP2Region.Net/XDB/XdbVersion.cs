@@ -1,5 +1,8 @@
-﻿namespace IP2Region.Net.XDB;
+namespace IP2Region.Net.XDB;
 
+/// <summary>
+/// XdbVersion 结构体
+/// </summary>
 public struct XdbVersion
 {
     /// <summary>

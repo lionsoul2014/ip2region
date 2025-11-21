@@ -8,9 +8,9 @@ using IP2Region.Net.Internal.Abstractions;
 
 namespace IP2Region.Net.Internal;
 
-internal class ContentCacheStrategy : AbstractCacheStrategy
+class ContentCacheStrategy : AbstractCacheStrategy
 {
-    private readonly ReadOnlyMemory<byte> _cacheData;
+    readonly ReadOnlyMemory<byte> _cacheData;
 
     public ContentCacheStrategy(string xdbPath) : base(xdbPath)
     {

@@ -10,7 +10,12 @@ namespace IP2Region.Net.Internal;
 
 internal class VectorIndexCacheStrategy : AbstractCacheStrategy
 {
-    private readonly ReadOnlyMemory<byte> _vectorIndex;
+    const int HeaderInfoLength = 256;
+    const int VectorIndexRows = 256;
+    const int VectorIndexCols = 256;
+    const int VectorIndexSize = 8;
+
+    readonly ReadOnlyMemory<byte> _vectorIndex;
 
     public VectorIndexCacheStrategy(string xdbPath) : base(xdbPath)
     {

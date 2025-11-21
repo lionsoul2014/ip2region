@@ -5,6 +5,9 @@ using System.Runtime.InteropServices;
 
 namespace IP2Region.Net.XDB;
 
+/// <summary>
+/// 工具类
+/// </summary>
 public static class Util
 {
     public static uint IpAddressToUInt32(string ipAddress)

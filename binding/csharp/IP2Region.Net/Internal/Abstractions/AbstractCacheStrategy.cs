@@ -10,11 +10,6 @@ namespace IP2Region.Net.Internal.Abstractions;
 
 internal abstract class AbstractCacheStrategy
 {
-    protected const int HeaderInfoLength = 256;
-    protected const int VectorIndexRows = 256;
-    protected const int VectorIndexCols = 256;
-    protected const int VectorIndexSize = 8;
-
     protected readonly FileStream XdbFileStream;
     private const int BufferSize = 4096;
 

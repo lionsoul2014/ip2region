@@ -13,29 +13,47 @@ using System.Text;
 
 namespace IP2Region.Net.XDB;
 
+/// <summary>
+/// <see cref="ISearcher"/> 实现类
+/// </summary>
 public class Searcher : ISearcher
 {
     private readonly AbstractCacheStrategy _cacheStrategy;
 
+    /// <summary>
+    /// <inheritdoc/>
+    /// </summary>
     public int IoCount => _cacheStrategy.IoCount;
 
+    /// <summary>
+    /// <inheritdoc/>
+    /// </summary>
     public Searcher(CachePolicy cachePolicy, string dbPath)
     {
         var factory = new CacheStrategyFactory(dbPath);
         _cacheStrategy = factory.CreateCacheStrategy(cachePolicy);
     }
 
+    /// <summary>
+    /// <inheritdoc/>
+    /// </summary>
     public string? Search(string ipStr)
     {
         var ipAddress = IPAddress.Parse(ipStr);
         return Search(ipAddress);
     }
 
+    /// <summary>
+    /// <inheritdoc/>
+    /// </summary>
     public string? Search(IPAddress ipAddress)
     {
         return SearchCore(ipAddress.GetAddressBytes());
     }
 
+    /// <summary>
+    /// <inheritdoc/>
+    /// </summary>
     public string? Search(uint ipAddress)
     {
         var bytes = BitConverter.GetBytes(ipAddress);
