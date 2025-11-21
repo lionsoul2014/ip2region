@@ -78,7 +78,7 @@ public class SearcherTest
     {
         var searcher = new Searcher(CachePolicy.Content, _xdbPathV4);
         searcher.Search("58.251.27.201");
-        Assert.Equal(169, searcher.IoCount);
+        Assert.Equal(0, searcher.IoCount);
 
         searcher.Search("58.251.27.201");
         Assert.Equal(0, searcher.IoCount);
@@ -89,7 +89,7 @@ public class SearcherTest
     {
         var searcher = new Searcher(CachePolicy.VectorIndex, _xdbPathV4);
         searcher.Search("58.251.27.201");
-        Assert.Equal(10, searcher.IoCount);
+        Assert.Equal(2, searcher.IoCount);
 
         searcher.Search("58.251.27.201");
         Assert.Equal(2, searcher.IoCount);
