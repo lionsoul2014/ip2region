@@ -43,6 +43,9 @@ NET8+ support keyed service
 provider.GetRequiredKeyedService<ISearcher>("IP2Region.Net");
 ```
 
+## TargetFrameworks
+netstandard2.0;netstandard2.1;net6.0;net7.0;net8.0;net9.0;net10.0
+
 ## Performance
 
 | Method      | Mean        | Error     | StdDev      | Median      |
