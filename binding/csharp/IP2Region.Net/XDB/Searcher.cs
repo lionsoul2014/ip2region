@@ -78,9 +78,9 @@ public class Searcher : ISearcher
         var il1 = ipBytes[1];
         var idx = il0 * vectorIndexCols * vectorIndexSize + il1 * vectorIndexSize;
 
-        var data = _cacheStrategy.GetVectorIndexStartPos(idx);
-        var sPtr = BinaryPrimitives.ReadUInt32LittleEndian(data.Span);
-        var ePtr = BinaryPrimitives.ReadUInt32LittleEndian(data.Span.Slice(4));
+        var vector = _cacheStrategy.GetVectorIndex(idx);
+        var sPtr = BinaryPrimitives.ReadUInt32LittleEndian(vector.Span);
+        var ePtr = BinaryPrimitives.ReadUInt32LittleEndian(vector.Span.Slice(4));
 
         var length = ipBytes.Length;
         var indexSize = length * 2 + 6;
@@ -125,11 +125,12 @@ public class Searcher : ISearcher
         var ret = 0;
         for (int i = 0; i < ip1.Length; i++)
         {
-            if (ip1[i] < ip2[ip1.Length - 1 - i])
+            var ip2Index = ip1.Length - 1 - i;
+            if (ip1[i] < ip2[ip2Index])
             {
                 return -1;
             }
-            else if (ip1[i] > ip2[ip1.Length - 1 - i])
+            else if (ip1[i] > ip2[ip2Index])
             {
                 return 1;
             }

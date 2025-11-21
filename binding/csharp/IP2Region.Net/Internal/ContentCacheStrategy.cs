@@ -11,16 +11,12 @@ namespace IP2Region.Net.Internal;
 
 class ContentCacheStrategy : AbstractCacheStrategy
 {
-    readonly ReadOnlyMemory<byte> _cacheData = default;
+    private readonly ReadOnlyMemory<byte> _cacheData;
 
     public ContentCacheStrategy(string xdbPath) : base(xdbPath)
     {
-        using var reader = base.GetXdbFileStream();
-        _cacheData = base.GetData(0, (int)reader.Length);
+        _cacheData = base.GetData();
     }
 
-    public override ReadOnlyMemory<byte> GetData(int offset, int length)
-    {
-        return _cacheData.Slice(offset, length);
-    }
+    public override ReadOnlyMemory<byte> GetData(int offset = 0, int length = 0) => _cacheData.Slice(offset, length);
 }
