@@ -76,7 +76,7 @@ public static class Util
         };
 
         var createdAt = BinaryPrimitives.ReadUInt32LittleEndian(buffer.Slice(4, 4));
-        var dtm = new DateTimeOffset(1970, 1, 1, 0, 0, 0, TimeSpan.FromHours(8));
+        var dtm = new DateTimeOffset(1970, 1, 1, 0, 0, 0, TimeSpan.FromHours(0));
         ret.CreatedTime = dtm.AddSeconds(createdAt);
 
         return ret;
