@@ -1,42 +1,33 @@
-// Copyright 2023 The Ip2Region Authors. All rights reserved.
+// Copyright 2025 The Ip2Region Authors. All rights reserved.
 // Use of this source code is governed by a Apache2.0-style
 // license that can be found in the LICENSE file.
 // @Author Alan <lzh.shap@gmail.com>
 // @Date   2023/07/25
+// Updated by Argo Zhang <argo@live.ca> at 2025/11/21
 
 using System.Buffers;
 
 namespace IP2Region.Net.Internal.Abstractions;
 
-internal abstract class AbstractCacheStrategy
+internal abstract class AbstractCacheStrategy(string xdbPath)
 {
     protected const int HeaderInfoLength = 256;
-    protected const int VectorIndexRows = 256;
-    protected const int VectorIndexCols = 256;
     protected const int VectorIndexSize = 8;
 
-    protected readonly FileStream XdbFileStream;
-    private const int BufferSize = 4096;
+    private const int BufferSize = 64 * 1024;
 
-    internal int IoCount { get; private set; }
+    public int IoCount { get; private set; }
 
-    protected AbstractCacheStrategy(string xdbPath)
+    protected FileStream XdbFileStream = new(xdbPath, FileMode.Open, FileAccess.Read, FileShare.Read, BufferSize, FileOptions.RandomAccess);
+
+    public void ResetIoCount()
     {
-        XdbFileStream = new FileStream(xdbPath, FileMode.Open, FileAccess.Read, FileShare.Read, BufferSize,
-            useAsync: true);
+        IoCount = 0;
     }
 
-    protected int GetVectorIndexStartPos(uint ip)
-    {
-        var il0 = ip >> 24 & 0xFF;
-        var il1 = ip >> 16 & 0xFF;
-        var idx = il0 * VectorIndexCols * VectorIndexSize + il1 * VectorIndexSize;
-        return (int)idx;
-    }
+    public virtual ReadOnlyMemory<byte> GetVectorIndex(int offset) => GetData(HeaderInfoLength + offset, VectorIndexSize);
 
-    internal abstract ReadOnlyMemory<byte> GetVectorIndex(uint ip);
-
-    internal virtual ReadOnlyMemory<byte> GetData(int offset, int length)
+    public virtual ReadOnlyMemory<byte> GetData(long offset, int length)
     {
         byte[] buffer = ArrayPool<byte>.Shared.Rent(length);
         int totalBytesRead = 0;
@@ -45,14 +36,13 @@ internal abstract class AbstractCacheStrategy
             XdbFileStream.Seek(offset, SeekOrigin.Begin);
 
             int bytesRead;
-            do
+            while (totalBytesRead < length)
             {
-                int bytesToRead = Math.Min(BufferSize, length - totalBytesRead);
-                bytesRead = XdbFileStream.Read(buffer, totalBytesRead, bytesToRead);
+                bytesRead = XdbFileStream.Read(buffer, totalBytesRead, length);
                 totalBytesRead += bytesRead;
-            
+
                 IoCount++;
-            } while (bytesRead > 0 && totalBytesRead < length);
+            }
         }
         finally
         {
