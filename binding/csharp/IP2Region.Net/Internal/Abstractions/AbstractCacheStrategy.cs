@@ -8,18 +8,11 @@ using System.Buffers;
 
 namespace IP2Region.Net.Internal.Abstractions;
 
-internal abstract class AbstractCacheStrategy
+internal abstract class AbstractCacheStrategy(string xdbPath)
 {
-    protected readonly FileStream XdbFileStream;
     private const int BufferSize = 4096;
 
     internal int IoCount { get; private set; }
-
-    protected AbstractCacheStrategy(string xdbPath)
-    {
-        XdbFileStream = new FileStream(xdbPath, FileMode.Open, FileAccess.Read, FileShare.Read, BufferSize,
-            useAsync: true);
-    }
 
     internal virtual ReadOnlyMemory<byte> GetData(int offset, int length)
     {
@@ -27,13 +20,14 @@ internal abstract class AbstractCacheStrategy
         int totalBytesRead = 0;
         try
         {
-            XdbFileStream.Seek(offset, SeekOrigin.Begin);
+            var stream = GetXdbFileStream();
+            stream.Seek(offset, SeekOrigin.Begin);
 
             int bytesRead;
             while (totalBytesRead < length)
             {
                 int bytesToRead = Math.Min(BufferSize, length - totalBytesRead);
-                bytesRead = XdbFileStream.Read(buffer, totalBytesRead, bytesToRead);
+                bytesRead = stream.Read(buffer, totalBytesRead, bytesToRead);
                 totalBytesRead += bytesRead;
 
                 IoCount++;
@@ -45,5 +39,16 @@ internal abstract class AbstractCacheStrategy
         }
 
         return new ReadOnlyMemory<byte>(buffer, 0, totalBytesRead);
+    }
+
+    FileStream? _xdbFileStream;
+
+    protected FileStream GetXdbFileStream()
+    {
+        if (_xdbFileStream == null)
+        {
+            _xdbFileStream = new FileStream(xdbPath, FileMode.Open, FileAccess.Read, FileShare.Read, BufferSize, FileOptions.RandomAccess);
+        }
+        return _xdbFileStream;
     }
 }

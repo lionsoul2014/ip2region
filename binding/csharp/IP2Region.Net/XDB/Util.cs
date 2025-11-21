@@ -38,8 +38,13 @@ public static class Util
             throw new FileNotFoundException("xdb file not fould.", dbPath);
         }
 
-        XdbVersion ret = default;
         using var reader = File.OpenRead(dbPath);
+        return await GetVersionAsync(reader, token);
+    }
+
+    internal static async Task<XdbVersion> GetVersionAsync(FileStream reader, CancellationToken token = default)
+    {
+        XdbVersion ret = default;
         var buffer = ArrayPool<byte>.Shared.Rent(256);
 
         try
