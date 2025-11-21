@@ -8,13 +8,31 @@ using System.Net;
 
 namespace IP2Region.Net.Abstractions;
 
+/// <summary>
+/// IP 转化为地理位置搜索器接口
+/// </summary>
 public interface ISearcher
 {
+    /// <summary>
+    /// 搜索方法
+    /// </summary>
+    /// <param name="ipStr">IP 地址字符串 如 192.168.0.1</param>
+    /// <returns></returns>
     string? Search(string ipStr);
 
+    /// <summary>
+    /// 搜索方法
+    /// </summary>
     string? Search(IPAddress ipAddress);
 
+    /// <summary>
+    /// 搜索方法 仅限 IPv4 使用
+    /// </summary>
+    /// <param name="ipAddress">IPv4 地址字节数组小端读取 uint 数值</param>
     string? Search(uint ipAddress);
 
+    /// <summary>
+    /// 获得 内部 IO 访问次数
+    /// </summary>
     int IoCount { get; }
 }
