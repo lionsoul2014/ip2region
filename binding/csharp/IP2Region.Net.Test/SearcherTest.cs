@@ -97,12 +97,15 @@ public class SearcherTest
 
     [Theory]
     [InlineData("58.251.255.255", "中国|广东省|深圳市|联通")]
-    public void Search_UintIp_Ok(string ipStr, string expected)
+    public void Search_Ip_Ok(string ipStr, string expected)
     {
         var fileSearcher = new Searcher(CachePolicy.File, _xdbPathV4);
         var ipAddress = IPAddress.Parse(ipStr);
+        var region = fileSearcher.Search(ipAddress);
+        Assert.Equal(expected, region);
+
         var ip = XDB.Util.IpAddressToUInt32(ipAddress);
-        var region = fileSearcher.Search(ip);
+        region = fileSearcher.Search(ip);
         Assert.Equal(expected, region);
     }
 
