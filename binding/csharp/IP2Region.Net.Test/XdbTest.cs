@@ -1,4 +1,4 @@
-﻿using Xunit;
+using Xunit;
 
 namespace IP2Region.Net.Test;
 
@@ -36,7 +36,7 @@ public class XdbTest
     [Fact]
     public async Task GetVersionAsync_Error()
     {
-        await Assert.ThrowsAsync<ArgumentNullException>(async () => await XDB.Util.GetVersionAsync(null));
+        await Assert.ThrowsAsync<ArgumentNullException>(async () => await XDB.Util.GetVersionAsync(null!));
         await Assert.ThrowsAsync<FileNotFoundException>(async () => await XDB.Util.GetVersionAsync(Path.Combine(AppContext.BaseDirectory, "test.xdb")));
     }
 }
