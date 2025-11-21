@@ -1,6 +1,5 @@
-﻿using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
-using IP2Region.Net.Abstractions;
 using IP2Region.Net.XDB;
 
 BenchmarkRunner.Run(typeof(Program).Assembly);
@@ -9,15 +8,25 @@ public class CachePolicyCompare
 {
     private static readonly string XdbPathV4 = Path.Combine(AppContext.BaseDirectory, "IP2Region", "ip2region_v4.xdb");
     private static readonly string XdbPathV6 = Path.Combine(AppContext.BaseDirectory, "IP2Region", "ip2region_v6.xdb");
-    private readonly ISearcher _contentV4Searcher = new Searcher(CachePolicy.Content, XdbPathV4);
-    private readonly ISearcher _vectorV4Searcher = new Searcher(CachePolicy.VectorIndex, XdbPathV4);
-    private readonly ISearcher _fileV4Searcher = new Searcher(CachePolicy.File, XdbPathV4);
-    private readonly ISearcher _contentV6Searcher = new Searcher(CachePolicy.Content, XdbPathV6);
-    private readonly ISearcher _vectorV6Searcher = new Searcher(CachePolicy.VectorIndex, XdbPathV6);
-    private readonly ISearcher _fileV6Searcher = new Searcher(CachePolicy.File, XdbPathV6);
+    private readonly Searcher _contentV4Searcher = new Searcher(CachePolicy.Content, XdbPathV4);
+    private readonly Searcher _vectorV4Searcher = new Searcher(CachePolicy.VectorIndex, XdbPathV4);
+    private readonly Searcher _fileV4Searcher = new Searcher(CachePolicy.File, XdbPathV4);
+    private readonly Searcher _contentV6Searcher = new Searcher(CachePolicy.Content, XdbPathV6);
+    private readonly Searcher _vectorV6Searcher = new Searcher(CachePolicy.VectorIndex, XdbPathV6);
+    private readonly Searcher _fileV6Searcher = new Searcher(CachePolicy.File, XdbPathV6);
 
     private readonly string _testIpV4Address = "114.114.114.114";
     private readonly string _testIpV6Address = "240e:3b7:3272:d8d0:db09:c067:8d59:539e";
+
+    public CachePolicyCompare()
+    {
+        _contentV4Searcher.Search(_testIpV4Address);
+        _vectorV4Searcher.Search(_testIpV4Address);
+        _fileV4Searcher.Search(_testIpV4Address);
+        _contentV6Searcher.Search(_testIpV6Address);
+        _vectorV6Searcher.Search(_testIpV6Address);
+        _fileV6Searcher.Search(_testIpV6Address);
+    }
 
     [Benchmark]
     [BenchmarkCategory(nameof(CachePolicy.Content))]
