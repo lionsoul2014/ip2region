@@ -9,6 +9,7 @@ using IP2Region.Net.Abstractions;
 using IP2Region.Net.Internal;
 using IP2Region.Net.Internal.Abstractions;
 using System.Buffers.Binary;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Text;
 
@@ -47,14 +48,13 @@ public class Searcher : ISearcher
     /// <summary>
     /// <inheritdoc/>
     /// </summary>
-    public string? Search(IPAddress ipAddress)
-    {
-        return SearchCore(ipAddress.GetAddressBytes());
-    }
+    public string? Search(IPAddress ipAddress) => SearchCore(ipAddress.GetAddressBytes());
 
     /// <summary>
     /// <inheritdoc/>
     /// </summary>
+    [Obsolete("已弃用，请改用其他方法；Deprecated; please use Search(string) or Search(IPAddress) method.")]
+    [ExcludeFromCodeCoverage]
     public string? Search(uint ipAddress)
     {
         var bytes = BitConverter.GetBytes(ipAddress);

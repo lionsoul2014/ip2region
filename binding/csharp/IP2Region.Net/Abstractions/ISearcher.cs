@@ -30,6 +30,7 @@ public interface ISearcher
     /// 搜索方法 仅限 IPv4 使用
     /// </summary>
     /// <param name="ipAddress">IPv4 地址字节数组小端读取 uint 数值</param>
+    [Obsolete("已弃用，请改用其他方法；Deprecated; please use Search(string) or Search(IPAddress) method.")]
     string? Search(uint ipAddress);
 
     /// <summary>
