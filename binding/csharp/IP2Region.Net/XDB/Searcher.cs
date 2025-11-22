@@ -147,4 +147,13 @@ public class Searcher(CachePolicy cachePolicy, string xdbPath) : ISearcher
         }
         return ret;
     }
+
+    /// <summary>
+    /// <inheritdoc/>
+    /// </summary>
+    public void Dispose()
+    {
+        _cacheStrategy.Dispose();
+        GC.SuppressFinalize(this);
+    }
 }

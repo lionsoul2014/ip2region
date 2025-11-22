@@ -12,7 +12,7 @@ namespace IP2Region.Net.Abstractions;
 /// <summary>
 /// IP 转化为地理位置搜索器接口
 /// </summary>
-public interface ISearcher
+public interface ISearcher : IDisposable
 {
     /// <summary>
     /// 搜索方法

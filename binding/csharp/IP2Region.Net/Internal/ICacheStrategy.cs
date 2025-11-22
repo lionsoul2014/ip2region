@@ -7,7 +7,7 @@
 
 namespace IP2Region.Net.Internal;
 
-internal interface ICacheStrategy
+internal interface ICacheStrategy : IDisposable
 {
     int IoCount { get; }
 

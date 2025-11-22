@@ -14,7 +14,14 @@ class ContentCacheStrategy : FileCacheStrategy
     public ContentCacheStrategy(string xdbPath) : base(xdbPath)
     {
         _cacheData = base.GetData(0, (int)XdbFileStream.Length);
+        XdbFileStream.Close();
+        XdbFileStream.Dispose();
     }
 
     public override ReadOnlyMemory<byte> GetData(long offset, int length) => _cacheData.Slice((int)offset, length);
+
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(false);
+    }
 }

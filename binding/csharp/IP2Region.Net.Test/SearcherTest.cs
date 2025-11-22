@@ -78,6 +78,8 @@ public class SearcherTest
 
         searcher.Search("58.251.27.201");
         Assert.Equal(3, searcher.IoCount);
+
+        searcher.Dispose();
     }
 
     [Fact]
@@ -89,6 +91,8 @@ public class SearcherTest
 
         searcher.Search("58.251.27.201");
         Assert.Equal(2, searcher.IoCount);
+
+        searcher.Dispose();
     }
 
     [Fact]
@@ -100,6 +104,8 @@ public class SearcherTest
 
         searcher.Search("58.251.27.201");
         Assert.Equal(0, searcher.IoCount);
+
+        searcher.Dispose();
     }
 
     [Theory]

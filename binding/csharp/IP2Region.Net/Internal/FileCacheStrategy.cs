@@ -60,4 +60,26 @@ class FileCacheStrategy(string xdbPath) : ICacheStrategy
             ArrayPool<byte>.Shared.Return(buffer);
         }
     }
+
+    /// <summary>
+    /// 释放文件句柄
+    /// </summary>
+    /// <param name="disposing"></param>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            XdbFileStream.Close();
+            XdbFileStream.Dispose();
+        }
+    }
+
+    /// <summary>
+    /// <inheritdoc/>
+    /// </summary>
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
 }
