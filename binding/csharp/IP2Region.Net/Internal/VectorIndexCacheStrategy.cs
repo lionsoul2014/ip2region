@@ -5,11 +5,9 @@
 // @Date   2023/07/25
 // Updated by Argo Zhang <argo@live.ca> at 2025/11/21
 
-using IP2Region.Net.Internal.Abstractions;
-
 namespace IP2Region.Net.Internal;
 
-class VectorIndexCacheStrategy : AbstractCacheStrategy
+class VectorIndexCacheStrategy : FileCacheStrategy
 {
     private const int VectorIndexRows = 256;
     private const int VectorIndexCols = 256;
@@ -18,10 +16,7 @@ class VectorIndexCacheStrategy : AbstractCacheStrategy
 
     public VectorIndexCacheStrategy(string xdbPath) : base(xdbPath)
     {
-        XdbFileStream.Seek(HeaderInfoLength, SeekOrigin.Begin);
-        var buffer = new byte[VectorIndexRows * VectorIndexCols * VectorIndexSize];
-        var length = XdbFileStream.Read(buffer, 0, buffer.Length);
-        _vectorCache = new ReadOnlyMemory<byte>(buffer);
+        _vectorCache = GetData(HeaderInfoLength, VectorIndexRows * VectorIndexCols * VectorIndexSize);
     }
 
     public override ReadOnlyMemory<byte> GetVectorIndex(int offset) => _vectorCache.Slice(offset, VectorIndexSize);

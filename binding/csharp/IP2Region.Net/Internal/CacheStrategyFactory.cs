@@ -5,14 +5,13 @@
 // @Date   2023/07/25
 // Updated by Argo Zhang <argo@live.ca> at 2025/11/21
 
-using IP2Region.Net.Internal.Abstractions;
 using IP2Region.Net.XDB;
 
 namespace IP2Region.Net.Internal;
 
-class CacheStrategyFactory(string xdbPath)
+static class CacheStrategyFactory
 {
-    public AbstractCacheStrategy CreateCacheStrategy(CachePolicy cachePolicy) => cachePolicy switch
+    public static ICacheStrategy CreateCacheStrategy(CachePolicy cachePolicy, string xdbPath) => cachePolicy switch
     {
         CachePolicy.Content => new ContentCacheStrategy(xdbPath),
         CachePolicy.VectorIndex => new VectorIndexCacheStrategy(xdbPath),

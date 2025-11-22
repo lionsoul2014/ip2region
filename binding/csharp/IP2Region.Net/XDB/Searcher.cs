@@ -7,7 +7,6 @@
 
 using IP2Region.Net.Abstractions;
 using IP2Region.Net.Internal;
-using IP2Region.Net.Internal.Abstractions;
 using System.Buffers.Binary;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
@@ -18,23 +17,17 @@ namespace IP2Region.Net.XDB;
 /// <summary>
 /// <see cref="ISearcher"/> 实现类
 /// </summary>
-public class Searcher : ISearcher
+/// <remarks>
+/// <inheritdoc/>
+/// </remarks>
+public class Searcher(CachePolicy cachePolicy, string xdbPath) : ISearcher
 {
-    private readonly AbstractCacheStrategy _cacheStrategy;
+    private readonly ICacheStrategy _cacheStrategy = CacheStrategyFactory.CreateCacheStrategy(cachePolicy, xdbPath);
 
     /// <summary>
     /// <inheritdoc/>
     /// </summary>
     public int IoCount => _cacheStrategy.IoCount;
-
-    /// <summary>
-    /// <inheritdoc/>
-    /// </summary>
-    public Searcher(CachePolicy cachePolicy, string dbPath)
-    {
-        var factory = new CacheStrategyFactory(dbPath);
-        _cacheStrategy = factory.CreateCacheStrategy(cachePolicy);
-    }
 
     /// <summary>
     /// <inheritdoc/>
@@ -93,7 +86,7 @@ public class Searcher : ISearcher
         {
             int m = (int)(l + h) >> 1;
 
-            var p = (int)sPtr + m * indexSize;
+            var p = sPtr + m * indexSize;
             var buff = _cacheStrategy.GetData(p, indexSize);
 
             var s = buff.Span.Slice(0, length);
@@ -114,7 +107,7 @@ public class Searcher : ISearcher
             }
         }
 
-        var regionBuff = _cacheStrategy.GetData((int)dataPtr, dataLen);
+        var regionBuff = _cacheStrategy.GetData(dataPtr, dataLen);
         return Encoding.UTF8.GetString(regionBuff.Span.ToArray());
     }
 
