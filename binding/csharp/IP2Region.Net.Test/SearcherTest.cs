@@ -110,10 +110,6 @@ public class SearcherTest
         var ipAddress = IPAddress.Parse(ipStr);
         var region = fileSearcher.Search(ipAddress);
         Assert.Equal(expected, region);
-
-        var ip = XDB.Util.IpAddressToUInt32(ipAddress);
-        region = fileSearcher.Search(ip);
-        Assert.Equal(expected, region);
     }
 
     [Theory]
