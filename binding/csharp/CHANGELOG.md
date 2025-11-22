@@ -2,7 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [3.0.0] - 2025-11-22
+- 支持 .NET 10.0
+- 增加 IPv6 支持
+- 修复若干 bug
 
 ## [2.0.1] - 2023-07-30
 
