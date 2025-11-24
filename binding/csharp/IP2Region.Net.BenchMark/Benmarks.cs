@@ -10,6 +10,7 @@ using IP2Region.Net.XDB;
 
 namespace IP2Region.Net.BenchMark;
 
+[MemoryDiagnoser]
 public class Benchmarks
 {
     private static readonly string XdbPathV4 = Path.Combine(AppContext.BaseDirectory, "IP2Region", "ip2region_v4.xdb");
@@ -23,6 +24,17 @@ public class Benchmarks
 
     private readonly string _testIPv4Address = "114.114.114.114";
     private readonly string _testIPv6Address = "240e:3b7:3272:d8d0:db09:c067:8d59:539e";
+
+    public Benchmarks()
+    {
+        _contentV4Searcher.Search(_testIPv4Address);
+        _vectorV4Searcher.Search(_testIPv4Address);
+        _fileV4Searcher.Search(_testIPv4Address);
+
+        _contentV6Searcher.Search(_testIPv6Address);
+        _vectorV6Searcher.Search(_testIPv6Address);
+        _fileV6Searcher.Search(_testIPv6Address);
+    }
 
     [Benchmark]
     [BenchmarkCategory("IPv4")]

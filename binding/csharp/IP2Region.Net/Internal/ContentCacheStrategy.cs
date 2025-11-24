@@ -5,11 +5,9 @@
 // @Date   2023/07/25
 // Updated by Argo Zhang <argo@live.ca> at 2025/11/21
 
-using IP2Region.Net.Internal.Abstractions;
-
 namespace IP2Region.Net.Internal;
 
-class ContentCacheStrategy : AbstractCacheStrategy
+class ContentCacheStrategy : FileCacheStrategy
 {
     private readonly ReadOnlyMemory<byte> _cacheData;
 
@@ -20,5 +18,10 @@ class ContentCacheStrategy : AbstractCacheStrategy
         XdbFileStream.Dispose();
     }
 
-    public override ReadOnlyMemory<byte> GetData(long offset = 0, int length = 0) => _cacheData.Slice((int)offset, length);
+    public override ReadOnlyMemory<byte> GetData(long offset, int length) => _cacheData.Slice((int)offset, length);
+
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(false);
+    }
 }

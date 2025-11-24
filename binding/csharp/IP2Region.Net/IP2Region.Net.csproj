@@ -2,9 +2,9 @@
 
     <PropertyGroup>
         <id>IP2Region.Net</id>
-        <version>2.1.1</version>
+        <version>3.0.0</version>
         <title>IP2Region.Net</title>
-        <authors>Alan Lee</authors>
+        <authors>Alan Lee;Argo Zhang(argo@live.ca)</authors>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageProjectUrl>https://github.com/lionsoul2014/ip2region/tree/master/binding/csharp</PackageProjectUrl>

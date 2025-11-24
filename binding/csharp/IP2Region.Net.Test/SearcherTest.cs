@@ -78,6 +78,8 @@ public class SearcherTest
 
         searcher.Search("58.251.27.201");
         Assert.Equal(3, searcher.IoCount);
+
+        searcher.Dispose();
     }
 
     [Fact]
@@ -89,6 +91,8 @@ public class SearcherTest
 
         searcher.Search("58.251.27.201");
         Assert.Equal(2, searcher.IoCount);
+
+        searcher.Dispose();
     }
 
     [Fact]
@@ -100,6 +104,8 @@ public class SearcherTest
 
         searcher.Search("58.251.27.201");
         Assert.Equal(0, searcher.IoCount);
+
+        searcher.Dispose();
     }
 
     [Theory]
@@ -109,10 +115,6 @@ public class SearcherTest
         var fileSearcher = new Searcher(CachePolicy.File, _xdbPathV4);
         var ipAddress = IPAddress.Parse(ipStr);
         var region = fileSearcher.Search(ipAddress);
-        Assert.Equal(expected, region);
-
-        var ip = XDB.Util.IpAddressToUInt32(ipAddress);
-        region = fileSearcher.Search(ip);
         Assert.Equal(expected, region);
     }
 
