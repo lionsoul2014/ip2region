@@ -4,7 +4,6 @@ import java.security.CodeSource;
 
 import org.junit.Test;
 import org.lionsoul.ip2region.xdb.Log;
-import org.lionsoul.ip2region.xdb.Version;
 import org.lionsoul.ip2region.xdb.XdbException;
 
 public class ConfigTest {
@@ -22,19 +21,22 @@ public class ConfigTest {
     }
 
     @Test
-    public void testConfig() throws IOException, XdbException {
-        final Config config = new Config(Config.VIndexCache, Version.IPv4, getDataPath("ip2region_v4.xdb"), 5, 10);
-        log.debugf("config: %s", config);
+    public void testBuildV4Config() throws IOException, XdbException {
+        final Config v4Config = Config.custom()
+            .setCachePolicy(Config.BufferCache)
+            .setXdbPath(getDataPath("ip2region_v4.xdb"))
+            .setSeachers(20)
+            .asV4();
+        log.debugf("builded config: %s", v4Config);
     }
 
     @Test
-    public void testBuildConfig() throws IOException, XdbException {
-        final Config config = Config.custom()
-            .setCachePolicy(Config.BufferCache)
+    public void testBuildV6Config() throws IOException, XdbException {
+        final Config v4Config = Config.custom()
+            .setCachePolicy(Config.VIndexCache)
             .setXdbPath(getDataPath("ip2region_v6.xdb"))
-            .setMinSearchers(10)
-            .setMaxSearchers(30)
+            .setSeachers(20)
             .asV6();
-        log.debugf("builded config: %s", config);
+        log.debugf("builded config: %s", v4Config);
     }
 }

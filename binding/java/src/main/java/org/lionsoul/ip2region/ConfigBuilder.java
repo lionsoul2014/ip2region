@@ -5,7 +5,11 @@
 package org.lionsoul.ip2region;
 
 import java.io.IOException;
+import java.io.RandomAccessFile;
 
+import org.lionsoul.ip2region.xdb.Header;
+import org.lionsoul.ip2region.xdb.LongByteArray;
+import org.lionsoul.ip2region.xdb.Searcher;
 import org.lionsoul.ip2region.xdb.Version;
 import org.lionsoul.ip2region.xdb.XdbException;
 
@@ -22,11 +26,8 @@ public class ConfigBuilder {
     // xdb file path
     private String xdbPath = null;
 
-    // min searchers
-    private int minSearchers = 10;
-
-    // max searchers
-    private int maxSearchers = 30;
+    // searchers
+    private int searchers = 20;
 
     public ConfigBuilder() {}
 
@@ -44,24 +45,39 @@ public class ConfigBuilder {
         return this;
     }
 
-    public ConfigBuilder setMinSearchers(int minSearchers) {
-        this.minSearchers = minSearchers;
+    public ConfigBuilder setSeachers(int searchers) {
+        this.searchers = searchers;
         return this;
     }
 
-    public ConfigBuilder setMaxSearchers(int maxSearchers) {
-        this.maxSearchers = maxSearchers;
-        return this;
+    private Config build(Version ipVersion) throws IOException, XdbException {
+        // load the header and the cache buffer
+        final RandomAccessFile raf = new RandomAccessFile(xdbPath, "r");
+
+        // 1, verify the xdb
+        Searcher.verify(raf);
+
+        // 2, load the header
+        final Header header = Searcher.loadHeader(raf);
+
+        // 3, check and load the vector index buffer
+        final byte[] vIndex = cachePolicy == Config.VIndexCache ? Searcher.loadVectorIndex(raf) : null;
+
+        // 4, check and load the content buffer
+        final LongByteArray cBuffer = cachePolicy == Config.BufferCache ? Searcher.loadContent(raf) : null;
+
+        raf.close();
+        return new Config(cachePolicy, ipVersion, xdbPath, header, vIndex, cBuffer, searchers);
     }
 
     // build the final #Config instance for IPv4
     public Config asV4() throws IOException, XdbException {
-        return new Config(cachePolicy, Version.IPv4, xdbPath, minSearchers, maxSearchers);
+        return build(Version.IPv4);
     }
 
     // build the final #Config instance for IPv6
     public Config asV6() throws IOException, XdbException {
-        return new Config(cachePolicy, Version.IPv6, xdbPath, minSearchers, maxSearchers);
+        return build(Version.IPv6);
     }
 
 }
