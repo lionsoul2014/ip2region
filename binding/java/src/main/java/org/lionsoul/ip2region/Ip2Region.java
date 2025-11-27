@@ -26,16 +26,16 @@ public class Ip2Region {
     /* v6 pool */
     private final SearcherPool v6Pool;
 
-    public Ip2Region(Config v4Config, Config v6Config) {
+    public Ip2Region(Config v4Config, Config v6Config) throws IOException {
         this.v4Pool = new SearcherPool(v4Config);
         this.v6Pool = new SearcherPool(v6Config); 
     }
 
-    public String search(String ipString) throws InetAddressException, IOException {
+    public String search(String ipString) throws InetAddressException, IOException, InterruptedException {
         return search(Util.parseIP(ipString));
     }
 
-    public String search(byte[] ipBytes) throws InetAddressException, IOException {
+    public String search(byte[] ipBytes) throws InetAddressException, IOException, InterruptedException {
         // 1, define the pool with the input ip
         final SearcherPool pool;
         if (ipBytes.length == 4) {
@@ -47,21 +47,13 @@ public class Ip2Region {
         }
 
         // 2, get a searcher from the pool
-        final Searcher searcher = pool.getSearcher();
+        final Searcher searcher = pool.borrowSearcher();
 
         try {
             // 3, do the search
-            final String region = searcher.search(ipBytes);
-            return region;
-        } catch (InetAddressException e) {
-            // for the inet address error and we should return the searcher
-            throw e;
-        } catch (IOException e) {
-            // for the IOException usually means something is wrong with the read operation to the xdb file
-            // and we choose to keep the searcher and destory it right now
-            // so we will create a new one for the next search
-            try {searcher.close();} catch (IOException e1) {}
-            throw e;
+            return searcher.search(ipBytes);
+        } finally {
+            pool.returnSearcher(searcher);
         }
     }
 

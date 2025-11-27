@@ -29,6 +29,7 @@ public class Searcher {
     private final Version version;
 
     // random access file handle for file-based search
+    private final String xdbPath;
     private final RandomAccessFile handle;
 
     private int ioCount = 0;
@@ -61,6 +62,7 @@ public class Searcher {
 
     public Searcher(Version version, String dbFile, byte[] vectorIndex, LongByteArray cBuff) throws IOException {
         this.version = version;
+        this.xdbPath = dbFile;
         if (cBuff != null) {
             this.handle = null;
             this.vectorIndex = null;
@@ -171,6 +173,16 @@ public class Searcher {
         if (rLen != buffer.length) {
             throw new IOException("incomplete read: read bytes should be " + buffer.length);
         }
+    }
+
+    @Override public String toString() {
+        return String.format(
+            "%s->{version:%s, xdb:%s, vIndex:%s, cBuffer:%s}", 
+            super.toString(),
+            version.name, xdbPath, 
+            vectorIndex == null ? "null" : String.valueOf(vectorIndex.length),
+            contentBuff == null ? "null" : String.valueOf(contentBuff.length())
+        );
     }
 
     // --- static util function
