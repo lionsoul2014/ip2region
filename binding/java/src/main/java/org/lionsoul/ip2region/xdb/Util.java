@@ -79,4 +79,36 @@ public class Util
         return 0;
     }
 
+    public static byte[] ipAddOne(byte[] ip) {
+        final byte[] r = new byte[ip.length];
+        System.arraycopy(ip, 0, r, 0, ip.length);
+        for (int i = ip.length - 1; i >= 0; i--) {
+            final int v = (int)(r[i] & 0xFF);
+            if (v < 255) {    // No overflow
+                r[i]++;
+                break;
+            }
+
+            r[i] = 0;
+        }
+
+        return r;
+    }
+
+    public static byte[] ipSubOne(byte[] ip) {
+        final byte[] r = new byte[ip.length];
+        System.arraycopy(ip, 0, r, 0, ip.length);
+        for (int i = ip.length - 1; i >= 0; i--) {
+            final int v = (int)(r[i] & 0xFF);
+            if (v > 0) {    // No borrow needed
+                r[i]--;
+                break;
+            }
+
+            r[i] = (byte) 0xFF; // borrow from the next byte
+        }
+
+        return r;
+    }
+
 }
