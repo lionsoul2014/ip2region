@@ -1,31 +1,19 @@
 package org.lionsoul.ip2region;
 
-import java.security.CodeSource;
-
 import org.junit.Test;
 import org.lionsoul.ip2region.xdb.Log;
 import org.lionsoul.ip2region.xdb.Searcher;
 
 public class SearcherPoolTest {
 
-    private static final Log log = Log.getLogger(ConfigTest.class).setLevel(Log.DEBUG);
-
-    public String getDataPath(String xdbFile) {
-        final CodeSource cs = this.getClass().getProtectionDomain().getCodeSource();
-        if (cs != null) {
-            // log.debugf("code path: %s", cs.getLocation().getPath().concat("../../../../data/"));
-            return cs.getLocation().getPath().concat("../../../../data/").concat(xdbFile);
-        } else {
-            return "../../../../data/".concat(xdbFile);
-        }
-    }
+    private static final Log log = Log.getLogger(SearcherPoolTest.class).setLevel(Log.DEBUG);
 
     @Test
     public void testV4SeacherPool() throws Exception {
         final Config v4Config = Config.custom()
             .setCachePolicy(Config.VIndexCache)
             .setSeachers(5)
-            .setXdbPath(getDataPath("ip2region_v4.xdb"))
+            .setXdbPath(ConfigTest.getDataPath("ip2region_v4.xdb"))
             .asV4();
 
         
@@ -49,7 +37,7 @@ public class SearcherPoolTest {
         final Config v6Config = Config.custom()
             .setCachePolicy(Config.VIndexCache)
             .setSeachers(5)
-            .setXdbPath(getDataPath("ip2region_v6.xdb"))
+            .setXdbPath(ConfigTest.getDataPath("ip2region_v6.xdb"))
             .asV6();
 
         

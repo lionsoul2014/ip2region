@@ -94,10 +94,14 @@ public class SearcherPool {
 
     // close the searcher pool
     public void close() throws InterruptedException {
+        close(10000);
+    }
+
+    public void close(long timeoutMillis) throws InterruptedException {
         lock.lock();
         try {
             while (loanCount > 0) {
-                fullCondition.wait();
+                fullCondition.wait(timeoutMillis);
             }
 
             final Iterator<Searcher> it = pool.iterator();

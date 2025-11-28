@@ -10,8 +10,8 @@ public class ConfigTest {
 
     private static final Log log = Log.getLogger(ConfigTest.class).setLevel(Log.DEBUG);
 
-    public String getDataPath(String xdbFile) {
-        final CodeSource cs = this.getClass().getProtectionDomain().getCodeSource();
+    public static final String getDataPath(String xdbFile) {
+        final CodeSource cs = ConfigTest.class.getProtectionDomain().getCodeSource();
         if (cs != null) {
             // log.debugf("code path: %s", cs.getLocation().getPath().concat("../../../../data/"));
             return cs.getLocation().getPath().concat("../../../../data/").concat(xdbFile);
