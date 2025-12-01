@@ -87,7 +87,7 @@ ip2region 项目的核心在于 <b>研究 IP 数据的存储和快速查询的�
 |:------------------------------------|:-------------------------|:-------------------|:-------------------|:-------------------------------------------|
 | [Golang](maker/golang#xdb-数据编辑) | golang IP 原始数据编辑器 | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)    |
 | [Java](maker/java#xdb-数据编辑)     | java IP 原始数据编辑器   | :white_check_mark: | :soon:             | [Lion](https://github.com/lionsoul2014)    |
-| [C++](maker/cpp)       | C++ IP 原始数据编辑器    | :white_check_mark: | :white_check_mark:                | [Yunbin Liu](https://github.com/liuyunbin) |
+| [C++](maker/cpp)                    | C++ IP 原始数据编辑器    | :white_check_mark: | :white_check_mark: | [Yunbin Liu](https://github.com/liuyunbin) |
 
 
 ### 检测自动更新
@@ -101,7 +101,7 @@ Ip2Region 官方社区正式上线于 `2025/06/12` 日，一方面提供了稳�
 # 相关备注
 
 ### 1、并发查询必读
-如果你使用的 `binding` 提供了并发安全的查询服务，例如[Java](./binding/java)，**请优先使用该并发安全的查询服务**；底层的 xdb 实现，除了完全基于内存的查询 <b>是</b> 并发安全的，其他基于文件的查询都 <b>不是</b> 并发安全的，不同进程/线程/协程需要通过创建不同的查询对象来安全使用，并发量很大的情况下，基于文件查询的方式可能会打开很多 xdb 文件，请修改内核的最大允许打开文件数(fs.file-max=一个更高的值)。
+如果你使用的 `binding` 提供了并发安全的查询服务，例如 [Java](binding/java)，**请优先使用该并发安全的查询服务**；底层的 xdb 实现，除了完全基于内存的查询 <b>是</b> 并发安全的，其他基于文件的查询都 <b>不是</b> 并发安全的，不同进程/线程/协程需要通过创建不同的查询对象来安全使用，并发量很大的情况下，基于文件查询的方式可能会打开很多 xdb 文件，请修改内核的最大允许打开文件数(fs.file-max=一个更高的值)。
 
 ### 2、核心 xdb 技术：
 1. xdb 数据结构分析：[“ip2region xdb-数据结构描述“](https://ip2region.net/doc/xdb/structure)
