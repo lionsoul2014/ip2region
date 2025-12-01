@@ -46,7 +46,7 @@ API 介绍，使用文档和测试程序请参考对应 `searcher` 查询客户�
 | [Csharp](binding/csharp)         | csharp xdb 查询客户端                          | :white_check_mark: | :white_check_mark: | [Alen Lee](https://github.com/malus2077) & [ArgoZhang](https://github.com/ArgoZhang) |
 | [Erlang](binding/erlang)         | erlang xdb 查询客户端                          | :white_check_mark: | :x:                | [malou](https://github.com/malou996)              |
 | [Nginx](binding/nginx)           | nginx 扩展 xdb 查询客户端                      | :white_check_mark: | :x:                | [Wu Jian Ping](https://github.com/wujjpp)         |
-| [C++](binding/cpp)               | C++ xdb 查询客户端                             | :white_check_mark: | :x:                | [Yunbin Liu](https://github.com/liuyunbin)        |
+| [C++](binding/cpp)               | C++ xdb 查询客户端                             | :white_check_mark: | :white_check_mark:                | [Yunbin Liu](https://github.com/liuyunbin)        |
 
 
 以下工具链实现由社区开发者通过第三方仓库贡献：
@@ -69,13 +69,13 @@ API 介绍，使用文档和测试程序请参考如下 `maker` 生成程序下�
 | [Python](maker/python)  | python xdb 生成程序  | :white_check_mark: | :x:                | [leolin49](https://github.com/leolin49)                                                     |
 | [Csharp](maker/csharp)  | csharp xdb 生成程序  | :white_check_mark: | :x:                | [Alan Lee](https://github.com/malus2077)                                                    |
 | [Rust](maker/rust)      | rust xdb 生成程序    | :white_check_mark: | :white_check_mark: | [KevinWang](https://github.com/KevinWL) & [gongzhengyang](https://github.com/gongzhengyang) |
-| [C++](maker/cpp)        | C++ xdb 生成程序     | :white_check_mark: | :x:                | [Yunbin Liu](https://github.com/liuyunbin)                                                  |
-                                                 
-                                                
+| [C++](maker/cpp)        | C++ xdb 生成程序     | :white_check_mark: | :white_check_mark: | [Yunbin Liu](https://github.com/liuyunbin)                                                  |
+
+
 # `xdb` 数据更新
-                                                 
+
 ip2region 项目的核心在于 <b>研究 IP 数据的存储和快速查询的设计和实现</b>， 项目自带的 `./data/ipv4_source.txt` 和 `./data/ipv6_source.txt` 原始数据不会再提供更新，对于数据精度和更新频率要求很高的使用场景建议到 [Ip2Region社区](https://ip2region.net/products/offline) 或者第三方购买商用离线数据，你可以使用如下几种方式来尝试自己更新数据：
-                                                     
+
 ### 手动编辑更新
 你可以基于 ip2region 自带的 `./data/ipv4_source.txt` 和 `./data/ipv6_source.txt` 原始 IP 数据用 ip2region 提供的编辑工具来自己修改，目前数据源有如下几种方式：
 1. ip2region 社区提供的数据（请参考地底部的公众号关注社区通知）
@@ -87,7 +87,7 @@ ip2region 项目的核心在于 <b>研究 IP 数据的存储和快速查询的�
 |:------------------------------------|:-------------------------|:-------------------|:-------------------|:-------------------------------------------|
 | [Golang](maker/golang#xdb-数据编辑) | golang IP 原始数据编辑器 | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)    |
 | [Java](maker/java#xdb-数据编辑)     | java IP 原始数据编辑器   | :white_check_mark: | :soon:             | [Lion](https://github.com/lionsoul2014)    |
-| [C++](maker/cpp#xdb-数据编辑)       | C++ IP 原始数据编辑器    | :white_check_mark: | :x:                | [Yunbin Liu](https://github.com/liuyunbin) |
+| [C++](maker/cpp)       | C++ IP 原始数据编辑器    | :white_check_mark: | :white_check_mark:                | [Yunbin Liu](https://github.com/liuyunbin) |
 
 
 ### 检测自动更新
