@@ -4,7 +4,7 @@
 
     <groupId>org.lionsoul</groupId>
     <artifactId>ip2region</artifactId>
-    <version>3.1.1</version>
+    <version>3.2.0</version>
     <packaging>jar</packaging>
 
     <name>ip2region</name>
@@ -116,7 +116,7 @@
                         <configuration>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>org.lionsoul.ip2region.SearchApp</mainClass>
+                                    <mainClass>org.lionsoul.ip2region.SearcherTest</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>

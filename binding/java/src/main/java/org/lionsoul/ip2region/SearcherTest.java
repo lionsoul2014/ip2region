@@ -17,7 +17,7 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.util.concurrent.TimeUnit;
 
-public class SearchApp {
+public class SearcherTest {
 
     public static void printHelp(String[] args) {
         System.out.print("ip2region xdb searcher\n");

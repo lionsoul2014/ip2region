@@ -7,9 +7,47 @@
 <dependency>
     <groupId>org.lionsoul</groupId>
     <artifactId>ip2region</artifactId>
-    <version>3.1.1</version>
+    <version>3.2.0</version>
 </dependency>
 ```
+
+### 关于查询服务
+从 `3.2.0` 版本开始提供了一个双协议兼容且并发安全的 `Ip2Region` 查询服务，**建议优先使用该方式来进行查询调用**，具体使用方式如下：
+```java
+// 1, 创建 v4 的配置：指定缓存策略和 v4 的 xdb 文件路径
+final Config v4Config = Config.custom()
+    .setCachePolicy(Config.VIndexCache)     // 指定缓存策略:  NoCache / VIndexCache / BufferCache
+    .setSeachers(15)                        // 设置初始化的查询器数量
+    .setXdbPath("ip2region v4 xdb path")    // 设置 v4 xdb 文件的路径
+    .asV4();    // 指定为 v4 配置
+
+// 2, 创建 v6 的配置：指定缓存策略和 v6 的 xdb 文件路径
+final Config v6Config = Config.custom()
+    .setCachePolicy(Config.VIndexCache)     // 指定缓存策略: NoCache / VIndexCache / BufferCache
+    .setSeachers(15)                        // 设置初始化的查询器数量
+    .setXdbPath("ip2region v6 xdb path")    // 设置 v6 xdb 文件的路径
+    .asV6();    // 指定为 v6 配置
+
+// 3，通过上述配置创建 Ip2Region 查询服务
+final Ip2Region ip2Region = Ip2Region.create(v4Config, v6Config);
+
+// 4，导出 ip2region 服务进行双版本的IP地址的并发查询，例如：
+final String v4Region = ip2Region.search("113.92.157.29");                          // 进行 IPv4 查询
+final String v6Region = ip2Region.search("240e:3b7:3272:d8d0:db09:c067:8d59:539e"); // 进行 IPv6 查询
+
+// 5，在服务需要关闭的时候，同时关闭 ip2region 查询服务
+ip2Region.close();
+```
+关于 `Ip2Region`查询服务的信息：
+1. 该查询服务的 API 并发安全且同时支持 `IPv4` 和 `Ipv6` 的地址，内部实现会自动判断。
+2. v4 和 v6 的配置需要单独创建，可以给 v4 和 v6 设置使用不同的缓存策略，也可以指定其中一个为 `null` 则该版本的 IP 地址查询都会返回 `null`。
+3. 请结合您项目的并发数给 `setSearchers` 一个合适的查询器数量，默认为 20 个，这个值在运行过程中是固定的，每次查询会从池子里租借一个查询器来完成查询操作，查询完成后再归还回去，如果租借的时候池子已经空了则等待直到有可用的查询器来完成查询服务，租借的锁是使用的 `ReentrantLock` 来管理，也可以通过如下方式来设置 `Ip2Region` 查询服务使用公平锁：
+```java
+final Ip2Region ip2region = Ip2Region.create(v4Config, v6Config, true);
+```
+4. 如果配置设置的缓存策略为 `Config.BufferCache` 即 `全内存缓存` 则默认会使用单实例的内存查询器，该实现天生并发安全，此时通过 `setSearchers` 指定的查询器数量无效。
+5. 如果 `ip2region` 查询器在提供服务期间，调用 close 默认会最大等待 10 秒钟来等待尽量多的查询器归还。
+
 
 ### 关于查询 API
 定位信息查询 API 的原型为：
