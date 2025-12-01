@@ -33,6 +33,14 @@ public class Ip2Region {
     /* v6 xdb searcher for cache policy cBuffer */
     private final Searcher v6InMemSearcher;
 
+    public static final Ip2Region create(final Config v4Config, final Config v6Config) throws IOException {
+        return new Ip2Region(v4Config, v6Config).init();
+    }
+
+    public static final Ip2Region create(final String v4XdbPath, final String v6XdbPath) throws IOException, XdbException {
+        return new Ip2Region(v4XdbPath, v6XdbPath).init();
+    }
+
     /**
      * init the ip2reigon with two xdb file path and default cachePolicy vIndex.
      * set it to null to disabled the search for specified version
@@ -42,7 +50,7 @@ public class Ip2Region {
      * @throws XdbException 
      * @throws IOException 
     */
-    public Ip2Region(String v4XdbPath, String v6XdbPath) throws IOException, XdbException {
+    protected Ip2Region(String v4XdbPath, String v6XdbPath) throws IOException, XdbException {
         this(
             v4XdbPath == null ? null : Config.custom().setXdbPath(v4XdbPath).asV4(), 
             v6XdbPath == null ? null : Config.custom().setXdbPath(v6XdbPath).asV6()
@@ -57,7 +65,7 @@ public class Ip2Region {
      * @param v6Config
      * @throws IOException
     */ 
-    public Ip2Region(Config v4Config, Config v6Config) throws IOException {
+    protected Ip2Region(Config v4Config, Config v6Config) throws IOException {
         if (v4Config == null) {
             // @Note: with IPv4 disabled ?
             this.v4InMemSearcher = null;
@@ -79,8 +87,21 @@ public class Ip2Region {
             this.v6Pool = null;
         } else {
             this.v6InMemSearcher = null;
-            this.v6Pool = new SearcherPool(v6Config); 
+            this.v6Pool = new SearcherPool(v6Config);
         }
+    }
+
+    // init the current ip2region service
+    protected Ip2Region init() throws IOException {
+        if (v4Pool != null) {
+            v4Pool.init();
+        }
+
+        if (v6Pool != null) {
+            v6Pool.init();
+        }
+
+        return this;
     }
 
     public String search(String ipString) throws InetAddressException, IOException, InterruptedException {

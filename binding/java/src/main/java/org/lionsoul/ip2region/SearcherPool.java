@@ -20,11 +20,8 @@ import org.lionsoul.ip2region.xdb.Searcher;
  * Date 2025/11/21
 */
 public class SearcherPool {
-    public static final int WAIT_OVERLOADED = 1;
-    public static final int NEW_OVERLOADED = 2;
-
     // config instance
-    private final Config config;
+    public final Config config;
 
     // searcher pool
     private final Queue<Searcher> pool;
@@ -37,11 +34,20 @@ public class SearcherPool {
     // searcher numbers that was loaned out
     private int loanCount;
 
-    public SearcherPool(Config config) throws IOException {
+    // static method to create and init the searcher pool
+    public static final SearcherPool create(final Config config) throws IOException {
+        return new SearcherPool(config).init();
+    }
+
+    public static final SearcherPool create(final Config config, boolean fair) throws IOException {
+        return new SearcherPool(config, fair).init();
+    }
+
+    protected SearcherPool(Config config) throws IOException {
         this(config, false);
     }
 
-    public SearcherPool(Config config, boolean fair) throws IOException {
+    protected SearcherPool(Config config, boolean fair) {
         assert config.searchers > 0;
         this.config = config;
         this.pool = new LinkedList<>();
@@ -49,16 +55,16 @@ public class SearcherPool {
         this.emptyCondition = this.lock.newCondition();
         this.fullCondition = this.lock.newCondition();
         this.loanCount = 0;
+    }
 
+    protected SearcherPool init() throws IOException {
         // create the searchers
-        for (int i = 0; i < config.searchers; i++) {
+        for (int i = pool.size(); i < config.searchers; i++) {
             final Searcher searcher = new Searcher(config.ipVersion, config.xdbPath, config.vIndex, config.cBuffer);
             pool.add(searcher);
         }
-    }
 
-    public Config getConfig() {
-        return config;
+        return this;
     }
 
     public Searcher borrowSearcher() throws InterruptedException {

@@ -18,7 +18,7 @@ public class SearcherPoolTest {
 
         
         final String ipStr = "58.250.36.41";
-        final SearcherPool v4Pool = new SearcherPool(v4Config);
+        final SearcherPool v4Pool = SearcherPool.create(v4Config);
         for (int i = 0; i < 20; i++) {
             final Searcher searcher = v4Pool.borrowSearcher();
             log.debugf("borrowed searcher %d: %s", i, searcher.toString());
@@ -42,7 +42,7 @@ public class SearcherPoolTest {
 
         
         final String ipStr = "240e:3b7:3272:d8d0:db09:c067:8d59:539e";
-        final SearcherPool v4Pool = new SearcherPool(v6Config);
+        final SearcherPool v4Pool = SearcherPool.create(v6Config);
         for (int i = 0; i < 20; i++) {
             final Searcher searcher = v4Pool.borrowSearcher();
             log.debugf("borrowed searcher %d: %s", i, searcher.toString());
