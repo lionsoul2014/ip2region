@@ -1,5 +1,7 @@
 package org.lionsoul.ip2region;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 
@@ -110,10 +112,15 @@ public class Ip2RegionTest {
             final Runnable t = new Runnable() {
                 @Override
                 public void run() {
-                    for (int i = 0; i < 1000; i++) {
+                    for (int i = 0; i < 2000; i++) {
                         final byte[] ipBytes = i % 2 == 0 ? v4Bytes : v6Bytes;
                         try {
-                            ip2Region.search(ipBytes);
+                            final String region = ip2Region.search(ipBytes);
+                            if (ipBytes.length == 4) {
+                                assertEquals("v4 region not equals", region, "中国|广东省|深圳市|电信");
+                            } else {
+                                assertEquals("v6 region not equals", region, "中国|广东省|深圳市|家庭宽带");
+                            }
                         } catch (InetAddressException | IOException | InterruptedException e) {
                             log.errorf("failed to search(%s): %s", Util.ipToString(ipBytes), e.getMessage());
                         }
