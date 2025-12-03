@@ -45,7 +45,7 @@ public class ConfigBuilder {
         return this;
     }
 
-    public ConfigBuilder setSeachers(int searchers) {
+    public ConfigBuilder setSearchers(int searchers) {
         this.searchers = searchers;
         return this;
     }
