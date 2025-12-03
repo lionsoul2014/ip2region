@@ -17,69 +17,6 @@ import (
 	"os"
 )
 
-const (
-	Structure20      = 2
-	Structure30      = 3
-	HeaderInfoLength = 256
-	VectorIndexRows  = 256
-	VectorIndexCols  = 256
-	VectorIndexSize  = 8
-)
-
-// --- Index policy define
-
-type IndexPolicy int
-
-const (
-	VectorIndexPolicy IndexPolicy = 1
-	BTreeIndexPolicy  IndexPolicy = 2
-)
-
-func (i IndexPolicy) String() string {
-	switch i {
-	case VectorIndexPolicy:
-		return "VectorIndex"
-	case BTreeIndexPolicy:
-		return "BtreeIndex"
-	default:
-		return "unknown"
-	}
-}
-
-// --- Header define
-
-type Header struct {
-	// data []byte
-	Version       uint16
-	IndexPolicy   IndexPolicy
-	CreatedAt     uint32
-	StartIndexPtr uint32
-	EndIndexPtr   uint32
-
-	// since IPv6 supporting
-	IPVersion       int
-	RuntimePtrBytes int
-}
-
-func NewHeader(input []byte) (*Header, error) {
-	if len(input) < 16 {
-		return nil, fmt.Errorf("invalid input buffer")
-	}
-
-	return &Header{
-		Version:       binary.LittleEndian.Uint16(input[0:]),
-		IndexPolicy:   IndexPolicy(binary.LittleEndian.Uint16(input[2:])),
-		CreatedAt:     binary.LittleEndian.Uint32(input[4:]),
-		StartIndexPtr: binary.LittleEndian.Uint32(input[8:]),
-		EndIndexPtr:   binary.LittleEndian.Uint32(input[12:]),
-
-		IPVersion:       int(binary.LittleEndian.Uint16(input[16:])),
-		RuntimePtrBytes: int(binary.LittleEndian.Uint16(input[18:])),
-	}, nil
-}
-
-// --- searcher implementation
-
 type Searcher struct {
 	version *Version
 	handle  *os.File
