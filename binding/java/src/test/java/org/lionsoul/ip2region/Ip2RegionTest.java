@@ -19,13 +19,13 @@ public class Ip2RegionTest {
     public void TestConfigCreate() throws IOException, XdbException, InetAddressException, InterruptedException {
         final Config v4Config = Config.custom()
             .setCachePolicy(Config.NoCache)
-            .setSeachers(10)
+            .setSearchers(10)
             .setXdbPath(ConfigTest.getDataPath("ip2region_v4.xdb"))
             .asV4();
 
         final Config v6Config = Config.custom()
             .setCachePolicy(Config.VIndexCache)
-            .setSeachers(10)
+            .setSearchers(10)
             .setXdbPath(ConfigTest.getDataPath("ip2region_v6.xdb"))
             .asV6();
 
@@ -92,13 +92,13 @@ public class Ip2RegionTest {
     public void TestConcurrentCall() throws IOException, XdbException, InetAddressException, InterruptedException {
         final Config v4Config = Config.custom()
             .setCachePolicy(Config.VIndexCache)
-            .setSeachers(15)
+            .setSearchers(15)
             .setXdbPath(ConfigTest.getDataPath("ip2region_v4.xdb"))
             .asV4();
 
         final Config v6Config = Config.custom()
             .setCachePolicy(Config.VIndexCache)
-            .setSeachers(15)
+            .setSearchers(15)
             .setXdbPath(ConfigTest.getDataPath("ip2region_v6.xdb"))
             .asV6();
 
