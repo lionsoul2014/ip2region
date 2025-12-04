@@ -17,14 +17,14 @@
 // 1, 创建 v4 的配置：指定缓存策略和 v4 的 xdb 文件路径
 final Config v4Config = Config.custom()
     .setCachePolicy(Config.VIndexCache)     // 指定缓存策略:  NoCache / VIndexCache / BufferCache
-    .setSearchers(15)                        // 设置初始化的查询器数量
+    .setSearchers(15)                       // 设置初始化的查询器数量
     .setXdbPath("ip2region v4 xdb path")    // 设置 v4 xdb 文件的路径
     .asV4();    // 指定为 v4 配置
 
 // 2, 创建 v6 的配置：指定缓存策略和 v6 的 xdb 文件路径
 final Config v6Config = Config.custom()
     .setCachePolicy(Config.VIndexCache)     // 指定缓存策略: NoCache / VIndexCache / BufferCache
-    .setSearchers(15)                        // 设置初始化的查询器数量
+    .setSearchers(15)                       // 设置初始化的查询器数量
     .setXdbPath("ip2region v6 xdb path")    // 设置 v6 xdb 文件的路径
     .asV6();    // 指定为 v6 配置
 
