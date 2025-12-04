@@ -111,6 +111,23 @@ func newConfig(cachePolicy int, ipVersion *xdb.Version, xdbPath string, searcher
 	}, nil
 }
 
+func (c *Config) String() string {
+	vIndex := "null"
+	if c.vIndex != nil {
+		vIndex = fmt.Sprintf("{bytes:%d}", len(c.vIndex))
+	}
+
+	cBuffer := "null"
+	if c.cBuffer != nil {
+		cBuffer = fmt.Sprintf("{bytes:%d}", len(c.cBuffer))
+	}
+
+	return fmt.Sprintf(
+		"{cache_policy:%d, version:%s, xdb_path:%s, header:%s, v_index:%s, c_buffer:%s}",
+		c.cachePolicy, c.ipVersion.String(), c.xdbPath, c.header.String(), vIndex, cBuffer,
+	)
+}
+
 func (c *Config) CachePolicy() int {
 	return c.cachePolicy
 }
