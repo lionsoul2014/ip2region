@@ -43,7 +43,7 @@ func NewV4Config(cachePolicy int, xdbPath string, searchers int) (*Config, error
 }
 
 func NewV6Config(cachePolicy int, xdbPath string, searchers int) (*Config, error) {
-	return newConfig(cachePolicy, xdb.IPv4, xdbPath, searchers)
+	return newConfig(cachePolicy, xdb.IPv6, xdbPath, searchers)
 }
 
 func newConfig(cachePolicy int, ipVersion *xdb.Version, xdbPath string, searchers int) (*Config, error) {
