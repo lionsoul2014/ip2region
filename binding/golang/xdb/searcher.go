@@ -33,7 +33,19 @@ type Searcher struct {
 	contentBuff []byte
 }
 
-func baseNew(version *Version, dbFile string, vIndex []byte, cBuff []byte) (*Searcher, error) {
+func NewWithFileOnly(version *Version, dbFile string) (*Searcher, error) {
+	return NewSearcher(version, dbFile, nil, nil)
+}
+
+func NewWithVectorIndex(version *Version, dbFile string, vIndex []byte) (*Searcher, error) {
+	return NewSearcher(version, dbFile, vIndex, nil)
+}
+
+func NewWithBuffer(version *Version, cBuff []byte) (*Searcher, error) {
+	return NewSearcher(version, "", nil, cBuff)
+}
+
+func NewSearcher(version *Version, dbFile string, vIndex []byte, cBuff []byte) (*Searcher, error) {
 	var err error
 
 	// content buff first
@@ -58,23 +70,11 @@ func baseNew(version *Version, dbFile string, vIndex []byte, cBuff []byte) (*Sea
 	}, nil
 }
 
-func NewWithFileOnly(version *Version, dbFile string) (*Searcher, error) {
-	return baseNew(version, dbFile, nil, nil)
-}
-
-func NewWithVectorIndex(version *Version, dbFile string, vIndex []byte) (*Searcher, error) {
-	return baseNew(version, dbFile, vIndex, nil)
-}
-
-func NewWithBuffer(version *Version, cBuff []byte) (*Searcher, error) {
-	return baseNew(version, "", nil, cBuff)
-}
-
 func (s *Searcher) Close() {
 	if s.handle != nil {
 		err := s.handle.Close()
 		if err != nil {
-			return
+			// do error log here ?
 		}
 	}
 }
