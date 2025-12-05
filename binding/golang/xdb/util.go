@@ -55,6 +55,33 @@ func IPCompare(ip1, ip2 []byte) int {
 	return bytes.Compare(ip1, ip2)
 }
 
+func IPAddOne(ip []byte) []byte {
+	var r = make([]byte, len(ip))
+	copy(r, ip)
+	for i := len(ip) - 1; i >= 0; i-- {
+		r[i]++
+		if r[i] != 0 { // No overflow
+			break
+		}
+	}
+
+	return r
+}
+
+func IPSubOne(ip []byte) []byte {
+	var r = make([]byte, len(ip))
+	copy(r, ip)
+	for i := len(ip) - 1; i >= 0; i-- {
+		if r[i] != 0 { // No borrow needed
+			r[i]--
+			break
+		}
+		r[i] = 0xFF // borrow from the next byte
+	}
+
+	return r
+}
+
 // Verify if the current Searcher could be used to search the specified xdb file.
 // Why do we need this check ?
 // The future features of the xdb impl may cause the current searcher not able to work properly.

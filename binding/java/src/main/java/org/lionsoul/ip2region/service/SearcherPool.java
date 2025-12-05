@@ -2,7 +2,7 @@
 // Use of this source code is governed by a Apache2.0-style
 // license that can be found in the LICENSE file.
 
-package org.lionsoul.ip2region;
+package org.lionsoul.ip2region.service;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -65,6 +65,13 @@ public class SearcherPool {
         }
 
         return this;
+    }
+
+    public int getLoanCount() {
+        lock.lock();
+        int lc = this.loanCount;
+        lock.unlock();
+        return lc;
     }
 
     public Searcher borrowSearcher() throws InterruptedException {

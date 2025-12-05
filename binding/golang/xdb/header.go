@@ -76,3 +76,10 @@ func NewHeader(input []byte) (*Header, error) {
 		RuntimePtrBytes: int(binary.LittleEndian.Uint16(input[18:])),
 	}, nil
 }
+
+func (h *Header) String() string {
+	return fmt.Sprintf(
+		"{version:%d, index_policy:%d, created_at:%d, start_index_ptr:%d, end_index_ptr:%d, ip_version:%d, runtime_ptr_bytes:%d}",
+		h.Version, h.IndexPolicy, h.CreatedAt, h.StartIndexPtr, h.EndIndexPtr, h.IPVersion, h.RuntimePtrBytes,
+	)
+}

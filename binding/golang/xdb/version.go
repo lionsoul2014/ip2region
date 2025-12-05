@@ -20,6 +20,13 @@ type Version struct {
 	IPCompare func([]byte, []byte) int
 }
 
+func (v *Version) String() string {
+	return fmt.Sprintf(
+		"{id:%d, name:%s, bytes:%d, segment_index_size:%d}",
+		v.Id, v.Name, v.Bytes, v.SegmentIndexSize,
+	)
+}
+
 const (
 	IPv4VersionNo = 4
 	IPv6VersionNo = 6

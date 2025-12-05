@@ -1,9 +1,10 @@
-package org.lionsoul.ip2region;
+package org.lionsoul.ip2region.service;
 
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
 import org.lionsoul.ip2region.xdb.InetAddressException;
@@ -104,15 +105,16 @@ public class Ip2RegionTest {
 
         byte[] v4Bytes = Util.parseIP("113.92.157.29");
         byte[] v6Bytes = Util.parseIP("240e:3b7:3272:d8d0:db09:c067:8d59:539e");
-        final int threads = 50;
+        final int threads = 100;
         final Ip2Region ip2Region = Ip2Region.create(v4Config, v6Config);
         final CountDownLatch latch = new CountDownLatch(threads);
-        final long startTime = System.currentTimeMillis();
+        final AtomicInteger count = new AtomicInteger(0);
+        final long tStart = System.nanoTime();
         for (int i = 0; i < threads; i++) {
             final Runnable t = new Runnable() {
                 @Override
                 public void run() {
-                    for (int i = 0; i < 2000; i++) {
+                    for (int i = 0; i < 5000; i++) {
                         final byte[] ipBytes = i % 2 == 0 ? v4Bytes : v6Bytes;
                         try {
                             final String region = ip2Region.search(ipBytes);
@@ -124,6 +126,8 @@ public class Ip2RegionTest {
                         } catch (InetAddressException | IOException | InterruptedException e) {
                             log.errorf("failed to search(%s): %s", Util.ipToString(ipBytes), e.getMessage());
                         }
+
+                        count.incrementAndGet();
                     }
 
                     latch.countDown();
@@ -133,8 +137,8 @@ public class Ip2RegionTest {
         }
 
         latch.await();
-        final long costs = System.currentTimeMillis() - startTime;
-        log.debugf("all search finished in %dms", costs);
+        final long costs = System.nanoTime() - tStart;
+        log.debugf("%d searches finished in %dms, avg took: %dµs", count.get(), costs / 1000_000, costs / count.get() / 1000);
         ip2Region.close();
         log.debugf("ip2region closed gracefully");
     }

@@ -7,9 +7,53 @@
 go get github.com/lionsoul2014/ip2region/binding/golang
 ```
 
+### 关于查询服务
+从 `3.11.0` 版本开始提供了一个双协议兼容且并发安全的 `Ip2Region` 查询服务，建议优先使用该方式来进行查询调用，具体使用方式如下：
+```go
+import "github.com/lionsoul2014/ip2region/binding/golang/service"
+
+// 1, 创建 v4 的配置：指定缓存策略和 v4 的 xdb 文件路径
+// 参数1： 缓存策略, options: service.NoCache / service.VIndexCache / service.BufferCache
+// 参数2: xdb 文件路径
+// 参数3: 初始化的查询器数量
+v4Config, err := service.NewV4Config(service.VIndexCache, "ip2region v4 xdb path", 20)
+if err != nil {
+    return fmt.Errorf("failed to create v4 config: %s", err)
+}
+
+// 2, 创建 v6 的配置：指定缓存策略和 v6 的 xdb 文件路径
+v6Config, err := service.NewV6Config(service.VIndexCache, "ip2region v6 xdb path", 20)
+if err != nil {
+    return fmt.Errorf("failed to create v6 config: %s", err)
+}
+
+// 3，通过上述配置创建 Ip2Region 查询服务
+ip2region, err := service.NewIp2Region(v4Config, v6Config)
+if err != nil {
+    return fmt.Errorf("failed to create ip2region service: %s", err)
+}
+
+// 4，导出 ip2region 服务进行双版本的IP地址的并发查询，例如：
+var err error
+v4Region, err := ip2region.SearchByStr("113.92.157.29")                          // 进行 IPv4 查询
+v6Region, err := ip2region.SearchByStr("240e:3b7:3272:d8d0:db09:c067:8d59:539e") // 进行 IPv6 查询
+
+
+// 5，在服务需要关闭的时候，同时关闭 ip2region 查询服务
+ip2region.Close()
+```
+
+##### `Ip2Region` 查询备注:
+1. 该查询服务的 API 并发安全且同时支持 IPv4 和 Ipv6 的地址，内部实现会自动判断。
+2. v4 和 v6 的配置需要单独创建，可以给 v4 和 v6 设置使用不同的缓存策略，也可以指定其中一个为 `nil` 则该版本的 IP 地址查询都会返回 `""`。
+3. 请结合您的项目的并发数设置一个合适的查询器数量，这个值在运行过程中是固定的，每次查询会从池子里租借一个查询器来完成查询操作，查询完成后再归还回去，如果租借的时候池子已经空了则等待直到有可用的查询器来完成查询服务。
+4. 如果配置设置的缓存策略为 `service.BufferCache` 即 `全内存缓存` 则默认会使用单实例的内存查询器，该实现天生并发安全，此时指定的查询器数量无效。
+5. 如果 `Ip2Region` 查询器在提供服务期间，调用 Close 默认会最大等待 10 秒钟来等待尽量多的查询器归还，也可以调用 `CloseTimeout` 来自定义最长等待时间。
+
+
 ### 关于查询 API
 定位信息查询 API 原型为：
-```golang
+```go
 SearchByStr(string) (string, error)
 Search([]byte) (string, error)
 ```
@@ -17,7 +61,7 @@ Search([]byte) (string, error)
 
 ### 关于 IPv4 / IPv6
 该 xdb 查询客户端实现同时支持对 IPv4 和 IPv6 的查询，使用方式如下：
-```golang
+```go
 // 如果是 IPv4: 设置 xdb 路径为 v4 的 xdb 文件，IP版本指定为 xdb.IPv4
 dbPath := "../../data/ip2region_v4.xdb"  // 或者你的 ipv4 xdb 的路径
 version := xdb.IPv4
@@ -33,7 +77,7 @@ version = xdb.IPv6
 ### 文件验证
 建议您主动去验证 xdb 文件的适用性，因为后期的一些新功能可能会导致目前的 Searcher 版本无法适用你使用的 xdb 文件，验证可以避免运行过程中的一些不可预测的错误。
 你不需要每次都去验证，例如在服务启动的时候，或者手动调用命令验证确认版本匹配即可，不要在每次创建的 Searcher 的时候运行验证，这样会影响查询的响应速度，尤其是高并发的使用场景。
-```golang
+```go
 err := xdb.VerifyFromFile(dbPath)
 if err != nil {
 	// err 包含的验证的错误
@@ -45,7 +89,7 @@ if err != nil {
 
 ### 完全基于文件的查询
 
-```golang
+```go
 import (
 	"fmt"
 	"github.com/lionsoul2014/ip2region/binding/golang/xdb"
@@ -82,7 +126,7 @@ func main() {
 ### 缓存 `VectorIndex` 索引
 
 可以预先加载 `vectorIndex` 缓存，然后做成全局变量，每次创建 searcher 的时候使用全局的 `vectorIndex`，可以减少一次固定的 IO 操作从而加速查询，减少系统 io 压力。
-```golang
+```go
 // 1、从 dbPath 加载 VectorIndex 缓存，把下述 vIndex 变量全局到内存里面。
 vIndex, err := xdb.LoadVectorIndexFromFile(dbPath)
 if err != nil {
@@ -103,7 +147,7 @@ if err != nil {
 ### 缓存整个 `xdb` 数据
 
 可以预先加载整个 ip2region.xdb 到内存，完全基于内存查询，类似于之前的 memory search 查询。
-```golang
+```go
 // 1、从 dbPath 加载整个 xdb 到内存
 cBuff, err := xdb.LoadContentFromFile(dbPath)
 if err != nil {
