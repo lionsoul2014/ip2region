@@ -58,12 +58,6 @@ func NewSearcherPool(config *Config) (*SearcherPool, error) {
 	}, nil
 }
 
-// Stat return the stat {loanCount, leftCount} info of the pool
-func (sp *SearcherPool) Stat() (int, int) {
-	loanCount := int(atomic.LoadInt32(&sp.loanCount))
-	return loanCount, len(sp.pool)
-}
-
 // get the loaned count
 func (sp *SearcherPool) LoanCount() int {
 	return int(atomic.LoadInt32(&sp.loanCount))
