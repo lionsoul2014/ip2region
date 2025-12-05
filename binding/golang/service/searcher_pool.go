@@ -11,9 +11,9 @@
 package service
 
 import (
-	"context"
 	"fmt"
 	"sync/atomic"
+	"time"
 
 	"github.com/lionsoul2014/ip2region/binding/golang/xdb"
 )
@@ -61,18 +61,19 @@ func NewSearcherPool(config *Config) (*SearcherPool, error) {
 // Stat return the stat {loanCount, leftCount} info of the pool
 func (sp *SearcherPool) Stat() (int, int) {
 	loanCount := int(atomic.LoadInt32(&sp.loanCount))
-	return loanCount, len(sp.pool) - loanCount
+	return loanCount, len(sp.pool)
+}
+
+// get the loaned count
+func (sp *SearcherPool) LoanCount() int {
+	return int(atomic.LoadInt32(&sp.loanCount))
 }
 
 func (sp *SearcherPool) BorrowSearcher() *xdb.Searcher {
-	select {
-	case <-sp.closing:
-		// stop searcher borrow while closing
-		return nil
-	case s := <-sp.pool:
-		atomic.AddInt32(&sp.loanCount, 1)
-		return s
-	}
+	// @Note: still accept searcher borrow while closing
+	s := <-sp.pool
+	atomic.AddInt32(&sp.loanCount, 1)
+	return s
 }
 
 func (sp *SearcherPool) ReturnSearcher(searcher *xdb.Searcher) {
@@ -80,6 +81,9 @@ func (sp *SearcherPool) ReturnSearcher(searcher *xdb.Searcher) {
 	case <-sp.closing:
 		// manually close the searcher
 		searcher.Close()
+
+		// decrease the loan count
+		atomic.AddInt32(&sp.loanCount, -1)
 	default:
 		// return the searcher
 		sp.pool <- searcher
@@ -87,9 +91,29 @@ func (sp *SearcherPool) ReturnSearcher(searcher *xdb.Searcher) {
 	}
 }
 
-func (sp *SearcherPool) Close(ctx context.Context) {
+func (sp *SearcherPool) Close() {
+	sp.CloseTimeout(time.Second * 10)
+}
+
+func (sp *SearcherPool) CloseTimeout(d time.Duration) {
 	close(sp.closing)
-	for s := range sp.pool {
-		s.Close()
+	for {
+		timeout := false
+		select {
+		case s := <-sp.pool:
+			s.Close()
+		case <-time.After(d):
+			// check if all the loaned searchers was closed
+			timeout = true
+		}
+
+		lc, left := sp.LoanCount(), len(sp.pool)
+		if left == 0 && lc == 0 {
+			break
+		}
+
+		if timeout {
+			break
+		}
 	}
 }
