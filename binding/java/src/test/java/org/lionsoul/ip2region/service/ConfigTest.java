@@ -25,7 +25,7 @@ public class ConfigTest {
         final Config v4Config = Config.custom()
             .setCachePolicy(Config.BufferCache)
             .setXdbPath(getDataPath("ip2region_v4.xdb"))
-            .setSeachers(20)
+            .setSearchers(20)
             .asV4();
         log.debugf("builded config: %s", v4Config);
     }
@@ -35,7 +35,7 @@ public class ConfigTest {
         final Config v4Config = Config.custom()
             .setCachePolicy(Config.VIndexCache)
             .setXdbPath(getDataPath("ip2region_v6.xdb"))
-            .setSeachers(20)
+            .setSearchers(20)
             .asV6();
         log.debugf("builded config: %s", v4Config);
     }

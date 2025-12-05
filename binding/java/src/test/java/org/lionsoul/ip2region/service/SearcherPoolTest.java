@@ -9,14 +9,14 @@ public class SearcherPoolTest {
     private static final Log log = Log.getLogger(SearcherPoolTest.class).setLevel(Log.DEBUG);
 
     @Test
-    public void testV4SeacherPool() throws Exception {
+    public void testV4SearcherPool() throws Exception {
         final Config v4Config = Config.custom()
             .setCachePolicy(Config.VIndexCache)
-            .setSeachers(5)
+            .setSearchers(5)
             .setXdbPath(ConfigTest.getDataPath("ip2region_v4.xdb"))
             .asV4();
 
-        
+
         final String ipStr = "58.250.36.41";
         final SearcherPool v4Pool = SearcherPool.create(v4Config);
         for (int i = 0; i < 20; i++) {
@@ -33,14 +33,14 @@ public class SearcherPoolTest {
     }
 
     @Test
-    public void testV6SeacherPool() throws Exception {
+    public void testV6SearcherPool() throws Exception {
         final Config v6Config = Config.custom()
             .setCachePolicy(Config.VIndexCache)
-            .setSeachers(5)
+            .setSearchers(5)
             .setXdbPath(ConfigTest.getDataPath("ip2region_v6.xdb"))
             .asV6();
 
-        
+
         final String ipStr = "240e:3b7:3272:d8d0:db09:c067:8d59:539e";
         final SearcherPool v4Pool = SearcherPool.create(v6Config);
         for (int i = 0; i < 20; i++) {

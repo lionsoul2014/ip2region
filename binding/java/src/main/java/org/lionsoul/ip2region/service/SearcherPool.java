@@ -67,6 +67,13 @@ public class SearcherPool {
         return this;
     }
 
+    public int getLoanCount() {
+        lock.lock();
+        int lc = this.loanCount;
+        lock.unlock();
+        return lc;
+    }
+
     public Searcher borrowSearcher() throws InterruptedException {
         lock.lock();
         try {
