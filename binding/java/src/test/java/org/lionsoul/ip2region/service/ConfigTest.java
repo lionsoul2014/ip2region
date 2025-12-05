@@ -1,4 +1,4 @@
-package org.lionsoul.ip2region;
+package org.lionsoul.ip2region.service;
 import java.io.IOException;
 import java.security.CodeSource;
 

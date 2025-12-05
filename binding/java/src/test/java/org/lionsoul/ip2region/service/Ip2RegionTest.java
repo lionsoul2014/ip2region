@@ -1,4 +1,4 @@
-package org.lionsoul.ip2region;
+package org.lionsoul.ip2region.service;
 
 import static org.junit.Assert.assertEquals;
 

@@ -1,4 +1,4 @@
-package org.lionsoul.ip2region;
+package org.lionsoul.ip2region.service;
 
 import org.junit.Test;
 import org.lionsoul.ip2region.xdb.Log;

@@ -7,13 +7,16 @@
 <dependency>
     <groupId>org.lionsoul</groupId>
     <artifactId>ip2region</artifactId>
-    <version>3.2.0</version>
+    <version>3.2.2</version>
 </dependency>
 ```
 
 ### 关于查询服务
 从 `3.2.0` 版本开始提供了一个双协议兼容且并发安全的 `Ip2Region` 查询服务，**建议优先使用该方式来进行查询调用**，具体使用方式如下：
 ```java
+import org.lionsoul.ip2region.service.Config;
+import org.lionsoul.ip2region.service.Ip2Region;
+
 // 1, 创建 v4 的配置：指定缓存策略和 v4 的 xdb 文件路径
 final Config v4Config = Config.custom()
     .setCachePolicy(Config.VIndexCache)     // 指定缓存策略:  NoCache / VIndexCache / BufferCache

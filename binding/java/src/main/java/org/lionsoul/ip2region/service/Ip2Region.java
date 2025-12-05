@@ -2,7 +2,7 @@
 // Use of this source code is governed by a Apache2.0-style
 // license that can be found in the LICENSE file.
 
-package org.lionsoul.ip2region;
+package org.lionsoul.ip2region.service;
 
 import java.io.IOException;
 
