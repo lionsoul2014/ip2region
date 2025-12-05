@@ -28,7 +28,7 @@ if err != nil {
 }
 
 // 3，通过上述配置创建 Ip2Region 查询服务
-ip2region, err := NewIp2Region(v4Config, v6Config)
+ip2region, err := service.NewIp2Region(v4Config, v6Config)
 if err != nil {
     return fmt.Errorf("failed to create ip2region service: %s", err)
 }
