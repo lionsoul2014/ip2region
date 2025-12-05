@@ -2,12 +2,6 @@
 // Use of this source code is governed by a Apache2.0-style
 // license that can be found in the LICENSE file.
 
-// ---
-// Ip2Region service config
-//
-// @Author Lion <chenxin619315@gmail.com>
-// @Date   2025/12/03
-
 package service
 
 import (
@@ -16,6 +10,12 @@ import (
 
 	"github.com/lionsoul2014/ip2region/binding/golang/xdb"
 )
+
+// ---
+// Ip2Region service config
+//
+// @Author Lion <chenxin619315@gmail.com>
+// @Date   2025/12/03
 
 const (
 	NoCache     = 0

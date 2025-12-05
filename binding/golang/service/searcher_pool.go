@@ -2,12 +2,6 @@
 // Use of this source code is governed by a Apache2.0-style
 // license that can be found in the LICENSE file.
 
-// ---
-// ip2region searcher pool
-//
-// @Author Lion <chenxin619315@gmail.com>
-// @Date   2025/12/03
-
 package service
 
 import (
@@ -17,6 +11,12 @@ import (
 
 	"github.com/lionsoul2014/ip2region/binding/golang/xdb"
 )
+
+// ---
+// ip2region searcher pool
+//
+// @Author Lion <chenxin619315@gmail.com>
+// @Date   2025/12/03
 
 type SearcherPool struct {
 	// config
