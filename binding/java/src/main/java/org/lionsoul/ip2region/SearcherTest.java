@@ -6,6 +6,9 @@
 
 package org.lionsoul.ip2region;
 
+import org.lionsoul.ip2region.service.Config;
+import org.lionsoul.ip2region.service.InvalidCachePolicyException;
+import org.lionsoul.ip2region.service.Ip2Region;
 import org.lionsoul.ip2region.xdb.InetAddressException;
 import org.lionsoul.ip2region.xdb.XdbException;
 import org.lionsoul.ip2region.xdb.LongByteArray;
@@ -15,6 +18,9 @@ import org.lionsoul.ip2region.xdb.Version;
 
 import java.io.*;
 import java.nio.charset.Charset;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.CodeSource;
 import java.util.concurrent.TimeUnit;
 
 public class SearcherTest {
@@ -25,6 +31,36 @@ public class SearcherTest {
         System.out.print("Command: \n");
         System.out.print("  search    search input test\n");
         System.out.print("  bench     search bench test\n");
+    }
+
+    public static final String getXdbPath(String fileName) throws IOException {
+        String xdbPath;
+        final CodeSource cs = SearcherTest.class.getProtectionDomain().getCodeSource();
+        if (cs != null) {
+            // log.debugf("code path: %s", cs.getLocation().getPath().concat("../../../../data/"));
+            final Path jarPath = Paths.get(cs.getLocation().getPath());
+            xdbPath = jarPath.getParent().toString().concat("/../../../data/").concat(fileName);
+        } else {
+            xdbPath = "../../../data/".concat(fileName);
+        }
+
+        final File xdbFile = new File(xdbPath);
+        return xdbFile.exists() ? xdbFile.getCanonicalPath() : "";
+    }
+
+    public static final Ip2Region createService(
+        String v4XdbPath, String v4CachePolicy, String v6XdbPath, String v6CachePolicy) throws IOException, XdbException, InvalidCachePolicyException {
+        final Config v4Config = Config.custom()
+            .setCachePolicy(Config.cachePolicyFromName(v4CachePolicy))
+            .setSearchers(1)
+            .setXdbPath(v4XdbPath).asV4();
+
+        final Config v6Config = Config.custom()
+            .setCachePolicy(Config.cachePolicyFromName(v6CachePolicy))
+            .setSearchers(1)
+            .setXdbPath(v6XdbPath).asV6();
+
+        return Ip2Region.create(v4Config, v6Config);
     }
 
     public static Searcher createSearcher(String dbPath, String cachePolicy) throws IOException, XdbException {
@@ -43,18 +79,20 @@ public class SearcherTest {
         if ("file".equals(cachePolicy)) {
             return Searcher.newWithFileOnly(version, dbPath);
         } else if ("vectorIndex".equals(cachePolicy)) {
-            byte[] vIndex = Searcher.loadVectorIndexFromFile(dbPath);
+            final byte[] vIndex = Searcher.loadVectorIndexFromFile(dbPath);
             return Searcher.newWithVectorIndex(version, dbPath, vIndex);
         } else if ("content".equals(cachePolicy)) {
-            LongByteArray cBuff = Searcher.loadContentFromFile(dbPath);
+            final LongByteArray cBuff = Searcher.loadContentFromFile(dbPath);
             return Searcher.newWithBuffer(version, cBuff);
         } else {
             throw new IOException("invalid cache policy `" + cachePolicy + "`, options: file/vectorIndex/content");
         }
     }
 
-    public static void searchTest(String[] args) throws IOException, XdbException {
-        String dbPath = "", cachePolicy = "vectorIndex";
+    public static void searchTest(String[] args) throws IOException, XdbException, InvalidCachePolicyException, InterruptedException {
+        String help = "";
+        String v4DbPath = "", v4CachePolicy = "vectorIndex";
+        String v6DbPath = "", v6CachePolicy = "vectorIndex";
         for (final String r : args) {
             if (r.length() < 5) {
                 continue;
@@ -64,38 +102,62 @@ public class SearcherTest {
                 continue;
             }
 
+            String key = "", val = "";
             int sIdx = r.indexOf('=');
             if (sIdx < 0) {
-                System.out.printf("missing = for args pair `%s`\n", r);
-                return;
+                key = r.substring(2);
+                // System.out.printf("missing = for args pair `%s`\n", r);
+                // return;
+            } else {
+                key = r.substring(2, sIdx);
+                val = r.substring(sIdx + 1);
             }
 
-            String key = r.substring(2, sIdx);
-            String val = r.substring(sIdx + 1);
             // System.out.printf("key=%s, val=%s\n", key, val);
-            if ("db".equals(key)) {
-                dbPath = val;
-            } else if ("cache-policy".equals(key)) {
-                cachePolicy = val;
+            if ("help".equals(key)) {
+                help = val == "" ? "true" : val;
+            } else if ("v4-db".equals(key)) {
+                v4DbPath = val;
+            } else if ("v4-cache-policy".equals(key)) {
+                v4CachePolicy = val;
+            } else if ("v6-db".equals(key)) {
+                v6DbPath = val;
+            } else if ("v6-cache-policy".equals(key)) {
+                v6CachePolicy = val;
             } else {
                 System.out.printf("undefined option `%s`\n", r);
                 return;
             }
         }
 
-        if (dbPath.isEmpty()) {
+        
+        // check and set the default path for v4
+        if (v4DbPath.isEmpty()) {
+            v4DbPath = getXdbPath("ip2region_v4.xdb");
+        }
+
+        // check and set the default path for 6
+        if (v6DbPath.isEmpty()) {
+            v6DbPath = getXdbPath("ip2region_v6.xdb");
+        }
+
+        if (v4DbPath.isEmpty() || v6DbPath.isEmpty() || help.equals("true")) {
             System.out.print("java -jar ip2region-{version}.jar search [command options]\n");
             System.out.print("options:\n");
-            System.out.print(" --db string              ip2region binary xdb file path\n");
-            System.out.print(" --cache-policy string    cache policy: file/vectorIndex/content\n");
+            System.out.print(" --v4-db string            ip2region ipv4 binary xdb file path\n");
+            System.out.print(" --v4-cache-policy string  v4 cache policy, default vectorIndex, options: file/vectorIndex/content\n");
+            System.out.print(" --v6-db string            ip2region ipv6 binary xdb file path\n");
+            System.out.print(" --v6-cache-policy string  v6 cache policy, default vectorIndex, options: file/vectorIndex/content\n");
+            System.out.print(" --help                    print this help menu\n");
             return;
         }
 
-        Searcher searcher = createSearcher(dbPath, cachePolicy);
+        final Ip2Region ip2region = createService(v4DbPath, v4CachePolicy, v6DbPath, v6CachePolicy);
         final BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-        System.out.printf("ip2region xdb searcher test program\n" 
-+ "source xdb: %s (%s, %s)\n"
-+ "type 'quit' to exit\n", dbPath, searcher.getIPVersion().name, cachePolicy);
+        System.out.printf("ip2region search service test program\n" 
++ "+-v4 xdb: %s (%s)\n"
++ "+-v6 xdb: %s (%s)\n"
++ "type 'quit' to exit\n", v4DbPath, v4CachePolicy, v6DbPath, v6CachePolicy);
         while ( true ) {
             System.out.print("ip2region>> ");
             String line = reader.readLine().trim();
@@ -109,17 +171,17 @@ public class SearcherTest {
 
             try {
                 double sTime = System.nanoTime();
-                String region = searcher.search(line);
+                String region = ip2region.search(line);
                 long cost = TimeUnit.NANOSECONDS.toMicros((long) (System.nanoTime() - sTime));
-                System.out.printf("{region: %s, ioCount: %d, took: %d μs}\n", region, searcher.getIOCount(), cost);
+                System.out.printf("{region: %s, took: %d μs}\n", region, cost);
             } catch (Exception e) {
-                System.out.printf("{err: %s, ioCount: %d}\n", e, searcher.getIOCount());
+                System.out.printf("{region: , err: %s}\n", e);
             }
         }
 
         reader.close();
-        searcher.close();
-        System.out.println("searcher test program exited, thanks for trying");
+        ip2region.close();
+        System.out.println("ip2region test program exited, thanks for trying");
     }
 
     public static void benchTest(String[] args) throws IOException, XdbException, InetAddressException {
