@@ -7,7 +7,7 @@
 <dependency>
     <groupId>org.lionsoul</groupId>
     <artifactId>ip2region</artifactId>
-    <version>3.2.2</version>
+    <version>3.3.0</version>
 </dependency>
 ```
 
@@ -247,40 +247,45 @@ mvn compile package
 
 # 查询测试
 
-可以通过 `java -jar ip2region-{version}.jar search` 命令来测试查询：
+### 测试命令
+可以通过 `java -jar target/ip2region-{version}.jar search` 命令来测试查询：
 ```bash
-➜  java git:(fr_java_ipv6) ✗ java -jar target/ip2region-3.1.0.jar search
+➜  java git:(master) ✗ java -jar target/ip2region-3.3.0.jar search --help
 java -jar ip2region-{version}.jar search [command options]
 options:
- --db string              ip2region binary xdb file path
- --cache-policy string    cache policy: file/vectorIndex/content
+ --v4-db string            ip2region ipv4 binary xdb file path
+ --v4-cache-policy string  v4 cache policy, default vectorIndex, options: file/vectorIndex/content
+ --v6-db string            ip2region ipv6 binary xdb file path
+ --v6-cache-policy string  v6 cache policy, default vectorIndex, options: file/vectorIndex/content
+ --help                    print this help menu
 ```
 
-例如：使用默认的 data/ip2region_v4.xdb 文件进行 IPv4 的查询测试：
+### 参数解析
+1. `v4-xdb`: IPv4 的 xdb 文件路径，默认为仓库中的 data/ip2region_v4.xdb
+2. `v6-xdb`: IPv6 的 xdb 文件路径，默认为仓库中的 data/ip2region_v6.xdb
+3. `v4-cache-policy`: v4 查询使用的缓存策略，默认为 `vectorIndex`，可选：file/vectorIndex/content
+4. `v6-cache-policy`: v6 查询使用的缓存策略，默认为 `vectorIndex`，可选：file/vectorIndex/content
+
+### 测试 Demo
+例如：使用默认的 data/ip2region_v4.xdb 和 data/ip2region_v6.xdb 进行查询测试：
 ```bash
-➜  java git:(fr_java_ipv6) ✗ java -jar target/ip2region-3.1.0.jar search --db=../../data/ip2region_v4.xdb
-ip2region xdb searcher test program
-source xdb: ../../data/ip2region_v4.xdb (IPv4, vectorIndex)
+➜  java git:(java_app_with_ip2region_service) ✗ java -jar target/ip2region-3.3.0.jar search       
+ip2region search service test program
++-v4 xdb: /data01/code/c/ip2region/data/ip2region_v4.xdb (vectorIndex)
++-v6 xdb: /data01/code/c/ip2region/data/ip2region_v6.xdb (vectorIndex)
 type 'quit' to exit
 ip2region>> 1.2.3.4
-{region: 美国|华盛顿|0|谷歌, ioCount: 7, took: 82 μs}
+{region: 美国|华盛顿|0|谷歌, took: 159 μs}
+ip2region>> 240e:3b7:3272:d8d0:db09:c067:8d59:539e
+{region: 中国|广东省|深圳市|家庭宽带, took: 346 μs}
+ip2region>> 
 ```
-
-例如：使用默认的 data/ip2region_v6.xdb 文件进行 IPv6 的查询测试：
-```bash
-➜  java git:(fr_java_ipv6) ✗ java -jar target/ip2region-3.1.0.jar search --db=../../data/ip2region_v6.xdb
-ip2region xdb searcher test program
-source xdb: ../../data/ip2region_v6.xdb (IPv6, vectorIndex)
-type 'quit' to exit
-ip2region>> 240e:3b7:3272:d8d0:db09:c067:8d59:539e     
-{region: 中国|广东省|深圳市|家庭宽带, ioCount: 14, took: 424 μs}
-```
-
-输入 ip 即可进行查询测试，也可以分别设置 `cache-policy` 为 file/vectorIndex/content 来测试三种不同缓存实现的查询效果。
+输入 v4 或者 v6 的 IP 地址即可进行查询测试，也可以分别设置 `cache-policy` 为 file/vectorIndex/content 来测试三种不同缓存实现的查询效果。
 
 
 # bench 测试
 
+### 测试命令
 可以通过 `java -jar ip2region-{version}.jar bench` 命令来进行 bench 测试，一方面确保 `xdb` 文件没有错误，一方面可以评估查询性能：
 ```bash
 ➜  java git:(fr_java_ipv6) ✗ java -jar target/ip2region-3.1.0.jar bench                                  
@@ -291,11 +296,13 @@ options:
  --cache-policy string    cache policy: file/vectorIndex/content
 ```
 
+### v4 bench
 例如：通过默认的 data/ip2region_v4.xdb 和 data/ipv4_source.txt 文件进行 IPv4 的 bench 测试：
 ```bash
 java -jar target/ip2region-3.1.0.jar bench --db=../../data/ip2region_v4.xdb --src=../../data/ipv4_source.txt
 ```
 
+### v6 bench
 例如：通过默认的 data/ip2region_v6.xdb 和 data/ipv6_source.txt 文件进行 IPv6 的 bench 测试：
 ```bash
 java -jar target/ip2region-3.1.0.jar bench --db=../../data/ip2region_v6.xdb --src=../../data/ipv6_source.txt

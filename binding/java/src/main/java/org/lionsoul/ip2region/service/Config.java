@@ -1,6 +1,7 @@
 // Copyright 2022 The Ip2Region Authors. All rights reserved.
 // Use of this source code is governed by a Apache2.0-style
 // license that can be found in the LICENSE file.
+
 package org.lionsoul.ip2region.service;
 
 import java.io.IOException;
@@ -79,5 +80,18 @@ public class Config {
         sb.append("searchers:").append(searchers);
         sb.append('}');
         return sb.toString();
+    }
+
+    public static final int cachePolicyFromName(String name) throws InvalidCachePolicyException {
+        final String lName = name.toLowerCase();
+        if (lName.equals("file") || lName.equals("nocache")) {
+            return NoCache;
+        } else if (lName.equals("vectorindex") || lName.equals("vindex") || lName.equals("vindexcache")) {
+            return VIndexCache;
+        } else if (lName.equals("content") || lName.equals("buffercache")) {
+            return BufferCache;
+        } else {
+            throw new InvalidCachePolicyException("invalid cache policy `" + name + "`");
+        }
     }
 }
