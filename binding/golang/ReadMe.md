@@ -216,6 +216,7 @@ ip2region>>
 
 # bench 测试
 
+### 测试命令
 通过 `xdb_searcher bench` 命令来进行自动 bench 测试，一方面确保程序和 `xdb` 文件都没有错误，另一方面通过大量的查询得到平均查询性能：
 ```bash
 ➜  golang git:(fr_xdb_ipv6) ./xdb_searcher bench
@@ -226,16 +227,17 @@ options:
  --cache-policy string    cache policy: file/vectorIndex/content
 ```
 
+### v4 bench
 例如：通过 data/ip2region_v4.xdb 和 data/ipv4_source.txt 进行 ipv4 的 bench 测试：
 ```bash
 ./xdb_searcher bench --db=../../data/ip2region_v4.xdb --src=../../data/ipv4_source.txt 
 ```
 
+### v6 bench
 例如：通过 data/ip2region_v6.xdb 和 data/ipv6_source.txt 进行 ipv6 的 bench 测试：
 ```bash
 ./xdb_searcher bench --db=../../data/ip2region_v6.xdb --src=../../data/ipv6_source.txt 
 ```
-
 
 可以设置 `cache-policy` 参数来分别测试 file/vectorIndex/content 不同缓存实现机制的效率。
 
