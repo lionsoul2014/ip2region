@@ -8,7 +8,7 @@ go get github.com/lionsoul2014/ip2region/binding/golang
 ```
 
 ### 关于查询服务
-从 `3.11.0` 版本开始提供了一个双协议兼容且并发安全的 `Ip2Region` 查询服务，建议优先使用该方式来进行查询调用，具体使用方式如下：
+从 `3.11.0` 版本开始提供了一个双协议兼容且并发安全的 `Ip2Region` 查询服务，**建议优先使用该方式来进行查询调用**，具体使用方式如下：
 ```go
 import "github.com/lionsoul2014/ip2region/binding/golang/service"
 
