@@ -34,7 +34,6 @@ if err != nil {
 }
 
 // 4，导出 ip2region 服务进行双版本的IP地址的并发查询，例如：
-var err error
 v4Region, err := ip2region.SearchByStr("113.92.157.29")                          // 进行 IPv4 查询
 v6Region, err := ip2region.SearchByStr("240e:3b7:3272:d8d0:db09:c067:8d59:539e") // 进行 IPv6 查询
 
