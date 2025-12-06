@@ -7,6 +7,7 @@ package service
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/lionsoul2014/ip2region/binding/golang/xdb"
 )
@@ -22,6 +23,19 @@ const (
 	VIndexCache = 1
 	BufferCache = 2
 )
+
+func CachePolicyFromName(name string) (int, error) {
+	switch strings.ToLower(name) {
+	case "file", "nocache":
+		return NoCache, nil
+	case "vectorindex", "vindex", "vindexcache":
+		return VIndexCache, nil
+	case "content", "buffercache":
+		return BufferCache, nil
+	default:
+		return NoCache, fmt.Errorf("invalid cache policy name `%s`", name)
+	}
+}
 
 type Config struct {
 	cachePolicy int
