@@ -178,39 +178,40 @@ make
 
 # 查询测试
 
-通过 `xdb_searcher search` 命令来测试 xdb 的查询：
+### 查询命令
+通过 `./xdb_searcher search` 命令来测试 xdb 的查询：
 ```bash
-➜  golang git:(fr_xdb_ipv6) ✗ ./xdb_searcher search                                 
+➜  golang git:(master) ✗ ./xdb_searcher search --help
 ./xdb_searcher search [command options]
 options:
- --db string              ip2region binary xdb file path
- --cache-policy string    cache policy: file/vectorIndex/content
+ --v4-db string            ip2region v4 binary xdb file path
+ --v4-cache-policy string  v4 cache policy, default vectorIndex, options: file/vectorIndex/content
+ --v6-db string            ip2region v6 binary xdb file path
+ --v6-cache-policy string  v6 cache policy, default vectorIndex, options: file/vectorIndex/content
+ --help                    print this help menu
 ```
 
-例如：使用默认的 data/ip2region_v4.xdb 进行 IPv4 的查询测试
+### 参数解析
+1. `v4-xdb`: IPv4 的 xdb 文件路径，默认为仓库中的 data/ip2region_v4.xdb
+2. `v6-xdb`: IPv6 的 xdb 文件路径，默认为仓库中的 data/ip2region_v6.xdb
+3. `v4-cache-policy`: v4 查询使用的缓存策略，默认为 `vectorIndex`，可选：file/vectorIndex/content
+4. `v6-cache-policy`: v6 查询使用的缓存策略，默认为 `vectorIndex`，可选：file/vectorIndex/content
+
+### 测试 Demo
+例如：使用默认的 data/ip2region_v4.xdb 和 data/ip2region_v6.xdb 进行查询测试：
 ```bash
-➜  golang git:(master) ./xdb_searcher search --db=../../data/ip2region_v4.xdb
-ip2region xdb searcher test program
-source xdb: ../../data/ip2region_v4.xdb (IPv4, vectorIndex)
+➜  golang git:(master) ✗ ./xdb_searcher search       
+ip2region search service test program
++-v4 db: /data01/code/c/ip2region/data/ip2region_v4.xdb (vectorIndex)
++-v6 db: /data01/code/c/ip2region/data/ip2region_v6.xdb (vectorIndex)
 type 'quit' to exit
-ip2region>> 219.133.111.87
-{region: 中国|广东省|深圳市|电信, ioCount: 2, took: 19.005µs}
-ip2region>> 
+ip2region>> 1.2.3.4
+{region: 美国|华盛顿|0|谷歌, took: 69.088µs}
+ip2region>> 240e:3b7:3272:d8d0:db09:c067:8d59:539e
+{region: 中国|广东省|深圳市|家庭宽带, took: 67.756µs}
+ip2region>>
 ```
-
-例如：使用默认的 data/ip2region_v6.xdb 进行 IPv6 的查询：
-```bash
-➜  golang git:(master) ✗ ./xdb_searcher search --db=../../data/ip2region_v6.xdb
-ip2region xdb searcher test program
-source xdb: ../../data/ip2region_v6.xdb (IPv6, vectorIndex)
-type 'quit' to exit
-ip2region>> ::
-{region: , ioCount: 1, took: 42.157µs}
-ip2region>> 240e:87c:892:ffff:ffff:ffff:ffff:ffff
-{region: 中国|北京市|北京市|专线用户, ioCount: 10, took: 88.769µs}
-```
-
-输入对应版本的 ip 地址进行查询即可，输入 quit 退出测试程序。可以设置 `cache-policy` 为 file/vectorIndex/content 来测试不同的查询缓存机制。
+输入 v4 或者 v6 的 IP 地址即可进行查询测试，也可以分别设置 `cache-policy` 为 file/vectorIndex/content 来测试三种不同缓存实现的查询效果。
 
 
 # bench 测试
