@@ -73,9 +73,17 @@ public class ConfigBuilder {
             // you must know what you are doing.
             throw new InvalidConfigException("SetXdbInputStream could ONLY be used with cachePolicy = Config.BufferCache");
         } else {
+            // 1, load the content buffer
+            final LongByteArray cBuffer = Searcher.loadContentFromInputStream(xdbInputStream);
 
-            // return new Config(cachePolicy, ipVersion, null, header, null, cBuffer, searchers);
-            return null;
+            // 2, verify the xdb from the buffer
+            Searcher.verify(Searcher.loadHeaderFromBuffer(cBuffer), cBuffer.length());
+
+            // 3, load the header
+            final Header header = Searcher.loadHeaderFromBuffer(cBuffer);
+
+            // create the config without xdbFile and vIndex
+            return new Config(cachePolicy, ipVersion, null, header, null, cBuffer, searchers);
         }
 
         // load the header and the cache buffer
