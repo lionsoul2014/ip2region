@@ -4,6 +4,8 @@
 
 package org.lionsoul.ip2region.xdb;
 
+import java.io.File;
+
 // xdb searcher (Not thread safe implementation)
 // @Author Lion <chenxin619315@gmail.com>
 // @Date   2022/06/23
@@ -29,7 +31,7 @@ public class Searcher {
     private final Version version;
 
     // random access file handle for file-based search
-    private final String xdbPath;
+    private final File xdbFile;
     private final RandomAccessFile handle;
 
     private int ioCount = 0;
@@ -46,12 +48,20 @@ public class Searcher {
 
     // --- static method to create searchers
 
-    public static Searcher newWithFileOnly(Version version, String dbPath) throws IOException {
-        return new Searcher(version, dbPath, null, null);
+    public static Searcher newWithFileOnly(Version version, String xdbPath) throws IOException {
+        return new Searcher(version, new File(xdbPath), null, null);
     }
 
-    public static Searcher newWithVectorIndex(Version version, String dbPath, byte[] vectorIndex) throws IOException {
-        return new Searcher(version, dbPath, vectorIndex, null);
+    public static Searcher newWithFileOnly(Version version, File xdbFile) throws IOException {
+        return new Searcher(version, xdbFile, null, null);
+    }
+
+    public static Searcher newWithVectorIndex(Version version, String xdbPath, byte[] vectorIndex) throws IOException {
+        return new Searcher(version, new File(xdbPath), vectorIndex, null);
+    }
+
+    public static Searcher newWithVectorIndex(Version version, File xdbFile, byte[] vectorIndex) throws IOException {
+        return new Searcher(version, xdbFile, vectorIndex, null);
     }
 
     public static Searcher newWithBuffer(Version version, LongByteArray cBuff) throws IOException {
@@ -60,15 +70,15 @@ public class Searcher {
 
     // --- End of creator
 
-    public Searcher(Version version, String dbFile, byte[] vectorIndex, LongByteArray cBuff) throws IOException {
+    public Searcher(Version version, File xdbFile, byte[] vectorIndex, LongByteArray cBuff) throws IOException {
         this.version = version;
-        this.xdbPath = dbFile;
+        this.xdbFile = xdbFile;
         if (cBuff != null) {
             this.handle = null;
             this.vectorIndex = null;
             this.contentBuff = cBuff;
         } else {
-            this.handle = new RandomAccessFile(dbFile, "r");
+            this.handle = new RandomAccessFile(xdbFile, "r");
             this.vectorIndex = vectorIndex;
             this.contentBuff = null;
         }
@@ -179,7 +189,7 @@ public class Searcher {
         return String.format(
             "%s->{version:%s, xdb:%s, vIndex:%s, cBuffer:%s}", 
             super.toString(),
-            version.name, xdbPath, 
+            version.name, xdbFile.getAbsolutePath(), 
             vectorIndex == null ? "null" : String.valueOf(vectorIndex.length),
             contentBuff == null ? "null" : String.valueOf(contentBuff.length())
         );
