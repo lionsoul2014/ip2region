@@ -23,6 +23,9 @@ public class Config {
     public static final int VIndexCache = 1;
     public static final int BufferCache = 2;
 
+    // alias of BufferCache but easier to understand
+    public static final int FullCache = 2;
+
     // search cache policy
     public final int cachePolicy;
     public final Version ipVersion;

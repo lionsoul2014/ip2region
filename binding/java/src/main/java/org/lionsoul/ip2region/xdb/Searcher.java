@@ -204,11 +204,15 @@ public class Searcher {
         return new Header(buff);
     }
 
-    public static Header loadHeaderFromFile(String dbPath) throws IOException {
-        final RandomAccessFile handle = new RandomAccessFile(dbPath, "r");
+    public static Header loadHeaderFromFile(File xdbFile) throws IOException {
+        final RandomAccessFile handle = new RandomAccessFile(xdbFile, "r");
         final Header header = loadHeader(handle);
         handle.close();
         return header;
+    }
+
+    public static Header loadHeaderFromFile(String xdbPath) throws IOException {
+        return loadHeaderFromFile(new File(xdbPath));
     }
 
     public static byte[] loadVectorIndex(RandomAccessFile handle) throws IOException {
@@ -223,11 +227,15 @@ public class Searcher {
         return buff;
     }
 
-    public static byte[] loadVectorIndexFromFile(String dbPath) throws IOException {
-        final RandomAccessFile handle = new RandomAccessFile(dbPath, "r");
+    public static byte[] loadVectorIndexFromFile(File xdbFile) throws IOException {
+        final RandomAccessFile handle = new RandomAccessFile(xdbFile, "r");
         final byte[] vIndex = loadVectorIndex(handle);
         handle.close();
         return vIndex;
+    }
+
+    public static byte[] loadVectorIndexFromFile(String xdbPath) throws IOException {
+        return loadVectorIndexFromFile(new File(xdbPath));
     }
 
     public static LongByteArray loadContent(RandomAccessFile handle) throws IOException {
@@ -249,11 +257,15 @@ public class Searcher {
         return byteArray;
     }
 
-    public static LongByteArray loadContentFromFile(String dbPath) throws IOException {
-        final RandomAccessFile handle = new RandomAccessFile(dbPath, "r");
+    public static LongByteArray loadContentFromFile(File xdbFile) throws IOException {
+        final RandomAccessFile handle = new RandomAccessFile(xdbFile, "r");
         final LongByteArray content = loadContent(handle);
         handle.close();
         return content;
+    }
+
+    public static LongByteArray loadContentFromFile(String xdbPath) throws IOException {
+        return loadContentFromFile(new File(xdbPath));
     }
 
     // --- verify util function
