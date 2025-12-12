@@ -23,7 +23,7 @@ public class Config {
     public static final int VIndexCache = 1;
     public static final int BufferCache = 2;
 
-    // alias of BufferCache but easier to understand
+    // alias of BufferCache but easier to understand or Remember
     public static final int FullCache = 2;
 
     // search cache policy

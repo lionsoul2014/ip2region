@@ -1,4 +1,6 @@
 package org.lionsoul.ip2region.service;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.CodeSource;
 
@@ -23,12 +25,34 @@ public class ConfigTest {
     @Test
     public void testBuildV4Config() throws IOException, XdbException, InvalidConfigException {
         final Config v4Config = Config.custom()
-            .setCachePolicy(Config.BufferCache)
+            .setCachePolicy(Config.VIndexCache)
             .setXdbPath(getDataPath("ip2region_v4.xdb"))
             .setSearchers(20)
             .asV4();
         log.debugf("builded config: %s", v4Config);
     }
+
+    @Test
+    public void testBuildV4ConfigFromFile() throws IOException, XdbException, InvalidConfigException {
+        final Config v4Config = Config.custom()
+            .setCachePolicy(Config.BufferCache)
+            .setXdbFile(new File(getDataPath("ip2region_v4.xdb")))
+            .setSearchers(20)
+            .asV4();
+        log.debugf("builded config: %s", v4Config);
+    }
+
+    @Test
+    public void testBuildV4ConfigFromInputStream() throws IOException, XdbException, InvalidConfigException {
+        final Config v4Config = Config.custom()
+            .setCachePolicy(Config.BufferCache)
+            .setXdbInputStream(new FileInputStream(getDataPath("ip2region_v4.xdb")))
+            .setSearchers(20)
+            .asV4();
+        log.debugf("builded config: %s", v4Config);
+    }
+
+    // --- IPv6
 
     @Test
     public void testBuildV6Config() throws IOException, XdbException, InvalidConfigException {
@@ -39,4 +63,25 @@ public class ConfigTest {
             .asV6();
         log.debugf("builded config: %s", v4Config);
     }
+
+    @Test
+    public void testBuildV6ConfigFromFile() throws IOException, XdbException, InvalidConfigException {
+        final Config v4Config = Config.custom()
+            .setCachePolicy(Config.BufferCache)
+            .setXdbFile(new File(getDataPath("ip2region_v6.xdb")))
+            .setSearchers(20)
+            .asV6();
+        log.debugf("builded config: %s", v4Config);
+    }
+
+    @Test
+    public void testBuildV6ConfigFromInputStream() throws IOException, XdbException, InvalidConfigException {
+        final Config v4Config = Config.custom()
+            .setCachePolicy(Config.BufferCache)
+            .setXdbInputStream(new FileInputStream(getDataPath("ip2region_v6.xdb")))
+            .setSearchers(20)
+            .asV6();
+        log.debugf("builded config: %s", v4Config);
+    }
+
 }
