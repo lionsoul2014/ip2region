@@ -33,13 +33,13 @@ public class Header {
 
     @Override public String toString() {
         return "{" +
-            "Version: " + version + ',' +
-            "IndexPolicy: " + indexPolicy + ',' +
-            "CreatedAt: " + createdAt + ',' +
-            "StartIndexPtr: " + startIndexPtr + ',' +
-            "EndIndexPtr: " + endIndexPtr + ',' + 
-            "IPVersion: " + ipVersion + ',' + 
-            "RuntimePtrBytes: " + runtimePtrBytes +
+            "Version:" + version + ',' +
+            "IndexPolicy:" + indexPolicy + ',' +
+            "CreatedAt:" + createdAt + ',' +
+            "StartIndexPtr:" + startIndexPtr + ',' +
+            "EndIndexPtr:" + endIndexPtr + ',' + 
+            "IPVersion:" + ipVersion + ',' + 
+            "RuntimePtrBytes:" + runtimePtrBytes +
         '}';
     }
 }
