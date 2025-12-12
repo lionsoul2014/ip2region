@@ -297,10 +297,14 @@ public class Searcher {
         }
     }
 
-    public static void verifyFromFile(String dbFile) throws IOException, XdbException {
-        final RandomAccessFile handle = new RandomAccessFile(dbFile, "r");
+    public static void verifyFromFile(File xdbFile) throws IOException, XdbException {
+        final RandomAccessFile handle = new RandomAccessFile(xdbFile, "r");
         verify(handle);
         handle.close();
+    }
+
+    public static void verifyFromFile(String xdbPath) throws IOException, XdbException {
+        verifyFromFile(new File(xdbPath));
     }
 
 }
