@@ -189,7 +189,7 @@ public class Searcher {
         return String.format(
             "%s->{version:%s, xdb:%s, vIndex:%s, cBuffer:%s}", 
             super.toString(),
-            version.name, xdbFile.getAbsolutePath(), 
+            version.name, xdbFile == null ? "null" : xdbFile.getAbsolutePath(), 
             vectorIndex == null ? "null" : String.valueOf(vectorIndex.length),
             contentBuff == null ? "null" : String.valueOf(contentBuff.length())
         );

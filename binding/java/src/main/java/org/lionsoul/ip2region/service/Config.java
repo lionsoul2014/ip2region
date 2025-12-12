@@ -66,7 +66,7 @@ public class Config {
         sb.append('{');
         sb.append("cache_policy:").append(cachePolicy).append(',');
         sb.append("version:").append(ipVersion.toString()).append(',');
-        sb.append("xdb_path:").append(xdbFile.getAbsolutePath()).append(',');
+        sb.append("xdb_path:").append(xdbFile == null ? "null" : xdbFile.getAbsolutePath()).append(',');
         sb.append("header:").append(header.toString()).append(',');
         if (vIndex == null) {
             sb.append("v_index: null, ");
