@@ -21,7 +21,7 @@ public class ConfigTest {
     }
 
     @Test
-    public void testBuildV4Config() throws IOException, XdbException {
+    public void testBuildV4Config() throws IOException, XdbException, InvalidConfigException {
         final Config v4Config = Config.custom()
             .setCachePolicy(Config.BufferCache)
             .setXdbPath(getDataPath("ip2region_v4.xdb"))
@@ -31,7 +31,7 @@ public class ConfigTest {
     }
 
     @Test
-    public void testBuildV6Config() throws IOException, XdbException {
+    public void testBuildV6Config() throws IOException, XdbException, InvalidConfigException {
         final Config v4Config = Config.custom()
             .setCachePolicy(Config.VIndexCache)
             .setXdbPath(getDataPath("ip2region_v6.xdb"))

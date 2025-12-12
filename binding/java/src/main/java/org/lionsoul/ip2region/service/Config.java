@@ -4,6 +4,7 @@
 
 package org.lionsoul.ip2region.service;
 
+import java.io.File;
 import java.io.IOException;
 
 import org.lionsoul.ip2region.xdb.Header;
@@ -27,7 +28,7 @@ public class Config {
     public final Version ipVersion;
 
     // xdb file path
-    public final String xdbPath;
+    public final File xdbFile;
     public final Header header;
 
     public final byte[] vIndex;
@@ -40,21 +41,21 @@ public class Config {
         return new ConfigBuilder();
     }
 
-    protected Config(int cachePolicy, Version ipVersion, String xdbPath, 
+    protected Config(int cachePolicy, Version ipVersion, File xdbFile, 
         Header header, byte[] vIndex, LongByteArray cBuffer, int searchers) throws IOException, XdbException {
         this.cachePolicy = cachePolicy;
         this.ipVersion = ipVersion;
 
-        this.xdbPath = xdbPath;
-        this.header = header;
-        this.vIndex = vIndex;
+        this.xdbFile = xdbFile;
+        this.header  = header;
+        this.vIndex  = vIndex;
         this.cBuffer = cBuffer;
 
         final Version xVersion = Version.fromHeader(header);
         // verify the ip version (ipVersion and the version of the xdb file should be the same)
         if (header.ipVersion != ipVersion.id) {
             throw new XdbException("ip verison not match: xdb file " 
-                + xdbPath + " (" + xVersion.name + "), as " + ipVersion.name + " expected");
+                + xdbFile.getAbsolutePath() + " (" + xVersion.name + "), as " + ipVersion.name + " expected");
         }
 
         this.searchers = searchers;
@@ -65,7 +66,7 @@ public class Config {
         sb.append('{');
         sb.append("cache_policy:").append(cachePolicy).append(',');
         sb.append("version:").append(ipVersion.toString()).append(',');
-        sb.append("xdb_path:").append(xdbPath).append(',');
+        sb.append("xdb_path:").append(xdbFile.getAbsolutePath()).append(',');
         sb.append("header:").append(header.toString()).append(',');
         if (vIndex == null) {
             sb.append("v_index: null, ");
@@ -82,7 +83,7 @@ public class Config {
         return sb.toString();
     }
 
-    public static final int cachePolicyFromName(String name) throws InvalidCachePolicyException {
+    public static final int cachePolicyFromName(String name) throws InvalidConfigException {
         final String lName = name.toLowerCase();
         if (lName.equals("file") || lName.equals("nocache")) {
             return NoCache;
@@ -91,7 +92,7 @@ public class Config {
         } else if (lName.equals("content") || lName.equals("buffercache")) {
             return BufferCache;
         } else {
-            throw new InvalidCachePolicyException("invalid cache policy `" + name + "`");
+            throw new InvalidConfigException("invalid cache policy `" + name + "`");
         }
     }
 }

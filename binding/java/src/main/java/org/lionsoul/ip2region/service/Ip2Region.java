@@ -4,6 +4,7 @@
 
 package org.lionsoul.ip2region.service;
 
+import java.io.File;
 import java.io.IOException;
 
 import org.lionsoul.ip2region.xdb.InetAddressException;
@@ -37,23 +38,28 @@ public class Ip2Region {
         return new Ip2Region(v4Config, v6Config).init();
     }
 
-    public static final Ip2Region create(final String v4XdbPath, final String v6XdbPath) throws IOException, XdbException {
-        return new Ip2Region(v4XdbPath, v6XdbPath).init();
+    public static final Ip2Region create(final String v4XdbPath, final String v6XdbPath) throws IOException, XdbException, InvalidConfigException {
+        return new Ip2Region(new File(v4XdbPath), new File(v6XdbPath)).init();
+    }
+
+    public static final Ip2Region create(final File v4XdbFile, final File v6XdbFile) throws IOException, XdbException, InvalidConfigException {
+        return new Ip2Region(v4XdbFile, v6XdbFile).init();
     }
 
     /**
      * init the ip2reigon with two xdb file path and default cachePolicy vIndex.
      * set it to null to disabled the search for specified version
      * 
-     * @param v4XdbPath
-     * @param v6XdbPath
+     * @param v4XdbFile
+     * @param v6XdbFile
      * @throws XdbException 
      * @throws IOException 
+     * @throws InvalidConfigException 
     */
-    protected Ip2Region(String v4XdbPath, String v6XdbPath) throws IOException, XdbException {
+    protected Ip2Region(File v4XdbFile, File v6XdbFile) throws IOException, XdbException, InvalidConfigException {
         this(
-            v4XdbPath == null ? null : Config.custom().setXdbPath(v4XdbPath).asV4(), 
-            v6XdbPath == null ? null : Config.custom().setXdbPath(v6XdbPath).asV6()
+            v4XdbFile == null ? null : Config.custom().setXdbFile(v4XdbFile).asV4(), 
+            v6XdbFile == null ? null : Config.custom().setXdbFile(v6XdbFile).asV6()
         );
     }
 

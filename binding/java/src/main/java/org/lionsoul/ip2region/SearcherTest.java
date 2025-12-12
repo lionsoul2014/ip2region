@@ -7,7 +7,7 @@
 package org.lionsoul.ip2region;
 
 import org.lionsoul.ip2region.service.Config;
-import org.lionsoul.ip2region.service.InvalidCachePolicyException;
+import org.lionsoul.ip2region.service.InvalidConfigException;
 import org.lionsoul.ip2region.service.Ip2Region;
 import org.lionsoul.ip2region.xdb.InetAddressException;
 import org.lionsoul.ip2region.xdb.XdbException;
@@ -49,7 +49,7 @@ public class SearcherTest {
     }
 
     public static final Ip2Region createService(
-        String v4XdbPath, String v4CachePolicy, String v6XdbPath, String v6CachePolicy) throws IOException, XdbException, InvalidCachePolicyException {
+        String v4XdbPath, String v4CachePolicy, String v6XdbPath, String v6CachePolicy) throws IOException, XdbException, InvalidConfigException {
         final Config v4Config = Config.custom()
             .setCachePolicy(Config.cachePolicyFromName(v4CachePolicy))
             .setSearchers(1)
@@ -89,7 +89,7 @@ public class SearcherTest {
         }
     }
 
-    public static void searchTest(String[] args) throws IOException, XdbException, InvalidCachePolicyException, InterruptedException {
+    public static void searchTest(String[] args) throws IOException, XdbException, InterruptedException, InvalidConfigException {
         String help = "";
         String v4DbPath = "", v4CachePolicy = "vectorIndex";
         String v6DbPath = "", v6CachePolicy = "vectorIndex";
