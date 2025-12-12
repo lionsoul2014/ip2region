@@ -36,6 +36,7 @@ final Config v6Config = Config.custom()
     .asV6();    // 指定为 v6 配置
 
 // 备注：Xdb 三种初始化输入的优先级：XdbInputStream -> XdbFile -> XdbPath
+// setXdbInputStream 仅方便使用者从 jar 包中加载 xdb 文件内容，这时 cachePolicy 只能设置为 Config.BufferCache
 
 // 3，通过上述配置创建 Ip2Region 查询服务
 final Ip2Region ip2Region = Ip2Region.create(v4Config, v6Config);
