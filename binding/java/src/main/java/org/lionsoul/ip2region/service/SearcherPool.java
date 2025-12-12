@@ -60,7 +60,7 @@ public class SearcherPool {
     protected SearcherPool init() throws IOException {
         // create the searchers
         for (int i = pool.size(); i < config.searchers; i++) {
-            final Searcher searcher = new Searcher(config.ipVersion, config.xdbPath, config.vIndex, config.cBuffer);
+            final Searcher searcher = new Searcher(config.ipVersion, config.xdbFile, config.vIndex, config.cBuffer);
             pool.add(searcher);
         }
 

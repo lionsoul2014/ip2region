@@ -7,7 +7,7 @@
 <dependency>
     <groupId>org.lionsoul</groupId>
     <artifactId>ip2region</artifactId>
-    <version>3.3.0</version>
+    <version>3.3.1</version>
 </dependency>
 ```
 
@@ -21,6 +21,8 @@ import org.lionsoul.ip2region.service.Ip2Region;
 final Config v4Config = Config.custom()
     .setCachePolicy(Config.VIndexCache)     // 指定缓存策略:  NoCache / VIndexCache / BufferCache
     .setSearchers(15)                       // 设置初始化的查询器数量
+    // .setXdbInputStream(InputStream)      // 设置 v4 xdb 文件的 inputstream 对象
+    // .setXdbFile(File)                    // 设置 v4 xdb File 对象
     .setXdbPath("ip2region v4 xdb path")    // 设置 v4 xdb 文件的路径
     .asV4();    // 指定为 v4 配置
 
@@ -28,8 +30,12 @@ final Config v4Config = Config.custom()
 final Config v6Config = Config.custom()
     .setCachePolicy(Config.VIndexCache)     // 指定缓存策略: NoCache / VIndexCache / BufferCache
     .setSearchers(15)                       // 设置初始化的查询器数量
+    // .setXdbInputStream(InputStream)      // 设置 v6 xdb 文件的 inputstream 对象
+    // .setXdbFile(File)                    // 设置 v6 xdb File 对象
     .setXdbPath("ip2region v6 xdb path")    // 设置 v6 xdb 文件的路径
     .asV6();    // 指定为 v6 配置
+
+// 备注：Xdb 三种初始化输入的优先级：XdbInputStream -> XdbFile -> XdbPath
 
 // 3，通过上述配置创建 Ip2Region 查询服务
 final Ip2Region ip2Region = Ip2Region.create(v4Config, v6Config);

@@ -17,7 +17,7 @@ public class Ip2RegionTest {
     private static final Log log = Log.getLogger(Ip2RegionTest.class).setLevel(Log.DEBUG);
 
     @Test
-    public void TestConfigCreate() throws IOException, XdbException, InetAddressException, InterruptedException {
+    public void TestConfigCreate() throws IOException, XdbException, InetAddressException, InterruptedException, InvalidConfigException {
         final Config v4Config = Config.custom()
             .setCachePolicy(Config.NoCache)
             .setSearchers(10)
@@ -46,7 +46,7 @@ public class Ip2RegionTest {
     }
 
     @Test
-    public void TestPathCreate() throws InetAddressException, IOException, XdbException, InterruptedException {
+    public void TestPathCreate() throws InetAddressException, IOException, XdbException, InterruptedException, InvalidConfigException {
         byte[] v4Bytes = Util.parseIP("113.92.157.29");
         byte[] v6Bytes = Util.parseIP("240e:3b7:3272:d8d0:db09:c067:8d59:539e");
         final Ip2Region ip2Region = Ip2Region.create(ConfigTest.getDataPath("ip2region_v4.xdb"), ConfigTest.getDataPath("ip2region_v6.xdb"));
@@ -63,7 +63,7 @@ public class Ip2RegionTest {
     }
 
     @Test
-    public void TestInMemSearch() throws IOException, XdbException, InetAddressException, InterruptedException {
+    public void TestInMemSearch() throws IOException, XdbException, InetAddressException, InterruptedException, InvalidConfigException {
         final Config v4Config = Config.custom()
             .setCachePolicy(Config.BufferCache)
             .setXdbPath(ConfigTest.getDataPath("ip2region_v4.xdb"))
@@ -90,7 +90,7 @@ public class Ip2RegionTest {
     }
 
     @Test
-    public void TestConcurrentCall() throws IOException, XdbException, InetAddressException, InterruptedException {
+    public void TestConcurrentCall() throws IOException, XdbException, InetAddressException, InterruptedException, InvalidConfigException {
         final Config v4Config = Config.custom()
             .setCachePolicy(Config.VIndexCache)
             .setSearchers(15)
@@ -144,7 +144,7 @@ public class Ip2RegionTest {
     }
 
     @Test
-    public void TestV4Only() throws IOException, XdbException, InetAddressException, InterruptedException {
+    public void TestV4Only() throws IOException, XdbException, InetAddressException, InterruptedException, InvalidConfigException {
         final Config v4Config = Config.custom()
             .setCachePolicy(Config.NoCache)
             .setXdbPath(ConfigTest.getDataPath("ip2region_v4.xdb"))

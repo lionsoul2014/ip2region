@@ -33,6 +33,30 @@ public class SearcherPoolTest {
     }
 
     @Test
+    public void testInMemV4SearcherPool() throws Exception {
+        final Config v4Config = Config.custom()
+            .setCachePolicy(Config.FullCache)
+            .setSearchers(5)
+            .setXdbPath(ConfigTest.getDataPath("ip2region_v4.xdb"))
+            .asV4();
+
+
+        final String ipStr = "58.250.36.41";
+        final SearcherPool v4Pool = SearcherPool.create(v4Config);
+        for (int i = 0; i < 20; i++) {
+            final Searcher searcher = v4Pool.borrowSearcher();
+            log.debugf("borrowed searcher %d: %s", i, searcher.toString());
+            final String region = searcher.search(ipStr);
+            log.debugf("search(%s)=%s", ipStr, region);
+            v4Pool.returnSearcher(searcher);
+            log.debugf("return searcher %d", i);
+        }
+
+        v4Pool.close();
+        log.debugf("v4 searcher pool closed gracefully");
+    }
+
+    @Test
     public void testV6SearcherPool() throws Exception {
         final Config v6Config = Config.custom()
             .setCachePolicy(Config.VIndexCache)
