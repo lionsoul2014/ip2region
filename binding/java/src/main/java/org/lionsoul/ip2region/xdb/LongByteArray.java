@@ -37,6 +37,10 @@ public class LongByteArray {
         return length;
     }
 
+    public int size() {
+        return buffs.size();
+    }
+
     // internal method to determine the position of the specified offset
     private Position determinate(final long offset) {
         int index = 0, position = 0, buffLen = buffs.size();
