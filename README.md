@@ -100,15 +100,13 @@ Ip2Region 官方社区正式上线于 `2025/06/12` 日，一方面提供了稳�
 
 # 相关备注
 
-### 1、并发查询必读
-如果你使用的 `binding` 提供了并发安全的查询服务，例如 [Java](binding/java) | [Go](binding/golang)，**请优先使用该并发安全的查询服务**；底层的 xdb 实现，除了完全基于内存的查询 <b>是</b> 并发安全的，其他基于文件的查询都 <b>不是</b> 并发安全的，不同进程/线程/协程需要通过创建不同的查询对象来安全使用，并发量很大的情况下，基于文件查询的方式可能会打开很多 xdb 文件，请修改内核的最大允许打开文件数(fs.file-max=一个更高的值)。
-
-### 2、核心 xdb 技术：
+### 1、xdb 技术文档：
 1. xdb 数据结构分析：[“ip2region xdb-数据结构描述“](https://ip2region.net/doc/xdb/structure)
 2. xdb 查询过程分析：[“ip2region xdb-查询过程描述”](https://ip2region.net/doc/xdb/search)
 3. xdb 生成过程分析：[“ip2region xdb-生成过程描述”](https://ip2region.net/doc/xdb/generate)
 4. xdb 文件生成教程：[“ip2region xdb-文件生成教程”](https://ip2region.net/doc/data/xdb_make)
-5. xdb 数据更新方法：[“ip2region 数据更新和 xdb 数据编辑器的使用”](https://mp.weixin.qq.com/s/cZH5qIn4E5rQFy6N32RCzA)
+5. xdb 并发安全查询：[“ip2region xdb-并发安全查询”](https://ip2region.net/doc/xdb/concurrent)
+6. xdb 数据更新方法：[“ip2region 数据更新和 xdb 数据编辑器的使用”](https://mp.weixin.qq.com/s/cZH5qIn4E5rQFy6N32RCzA)
 
 ### 3、技术信息博客
 1. 微信公众号 - lionsoul-org，作者活跃的技术分享渠道
