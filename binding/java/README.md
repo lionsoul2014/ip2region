@@ -7,7 +7,7 @@
 <dependency>
     <groupId>org.lionsoul</groupId>
     <artifactId>ip2region</artifactId>
-    <version>3.3.1</version>
+    <version>3.3.2</version>
 </dependency>
 ```
 
@@ -22,6 +22,7 @@ final Config v4Config = Config.custom()
     .setCachePolicy(Config.VIndexCache)     // 指定缓存策略:  NoCache / VIndexCache / BufferCache
     .setSearchers(15)                       // 设置初始化的查询器数量
     // .setXdbInputStream(InputStream)      // 设置 v4 xdb 文件的 inputstream 对象
+    // .setCacheSliceBytes(int)             // 设置 v4 xdb 缓存的分片字节数
     // .setXdbFile(File)                    // 设置 v4 xdb File 对象
     .setXdbPath("ip2region v4 xdb path")    // 设置 v4 xdb 文件的路径
     .asV4();    // 指定为 v4 配置
@@ -31,6 +32,7 @@ final Config v6Config = Config.custom()
     .setCachePolicy(Config.VIndexCache)     // 指定缓存策略: NoCache / VIndexCache / BufferCache
     .setSearchers(15)                       // 设置初始化的查询器数量
     // .setXdbInputStream(InputStream)      // 设置 v6 xdb 文件的 inputstream 对象
+    // .setCacheSliceBytes(int)             // 设置 v6 xdb 缓存的分片字节数
     // .setXdbFile(File)                    // 设置 v6 xdb File 对象
     .setXdbPath("ip2region v6 xdb path")    // 设置 v6 xdb 文件的路径
     .asV6();    // 指定为 v6 配置
@@ -49,14 +51,15 @@ final String v6Region = ip2Region.search("240e:3b7:3272:d8d0:db09:c067:8d59:539e
 ip2Region.close();
 ```
 ##### `Ip2Region` 查询备注：
-1. 该查询服务的 API 并发安全且同时支持 `IPv4` 和 `Ipv6` 的地址，内部实现会自动判断。
+1. 该查询服务的 API 并发安全且同时支持 `IPv4` 和 `IPv6` 的地址，内部实现会自动判断。
 2. v4 和 v6 的配置需要单独创建，可以给 v4 和 v6 设置使用不同的缓存策略，也可以指定其中一个为 `null` 则该版本的 IP 地址查询都会返回 `null`。
 3. 请结合您项目的并发数给 `setSearchers` 一个合适的查询器数量，默认为 20 个，这个值在运行过程中是固定的，每次查询会从池子里租借一个查询器来完成查询操作，查询完成后再归还回去，如果租借的时候池子已经空了则等待直到有可用的查询器来完成查询服务，租借的锁是使用的 `ReentrantLock` 来管理，也可以通过如下方式来设置 `Ip2Region` 查询服务使用公平锁：
 ```java
 final Ip2Region ip2region = Ip2Region.create(v4Config, v6Config, true);
 ```
 4. 如果配置设置的缓存策略为 `Config.BufferCache` 即 `全内存缓存` 则默认会使用单实例的内存查询器，该实现天生并发安全，此时通过 `setSearchers` 指定的查询器数量无效。
-5. 如果 `ip2region` 查询器在提供服务期间，调用 close 默认会最大等待 10 秒钟来等待尽量多的查询器归还。
+5. 如果使用的是全内存缓存查询且在加载 xdb 二进制内容的时候提示 `OOM`，请参考 [sliceBytes设置](#slicebytes) 然后通过 `ConfigBuilder.setCacheSliceBytes(int)` 设置一个合适的值来避免 OOM。
+6. 如果 `ip2region` 查询器在提供服务期间，调用 close 默认会最大等待 10 秒钟来等待尽量多的查询器归还。
 
 
 ### 关于查询 API
@@ -237,6 +240,15 @@ public class SearcherTest {
     }
 }
 ```
+
+如果调用 `loadContentXXX` 方法来加载 xdb buffer 的过程中出现了 OOM 错误，请参考以下的 [sliceBytes 设置](#slicebytes)，选择使用带 sliceBytes 参数的 `loadContentXXX` 方法来加载 。
+
+### sliceBytes
+
+sliceBytes 表示 xdb 全内存缓存时 `LongByteArray` 类内部维护的 `List<byte[]> buffs` 集合的分片内存的大小，这个值的最大值也是默认值为 `Searcher.MAX_WRITE_BYTES`，取值的核心是为了减少 `buffs` 的长度， 最小值为 1，buffs 长度越小越好，意味着查询过程中的寻址操作的 buffs 遍历操作越少，该值的设置原则如下：
+1. 默认为 `Searcher.MAX_WRITE_BYTES`，也就是 `0x7ffff000`，关于该取值的来源可以参考作者博客文章：[https://mp.weixin.qq.com/s/4xHRcnQbIcjtMGdXEGrxsA](https://mp.weixin.qq.com/s/4xHRcnQbIcjtMGdXEGrxsA)。
+2. 如果 xdb 文件的字节数小于 `Searcher.MAX_WRITE_BYTES`，则 sliceBytes 设置为该 xdb 文件的字节数即可，如果大于 `Searcher.MAX_WRITE_BYTES` 则使用默认值即可。Searcher 的 `loadContent` 或者 `loadContentFromFile` 方法默认都是按照这个原则来自动设置 sliceBytes 的值，唯独 `loadContentFromInputStream` 系列方法因为不方便获取流的大小使用的是默认最大值，因此可以按照上述原则通过调用 `loadContentFromInputStream(InputStream, int)` 手动设置合理的值，或者设置 JVM 的内存限制避免运行时的 OOM 错误。
+3. 如果 sliceBytes 设置的值小于甚至远远小于 xdb 文件的字节数则会增加查询过程中的寻址遍历操作从而减慢查询，其他无任何影响，随着 IPv6 的普及后期的 xdb 文件大小可能几个G甚至10G+，所以默认 sliceBytes 取的最大值也是为了默认总是能取得最佳的运行效率。
 
 
 # 编译测试程序
