@@ -31,6 +31,9 @@ public class ConfigBuilder {
     private File xdbFile = null;
     private InputStream xdbInputStream = null;
 
+    // slice bytes for in-memory xdb content
+    private int cacheSliceBytes = Searcher.MAX_WRITE_BYTES;
+
     // searchers
     private int searchers = 20;
 
@@ -60,6 +63,11 @@ public class ConfigBuilder {
         return this;
     }
 
+    public ConfigBuilder setCacheSliceBytes(int cacheSliceBytes) {
+        this.cacheSliceBytes = cacheSliceBytes;
+        return this;
+    }
+
     public ConfigBuilder setSearchers(int searchers) {
         this.searchers = searchers;
         return this;
@@ -74,7 +82,7 @@ public class ConfigBuilder {
             throw new InvalidConfigException("SetXdbInputStream could ONLY be used with cachePolicy = Config.BufferCache");
         } else {
             // 1, load the content buffer
-            final LongByteArray cBuffer = Searcher.loadContentFromInputStream(xdbInputStream);
+            final LongByteArray cBuffer = Searcher.loadContentFromInputStream(xdbInputStream, cacheSliceBytes);
 
             // 2, verify the xdb from the buffer
             Searcher.verify(Searcher.loadHeaderFromBuffer(cBuffer), cBuffer.length());
@@ -108,7 +116,7 @@ public class ConfigBuilder {
         final byte[] vIndex = cachePolicy == Config.VIndexCache ? Searcher.loadVectorIndex(raf) : null;
 
         // 4, check and load the content buffer
-        final LongByteArray cBuffer = cachePolicy == Config.BufferCache ? Searcher.loadContent(raf) : null;
+        final LongByteArray cBuffer = cachePolicy == Config.BufferCache ? Searcher.loadContent(raf, cacheSliceBytes) : null;
 
         raf.close();
         return new Config(cachePolicy, ipVersion, xdbFile, header, vIndex, cBuffer, searchers);
