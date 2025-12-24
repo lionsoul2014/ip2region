@@ -25,7 +25,9 @@ public class Searcher {
     public static final int VectorIndexCols  = 256;
     public static final int VectorIndexSize  = 8;
 
-    // Linux max write / read bytes
+    // Linux max write / read bytes.
+    // Check https://mp.weixin.qq.com/s/4xHRcnQbIcjtMGdXEGrxsA 
+    //  to get to know why we default to this value.
     public static final int MAX_WRITE_BYTES = 0x7ffff000;
 
     // ip version
@@ -254,13 +256,19 @@ public class Searcher {
 
     // --- read xdb content
 
+    // -- load xdb buffer with random access file handle
+    
     public static LongByteArray loadContent(RandomAccessFile handle) throws IOException {
+        return loadContent(handle, MAX_WRITE_BYTES);
+    }
+
+    public static LongByteArray loadContent(RandomAccessFile handle, final int sliceBytes) throws IOException {
         handle.seek(0);
         // check the length and do the buff load
         long toRead = handle.length();
         final LongByteArray byteArray = new LongByteArray();
         while (toRead > 0) {
-            final byte[] buff = new byte[(int) Math.min(toRead, MAX_WRITE_BYTES)];
+            final byte[] buff = new byte[(int) Math.min(toRead, sliceBytes)];
             final int rLen = handle.read(buff);
             if (rLen != buff.length) {
                 throw new IOException("incomplete read: read bytes should be " + buff.length + ", got `" + rLen + "`");
@@ -273,25 +281,43 @@ public class Searcher {
         return byteArray;
     }
 
+    // -- load xdb buffer with xdb file object
+
     public static LongByteArray loadContentFromFile(File xdbFile) throws IOException {
+        return loadContentFromFile(xdbFile, MAX_WRITE_BYTES);
+    }
+
+    public static LongByteArray loadContentFromFile(File xdbFile, final int sliceBytes) throws IOException {
         final RandomAccessFile handle = new RandomAccessFile(xdbFile, "r");
-        final LongByteArray content = loadContent(handle);
+        final LongByteArray content = loadContent(handle, sliceBytes);
         handle.close();
         return content;
     }
 
+    // -- load xdb buffer with xdb file path
+
     public static LongByteArray loadContentFromFile(String xdbPath) throws IOException {
-        return loadContentFromFile(new File(xdbPath));
+        return loadContentFromFile(xdbPath, MAX_WRITE_BYTES);
     }
 
+    public static LongByteArray loadContentFromFile(String xdbPath, final int sliceBytes) throws IOException {
+        return loadContentFromFile(new File(xdbPath), sliceBytes);
+    }
+
+    // load xdb buffer from input stream
+
     public static LongByteArray loadContentFromInputStream(InputStream is) throws IOException {
+        return loadContentFromInputStream(is, MAX_WRITE_BYTES);
+    }
+
+    public static LongByteArray loadContentFromInputStream(InputStream is, final int sliceBytes) throws IOException {
         final LongByteArray byteArray = new LongByteArray();
         while (true) {
             boolean done = false;
 
             // read at most MAX_WRITE_BYTES bytes
             int rLen, tBytes = 0;
-            final byte[] buff = new byte[MAX_WRITE_BYTES];
+            final byte[] buff = new byte[sliceBytes];
             while (true) {
                 rLen = is.read(buff, tBytes, buff.length - tBytes);
                 if (rLen == -1) {
