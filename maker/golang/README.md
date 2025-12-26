@@ -32,7 +32,7 @@ options:
 ./xdb_maker gen --src=../../data/ipv6_source.txt --dst=./ip2region_v6.xdb --version=ipv6
 ```
 
-生成过程中数据字段自定义请参考 [xdb-v4文件生成#自定义数据字段](https://ip2region.net/doc/data/ipv4_xdb_make#field-list)
+生成过程中数据字段自定义请参考 [xdb-文件生成#自定义数据字段](https://ip2region.net/doc/data/xdb_make#field-list)
 
 
 # `xdb` 数据查询

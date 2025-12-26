@@ -40,7 +40,7 @@ java -jar target/ip2region-maker-3.0.0.jar --src=../../data/ipv6_source.txt --ds
 2025-09-13 00:35:34 INFO  org.lionsoul.ip2region.MakerApp Done, elapsed: 67 s
 ```
 
-生成过程中数据字段自定义请参考 [xdb-v4文件生成#自定义数据字段](https://ip2region.net/doc/data/ipv4_xdb_make#field-list)
+生成过程中数据字段自定义请参考 [xdb-文件生成#自定义数据字段](https://ip2region.net/doc/data/xdb_make#field-list)
 
 # 数据 查询/bench 测试
 
