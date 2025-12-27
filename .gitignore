@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Generated files
+patches_cache.json
+*.cache
+
+# Patch files (users should download their own)
+patches/*.fix
+
+# OS
+.DS_Store
+Thumbs.db
+
