@@ -1,0 +1,16 @@
+[package]
+name = "searcher"
+default-run = "searcher"
+version = "0.2.0"
+edition = "2024"
+rust-version = "1.89.0"
+description = "Rust binding example for ip2region"
+license = "Apache-2.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+ip2region = { path = "../ip2region" }
+clap = { version = "4.5", features = ["derive", "env"] }
+tracing-subscriber = "0.3"
+tracing = "0.1"

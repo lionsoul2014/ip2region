@@ -1,0 +1,47 @@
+{
+  "name": "ip2region.js",
+  "version": "3.1.6",
+  "description": "official javascript binding for ip2region with both IPv4 and IPv6 supported ",
+  "type": "module",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "test": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lionsoul2014/ip2region.git"
+  },
+  "keywords": [
+    "ip2region",
+    "ip-address",
+    "ip-region",
+    "ip-location",
+    "ip-lookup",
+    "ip-search",
+    "ipv4-address",
+    "ipv4-region",
+    "ipv4-location",
+    "ipv4-lookup",
+    "ipv4-search",
+    "ipv6-address",
+    "ipv6-region",
+    "ipv6-location",
+    "ipv6-lookup",
+    "ipv6-search"
+  ],
+  "author": "lionsoul2014",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lionsoul2014/ip2region/issues"
+  },
+  "homepage": "https://github.com/lionsoul2014/ip2region#readme",
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "argparse": "^2.0.1",
+    "jest": "^30.2.0",
+    "n-readlines": "^1.0.1",
+    "ts-jest": "^29.4.5",
+    "typescript": "^5.9.3"
+  }
+}

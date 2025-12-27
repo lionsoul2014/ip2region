@@ -27,3 +27,101 @@ patches/*.fix
 .DS_Store
 Thumbs.db
 
+*.class
+*.out
+*.o
+*.pyc
+*~
+*.log
+*.la
+*.iml
+META-INF/
+
+# Binary Files #
+*.jar
+!dbMaker-*.jar
+
+# ignore all xdb except the one in ./data/
+*.xdb
+!/data/*.xdb
+
+# Package Files #
+.settings/
+.classpath
+.project
+
+# vim swp file #
+.idea
+.vscode
+
+# binding
+/v1.0//binding/java/classes/
+/v1.0//binding/java/doc/
+/v1.0//binding/java/target/
+/v1.0//binding/java/*.jar
+/binding/java/classes/
+/binding/java/doc/
+/binding/java/target/
+/binding/java/*.jar
+
+# python
+/**/__pycache__
+
+# clang
+/binding/c/xdb_searcher
+/binding/c/test_util
+/binding/c/cmake-build-debug
+
+# lua/luc_c
+/binding/lua_c/cmake-build-debug
+
+# golang
+/binding/golang/searcher
+/binding/golang/xdb_searcher
+/binding/golang/golang
+
+# rust
+Cargo.lock
+target
+
+
+# VS ignore cases
+/**/*.sln
+/v1.0/binding/c#/**/.vs/
+/v1.0/binding/c#/**/packages
+/v1.0/binding/c#/**/bin
+/v1.0/binding/c#/**/obj
+/binding/c#/**/.vs/
+/binding/c#/**/packages
+/binding/c#/**/bin
+/binding/c#/**/obj
+
+# Nodejs
+/v1.0/binding/nodejs/tests/unitTests/__snapshots__
+/v1.0/binding/nodejs/coverage
+/binding/nodejs/tests/unitTests/__snapshots__
+/binding/nodejs/coverage
+/binding/nodejs/node_modules
+/binding/nodejs/.nyc_output
+/binging/nodejs/package-lock.json
+
+# Javascript
+/binding/javascript/tests/unitTests/__snapshots__
+/binding/javascript/coverage
+/binding/javascript/node_modules
+/binding/javascript/.nyc_output
+/binding/javascript/package-lock.json
+
+# maker
+## golang
+/maker/golang/dbmaker
+/maker/golang/xdb_maker
+/maker/golang/golang
+
+#erlang
+/binding/erlang/_build
+/binding/erlang/doc
+
+#vscode
+.vscode
+build

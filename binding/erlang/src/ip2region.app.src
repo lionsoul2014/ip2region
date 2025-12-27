@@ -1,0 +1,20 @@
+{application, ip2region,
+ [{description, "ip2region xdb client application"},
+  {vsn, "0.1.0"},
+  {registered, []},
+  {mod, {ip2region_app, []}},
+  {applications,
+   [kernel,
+    stdlib
+   ]},
+  {env,[
+    {poolargs, [
+        {size, 1},
+        {max_overflow, 5}
+    ]}
+  ]},
+  {modules, []},
+
+  {licenses, ["Apache-2.0"]},
+  {links, [{"Github", "https://github.com/leihua996/ip2region/tree/master/binding/erlang"}]}
+ ]}.

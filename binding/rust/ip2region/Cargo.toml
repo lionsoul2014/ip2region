@@ -1,0 +1,22 @@
+[package]
+name = "ip2region"
+version = "0.2.0"
+edition = "2024"
+rust-version = "1.89.0"
+description = "The rust binding for ip2region"
+license = "Apache-2.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tracing = "0.1"
+thiserror = "2"
+maker = { path = "../../../maker/rust/maker"}
+
+[dev-dependencies]
+criterion = "0.7"
+rand = "0.9"
+
+[[bench]]
+name = "search"
+harness = false

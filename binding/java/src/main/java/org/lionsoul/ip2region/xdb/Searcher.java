@@ -1,0 +1,393 @@
+// Copyright 2022 The Ip2Region Authors. All rights reserved.
+// Use of this source code is governed by a Apache2.0-style
+// license that can be found in the LICENSE file.
+
+package org.lionsoul.ip2region.xdb;
+
+import java.io.File;
+
+// xdb searcher (Not thread safe implementation)
+// @Author Lion <chenxin619315@gmail.com>
+// @Date   2022/06/23
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.RandomAccessFile;
+
+public class Searcher {
+    // xdb structure version no
+    public static final int STRUCTURE_20 = 2;
+    public static final int STRUCTURE_30 = 3;
+
+    // constant defined copied from the xdb maker
+    public static final int HeaderInfoLength = 256;
+    public static final int VectorIndexRows  = 256;
+    public static final int VectorIndexCols  = 256;
+    public static final int VectorIndexSize  = 8;
+
+    // Linux max write / read bytes.
+    // Check https://mp.weixin.qq.com/s/4xHRcnQbIcjtMGdXEGrxsA 
+    //  to get to know why we default to this value.
+    public static final int MAX_WRITE_BYTES = 0x7ffff000;
+
+    // ip version
+    private final Version version;
+
+    // random access file handle for file-based search
+    private final File xdbFile;
+    private final RandomAccessFile handle;
+
+    private int ioCount = 0;
+
+    // vector index.
+    // use the byte[] instead of VectorIndex entry array to keep
+    // the minimal memory allocation.
+    private final byte[] vectorIndex;
+
+    // xdb content buffer, used for in-memory search.
+    // @Note: use the LongByteArray instead since 2025/08/22
+    // private final byte[] contentBuff;
+    private final LongByteArray contentBuff;
+
+    // --- static method to create searchers
+
+    public static Searcher newWithFileOnly(Version version, String xdbPath) throws IOException {
+        return new Searcher(version, new File(xdbPath), null, null);
+    }
+
+    public static Searcher newWithFileOnly(Version version, File xdbFile) throws IOException {
+        return new Searcher(version, xdbFile, null, null);
+    }
+
+    public static Searcher newWithVectorIndex(Version version, String xdbPath, byte[] vectorIndex) throws IOException {
+        return new Searcher(version, new File(xdbPath), vectorIndex, null);
+    }
+
+    public static Searcher newWithVectorIndex(Version version, File xdbFile, byte[] vectorIndex) throws IOException {
+        return new Searcher(version, xdbFile, vectorIndex, null);
+    }
+
+    public static Searcher newWithBuffer(Version version, LongByteArray cBuff) throws IOException {
+        return new Searcher(version, null, null, cBuff);
+    }
+
+    // --- End of creator
+
+    public Searcher(Version version, File xdbFile, byte[] vectorIndex, LongByteArray cBuff) throws IOException {
+        this.version = version;
+        this.xdbFile = xdbFile;
+        if (cBuff != null) {
+            this.handle = null;
+            this.vectorIndex = null;
+            this.contentBuff = cBuff;
+        } else {
+            this.handle = new RandomAccessFile(xdbFile, "r");
+            this.vectorIndex = vectorIndex;
+            this.contentBuff = null;
+        }
+    }
+
+    public void close() throws IOException {
+        if (this.handle != null) {
+            this.handle.close();
+        }
+    }
+
+    public Version getIPVersion() {
+        return version;
+    }
+
+    public int getIOCount() {
+        return ioCount;
+    }
+
+    public String search(String ipStr) throws Exception {
+        return search(Util.parseIP(ipStr));
+    }
+
+    public String search(byte[] ip) throws IOException, InetAddressException {
+        // ip version check
+        if (ip.length != version.bytes) {
+            throw new InetAddressException("invalid ip address ("+version.name+" expected)");
+        }
+
+        // reset the global counter
+        this.ioCount = 0;
+
+        // locate the segment index block based on the vector index
+        long sPtr = 0, ePtr = 0;
+        int il0 = (int) (ip[0] & 0xFF);
+        int il1 = (int) (ip[1] & 0xFF);
+        int idx = il0 * VectorIndexCols * VectorIndexSize + il1 * VectorIndexSize;
+        // System.out.printf("il0: %d, il1: %d, idx: %d\n", il0, il1, idx);
+        if (vectorIndex != null) {
+            sPtr = LittleEndian.getUint32(vectorIndex, idx);
+            ePtr = LittleEndian.getUint32(vectorIndex, idx + 4);
+        } else if (contentBuff != null) {
+            sPtr = contentBuff.getUint32(HeaderInfoLength + idx);
+            ePtr = contentBuff.getUint32(HeaderInfoLength + idx + 4);
+        } else {
+            final byte[] buff = new byte[VectorIndexSize];
+            read(HeaderInfoLength + idx, buff);
+            sPtr = LittleEndian.getUint32(buff, 0);
+            ePtr = LittleEndian.getUint32(buff, 4);
+        }
+
+        // System.out.printf("sPtr: %d, ePtr: %d\n", sPtr, ePtr);
+
+        // binary search the segment index block to get the region info
+        final int bytes = ip.length, dBytes = ip.length << 1;
+        final int segIndexSize = version.segmentIndexSize;
+        final byte[] buff = new byte[segIndexSize];
+        int dataLen = 0;
+        long dataPtr = 0, l = 0, h = (ePtr - sPtr) / segIndexSize;
+        while (l <= h) {
+            long m = (l + h) >> 1;
+            long p = sPtr + m * segIndexSize;
+
+            // read the segment index
+            read(p, buff);
+            if (version.ipSubCompare(ip, buff, 0) < 0) {
+                h = m - 1;
+            } else if (version.ipSubCompare(ip, buff, bytes) > 0) {
+                l = m + 1;
+            } else {
+                dataLen = LittleEndian.getUint16(buff, dBytes);
+                dataPtr = LittleEndian.getUint32(buff, dBytes + 2);
+                break;
+            }
+        }
+
+        // empty match interception
+        // System.out.printf("dataLen: %d, dataPtr: %d\n", dataLen, dataPtr);
+        if (dataLen == 0) {
+            return "";
+        }
+
+        // load and return the region data
+        final byte[] regionBuff = new byte[dataLen];
+        read(dataPtr, regionBuff);
+        return new String(regionBuff, "utf-8");
+    }
+
+    protected void read(long offset, byte[] buffer) throws IOException {
+        // check the in-memory buffer first
+        if (contentBuff != null) {
+            contentBuff.copy(offset, buffer, 0, buffer.length);
+            return;
+        }
+
+        // read from the file handle
+        assert handle != null;
+        handle.seek(offset);
+
+        this.ioCount++;
+        int rLen = handle.read(buffer);
+        if (rLen != buffer.length) {
+            throw new IOException("incomplete read: read bytes should be " + buffer.length);
+        }
+    }
+
+    @Override public String toString() {
+        return String.format(
+            "%s->{version:%s, xdb:%s, vIndex:%s, cBuffer:%s}", 
+            super.toString(),
+            version.name, xdbFile == null ? "null" : xdbFile.getAbsolutePath(), 
+            vectorIndex == null ? "null" : String.valueOf(vectorIndex.length),
+            contentBuff == null ? "null" : String.valueOf(contentBuff.length())
+        );
+    }
+
+    // ---
+    // --- static util function
+    // --- read xdb header
+
+    public static Header loadHeader(RandomAccessFile handle) throws IOException {
+        handle.seek(0);
+        final byte[] buff = new byte[HeaderInfoLength];
+        handle.read(buff);
+        return new Header(buff);
+    }
+
+    public static Header loadHeaderFromFile(File xdbFile) throws IOException {
+        final RandomAccessFile handle = new RandomAccessFile(xdbFile, "r");
+        final Header header = loadHeader(handle);
+        handle.close();
+        return header;
+    }
+
+    public static Header loadHeaderFromFile(String xdbPath) throws IOException {
+        return loadHeaderFromFile(new File(xdbPath));
+    }
+
+    public static Header loadHeaderFromBuffer(LongByteArray cBuffer) throws IOException {
+        return new Header(cBuffer.slice(0, HeaderInfoLength));
+    }
+
+    // --- read xdb vector index
+
+    public static byte[] loadVectorIndex(RandomAccessFile handle) throws IOException {
+        handle.seek(HeaderInfoLength);
+        int len = VectorIndexRows * VectorIndexCols * VectorIndexSize;
+        final byte[] buff = new byte[len];
+        int rLen = handle.read(buff);
+        if (rLen != len) {
+            throw new IOException("incomplete read: read bytes should be " + len);
+        }
+
+        return buff;
+    }
+
+    public static byte[] loadVectorIndexFromFile(File xdbFile) throws IOException {
+        final RandomAccessFile handle = new RandomAccessFile(xdbFile, "r");
+        final byte[] vIndex = loadVectorIndex(handle);
+        handle.close();
+        return vIndex;
+    }
+
+    public static byte[] loadVectorIndexFromFile(String xdbPath) throws IOException {
+        return loadVectorIndexFromFile(new File(xdbPath));
+    }
+
+    public static byte[] loadVectorIndexFromBuffer(LongByteArray cBuffer) throws IOException {
+        final int len = VectorIndexRows * VectorIndexCols * VectorIndexSize;
+        return cBuffer.slice(HeaderInfoLength, len);
+    }
+
+    // --- read xdb content
+
+    // -- load xdb buffer with random access file handle
+    
+    public static LongByteArray loadContent(RandomAccessFile handle) throws IOException {
+        return loadContent(handle, MAX_WRITE_BYTES);
+    }
+
+    public static LongByteArray loadContent(RandomAccessFile handle, final int sliceBytes) throws IOException {
+        handle.seek(0);
+        // check the length and do the buff load
+        long toRead = handle.length();
+        final LongByteArray byteArray = new LongByteArray();
+        while (toRead > 0) {
+            final byte[] buff = new byte[(int) Math.min(toRead, sliceBytes)];
+            final int rLen = handle.read(buff);
+            if (rLen != buff.length) {
+                throw new IOException("incomplete read: read bytes should be " + buff.length + ", got `" + rLen + "`");
+            }
+
+            byteArray.append(buff);
+            toRead -= rLen;
+        }
+
+        return byteArray;
+    }
+
+    // -- load xdb buffer with xdb file object
+
+    public static LongByteArray loadContentFromFile(File xdbFile) throws IOException {
+        return loadContentFromFile(xdbFile, MAX_WRITE_BYTES);
+    }
+
+    public static LongByteArray loadContentFromFile(File xdbFile, final int sliceBytes) throws IOException {
+        final RandomAccessFile handle = new RandomAccessFile(xdbFile, "r");
+        final LongByteArray content = loadContent(handle, sliceBytes);
+        handle.close();
+        return content;
+    }
+
+    // -- load xdb buffer with xdb file path
+
+    public static LongByteArray loadContentFromFile(String xdbPath) throws IOException {
+        return loadContentFromFile(xdbPath, MAX_WRITE_BYTES);
+    }
+
+    public static LongByteArray loadContentFromFile(String xdbPath, final int sliceBytes) throws IOException {
+        return loadContentFromFile(new File(xdbPath), sliceBytes);
+    }
+
+    // load xdb buffer from input stream
+
+    public static LongByteArray loadContentFromInputStream(InputStream is) throws IOException {
+        return loadContentFromInputStream(is, MAX_WRITE_BYTES);
+    }
+
+    public static LongByteArray loadContentFromInputStream(InputStream is, final int sliceBytes) throws IOException {
+        final LongByteArray byteArray = new LongByteArray();
+        while (true) {
+            boolean done = false;
+
+            // read at most MAX_WRITE_BYTES bytes
+            int rLen, tBytes = 0;
+            final byte[] buff = new byte[sliceBytes];
+            while (true) {
+                rLen = is.read(buff, tBytes, buff.length - tBytes);
+                if (rLen == -1) {
+                    // reach the end of the stream
+                    done = true;
+                    break;
+                } else if (rLen == 0) {
+                    // the entire buff was filled
+                    break;
+                }
+
+                tBytes += rLen;
+            }
+
+            // check and copy the buffer with its actual filled bytes
+            if (tBytes == buff.length) {
+                byteArray.append(buff);
+            } else {
+                final byte[] nBuff = new byte[tBytes];
+                System.arraycopy(buff, 0, nBuff, 0, tBytes);
+                byteArray.append(nBuff);
+            }
+
+            if (done) {
+                break;
+            }
+        }
+
+        return byteArray;
+    }
+
+    // --- verify util function
+
+    // Verify if the current Searcher could be used to search the specified xdb file.
+    // Why do we need this check ?
+    // The future features of the xdb impl may cause the current searcher not able to work properly.
+    //
+    // @Note: You Just need to check this ONCE when the service starts
+    // Or use another process (eg, A command) to check once Just to confirm the suitability.
+    public static void verify(Header header, long fileBytes) throws IOException, XdbException {
+        // get the runtime ptr bytes
+        int runtimePtrBytes = 0;
+        if (header.version == STRUCTURE_20) {
+            runtimePtrBytes = 4;
+        } else if (header.version == STRUCTURE_30) {
+            runtimePtrBytes = header.runtimePtrBytes;
+        } else {
+            throw new XdbException("invalid structure version `" + header.version + "`");
+        }
+
+        // 1, confirm the xdb file size
+        // to ensure that the maximum file pointer does not overflow
+        final long maxFilePtr = (1L << (runtimePtrBytes * 8)) - 1;
+        if (fileBytes > maxFilePtr) {
+            throw new XdbException("xdb file exceeds the maximum supported bytes: "+maxFilePtr+"");
+        }
+    }
+
+    public static void verify(RandomAccessFile handle) throws IOException, XdbException {
+        verify(loadHeader(handle), handle.length());
+    }
+
+    public static void verifyFromFile(File xdbFile) throws IOException, XdbException {
+        final RandomAccessFile handle = new RandomAccessFile(xdbFile, "r");
+        verify(handle);
+        handle.close();
+    }
+
+    public static void verifyFromFile(String xdbPath) throws IOException, XdbException {
+        verifyFromFile(new File(xdbPath));
+    }
+
+}

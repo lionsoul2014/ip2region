@@ -1,0 +1,8 @@
+{"1.2.0",
+[{<<"poolboy">>,{pkg,<<"poolboy">>,<<"1.5.2">>},0}]}.
+[
+{pkg_hash,[
+ {<<"poolboy">>, <<"392B007A1693A64540CEAD79830443ABF5762F5D30CF50BC95CB2C1AAAFA006B">>}]},
+{pkg_hash_ext,[
+ {<<"poolboy">>, <<"DAD79704CE5440F3D5A3681C8590B9DC25D1A561E8F5A9C995281012860901E3">>}]}
+].

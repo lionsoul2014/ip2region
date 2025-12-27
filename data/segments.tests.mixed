@@ -1,0 +1,10 @@
+192.168.2.1|192.168.2.20|0|0|内网IP|办公室A
+192.168.2.21|192.168.2.30|0|0|内网IP|办公室A
+192.168.2.31|192.168.2.60|0|0|内网IP|办公室B
+192.168.2.61|192.168.2.91|0|0|内网IP|办公室B
+223.255.236.0|223.255.239.255|中国|上海|上海市|电信
+2c0f:fff1::|2c0f:ffff:ffff:ffff:ffff:ffff:ffff:ffff|毛里求斯|威廉平原区|卡特勒博尔纳|专线用户
+2e00::|2fff:ffff:ffff:ffff:ffff:ffff:ffff:ffff|德国|黑森|美因河畔法兰克福|专线用户
+3000::|fbff:ffff:ffff:ffff:ffff:ffff:ffff:ffff|瑞士|弗里堡州||专线用户
+fe00::|fe7f:ffff:ffff:ffff:ffff:ffff:ffff:ffff|瑞士|弗里堡州||专线用户
+fe80::|febf:ffff:ffff:ffff:ffff:ffff:ffff:ffff|瑞士|弗里堡州||专线用户
