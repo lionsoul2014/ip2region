@@ -4,6 +4,8 @@
 
 package org.lionsoul.ip2region.xdb;
 
+import java.io.IOException;
+
 // xdb byte buffer which used to instead of the byte array
 // when the size of the xdb file is greater than 2^32 << 2;
 // xdb file v4 is designed to be a maximum of 2^32 bytes in size.
@@ -14,21 +16,44 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class LongByteArray {
+
+    // slice bytes
+    // if it is greater than the 0 we will use the fixed slice bytes
+    // or we use the dynamic slice bytes.
+    private final int sliceBytes;
+
+    // when EOF is true means we cannot call the #append anymore.
+    // for fixed slice bytes only.
+    private boolean _eof = false;
+
     // byte buffer list
     private final List<byte[]> buffs = new ArrayList<byte[]>();
     private long length;
 
     public LongByteArray() {
         this.length = 0;
+        this.sliceBytes = -1;
     }
 
-    public LongByteArray(byte[] buff) {
-        buffs.add(buff);
-        length = buff.length;
+    public LongByteArray(int sliceBytes) {
+        assert sliceBytes != 0;
+        assert sliceBytes <= Searcher.MAX_WRITE_BYTES;
+        this.sliceBytes = sliceBytes;
     }
 
     // append new buffer
-    public void append(final byte[] buffer) {
+    public void append(final byte[] buffer) throws IOException{
+        // check and assert the slice bytes
+        if (sliceBytes > 0) {
+            if (_eof) {
+                throw new IOException("buffer array closed (EOF=true)");
+            } else if (buffer.length != sliceBytes) {
+                // mark the buffer array as closed
+                // since the last buffer block bytes is not equal to the expected #sliceBytes
+                _eof = true;
+            }
+        }
+
         buffs.add(buffer);
         length += buffer.length;
     }
@@ -44,17 +69,25 @@ public class LongByteArray {
     // internal method to determine the position of the specified offset
     private Position determinate(final long offset) {
         int index = 0, position = 0, buffLen = buffs.size();
-        long curIndex = 0;
-        for (index = 0; index < buffLen; index++) {
-            final byte[] buff = buffs.get(index);
-            if (curIndex + buff.length < offset) {
-                curIndex += buff.length;
-                continue;
-            }
+        if (sliceBytes > 0) {
+            // simply some math calcs to determine the offset
+            index = (int) (offset / sliceBytes);
+            position = (int) (offset - (index * sliceBytes));
+            // position = (int) (offset % sliceBytes);
+        } else {
+            // loop the buffer to determine the offset
+            long curIndex = 0;
+            for (index = 0; index < buffLen; index++) {
+                final byte[] buff = buffs.get(index);
+                if (curIndex + buff.length < offset) {
+                    curIndex += buff.length;
+                    continue;
+                }
 
-            // matched and calc the position
-            position = (int) (offset - curIndex);
-            break;
+                // matched and calc the position
+                position = (int) (offset - curIndex);
+                break;
+            }
         }
 
         return new Position(index, position);
