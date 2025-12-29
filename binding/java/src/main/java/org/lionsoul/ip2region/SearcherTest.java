@@ -239,6 +239,9 @@ public class SearcherTest {
                 return;
             }
 
+            // mark the start time
+            long sTime = System.nanoTime();
+
             byte[] sip;
             try {
                 sip = Util.parseIP(ps[0]);
@@ -264,9 +267,7 @@ public class SearcherTest {
             }
 
             for (final byte[] ip : new byte[][]{sip, eip}) {
-                long sTime = System.nanoTime();
                 String region = searcher.search(ip);
-                costs += System.nanoTime() - sTime;
 
                 // check the region info
                 if (!ps[2].equals(region)) {
@@ -277,6 +278,8 @@ public class SearcherTest {
 
                 count++;
             }
+
+            costs += System.nanoTime() - sTime;
         }
 
         reader.close();
