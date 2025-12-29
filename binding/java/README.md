@@ -7,7 +7,7 @@
 <dependency>
     <groupId>org.lionsoul</groupId>
     <artifactId>ip2region</artifactId>
-    <version>3.3.2</version>
+    <version>3.3.3</version>
 </dependency>
 ```
 
@@ -58,8 +58,7 @@ ip2Region.close();
 final Ip2Region ip2region = Ip2Region.create(v4Config, v6Config, true);
 ```
 4. 如果配置设置的缓存策略为 `Config.BufferCache` 即 `全内存缓存` 则默认会使用单实例的内存查询器，该实现天生并发安全，此时通过 `setSearchers` 指定的查询器数量无效。
-5. 如果使用的是全内存缓存查询且在加载 xdb 二进制内容的时候提示 `OOM`，请参考 [sliceBytes设置](#slicebytes) 然后通过 `ConfigBuilder.setCacheSliceBytes(int)` 设置一个合适的值来避免 OOM。
-6. 如果 `ip2region` 查询器在提供服务期间，调用 close 默认会最大等待 10 秒钟来等待尽量多的查询器归还。
+5. 如果 `ip2region` 查询器在提供服务期间，调用 close 默认会最大等待 10 秒钟来等待尽量多的查询器归还。
 
 
 ### 关于查询 API
@@ -245,10 +244,10 @@ public class SearcherTest {
 
 ### sliceBytes
 
-sliceBytes 表示 xdb 全内存缓存时 `LongByteArray` 类内部维护的 `List<byte[]> buffs` 集合的分片内存的大小，这个值的最大值也是默认值为 `Searcher.MAX_WRITE_BYTES`，取值的核心是为了减少 `buffs` 的长度， 最小值为 1，buffs 长度越小越好，意味着查询过程中的寻址操作的 buffs 遍历操作越少，该值的设置原则如下：
-1. 默认为 `Searcher.MAX_WRITE_BYTES`，也就是 `0x7ffff000`，关于该取值的来源可以参考作者博客文章：[https://mp.weixin.qq.com/s/4xHRcnQbIcjtMGdXEGrxsA](https://mp.weixin.qq.com/s/4xHRcnQbIcjtMGdXEGrxsA)。
-2. 如果 xdb 文件的字节数小于 `Searcher.MAX_WRITE_BYTES`，则 sliceBytes 设置为该 xdb 文件的字节数即可，如果大于 `Searcher.MAX_WRITE_BYTES` 则使用默认值即可。Searcher 的 `loadContent` 或者 `loadContentFromFile` 方法默认都是按照这个原则来自动设置 sliceBytes 的值，唯独 `loadContentFromInputStream` 系列方法因为不方便获取流的大小使用的是默认最大值，因此可以按照上述原则通过调用 `loadContentFromInputStream(InputStream, int)` 手动设置合理的值，或者设置 JVM 的内存限制避免运行时的 OOM 错误。
-3. 如果 sliceBytes 设置的值小于甚至远远小于 xdb 文件的字节数则会增加查询过程中的寻址遍历操作从而减慢查询，其他无任何影响，随着 IPv6 的普及后期的 xdb 文件大小可能几个G甚至10G+，所以默认 sliceBytes 取的最大值也是为了默认总是能取得最佳的运行效率。
+sliceBytes 表示 xdb 全内存缓存时 `LongByteArray` 类内部维护的 `List<byte[]> buffs` 集合的分片内存的大小，默认值为 `Searcher.DEFAULT_SLICE_BYTES` = `50MiB`，这个值的最大允许值为 `Searcher.MAX_WRITE_BYTES` = `0x7ffff000`，关于该取值的来源可以参考作者博客文章：[https://mp.weixin.qq.com/s/4xHRcnQbIcjtMGdXEGrxsA](https://mp.weixin.qq.com/s/4xHRcnQbIcjtMGdXEGrxsA)。
+1. 从 `3.3.3` 版本开始 `LongByteArray` 实现了固定分片尺寸支持，可以通过简单的计算快速的完成 `offset` 定位的从而实现 `slice` 或者 `copy` 操作。
+2. 从计算速度来说 sliceBytes 越大 buffs 的长度越小，计算耗时越小，不过有了固定 sliceBytes 实现这个差距完全可以忽略，所以建议保持默认值为 `50MiB` 即可，也不会出现之前弹性分片尺寸可能导致的 OOM 问题。
+
 
 
 # 编译测试程序
