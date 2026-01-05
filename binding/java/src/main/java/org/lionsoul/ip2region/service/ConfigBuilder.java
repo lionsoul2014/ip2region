@@ -32,7 +32,7 @@ public class ConfigBuilder {
     private InputStream xdbInputStream = null;
 
     // slice bytes for in-memory xdb content
-    private int cacheSliceBytes = Searcher.MAX_WRITE_BYTES;
+    private int cacheSliceBytes = Searcher.DEFAULT_SLICE_BYTES;
 
     // searchers
     private int searchers = 20;
