@@ -21,6 +21,7 @@ import org.lionsoul.ip2region.service.Ip2Region;
 final Config v4Config = Config.custom()
     .setCachePolicy(Config.VIndexCache)     // 指定缓存策略:  NoCache / VIndexCache / BufferCache
     .setSearchers(15)                       // 设置初始化的查询器数量
+    // .setCacheSliceBytes(int)             // 设置缓存的分片字节数，默认为 50MiB
     // .setXdbInputStream(InputStream)      // 设置 v4 xdb 文件的 inputstream 对象
     // .setXdbFile(File)                    // 设置 v4 xdb File 对象
     .setXdbPath("ip2region v4 xdb path")    // 设置 v4 xdb 文件的路径
@@ -30,6 +31,7 @@ final Config v4Config = Config.custom()
 final Config v6Config = Config.custom()
     .setCachePolicy(Config.VIndexCache)     // 指定缓存策略: NoCache / VIndexCache / BufferCache
     .setSearchers(15)                       // 设置初始化的查询器数量
+    // .setCacheSliceBytes(int)             // 设置缓存的分片字节数，默认为 50MiB
     // .setXdbInputStream(InputStream)      // 设置 v6 xdb 文件的 inputstream 对象
     // .setXdbFile(File)                    // 设置 v6 xdb File 对象
     .setXdbPath("ip2region v6 xdb path")    // 设置 v6 xdb 文件的路径
@@ -41,11 +43,12 @@ final Config v6Config = Config.custom()
 // 3，通过上述配置创建 Ip2Region 查询服务
 final Ip2Region ip2Region = Ip2Region.create(v4Config, v6Config);
 
-// 4，导出 ip2region 服务进行双版本的IP地址的并发查询，例如：
+// 4，导出 ip2region 服务作为全局变量，进行双版本的IP地址的并发查询，例如：
 final String v4Region = ip2Region.search("113.92.157.29");                          // 进行 IPv4 查询
 final String v6Region = ip2Region.search("240e:3b7:3272:d8d0:db09:c067:8d59:539e"); // 进行 IPv6 查询
 
 // 5，在服务需要关闭的时候，同时关闭 ip2region 查询服务
+// 备注：close 方法只需要在整个服务关闭的时候关闭，查询途中不需要操作
 ip2Region.close();
 ```
 ##### `Ip2Region` 查询备注：
