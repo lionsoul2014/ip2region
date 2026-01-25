@@ -1,6 +1,6 @@
 # Ip2region 是什么
 
-[ip2region](https://ip2region.net) - 是一个离线IP地址定位库和IP定位数据管理框架，同时支持`IPv4`和`IPv6`，10微秒级别的查询效率，提供了众多主流编程语言的 `xdb` 数据生成和查询客户端实现。
+[ip2region](https://ip2region.net) - 是一个离线IP地址定位库和IP定位数据管理框架，同时支持 `IPv4` 和 `IPv6` ，10微秒级别的查询效率，提供了众多主流编程语言的 `xdb` 数据生成和查询客户端实现。
 
 
 
@@ -8,7 +8,7 @@
 
 ### 1、离线定位库
 
-项目本身同时了提供了一份 IPv4 (`data/ipv4_source.txt`) 和 IPv6 (`data/ipv6_source.txt`) 的原始数据和对应的 xdb 文件(`data/ip2region_v4.xdb` 和 `data/ip2region_v6.xdb`) 用于实现精确到城市的的查询定位功能，字段格式为：`国家|省份|城市|ISP|iso-alpha2-code`，中国的定位信息全部是中文（包含部分英文ISP名称），非中国地区的地域信息全部是英文（包含部分拉丁字符）。
+项目本身同时了提供了一份 IPv4 (`data/ipv4_source.txt`) 和 IPv6 (`data/ipv6_source.txt`) 的原始数据和对应的 xdb 文件(`data/ip2region_v4.xdb` 和 `data/ip2region_v6.xdb`) 用于实现精确到城市的的查询定位功能，字段格式为：`国家|省份|城市|ISP|iso-alpha2-code(国家两字母简称)`，中国的定位信息全部是中文（包含部分英文ISP名称），非中国地区的地域信息全部是英文（包含部分拉丁字符）。
 
 ### 2、数据管理框架
 
