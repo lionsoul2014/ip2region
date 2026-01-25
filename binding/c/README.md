@@ -304,6 +304,8 @@ options:
 ip2region xdb searcher test program
 source xdb: ../../data/ip2region_v4.xdb (IPv4, vectorIndex)
 type 'quit' to exit
+ip2region>> 1.2.3.4
+{region: Australia|Queensland|Brisbane|0|AU, io_count: 5, took: 39 μs}
 ip2region>> 120.229.45.2
 {region: 中国|广东省|深圳市|移动|CN, io_count: 3, took: 13 μs}
 ```

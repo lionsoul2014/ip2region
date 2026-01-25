@@ -187,6 +187,8 @@ source xdb: ../../data/ip2region_v4.xdb (IPv4, vectorIndex)
 type 'quit' to exit
 ip2region>> 1.2.3.4
 {region: Australia|Queensland|Brisbane|0|AU, ioCount: 5, took: 657.035 μs}
+ip2region>> 113.118.113.77
+{region: 中国|广东省|深圳市|电信|CN, ioCount: 2, took: 169.927 μs}
 ```
 
 例如：使用默认的 data/ip2region_v6.xdb 文件进行 IPv6 的查询测试：
