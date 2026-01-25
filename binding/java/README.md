@@ -123,7 +123,7 @@ public class SearcherTest {
         // 2、查询，IPv4 或者 IPv6 的地址都支持
         try {
             String ip = "1.2.3.4";
-            // ip = "2001:4:112:ffff:ffff:ffff:ffff:ffff";  // IPv6
+            // ip = "240e:3b7:3272:d8d0:db09:c067:8d59:539e";  // IPv6
             long sTime = System.nanoTime();
             String region = searcher.search(ip);
             long cost = TimeUnit.NANOSECONDS.toMicros((long) (System.nanoTime() - sTime));
@@ -173,7 +173,7 @@ public class SearcherTest {
         // 3、查询，IPv4 或者 IPv6 地址都支持
         try {
             String ip = "1.2.3.4";
-            // ip = "2001:4:112:ffff:ffff:ffff:ffff:ffff";  // IPv6
+            // ip = "240e:3b7:3272:d8d0:db09:c067:8d59:539e";  // IPv6
             long sTime = System.nanoTime();
             String region = searcher.search(ip);
             long cost = TimeUnit.NANOSECONDS.toMicros((long) (System.nanoTime() - sTime));
@@ -224,7 +224,7 @@ public class SearcherTest {
         // 3、查询，IPv4 和 IPv6 都支持
         try {
             String ip = "1.2.3.4";
-            // ip = "2001:4:112:ffff:ffff:ffff:ffff:ffff";  // IPv6
+            // ip = "240e:3b7:3272:d8d0:db09:c067:8d59:539e";  // IPv6
             long sTime = System.nanoTime();
             String region = searcher.search(ip);
             long cost = TimeUnit.NANOSECONDS.toMicros((long) (System.nanoTime() - sTime));
@@ -294,10 +294,11 @@ ip2region search service test program
 +-v6 xdb: /data01/code/c/ip2region/data/ip2region_v6.xdb (vectorIndex)
 type 'quit' to exit
 ip2region>> 1.2.3.4
-{region: 美国|华盛顿|0|谷歌, took: 159 μs}
+{region: Australia|Queensland|Brisbane|0|AU, took: 140 μs}
 ip2region>> 240e:3b7:3272:d8d0:db09:c067:8d59:539e
-{region: 中国|广东省|深圳市|家庭宽带, took: 346 μs}
-ip2region>> 
+{region: 中国|广东省|深圳市|电信|CN, took: 391 μs}
+ip2region>> 2604:a840:3::a04d
+{region: United States|California|San Jose|xTom|US, took: 503 μs}
 ```
 输入 v4 或者 v6 的 IP 地址即可进行查询测试，也可以分别设置 `cache-policy` 为 file/vectorIndex/content 来测试三种不同缓存实现的查询效果。
 

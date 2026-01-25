@@ -119,9 +119,9 @@ public class Ip2RegionTest {
                         try {
                             final String region = ip2Region.search(ipBytes);
                             if (ipBytes.length == 4) {
-                                assertEquals("v4 region not equals", region, "中国|广东省|深圳市|电信");
+                                assertEquals("v4 region not equals", region, "中国|广东省|深圳市|电信|CN");
                             } else {
-                                assertEquals("v6 region not equals", region, "中国|广东省|深圳市|家庭宽带");
+                                assertEquals("v6 region not equals", region, "中国|广东省|深圳市|电信|CN");
                             }
                         } catch (InetAddressException | IOException | InterruptedException e) {
                             log.errorf("failed to search(%s): %s", Util.ipToString(ipBytes), e.getMessage());

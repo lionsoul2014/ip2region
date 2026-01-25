@@ -177,7 +177,9 @@ ip2region xdb searcher test program
 source xdb: ../../data/ip2region_v4.xdb (IPv4, vectorIndex)
 type 'quit' to exit
 ip2region>> 1.2.3.4
-{region: 美国|华盛顿|0|谷歌, io_count: 7, took: 0μs}
+{region: Australia|Queensland|Brisbane|0|AU, io_count: 5, took: 0μs}
+ip2region>> 113.118.113.77
+{region: 中国|广东省|深圳市|电信|CN, io_count: 2, took: 0μs}
 ```
 
 例如：使用默认的 data/ip2region_v6.xdb 文件进行 IPv6 的查询测试：
@@ -187,7 +189,9 @@ ip2region xdb searcher test program
 source xdb: ../../data/ip2region_v6.xdb (IPv6, vectorIndex)
 type 'quit' to exit
 ip2region>> 240e:3b7:3272:d8d0:db09:c067:8d59:539e
-{region: 中国|广东省|深圳市|家庭宽带, io_count: 8, took: 0μs}
+{region: 中国|广东省|深圳市|电信|CN, io_count: 8, took: 0μs}
+ip2region>> 2604:a840:3::a04d
+{region: United States|California|San Jose|xTom|US, io_count: 13, took: 0μs}
 ```
 
 输入 ip 即可进行查询测试。也可以分别设置 `cache-policy` 为 file/vectorIndex/content 来测试三种不同缓存实现的效率。

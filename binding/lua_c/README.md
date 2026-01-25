@@ -91,7 +91,7 @@ end
 
 -- 2、调用查询 API 进行查询，IPv4 和 IPv6 都支持
 local ip_str = "1.2.3.4"
--- ip_str = "2001:4:112:ffff:ffff:ffff:ffff:ffff" // IPv6
+-- ip_str = "240e:3b7:3272:d8d0:db09:c067:8d59:539e" // IPv6
 local s_time = xdb.now()
 region, err = searcher:search(ip_str)
 local c_time = xdb.now() - s_time
@@ -135,7 +135,7 @@ end
 
 -- 3、调用查询 API ，IPv4 和 IPv6 都支持
 local ip_str = "1.2.3.4"
--- ip_str = "2001:4:112:ffff:ffff:ffff:ffff:ffff" // IPv6
+-- ip_str = "240e:3b7:3272:d8d0:db09:c067:8d59:539e" // IPv6
 local s_time = xdb.now()
 region, err = searcher:search(ip_str)
 local c_time = xdb.now() = s_time
@@ -179,7 +179,7 @@ end
 
 -- 3、调用查询 API ，IPv4 和 IPv6 都支持
 local ip_str = "1.2.3.4"
--- ip_str = "2001:4:112:ffff:ffff:ffff:ffff:ffff" // IPv6
+-- ip_str = "240e:3b7:3272:d8d0:db09:c067:8d59:539e" // IPv6
 local s_time = xdb.now()
 region, err = searcher:search(ip_str)
 local c_time = xdb.now() - s_time
@@ -219,8 +219,10 @@ options:
 ip2region xdb searcher test program
 source xdb: ../../data/ip2region_v4.xdb (IPv4, vectorIndex)
 type 'quit' to exit
+ip2region>> 1.2.3.4
+{region: Australia|Queensland|Brisbane|0|AU, io_count: 5, took: 17μs}
 ip2region>> 120.229.45.2
-{region: 中国|广东省|深圳市|移动, io_count: 3, took: 34μs}
+{region: 中国|广东省|深圳市|移动|CN, io_count: 3, took: 40μs}
 ```
 
 例如：使用默认的 data/ip2region_v6.xdb 进行 IPv6 查询测试：
@@ -231,8 +233,10 @@ source xdb: ../../data/ip2region_v6.xdb (IPv6, vectorIndex)
 type 'quit' to exit
 ip2region>> ::
 {region: , io_count: 1, took: 48μs}
-ip2region>> 240e:3b7:3276:33b0:958f:f34c:d04f:f6a 
-{region: 中国|广东省|深圳市|家庭宽带, io_count: 8, took: 51μs}
+ip2region>> 240e:3b7:3276:33b0:958f:f34c:d04f:f6a
+{region: 中国|广东省|深圳市|电信|CN, io_count: 8, took: 52μs}
+ip2region>> 2604:a840:3::a04d
+{region: United States|California|San Jose|xTom|US, io_count: 13, took: 35μs}
 ```
 
 输入 ip 即可进行查询测试。也可以分别设置 `cache-policy` 为 file/vectorIndex/content 来测试三种不同缓存实现的效率。
