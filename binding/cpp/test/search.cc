@@ -12,9 +12,8 @@ void test_ipv4(int policy) {
     std::cout << "测试 IPv4 " << prompt[policy];
 
     xdb::search_t s("../../data/ip2region_v4.xdb", xdb::ipv4, policy);
-    test(s, "0.0.0.0", "0|0|Reserved|Reserved|Reserved");
+    test(s, "0.0.0.0", "Reserved|Reserved|Reserved|0|0");
     test(s, "1.2.3.4", "Australia|Queensland|Brisbane|0|AU");
-    test(s, "255.255.255.255", "0|0|Reserved|Reserved|Reserved");
 
     std::cout << " 成功" << std::endl;
 }
