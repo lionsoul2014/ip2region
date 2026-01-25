@@ -8,11 +8,11 @@
 
 ### 1、离线定位库
 
-项目本身同时了提供了一份 IPv4(`data/ipv4_source.txt`) 和 IPv6(`data/ipv6_source.txt`) 的原始数据和对应的 xdb 文件(`data/ip2region_v4.xdb` 和 `data/ip2region_v6.xdb`) 用于实现精确到城市的的查询定位功能。
+项目本身同时了提供了一份 IPv4 (`data/ipv4_source.txt`) 和 IPv6 (`data/ipv6_source.txt`) 的原始数据和对应的 xdb 文件(`data/ip2region_v4.xdb` 和 `data/ip2region_v6.xdb`) 用于实现精确到城市的的查询定位功能，字段格式为：`国家|省份|城市|ISP|iso-alpha2-code`，中国的定位信息全部是中文（包含部分英文ISP名称），非中国地区的地域信息全部是英文（包含部分拉丁字符）。
 
 ### 2、数据管理框架
 
-`xdb` 支持亿级别的 IP 数据段行数，region 信息支持完全自定义，自带数据的 region 信息固定了格式为：`国家|省份|城市|ISP`，你可以在 region 中追加特定业务需求的数据，例如：GPS信息/国际统一地域信息编码/邮编等。也就是你完全可以使用 ip2region 来管理你自己的 IP 定位数据。
+`xdb` 支持亿级别的 IP 数据段行数，region 信息支持完全自定义，自带数据的 region 信息固定了格式为：`国家|省份|城市|ISP|iso-alpha2-Code`，你可以在 region 中追加特定业务需求的数据，例如：GPS信息/国际统一地域信息编码/邮编等。也就是你完全可以使用 ip2region 来管理你自己的 IP 定位数据。
 
 ### 3、数据去重和压缩
 
@@ -46,7 +46,7 @@ API 介绍，使用文档和测试程序请参考对应 `searcher` 查询客户�
 | [Csharp](binding/csharp)         | csharp xdb 查询客户端                          | :white_check_mark: | :white_check_mark: | [Alen Lee](https://github.com/malus2077) & [ArgoZhang](https://github.com/ArgoZhang) |
 | [Erlang](binding/erlang)         | erlang xdb 查询客户端                          | :white_check_mark: | :x:                | [malou](https://github.com/malou996)              |
 | [Nginx](binding/nginx)           | nginx 扩展 xdb 查询客户端                      | :white_check_mark: | :x:                | [Wu Jian Ping](https://github.com/wujjpp)         |
-| [C++](binding/cpp)               | C++ xdb 查询客户端                             | :white_check_mark: | :white_check_mark:                | [Yunbin Liu](https://github.com/liuyunbin)        |
+| [C++](binding/cpp)               | C++ xdb 查询客户端                             | :white_check_mark: | :white_check_mark: | [Yunbin Liu](https://github.com/liuyunbin)        |
 
 
 以下工具链实现由社区开发者通过第三方仓库贡献：
@@ -74,7 +74,7 @@ API 介绍，使用文档和测试程序请参考如下 `maker` 生成程序下�
 
 # `xdb` 数据更新
 
-ip2region 项目的核心在于 <b>研究 IP 数据的存储和快速查询的设计和实现</b>， 项目自带的 `./data/ipv4_source.txt` 和 `./data/ipv6_source.txt` 原始数据不会再提供更新，对于数据精度和更新频率要求很高的使用场景建议到 [Ip2Region社区](https://ip2region.net/products/offline) 或者第三方购买商用离线数据，你可以使用如下几种方式来尝试自己更新数据：
+ip2region 项目的核心在于 <b>研究 IP 数据的存储和快速查询的设计和实现</b>， 项目自带的 `./data/ipv4_source.txt` 和 `./data/ipv6_source.txt` 原始数据不定期更新，对于数据精度和更新频率要求很高的使用场景建议到 [Ip2Region社区](https://ip2region.net/products/offline) 或者第三方购买商用离线数据，你可以使用如下几种方式来尝试自己更新数据：
 
 ### 手动编辑更新
 你可以基于 ip2region 自带的 `./data/ipv4_source.txt` 和 `./data/ipv6_source.txt` 原始 IP 数据用 ip2region 提供的编辑工具来自己修改，目前数据源有如下几种方式：
