@@ -82,7 +82,7 @@ int main(int argc, char *argv[]) {
 
     // 2、调用 search API 查询，IPv4 和 IPv6 都支持.
     const char *ip_string = "1.2.3.4";
-    // ip_string = "2001:4:112:ffff:ffff:ffff:ffff:ffff"; // IPv6
+    // ip_string = "240e:3b7:3272:d8d0:db09:c067:8d59:539e"; // IPv6
 
     long cost_time = 0, s_time = xdb_now();
     err = xdb_search_by_string(&searcher, ip_string, &region);
@@ -151,7 +151,7 @@ int main(int argc, char *argv[]) {
 
     // 3、调用 search API 查询，IPv4 和 IPv6 都支持
     const char *ip_string = "1.2.3.4";
-    // ip_string = "2001:4:112:ffff:ffff:ffff:ffff:ffff"; // IPv6
+    // ip_string = "240e:3b7:3272:d8d0:db09:c067:8d59:539e"; // IPv6
 
     long cost_time = 0, s_time = xdb_now();
     err = xdb_search_by_string(&searcher, ip_string, &region);
@@ -220,7 +220,7 @@ int main(int argc, char *argv[]) {
 
     // 3、调用 search API 查询，IPv4 和 IPv6 都支持
     const char *ip_string = "1.2.3.4";
-    // ip_string = "2001:4:112:ffff:ffff:ffff:ffff:ffff"; // IPv6
+    // ip_string = "240e:3b7:3272:d8d0:db09:c067:8d59:539e"; // IPv6
 
     long cost_time = 0, s_time = xdb_now();
     err = xdb_search_by_string(&searcher, ip_string, &region);
@@ -305,7 +305,7 @@ ip2region xdb searcher test program
 source xdb: ../../data/ip2region_v4.xdb (IPv4, vectorIndex)
 type 'quit' to exit
 ip2region>> 120.229.45.2
-{region: 中国|广东省|深圳市|移动, io_count: 3, took: 29 μs}
+{region: 中国|广东省|深圳市|移动|CN, io_count: 3, took: 13 μs}
 ```
 
 例如：使用默认的 data/ip2region_v6.xdb 进行 IPv6 查询测试：
@@ -317,9 +317,9 @@ type 'quit' to exit
 ip2region>> ::
 {region: , io_count: 1, took: 38 μs}
 ip2region>> 2604:bc80:8001:11a4:ffff:ffff:ffff:ffff
-{region: 美国|特拉华州|刘易斯|数据中心, io_count: 14, took: 77 μs}
+{region: United States|Florida|Miami|velia.net Internetdienste GmbH|US, io_count: 14, took: 76 μs}
 ip2region>> 240e:3b7:3272:d8d0:db09:c067:8d59:539e
-{region: 中国|广东省|深圳市|家庭宽带, io_count: 8, took: 46 μs}
+{region: 中国|广东省|深圳市|电信|CN, io_count: 8, took: 42 μs}
 ```
 
 输入 ip 即可进行查询，输入 quit 即可退出测试程序。也可以分别设置 `cache-policy` 为 file/vectorIndex/content 来测试三种不同的缓存实现的效率。
