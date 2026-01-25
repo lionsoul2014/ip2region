@@ -68,7 +68,7 @@ try {
 // 2, 查询，IPv4 或者 IPv6 的地址都支持
 try {
     $ip = '1.2.3.4';
-    // $ip = "2001:4:112:ffff:ffff:ffff:ffff:ffff"; // IPv6
+    // $ip = ""240e:3b7:3272:d8d0:db09:c067:8d59:539e; // IPv6
     $sTime  = Util::now();
     $region = $searcher->search($ip);
     $costMs = Util::now() - $sTime;
@@ -111,7 +111,7 @@ try {
 // 3、查询，IPv4 或者 IPv6 都支持
 try {
     $ip = '1.2.3.4';
-    // $ip = "2001:4:112:ffff:ffff:ffff:ffff:ffff"; // IPv6
+    // $ip = "240e:3b7:3272:d8d0:db09:c067:8d59:539e"; // IPv6
     $sTime  = Util::now();
     $region = $searcher->search($ip);
     $costMs = Util::now() - $sTime;
@@ -153,7 +153,7 @@ try {
 // 3、查询，IPv4 或者 IPv6 都支持
 try {
     $ip = '1.2.3.4';
-    // $ip = "2001:4:112:ffff:ffff:ffff:ffff:ffff"; // IPv6
+    // $ip = "240e:3b7:3272:d8d0:db09:c067:8d59:539e"; // IPv6
     $sTime  = Util::now();
     $region = $searcher->search($ip);
     $costMs = Util::now() - $sTime;
@@ -186,8 +186,10 @@ options:
 ip2region xdb searcher test program
 source xdb file: ../../data/ip2region_v4.xdb (IPv4, vectorIndex)
 type 'quit' to exit
+ip2region>> 1.2.3.4
+{region: Australia|Queensland|Brisbane|0|AU, ioCount: 5, took: 0.12695 ms}
 ip2region>> 120.229.45.2
-{region: 中国|广东省|深圳市|移动, ioCount: 3, took: 0.02783 ms}
+{region: 中国|广东省|深圳市|移动|CN, ioCount: 3, took: 0.07397 ms}
 ```
 
 例如：使用默认的 data/ip2region_v6.xdb 进行 IPv6 的查询测试：
@@ -199,7 +201,9 @@ type 'quit' to exit
 ip2region>> ::
 {region: , ioCount: 1, took: 0.08887 ms}
 ip2region>> 240e:3b7:3272:d8d0:db09:c067:8d59:539e
-{region: 中国|广东省|深圳市|家庭宽带, ioCount: 8, took: 0.09595 ms}
+{region: 中国|广东省|深圳市|电信|CN, ioCount: 8, took: 0.10303 ms}
+ip2region>> 2604:a840:3::a04d
+{region: United States|California|San Jose|xTom|US, ioCount: 13, took: 0.04614 ms}
 ```
 
 输入 ip 即可进行查询测试。也可以分别设置 `cache-policy` 为 file/vectorIndex/content 来测试三种不同缓存实现的效率。

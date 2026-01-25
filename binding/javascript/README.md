@@ -67,7 +67,7 @@ try {
 
 // 2、查询，IPv4 或者 IPv6 的地址都是同一个接口
 let ip = "1.2.3.4";
-// ip = "2001:4:112:ffff:ffff:ffff:ffff:ffff";  // IPv6
+// ip = "240e:3b7:3272:d8d0:db09:c067:8d59:539e";  // IPv6
 try {
     let region = searcher.search(ip);
     console.log(`search(${ip}): {region: ${region}, ioCount: ${searcher.getIOCount()}}`);
@@ -108,7 +108,7 @@ try {
 
 // 3、查询，IPv4 或者 IPv6 的地址都是同一个接口
 let ip = "1.2.3.4";
-// ip = "2001:4:112:ffff:ffff:ffff:ffff:ffff";  // IPv6
+// ip = "240e:3b7:3272:d8d0:db09:c067:8d59:539e";  // IPv6
 try {
     let region = searcher.search(ip);
     console.log(`search(${ip}): {region: ${region}, ioCount: ${searcher.getIOCount()}}`);
@@ -148,7 +148,7 @@ try {
 
 // 3、查询，IPv4 或者 IPv6 的地址都是同一个接口
 let ip = "1.2.3.4";
-// ip = "2001:4:112:ffff:ffff:ffff:ffff:ffff";  // IPv6
+// ip = "240e:3b7:3272:d8d0:db09:c067:8d59:539e";  // IPv6
 try {
     let region = searcher.search(ip);
     console.log(`search(${ip}): {region: ${region}`);
@@ -186,7 +186,9 @@ ip2region xdb searcher test program
 source xdb: ../../data/ip2region_v4.xdb (IPv4, vectorIndex)
 type 'quit' to exit
 ip2region>> 1.2.3.4
-{region: 美国|华盛顿|0|谷歌, ioCount: 7, took: 0.430357 μs}
+{region: Australia|Queensland|Brisbane|0|AU, ioCount: 5, took: 657.035 μs}
+ip2region>> 113.118.113.77
+{region: 中国|广东省|深圳市|电信|CN, ioCount: 2, took: 169.927 μs}
 ```
 
 例如：使用默认的 data/ip2region_v6.xdb 文件进行 IPv6 的查询测试：
@@ -196,7 +198,9 @@ ip2region xdb searcher test program
 source xdb: ../../data/ip2region_v6.xdb (IPv6, vectorIndex)
 type 'quit' to exit
 ip2region>> 240e:3b7:3272:d8d0:db09:c067:8d59:539e
-{region: 中国|广东省|深圳市|家庭宽带, ioCount: 14, took: 4.727663 μs}
+{region: 中国|广东省|深圳市|电信|CN, ioCount: 8, took: 98.953 μs}
+ip2region>> 2604:a840:3::a04d
+{region: United States|California|San Jose|xTom|US, ioCount: 13, took: 287.703 μs}
 ```
 
 输入 ip 即可进行查询测试，也可以分别设置 `cache-policy` 为 file/vectorIndex/content 来测试三种不同缓存实现的查询效果。
