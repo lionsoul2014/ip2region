@@ -12,9 +12,9 @@ void test_ipv4(int policy) {
     std::cout << "测试 IPv4 " << prompt[policy];
 
     xdb::search_t s("../../data/ip2region_v4.xdb", xdb::ipv4, policy);
-    test(s, "0.0.0.0", "0|0|内网IP|内网IP");
-    test(s, "1.2.3.4", "美国|华盛顿|0|谷歌");
-    test(s, "255.255.255.255", "0|0|内网IP|内网IP");
+    test(s, "0.0.0.0", "0|0|Reserved|Reserved|Reserved");
+    test(s, "1.2.3.4", "Australia|Queensland|Brisbane|0|AU");
+    test(s, "255.255.255.255", "0|0|Reserved|Reserved|Reserved");
 
     std::cout << " 成功" << std::endl;
 }
@@ -24,7 +24,9 @@ void test_ipv6(int policy) {
 
     xdb::search_t s("../../data/ip2region_v6.xdb", xdb::ipv6, policy);
     test(s, "::1", "");
-    test(s, "2001:200:124::", "日本|东京都|千代田区|专线用户");
+    test(s, "2001:200:124::", "Japan|Tokyo|Asagaya-minami|WIDE Project|JP");
+    test(s, "2001:200:124::", "Japan|Tokyo|Asagaya-minami|WIDE Project|JP");
+    test(s, "240e:3b7:3273:51d0:cd38:8ae1:e3c0:b708", "中国|广东省|深圳市|电信|CN");
 
     std::cout << " 成功" << std::endl;
 }

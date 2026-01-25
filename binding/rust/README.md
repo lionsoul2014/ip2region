@@ -6,11 +6,11 @@
 - 支持无缓存，Vector 索引缓存，全部数据缓存三种模式
 
 ## 缓存策略对比与说明
-| 缓存模式         | IPv4 数据内存占用 | IPv6 数据内存占用 | IPv4 benchmark 查询耗时 | IPv6 benchmark 查询耗时 |
+| 缓存模式     | IPv4 数据内存占用 | IPv6 数据内存占用 | IPv4 benchmark 查询耗时 | IPv6 benchmark 查询耗时 |
 | ------------ | ----------- | ----------- | ------------------- |---------------------|
-| 无缓存          | 1-2MB       | 1-2MB       | 54 us               | 122us               |
+| 无缓存       | 1-2MB       | 1-2MB       | 54 us               | 122us               |
 | vector index | 1-2MB       | 1-2MB       | 27 us               | 100us               |
-| 全部缓存         | 20 MB       | 200 MB      | 120 ns              | 178 ns              |
+| 全部缓存     | 20 MB       | 200 MB      | 120 ns              | 178 ns              |
 
 - 在 `ip2region::Searcher` 初始化的时候会产生一次 IO, 读取 `xdb` 的 header 信息以初始化 `Searcher`，header 信息主要包含了 `xdb` 的 IP 版本，该操作对后续 IP 的查询不产生性能，耗时影响，多占用约 20 Byte 的内存
 - 在无缓存模式与 `vector index` 缓存模式下，所有 `xdb` 的 IO 读取都是按需（按照 bytes offset, bytes length）读取少量信息, 都是线程安全的，可以 benchmark 测试验证
@@ -131,21 +131,18 @@ $ cd binding/rust
 $ cargo build -r
 $ ./target/release/searcher --xdb='../../data/ip2region_v6.xdb' query
 ip2region xdb searcher test program, type `quit` or `Ctrl + c` to exit
-ip2region>> 2001:5:4::
-region: Ok("0|0|内网IP|内网IP"), took: 16.941042ms
+ip2region>> ::
+region: Ok(""), took: 79.651412ms
+ip2region>> 240e:3b7:3273:51d0:cd38:8ae1:e3c0:b708
+region: Ok("中国|广东省|深圳市|电信|CN"), took: 7.575µs
 ip2region>> 2001::
-region: Ok("日本|东京都|千代田区|专线用户"), took: 231.75µs
-ip2region>> 2001:268:989e::1
-region: Ok("日本|东京都||移动网络"), took: 12.167µs
+region: Ok("0|0|Reserved|Reserved|Reserved"), took: 7.256µs
 ip2region>> 2001:268:9a02:8888::
-region: Ok("日本|静冈县|菊川市|移动网络"), took: 107.834µs
-ip2region>> 2001:268:9b87:5f00::
-region: Ok("日本|爱知县|高滨市|移动网络"), took: 812.625µs
+region: Ok("Japan|Aichi|Nagoya|KDDI CORPORATION|JP"), took: 7.921µs
 ip2region>> 2a02:26f7:b408:a6c2::
-region: Ok("美国|弗吉尼亚州|恩波里亚|数据中心"), took: 132.333µs
+region: Ok("United States|Virginia|Emporia|Akamai Technologies, Inc.|US"), took: 8.461µs
 ip2region>> 2c99::
-region: Ok("0|0|内网IP|内网IP"), took: 861.25µs
-ip2region>>
+region: Ok("0|0|Reserved|Reserved|Reserved"), took: 5.33µs
 ```
 
 #### 测试 IPv4
@@ -154,11 +151,12 @@ $ cd binding/rust
 $ cargo build -r
 $  ./target/release/searcher --xdb='../../data/ip2region_v4.xdb' query
 ip2region xdb searcher test program, type `quit` or `Ctrl + c` to exit
+ip2region>> 1.2.3.4
+region: Ok("Australia|Queensland|Brisbane|0|AU"), took: 6.07µs
 ip2region>> 1.1.2.1
-region: Ok("中国|福建省|福州市|电信"), took: 5.342625ms
+region: Ok("中国|福建省|福州市|0|CN"), took: 5.653µs
 ip2region>> 2.2.21.1
-region: Ok("法国|0|0|橘子电信"), took: 25.667µs
-ip2region>>
+region: Ok("United States|Texas|0|Oracle Svenska AB|US"), took: 4.556µs
 ```
 
 #### Benchmark 与验证结果
