@@ -228,7 +228,7 @@ XDB_PUBLIC(void) xdb_free_content(void *ptr) {
 }
 
 XDB_PUBLIC(int) xdb_verify_from_header(FILE *handle, xdb_header_t *header) {
-    int runtime_ptr_bytes = 0;  // runtime ptr bytes
+    unsigned int runtime_ptr_bytes = 0;  // runtime ptr bytes
     if (header->version == xdb_structure_20) {
         runtime_ptr_bytes = 4;
     } else if (header->version == xdb_structure_30) {
@@ -244,9 +244,9 @@ XDB_PUBLIC(int) xdb_verify_from_header(FILE *handle, xdb_header_t *header) {
         return 3;
     }
 
-    long int fileBytes = ftell(handle);
-    long int maxFilePtr = (1L << (runtime_ptr_bytes * 8)) - 1;
-    // printf("fileBytes: %ld, maxFilePtr: %ld\n", fileBytes, maxFilePtr);
+    long long fileBytes = xdb_ftell(handle);
+    long long maxFilePtr = (1LL << (runtime_ptr_bytes * 8)) - 1;
+    // printf("fileBytes: %lld, maxFilePtr: %lld\n", fileBytes, maxFilePtr);
     if (fileBytes > maxFilePtr) {
         return 4;
     }
@@ -495,4 +495,31 @@ XDB_PUBLIC(int) xdb_ip_sub_compare(const bytes_ip_t *ip1, int bytes, const char 
         }
     }
     return 0;
+}
+
+XDB_PUBLIC(int) xdb_fseek(FILE *handle, long long offset, int whence) {
+    // we may have to use the large file solution later
+    // #if defined(XDB_LINUX)
+    //     return fseeko(handle, (off_t) offset, whence);
+    // #elif defined(XDB_WINDOWS)
+    //     return _fseeki64(handle, (__int64) offset, whence)
+    // #else
+    //     return fseek(handle, (long) offset, whence);
+    // #endif
+
+    return fseek(handle, (long) offset, whence);
+}
+
+XDB_PUBLIC(long long) xdb_ftell(FILE *handle) {
+    // we may have to use the large file solution later
+    // #if defined(XDB_LINUX)
+    //     return (long long) ftello(handle);
+    // #elif defined(XDB_WINDOWS)
+    //     return (long long) _ftelli64(handle);
+    // #else
+    //     // report error ?
+    //     return (long long) ftell(handle);
+    // #endif
+
+    return (long long) ftell(handle);
 }

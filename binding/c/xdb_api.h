@@ -9,6 +9,10 @@
 #ifndef C_IP2REGION_XDB_H
 #define C_IP2REGION_XDB_H
 
+// @Note: 
+// this define must be put before any header include
+// force the LFS for ftell
+#define _FILE_OFFSET_BITS 64
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -200,6 +204,11 @@ XDB_PUBLIC(int) xdb_v6_ip_to_string(const bytes_ip_t *, char *, size_t);
 // ip args must be the return value from #xdb_parse_ip.
 // returns: -1 if ip1 < ip2, 1 if ip1 > ip2 or 0
 XDB_PUBLIC(int) xdb_ip_sub_compare(const bytes_ip_t *, int, const char *, int);
+
+// large file seek and tell
+XDB_PUBLIC(int) xdb_fseek(FILE *, long long, int);
+
+XDB_PUBLIC(long long) xdb_ftell(FILE *);
 
 // --- END xdb utils
 
