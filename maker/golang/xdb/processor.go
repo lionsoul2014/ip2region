@@ -11,6 +11,7 @@ import (
 	"log/slog"
 	"os"
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -18,11 +19,17 @@ type Processor struct {
 	srcHandle *os.File
 	dstHandle *os.File
 
+	// value clear
+	clearBasedIndex  int
+	clearValueEqual  string
+	clearValueExcept string
+
 	fields   []int
 	segments []*Segment
 }
 
-func NewProcessor(srcFile string, dstFile string, fields []int) (*Processor, error) {
+func NewProcessor(srcFile string, dstFile string, fields []int,
+	clearBasedIndex int, clearValueEqual string, clearValueExcept string) (*Processor, error) {
 	// open the source file with READONLY mode
 	srcHandle, err := os.OpenFile(srcFile, os.O_RDONLY, 0600)
 	if err != nil {
@@ -39,6 +46,11 @@ func NewProcessor(srcFile string, dstFile string, fields []int) (*Processor, err
 		srcHandle: srcHandle,
 		dstHandle: dstHandle,
 
+		// clear
+		clearBasedIndex:  clearBasedIndex,
+		clearValueEqual:  clearValueEqual,
+		clearValueExcept: clearValueExcept,
+
 		// filter fields index
 		fields: fields,
 
@@ -53,6 +65,34 @@ func (p *Processor) loadSegments() error {
 	var iErr = IterateSegments(p.srcHandle, func(l string) {
 		slog.Debug("loaded", "segment", l)
 	}, func(region string) (string, error) {
+		if p.clearBasedIndex > -1 {
+			var ps = strings.Split(region, "|")
+			var pl = len(ps)
+			if p.clearBasedIndex >= pl {
+				return region, fmt.Errorf("clearBasedIndex(%d) >= fields length(%d)", p.clearBasedIndex, pl)
+			}
+
+			clear := false
+			if len(p.clearValueEqual) > 0 {
+				if ps[p.clearBasedIndex] == p.clearValueEqual {
+					clear = true
+				}
+			} else if len(p.clearValueExcept) > 0 {
+				if ps[p.clearBasedIndex] != p.clearValueExcept {
+					clear = true
+				}
+			}
+
+			if clear {
+				for i := 0; i < pl; i++ {
+					ps[i] = ""
+				}
+
+				// reset the region
+				region = strings.Join(ps, "|")
+			}
+		}
+
 		return RegionFiltering(region, p.fields)
 	}, func(seg *Segment) error {
 		// check the continuity of the data segment
