@@ -56,8 +56,9 @@ commands:
   clearIndex: clear the vector index.
   quit      : exit the test program
 ip2region>> 58.251.30.115
-{region:中国|广东省|深圳市|联通, iocount:3, took:37.043µs}
-ip2region>> 
+{region:中国|广东省|深圳市|联通|CN, iocount:2, took:27.893µs}
+ip2region>> 1.2.3.4
+{region:Australia|Queensland|Brisbane|0|AU, iocount:5, took:58.746µs}
 
 # ipv6
 ./xdb_maker search --db=../../data/ip2region_v6.xdb
@@ -68,8 +69,9 @@ commands:
   clearIndex: clear the vector index.
   quit      : exit the test program
 ip2region>> 2604:bc80:8001:11a4:ffff:ffff:ffff:ffff
-{region:中国|广东省|深圳市|数据中心, iocount:14, took:138.68µs}
-ip2region>>
+{region:United States|Florida|Miami|velia.net Internetdienste GmbH|US, iocount:15, took:140.942µs}
+ip2region>> 240e:3b7:3273:51d0:13f9:bf0:3db1:aa3f
+{region:中国|广东省|深圳市|电信|CN, iocount:9, took:67.058µs}
 ```
 
 # `xdb` 数据编辑
@@ -99,7 +101,7 @@ editor>>
 
 通过 `put` 命令修改指定 IP 段的定位信息，例如：
 ```bash
-editor>> put 36.132.128.0|36.132.147.255|中国|黑龙江省|哈尔滨市|移动
+editor>> put 36.132.128.0|36.132.147.255|中国|黑龙江省|哈尔滨市|移动|CN
 Put(36.132.128.0|36.132.147.255|中国|黑龙江省|哈尔滨市|移动): Ok, with 1 deletes and 2 additions
 *editor>> 
 ```
