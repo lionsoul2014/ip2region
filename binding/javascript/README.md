@@ -69,7 +69,7 @@ try {
 let ip = "1.2.3.4";
 // ip = "240e:3b7:3272:d8d0:db09:c067:8d59:539e";  // IPv6
 try {
-    let region = searcher.search(ip);
+    let region = await searcher.search(ip);
     console.log(`search(${ip}): {region: ${region}, ioCount: ${searcher.getIOCount()}}`);
 } catch(e) {
     console.log(`${err.message}`);
@@ -99,7 +99,7 @@ try {
 // 2、使用全局的 vIndex 创建带 VectorIndex 缓存的查询对象。
 let searcher;
 try {
-    searcher = newWithVectorIndex(version, vIndex, dbPath);
+    searcher = newWithVectorIndex(version, dbPath, vIndex);
 } catch(e) {
     console.log(`failed to newWithVectorIndex: ${err.message}`);
     return;
@@ -110,7 +110,7 @@ try {
 let ip = "1.2.3.4";
 // ip = "240e:3b7:3272:d8d0:db09:c067:8d59:539e";  // IPv6
 try {
-    let region = searcher.search(ip);
+    let region = await searcher.search(ip);
     console.log(`search(${ip}): {region: ${region}, ioCount: ${searcher.getIOCount()}}`);
 } catch(e) {
     console.log(`${err.message}`);
@@ -150,7 +150,7 @@ try {
 let ip = "1.2.3.4";
 // ip = "240e:3b7:3272:d8d0:db09:c067:8d59:539e";  // IPv6
 try {
-    let region = searcher.search(ip);
+    let region = await searcher.search(ip);
     console.log(`search(${ip}): {region: ${region}`);
 } catch(e) {
     console.log(`${err.message}`);
