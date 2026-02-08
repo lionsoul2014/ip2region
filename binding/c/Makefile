@@ -15,7 +15,7 @@ xdb_util.o: xdb_util.c
 xdb_searcher_lib: xdb_util.o xdb_searcher.o
 	mkdir -p build/lib
 	mkdir -p build/include
-	ar -rc build/lib/libxdb.a `find . -name *.o`
+	ar -rc build/lib/libxdb.a `find . -name "*.o"`
 	cp xdb_api.h build/include
 
 clean:
