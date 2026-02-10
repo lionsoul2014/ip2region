@@ -144,6 +144,14 @@ while (!feof($handle)) {
         continue;
     }
 
+    //@Note extract the ip address from line with special chars
+    // if (preg_match('/^([0-9\.]+)/', $line, $m) != 1) {
+    //     continue;
+    // }
+
+    // $line = $m[1];
+    // print("ip: {$m[1]}\n");
+
     try {
         $ipBytes = Util::parseIP($line);
     } catch (Exception $e) {
