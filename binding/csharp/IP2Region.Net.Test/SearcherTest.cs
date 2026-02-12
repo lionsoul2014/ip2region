@@ -19,13 +19,13 @@ public class SearcherTest
     private readonly string _xdbPathV6 = Path.Combine(AppContext.BaseDirectory, "TestData", "ip2region_v6.xdb");
 
     [Theory]
-    [InlineData("58.251.27.201", "中国|广东省|深圳市|联通", "v4")]
-    [InlineData("114.114.114.114", "中国|江苏省|南京市|0", "v4")]
-    [InlineData("119.29.29.29", "中国|北京|北京市|腾讯", "v4")]
-    [InlineData("223.5.5.5", "中国|浙江省|杭州市|阿里云", "v4")]
-    [InlineData("180.76.76.76", "中国|北京|北京市|百度", "v4")]
-    [InlineData("8.8.8.8", "美国|0|0|Level3", "v4")]
-    [InlineData("240e:3b7:3272:d8d0:db09:c067:8d59:539e", "中国|广东省|深圳市|家庭宽带", "v6")]
+    [InlineData("58.251.27.201", "中国|广东省|深圳市|联通|CN", "v4")]
+    [InlineData("114.114.114.114", "中国|江苏省|南京市|0|CN", "v4")]
+    [InlineData("119.29.29.29", "中国|北京|北京市|腾讯|CN", "v4")]
+    [InlineData("223.5.5.5", "中国|浙江省|杭州市|阿里|CN", "v4")]
+    [InlineData("180.76.76.76", "中国|北京|北京市|百度|CN", "v4")]
+    [InlineData("8.8.8.8", "United States|California|0|Google LLC|US", "v4")]
+    [InlineData("240e:3b7:3272:d8d0:db09:c067:8d59:539e", "中国|广东省|深圳市|电信|CN", "v6")]
     public void TestSearchCacheContent(string ip, string expected, string version)
     {
         var _xdbPath = version == "v4" ? _xdbPathV4 : _xdbPathV6;
@@ -35,13 +35,13 @@ public class SearcherTest
     }
 
     [Theory]
-    [InlineData("58.251.27.201", "中国|广东省|深圳市|联通", "v4")]
-    [InlineData("114.114.114.114", "中国|江苏省|南京市|0", "v4")]
-    [InlineData("119.29.29.29", "中国|北京|北京市|腾讯", "v4")]
-    [InlineData("223.5.5.5", "中国|浙江省|杭州市|阿里云", "v4")]
-    [InlineData("180.76.76.76", "中国|北京|北京市|百度", "v4")]
-    [InlineData("8.8.8.8", "美国|0|0|Level3", "v4")]
-    [InlineData("240e:3b7:3272:d8d0:db09:c067:8d59:539e", "中国|广东省|深圳市|家庭宽带", "v6")]
+    [InlineData("58.251.27.201", "中国|广东省|深圳市|联通|CN", "v4")]
+    [InlineData("114.114.114.114", "中国|江苏省|南京市|0|CN", "v4")]
+    [InlineData("119.29.29.29", "中国|北京|北京市|腾讯|CN", "v4")]
+    [InlineData("223.5.5.5", "中国|浙江省|杭州市|阿里|CN", "v4")]
+    [InlineData("180.76.76.76", "中国|北京|北京市|百度|CN", "v4")]
+    [InlineData("8.8.8.8", "United States|California|0|Google LLC|US", "v4")]
+    [InlineData("240e:3b7:3272:d8d0:db09:c067:8d59:539e", "中国|广东省|深圳市|电信|CN", "v6")]
     public void TestSearchCacheVector(string ip, string expected, string version)
     {
         var _xdbPath = version == "v4" ? _xdbPathV4 : _xdbPathV6;
@@ -51,16 +51,16 @@ public class SearcherTest
     }
 
     [Theory]
-    [InlineData("58.251.0.0", "中国|广东省|深圳市|联通", "v4")]
-    [InlineData("58.251.255.255", "中国|广东省|深圳市|联通", "v4")]
-    [InlineData("58.251.27.201", "中国|广东省|深圳市|联通", "v4")]
-    [InlineData("114.114.114.114", "中国|江苏省|南京市|0", "v4")]
-    [InlineData("119.29.29.29", "中国|北京|北京市|腾讯", "v4")]
-    [InlineData("223.5.5.5", "中国|浙江省|杭州市|阿里云", "v4")]
-    [InlineData("180.76.76.76", "中国|北京|北京市|百度", "v4")]
-    [InlineData("8.8.8.8", "美国|0|0|Level3", "v4")]
-    [InlineData("240e:3b7:3272:d8d0:db09:c067:8d59:539e", "中国|广东省|深圳市|家庭宽带", "v6")]
-    [InlineData("240e:044d:2d00:0000:0000:0000:0000:0000", "美国|加利福尼亚州|洛杉矶|移动网络", "v6")]
+    [InlineData("58.251.0.0", "中国|广东省|深圳市|联通|CN", "v4")]
+    [InlineData("58.251.255.255", "中国|广东省|深圳市|联通|CN", "v4")]
+    [InlineData("58.251.27.201", "中国|广东省|深圳市|联通|CN", "v4")]
+    [InlineData("114.114.114.114", "中国|江苏省|南京市|0|CN", "v4")]
+    [InlineData("119.29.29.29", "中国|北京|北京市|腾讯|CN", "v4")]
+    [InlineData("223.5.5.5", "中国|浙江省|杭州市|阿里|CN", "v4")]
+    [InlineData("180.76.76.76", "中国|北京|北京市|百度|CN", "v4")]
+    [InlineData("8.8.8.8", "United States|California|0|Google LLC|US", "v4")]
+    [InlineData("240e:3b7:3272:d8d0:db09:c067:8d59:539e", "中国|广东省|深圳市|电信|CN", "v6")]
+    [InlineData("240e:044d:2d00:0000:0000:0000:0000:0000", "中国|云南|楚雄|电信|CN", "v6")]
     public void TestSearchCacheFile(string ip, string expected, string version)
     {
         var _xdbPath = version == "v4" ? _xdbPathV4 : _xdbPathV6;
@@ -109,7 +109,7 @@ public class SearcherTest
     }
 
     [Theory]
-    [InlineData("58.251.255.255", "中国|广东省|深圳市|联通")]
+    [InlineData("58.251.255.255", "中国|广东省|深圳市|联通|CN")]
     public void Search_Ip_Ok(string ipStr, string expected)
     {
         var fileSearcher = new Searcher(CachePolicy.File, _xdbPathV4);
@@ -119,7 +119,7 @@ public class SearcherTest
     }
 
     [Theory]
-    [InlineData("58.251.255.255", "中国|广东省|深圳市|联通")]
+    [InlineData("58.251.255.255", "中国|广东省|深圳市|联通|CN")]
     public void AddIP2RegionService_Ok(string ipStr, string expected)
     {
         var services = new ServiceCollection();
