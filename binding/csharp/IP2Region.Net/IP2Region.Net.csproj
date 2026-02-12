@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <id>IP2Region.Net</id>
-        <version>3.0.0</version>
+        <version>3.0.1</version>
         <title>IP2Region.Net</title>
         <authors>Alan Lee;Argo Zhang(argo@live.ca)</authors>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
