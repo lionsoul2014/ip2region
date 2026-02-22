@@ -6,7 +6,7 @@
 
 ---
 
-# ip2region Features
+# Features
 
 ### 1. Offline Localization Library
 
@@ -33,7 +33,7 @@ Even for queries based entirely on the `xdb` file, the single query response tim
 
 ---
 
-# `xdb` Data Query
+# `xdb` Query
 
 For API introductions, usage documentation, and test programs, please refer to the README introduction under the corresponding `searcher` query client. All query binding implementations are as follows:
 
@@ -64,7 +64,7 @@ The following toolchain implementations are contributed by community developers 
 
 ---
 
-# `xdb` Data Generation
+# `xdb` Generation
 
 For API introductions, usage documentation, and test programs, please refer to the README documents under the following `maker` generation programs:
 
@@ -79,7 +79,7 @@ For API introductions, usage documentation, and test programs, please refer to t
 
 ---
 
-# `xdb` Data Update
+# `xdb` Update
 
 The core of the ip2region project lies in **researching the design and implementation of IP data storage and fast querying**. The raw data `./data/ipv4_source.txt` and `./data/ipv6_source.txt` included in the project are updated irregularly. For scenarios with high requirements for data accuracy and update frequency, it is recommended to purchase commercial offline data from the [Ip2Region Community](https://ip2region.net/products/offline) or third-party vendors. You can try to update the data yourself using the following methods:
 

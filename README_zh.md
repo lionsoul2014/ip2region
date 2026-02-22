@@ -33,7 +33,7 @@
 
 ---
 
-# `xdb` 数据查询
+# `xdb` 查询
 
 API 介绍，使用文档和测试程序请参考对应 `searcher` 查询客户端下的 README 介绍，全部查询 binding 实现情况如下：
 | 编程语言                         | 描述                        | IPv4 支持          | IPv6 支持          | 贡献者                                            |
@@ -63,7 +63,7 @@ API 介绍，使用文档和测试程序请参考对应 `searcher` 查询客户�
 
 ---
 
-# `xdb` 数据生成
+# `xdb` 生成
 
 API 介绍，使用文档和测试程序请参考如下 `maker` 生成程序下的 README 文档：
 
@@ -78,7 +78,7 @@ API 介绍，使用文档和测试程序请参考如下 `maker` 生成程序下�
 
 ---
 
-# `xdb` 数据更新
+# `xdb` 更新
 
 ip2region 项目的核心在于 <b>研究 IP 数据的存储和快速查询的设计和实现</b>， 项目自带的 `./data/ipv4_source.txt` 和 `./data/ipv6_source.txt` 原始数据不定期更新，对于数据精度和更新频率要求很高的使用场景建议到 [Ip2Region社区](https://ip2region.net/products/offline) 或者第三方购买商用离线数据，你可以使用如下几种方式来尝试自己更新数据：
 
