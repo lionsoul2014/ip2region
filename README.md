@@ -37,7 +37,7 @@ Even for queries based entirely on the `xdb` file, the single query response tim
 
 For API introductions, usage documentation, and test programs, please refer to the README introduction under the corresponding `searcher` query client. All query binding implementations are as follows:
 
-| Programming Language | Description | IPv4 Support | IPv6 Support | Contributors |
+| Language | Description | IPv4 | IPv6 | Contributors |
 | --- | --- | --- | --- | --- |
 | [Golang](binding/golang)         | golang xdb query client          | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
 | [PHP](binding/php)               | php xdb query client             | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
@@ -55,7 +55,7 @@ For API introductions, usage documentation, and test programs, please refer to t
 
 The following toolchain implementations are contributed by community developers via third-party repositories:
 
-| Programming Language | Description | Contributors |
+| Language | Description | Contributors |
 | --- | --- | --- |
 | [ip2region-composer](https://github.com/zoujingli/ip2region)    | php composer management client       | [Zou Jingli](https://github.com/zoujingli)      |
 | [ip2region-ts](https://github.com/Steven-Qiang/ts-ip2region2)   | node.js addon management client      | [Steven Qiang](https://github.com/Steven-Qiang) |
@@ -68,7 +68,7 @@ The following toolchain implementations are contributed by community developers 
 
 For API introductions, usage documentation, and test programs, please refer to the README documents under the following `maker` generation programs:
 
-| Programming Language | Description | IPv4 Support | IPv6 Support | Contributors |
+| Language | Description | IPv4 | IPv6 | Contributors |
 | --- | --- | --- | --- | --- |
 | [Golang](maker/golang) | golang xdb generation program | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)    |
 | [Java](maker/java)     | java xdb generation program   | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)    |
@@ -93,7 +93,7 @@ You can modify the data yourself based on the raw IP data provided by ip2region 
 
 For instructions on using the raw IP data editing tools, please refer to the README documents under the following `maker` generation programs:
 
-| Programming Language | Description | IPv4 Support | IPv6 Support | Contributors |
+| Language | Description | IPv4 | IPv6 | Contributors |
 | --- | --- | --- | --- | --- |
 | [Golang](maker/golang%23xdb-%E6%95%B0%E6%8D%AE%E7%BC%96%E8%BE%91) | golang IP raw data editor | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)    |
 | [Java](maker/java%23xdb-%E6%95%B0%E6%8D%AE%E7%BC%96%E8%BE%91)     | java IP raw data editor   | :white_check_mark: | :x:                | [Lion](https://github.com/lionsoul2014)    |
