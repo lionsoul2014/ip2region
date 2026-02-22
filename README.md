@@ -1,6 +1,6 @@
-[English] | [中文](README_zh.md)
+[English](README.md) | [中文](README_zh.md)
 
-# What is Ip2region
+# Ip2region
 
 [ip2region](https://ip2region.net) - is an offline IP address localization library and IP localization data management framework. It supports both `IPv4` and `IPv6` with query efficiency at the 10-microsecond level. It provides `xdb` data generation and query client implementations for many mainstream programming languages.
 

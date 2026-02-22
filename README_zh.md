@@ -1,4 +1,4 @@
-[中文] | [English](README_en.md)
+[English](README.md) | [中文](README_zh.md)
 
 # Ip2region 是什么
 
@@ -100,6 +100,8 @@ ip2region 项目的核心在于 <b>研究 IP 数据的存储和快速查询的�
 如果你想通过你自己的 API 或数据源来更新数据，你可以参考以下视频分享的 `基于检测算法` 的更新算法来自己编写一个更新程序：
 1. [数据更新实现视频分享 - part1](https://www.bilibili.com/video/BV1934y1E7Q5/)
 2. [数据更新实现视频分享 - part2](https://www.bilibili.com/video/BV1pF411j7Aw/)
+
+---
 
 # 官方社区
 Ip2Region 官方社区正式上线于 `2025/06/12` 日，一方面提供了稳定的 [商用离线数据](https://ip2region.net/products/offline) 服务，另一方面便于在核心代码外强化 IP 工具链和数据服务，例如 [使用文档](https://ip2region.net/doc/)，[查询测试](https://ip2region.net/search/demo)，数据纠错等，更多关于社区的信息和服务请访问 [Ip2Region 官方社区](https://ip2region.net/)。
