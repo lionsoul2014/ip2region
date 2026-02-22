@@ -4,7 +4,6 @@
 
 [ip2region](https://ip2region.net) - is an offline IP address localization library and IP localization data management framework. It supports both `IPv4` and `IPv6` with query efficiency at the 10-microsecond level. It provides `xdb` data generation and query client implementations for many mainstream programming languages.
 
----
 
 # Features
 
@@ -31,7 +30,6 @@ Even for queries based entirely on the `xdb` file, the single query response tim
 
 `xdb` provides version-compatible query implementations. A unified API can simultaneously provide queries for both IPv4 and IPv6 data and return unified data.
 
----
 
 # `xdb` Query
 
@@ -62,7 +60,6 @@ The following toolchain implementations are contributed by community developers 
 | [ruby-ip2region](https://github.com/jicheng1014/ruby-ip2region) | ruby xdb query client implementation | [jicheng1014](https://github.com/jicheng1014)   |
 | [Ip2regionTool](https://github.com/orestonce/Ip2regionTool)     | ip2region data conversion tool       | [orestonce](https://github.com/orestonce)       |
 
----
 
 # `xdb` Generation
 
@@ -77,7 +74,6 @@ For API introductions, usage documentation, and test programs, please refer to t
 | [Rust](maker/rust)     | rust xdb generation program   | :white_check_mark: | :white_check_mark: | [KevinWang](https://github.com/KevinWL) & [gongzhengyang](https://github.com/gongzhengyang) |
 | [C++](maker/cpp)       | C++ xdb generation program    | :white_check_mark: | :white_check_mark: | [Yunbin Liu](https://github.com/liuyunbin) |
 
----
 
 # `xdb` Update
 
@@ -106,13 +102,11 @@ If you want to update data via your own API or data source, you can refer to the
 1. [Data Update Implementation Video Sharing - part1](https://www.bilibili.com/video/BV1934y1E7Q5/)
 2. [Data Update Implementation Video Sharing - part2](https://www.bilibili.com/video/BV1pF411j7Aw/)
 
----
 
 # Official Community
 
 The Ip2Region official community was officially launched on `2025/06/12`. On one hand, it provides stable [commercial offline data](https://ip2region.net/products/offline) services. On the other hand, it facilitates the strengthening of the IP toolchain and data services outside the core code, such as [usage documentation](https://ip2region.net/doc/), [query testing](https://ip2region.net/search/demo), and data correction. For more information and services regarding the community, please visit the [Ip2Region Official Community](https://ip2region.net/).
 
----
 
 # Related Remarks
 

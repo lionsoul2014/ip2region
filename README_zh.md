@@ -4,9 +4,8 @@
 
 [ip2region](https://ip2region.net) - 是一个离线IP地址定位库和IP定位数据管理框架，同时支持 `IPv4` 和 `IPv6` ，10微秒级别的查询效率，提供了众多主流编程语言的 `xdb` 数据生成和查询客户端实现。
 
----
 
-# ip2region 特性
+# 项目特性
 
 ### 1、离线定位库
 
@@ -31,7 +30,6 @@
 
 `xdb` 提供了版本兼容的查询实现，一个统一的 API 可以同时提供对 IPv4 和 IPv6 数据的查询并且返回统一的数据。
 
----
 
 # `xdb` 查询
 
@@ -61,7 +59,6 @@ API 介绍，使用文档和测试程序请参考对应 `searcher` 查询客户�
 | [ruby-ip2region](https://github.com/jicheng1014/ruby-ip2region) | ruby xdb 查询客户端实现 | [jicheng1014](https://github.com/jicheng1014)  |
 | [Ip2regionTool](https://github.com/orestonce/Ip2regionTool)     | ip2region 数据转换工具  | [orestonce](https://github.com/orestonce)      |
 
----
 
 # `xdb` 生成
 
@@ -76,7 +73,6 @@ API 介绍，使用文档和测试程序请参考如下 `maker` 生成程序下�
 | [Rust](maker/rust)      | rust xdb 生成程序    | :white_check_mark: | :white_check_mark: | [KevinWang](https://github.com/KevinWL) & [gongzhengyang](https://github.com/gongzhengyang) |
 | [C++](maker/cpp)        | C++ xdb 生成程序     | :white_check_mark: | :white_check_mark: | [Yunbin Liu](https://github.com/liuyunbin)                                                  |
 
----
 
 # `xdb` 更新
 
@@ -101,12 +97,10 @@ ip2region 项目的核心在于 <b>研究 IP 数据的存储和快速查询的�
 1. [数据更新实现视频分享 - part1](https://www.bilibili.com/video/BV1934y1E7Q5/)
 2. [数据更新实现视频分享 - part2](https://www.bilibili.com/video/BV1pF411j7Aw/)
 
----
 
 # 官方社区
 Ip2Region 官方社区正式上线于 `2025/06/12` 日，一方面提供了稳定的 [商用离线数据](https://ip2region.net/products/offline) 服务，另一方面便于在核心代码外强化 IP 工具链和数据服务，例如 [使用文档](https://ip2region.net/doc/)，[查询测试](https://ip2region.net/search/demo)，数据纠错等，更多关于社区的信息和服务请访问 [Ip2Region 官方社区](https://ip2region.net/)。
 
----
 
 # 相关备注
 
