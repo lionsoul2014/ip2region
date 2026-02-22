@@ -1,8 +1,10 @@
+[中文] | [English](README_en.md)
+
 # Ip2region 是什么
 
 [ip2region](https://ip2region.net) - 是一个离线IP地址定位库和IP定位数据管理框架，同时支持 `IPv4` 和 `IPv6` ，10微秒级别的查询效率，提供了众多主流编程语言的 `xdb` 数据生成和查询客户端实现。
 
-
+---
 
 # Ip2region 特性
 
@@ -29,24 +31,26 @@
 
 `xdb` 提供了版本兼容的查询实现，一个统一的 API 可以同时提供对 IPv4 和 IPv6 数据的查询并且返回统一的数据。
 
+---
+
 # `xdb` 数据查询
 
-API 介绍，使用文档和测试程序请参考对应 `searcher` 查询客户端下的 ReadMe 介绍，全部查询 binding 实现情况如下：
+API 介绍，使用文档和测试程序请参考对应 `searcher` 查询客户端下的 README 介绍，全部查询 binding 实现情况如下：
 | 编程语言                         | 描述                        | IPv4 支持          | IPv6 支持          | 贡献者                                            |
-|:---------------------------------|:-----------------------------------------------|:-------------------|:------------------ |:--------------------------------------------------|
-| [Golang](binding/golang)         | golang xdb 查询客户端                          | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
-| [PHP](binding/php)               | php xdb 查询客户端                             | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
-| [Java](binding/java)             | java xdb 查询客户端                            | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
-| [C](binding/c)                   | POSIX C xdb 查询客户端                         | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
-| [Lua_c](binding/lua_c)           | lua c 扩展 xdb 查询客户端                      | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
-| [Lua](binding/lua)               | lua xdb 查询客户端                             | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
-| [Rust](binding/rust)             | rust xdb 查询客户端                            | :white_check_mark: | :white_check_mark: | [gongzhengyang](https://github.com/gongzhengyang) |
-| [Python](binding/python)         | python xdb 查询客户端                          | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
-| [Javascript](binding/javascript) | javascript xdb 查询客户端                      | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
-| [Csharp](binding/csharp)         | csharp xdb 查询客户端                          | :white_check_mark: | :white_check_mark: | [Alen Lee](https://github.com/malus2077) & [ArgoZhang](https://github.com/ArgoZhang) |
-| [Erlang](binding/erlang)         | erlang xdb 查询客户端                          | :white_check_mark: | :x:                | [malou](https://github.com/malou996)              |
-| [Nginx](binding/nginx)           | nginx 扩展 xdb 查询客户端                      | :white_check_mark: | :x:                | [Wu Jian Ping](https://github.com/wujjpp)         |
-| [C++](binding/cpp)               | C++ xdb 查询客户端                             | :white_check_mark: | :white_check_mark: | [Yunbin Liu](https://github.com/liuyunbin)        |
+|:---------------------------------|:----------------------------|:-------------------|:------------------ |:--------------------------------------------------|
+| [Golang](binding/golang)         | golang xdb 查询客户端       | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
+| [PHP](binding/php)               | php xdb 查询客户端          | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
+| [Java](binding/java)             | java xdb 查询客户端         | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
+| [C](binding/c)                   | POSIX C xdb 查询客户端      | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
+| [Lua_c](binding/lua_c)           | lua c 扩展 xdb 查询客户端   | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
+| [Lua](binding/lua)               | lua xdb 查询客户端          | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
+| [Rust](binding/rust)             | rust xdb 查询客户端         | :white_check_mark: | :white_check_mark: | [gongzhengyang](https://github.com/gongzhengyang) |
+| [Python](binding/python)         | python xdb 查询客户端       | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
+| [Javascript](binding/javascript) | javascript xdb 查询客户端   | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
+| [Csharp](binding/csharp)         | csharp xdb 查询客户端       | :white_check_mark: | :white_check_mark: | [Alen Lee](https://github.com/malus2077) & [ArgoZhang](https://github.com/ArgoZhang) |
+| [Erlang](binding/erlang)         | erlang xdb 查询客户端       | :white_check_mark: | :x:                | [malou](https://github.com/malou996)              |
+| [Nginx](binding/nginx)           | nginx 扩展 xdb 查询客户端   | :white_check_mark: | :x:                | [Wu Jian Ping](https://github.com/wujjpp)         |
+| [C++](binding/cpp)               | C++ xdb 查询客户端          | :white_check_mark: | :white_check_mark: | [Yunbin Liu](https://github.com/liuyunbin)        |
 
 
 以下工具链实现由社区开发者通过第三方仓库贡献：
@@ -57,10 +61,11 @@ API 介绍，使用文档和测试程序请参考对应 `searcher` 查询客户�
 | [ruby-ip2region](https://github.com/jicheng1014/ruby-ip2region) | ruby xdb 查询客户端实现 | [jicheng1014](https://github.com/jicheng1014)  |
 | [Ip2regionTool](https://github.com/orestonce/Ip2regionTool)     | ip2region 数据转换工具  | [orestonce](https://github.com/orestonce)      |
 
+---
 
 # `xdb` 数据生成
 
-API 介绍，使用文档和测试程序请参考如下 `maker` 生成程序下的 ReadMe 文档：
+API 介绍，使用文档和测试程序请参考如下 `maker` 生成程序下的 README 文档：
 
 | 编程语言                | 描述                 | IPv4 支持          | IPv6 支持          | 贡献者                                                                                      |
 | :---------------------- | :------------------- |:-------------------|:-------------------| :------------------------------------------------------------------------------------------ |
@@ -71,6 +76,7 @@ API 介绍，使用文档和测试程序请参考如下 `maker` 生成程序下�
 | [Rust](maker/rust)      | rust xdb 生成程序    | :white_check_mark: | :white_check_mark: | [KevinWang](https://github.com/KevinWL) & [gongzhengyang](https://github.com/gongzhengyang) |
 | [C++](maker/cpp)        | C++ xdb 生成程序     | :white_check_mark: | :white_check_mark: | [Yunbin Liu](https://github.com/liuyunbin)                                                  |
 
+---
 
 # `xdb` 数据更新
 
@@ -82,7 +88,7 @@ ip2region 项目的核心在于 <b>研究 IP 数据的存储和快速查询的�
 2. ip2region Github/Gitee 中带有 `[数据源补充]` 标签的 Issue
 3. 其他自定义数据：例如客户提供的数据，或者通过 GPS 和 WIFI 定位得到的数据，或者来自其他平台的合法合规的数据
 
-原始 IP 数据编辑工具使用方法请参考如下的 `maker` 生成程序下的 ReadMe 文档：
+原始 IP 数据编辑工具使用方法请参考如下的 `maker` 生成程序下的 README 文档：
 | 编程语言                            | 描述                     | IPv4 支持          | IPv6 支持          | 贡献者                                     |
 |:------------------------------------|:-------------------------|:-------------------|:-------------------|:-------------------------------------------|
 | [Golang](maker/golang#xdb-数据编辑) | golang IP 原始数据编辑器 | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)    |
@@ -97,6 +103,8 @@ ip2region 项目的核心在于 <b>研究 IP 数据的存储和快速查询的�
 
 # 官方社区
 Ip2Region 官方社区正式上线于 `2025/06/12` 日，一方面提供了稳定的 [商用离线数据](https://ip2region.net/products/offline) 服务，另一方面便于在核心代码外强化 IP 工具链和数据服务，例如 [使用文档](https://ip2region.net/doc/)，[查询测试](https://ip2region.net/search/demo)，数据纠错等，更多关于社区的信息和服务请访问 [Ip2Region 官方社区](https://ip2region.net/)。
+
+---
 
 # 相关备注
 
