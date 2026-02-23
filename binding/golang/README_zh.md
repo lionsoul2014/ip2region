@@ -1,6 +1,6 @@
 [中文](README_zh.md) | [English](README.md)
 
-# ip2region xdb golang 查询客户端实现
+# ip2region golang 查询客户端
 
 # 使用方式
 

@@ -1,6 +1,6 @@
 [中文](README_zh.md) | [English](README.md)
 
-# ip2region golang query client implementation
+# ip2region golang query client
 
 # Usage
 
