@@ -8,7 +8,6 @@
 
 ```bash
 go get github.com/lionsoul2014/ip2region/binding/golang
-
 ```
 
 ### About the query service
