@@ -37,19 +37,19 @@ For API introductions, usage documentation, and test programs, please refer to t
 
 | Language | Description | IPv4 | IPv6 | Contributors |
 | --- | --- | --- | --- | --- |
-| [Golang](binding/golang)         | golang xdb query client          | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
-| [PHP](binding/php)               | php xdb query client             | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
-| [Java](binding/java)             | java xdb query client            | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
-| [C](binding/c)                   | POSIX C xdb query client         | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
-| [Lua_c](binding/lua_c)           | lua c extension xdb query client | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
-| [Lua](binding/lua)               | lua xdb query client             | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
-| [Rust](binding/rust)             | rust xdb query client            | :white_check_mark: | :white_check_mark: | [gongzhengyang](https://github.com/gongzhengyang) |
-| [Python](binding/python)         | python xdb query client          | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
-| [Javascript](binding/javascript) | javascript xdb query client      | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
-| [Csharp](binding/csharp)         | csharp xdb query client          | :white_check_mark: | :white_check_mark: | [Alen Lee](https://github.com/malus2077) & [ArgoZhang](https://github.com/ArgoZhang) |
-| [Erlang](binding/erlang)         | erlang xdb query client          | :white_check_mark: | :x:                | [malou](https://github.com/malou996)              |
-| [Nginx](binding/nginx)           | nginx extension xdb query client | :white_check_mark: | :x:                | [Wu Jian Ping](https://github.com/wujjpp)         |
-| [C++](binding/cpp)               | C++ xdb query client             | :white_check_mark: | :white_check_mark: | [Yunbin Liu](https://github.com/liuyunbin)        |
+| [Golang](binding/golang/README.md) | golang xdb query client          | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
+| [PHP](binding/php)                 | php xdb query client             | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
+| [Java](binding/java)               | java xdb query client            | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
+| [C](binding/c)                     | POSIX C xdb query client         | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
+| [Lua_c](binding/lua_c)             | lua c extension xdb query client | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
+| [Lua](binding/lua)                 | lua xdb query client             | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
+| [Rust](binding/rust)               | rust xdb query client            | :white_check_mark: | :white_check_mark: | [gongzhengyang](https://github.com/gongzhengyang) |
+| [Python](binding/python)           | python xdb query client          | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
+| [Javascript](binding/javascript)   | javascript xdb query client      | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
+| [Csharp](binding/csharp)           | csharp xdb query client          | :white_check_mark: | :white_check_mark: | [Alen Lee](https://github.com/malus2077) & [ArgoZhang](https://github.com/ArgoZhang) |
+| [Erlang](binding/erlang)           | erlang xdb query client          | :white_check_mark: | :x:                | [malou](https://github.com/malou996)              |
+| [Nginx](binding/nginx)             | nginx extension xdb query client | :white_check_mark: | :x:                | [Wu Jian Ping](https://github.com/wujjpp)         |
+| [C++](binding/cpp)                 | C++ xdb query client             | :white_check_mark: | :white_check_mark: | [Yunbin Liu](https://github.com/liuyunbin)        |
 
 The following toolchain implementations are contributed by community developers via third-party repositories:
 
