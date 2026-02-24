@@ -39,7 +39,7 @@ API 介绍，使用文档和测试程序请参考对应 `searcher` 查询客户�
 | [Golang](binding/golang/README_zh.md) | golang xdb 查询客户端       | :white_check_mark: | :white_check_mark: |
 | [PHP](binding/php/README_zh.md)       | php xdb 查询客户端          | :white_check_mark: | :white_check_mark: |
 | [Java](binding/java/README_zh.md)     | java xdb 查询客户端         | :white_check_mark: | :white_check_mark: |
-| [C](binding/c)                        | POSIX C xdb 查询客户端      | :white_check_mark: | :white_check_mark: |
+| [C](binding/c/README_zh.md)           | POSIX C xdb 查询客户端      | :white_check_mark: | :white_check_mark: |
 | [Lua_c](binding/lua_c)                | lua c 扩展 xdb 查询客户端   | :white_check_mark: | :white_check_mark: |
 | [Lua](binding/lua)                    | lua xdb 查询客户端          | :white_check_mark: | :white_check_mark: |
 | [Rust](binding/rust)                  | rust xdb 查询客户端         | :white_check_mark: | :white_check_mark: |
