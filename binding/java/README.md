@@ -1,8 +1,11 @@
-# ip2region xdb java 查询客户端实现
+[中文简体](README_zh.md) | [English](README.md)
 
-# 使用方式
+# ip2region java Query Client
 
-### maven 仓库：
+# Usage
+
+### Maven Repository:
+
 ```xml
 <dependency>
     <groupId>org.lionsoul</groupId>
@@ -11,98 +14,110 @@
 </dependency>
 ```
 
-### 关于查询服务
-从 `3.2.0` 版本开始提供了一个双协议兼容且并发安全的 `Ip2Region` 查询服务，**建议优先使用该方式来进行查询调用**，具体使用方式如下：
+### About Query Service
+
+Starting from version `3.2.0`, a dual-protocol compatible and concurrency-safe `Ip2Region` query service is provided. **It is recommended to prioritize this method for query calls.** The specific usage is as follows:
+
 ```java
 import org.lionsoul.ip2region.service.Config;
 import org.lionsoul.ip2region.service.Ip2Region;
 
-// 1, 创建 v4 的配置：指定缓存策略和 v4 的 xdb 文件路径
+// 1. Create v4 configuration: specify cache policy and v4 xdb file path
 final Config v4Config = Config.custom()
-    .setCachePolicy(Config.VIndexCache)     // 指定缓存策略:  NoCache / VIndexCache / BufferCache
-    .setSearchers(15)                       // 设置初始化的查询器数量
-    // .setCacheSliceBytes(int)             // 设置缓存的分片字节数，默认为 50MiB
-    // .setXdbInputStream(InputStream)      // 设置 v4 xdb 文件的 inputstream 对象
-    // .setXdbFile(File)                    // 设置 v4 xdb File 对象
-    .setXdbPath("ip2region v4 xdb path")    // 设置 v4 xdb 文件的路径
-    .asV4();    // 指定为 v4 配置
+    .setCachePolicy(Config.VIndexCache)     // Specify cache policy: NoCache / VIndexCache / BufferCache
+    .setSearchers(15)                       // Set the number of initialized searchers
+    // .setCacheSliceBytes(int)             // Set cache slice bytes, default is 50MiB
+    // .setXdbInputStream(InputStream)      // Set v4 xdb file inputstream object
+    // .setXdbFile(File)                    // Set v4 xdb File object
+    .setXdbPath("ip2region v4 xdb path")    // Set the path of v4 xdb file
+    .asV4();    // Specify as v4 configuration
 
-// 2, 创建 v6 的配置：指定缓存策略和 v6 的 xdb 文件路径
+// 2. Create v6 configuration: specify cache policy and v6 xdb file path
 final Config v6Config = Config.custom()
-    .setCachePolicy(Config.VIndexCache)     // 指定缓存策略: NoCache / VIndexCache / BufferCache
-    .setSearchers(15)                       // 设置初始化的查询器数量
-    // .setCacheSliceBytes(int)             // 设置缓存的分片字节数，默认为 50MiB
-    // .setXdbInputStream(InputStream)      // 设置 v6 xdb 文件的 inputstream 对象
-    // .setXdbFile(File)                    // 设置 v6 xdb File 对象
-    .setXdbPath("ip2region v6 xdb path")    // 设置 v6 xdb 文件的路径
-    .asV6();    // 指定为 v6 配置
+    .setCachePolicy(Config.VIndexCache)     // Specify cache policy: NoCache / VIndexCache / BufferCache
+    .setSearchers(15)                       // Set the number of initialized searchers
+    // .setCacheSliceBytes(int)             // Set cache slice bytes, default is 50MiB
+    // .setXdbInputStream(InputStream)      // Set v6 xdb file inputstream object
+    // .setXdbFile(File)                    // Set v6 xdb File object
+    .setXdbPath("ip2region v6 xdb path")    // Set the path of v6 xdb file
+    .asV6();    // Specify as v6 configuration
 
-// 备注：Xdb 三种初始化输入的优先级：XdbInputStream -> XdbFile -> XdbPath
-// setXdbInputStream 仅方便使用者从 jar 包中加载 xdb 文件内容，这时 cachePolicy 只能设置为 Config.BufferCache
+// Note: Priority for the three types of Xdb initialization inputs: XdbInputStream -> XdbFile -> XdbPath
+// setXdbInputStream is only for the convenience of users to load xdb file content from jar packages, in which case cachePolicy can only be set to Config.BufferCache
 
-// 3，通过上述配置创建 Ip2Region 查询服务
+// 3. Create Ip2Region query service through the above configurations
 final Ip2Region ip2Region = Ip2Region.create(v4Config, v6Config);
 
-// 4，导出 ip2region 服务作为全局变量，进行双版本的IP地址的并发查询，例如：
-final String v4Region = ip2Region.search("113.92.157.29");                          // 进行 IPv4 查询
-final String v6Region = ip2Region.search("240e:3b7:3272:d8d0:db09:c067:8d59:539e"); // 进行 IPv6 查询
+// 4. Export the ip2region service as a global variable to perform concurrent queries for both versions of IP addresses, for example:
+final String v4Region = ip2Region.search("113.92.157.29");                          // Perform IPv4 query
+final String v6Region = ip2Region.search("240e:3b7:3272:d8d0:db09:c067:8d59:539e"); // Perform IPv6 query
 
-// 5，在服务需要关闭的时候，同时关闭 ip2region 查询服务
-// 备注：close 方法只需要在整个服务关闭的时候关闭，查询途中不需要操作
+// 5. When the service needs to be shut down, close the ip2region query service at the same time
+// Note: The close method only needs to be called when the entire service is shut down; no operation is needed during queries
 ip2Region.close();
 ```
-##### `Ip2Region` 查询备注：
-1. 该查询服务的 API 并发安全且同时支持 `IPv4` 和 `IPv6` 的地址，内部实现会自动判断。
-2. v4 和 v6 的配置需要单独创建，可以给 v4 和 v6 设置使用不同的缓存策略，也可以指定其中一个为 `null` 则该版本的 IP 地址查询都会返回 `null`。
-3. 请结合您项目的并发数给 `setSearchers` 一个合适的查询器数量，默认为 20 个，这个值在运行过程中是固定的，每次查询会从池子里租借一个查询器来完成查询操作，查询完成后再归还回去，如果租借的时候池子已经空了则等待直到有可用的查询器来完成查询服务，租借的锁是使用的 `ReentrantLock` 来管理，也可以通过如下方式来设置 `Ip2Region` 查询服务使用公平锁：
+
+##### `Ip2Region` Query Notes:
+
+1. The API of this query service is concurrency-safe and supports both `IPv4` and `IPv6` addresses; the internal implementation will automatically distinguish them.
+2. v4 and v6 configurations need to be created separately. You can set different cache policies for v4 and v6, or specify one of them as `null`, in which case IP address queries for that version will return `null`.
+3. Please set a suitable number of searchers for `setSearchers` based on your project's concurrency. The default is 20. This value is fixed during runtime. Each query will borrow a searcher from the pool and return it after the query is completed. If the pool is empty when borrowing, it will wait until a searcher becomes available. The borrow lock is managed using `ReentrantLock`. You can also set the `Ip2Region` query service to use a fair lock as follows:
+
 ```java
 final Ip2Region ip2region = Ip2Region.create(v4Config, v6Config, true);
 ```
-4. 如果配置设置的缓存策略为 `Config.BufferCache` 即 `全内存缓存` 则默认会使用单实例的内存查询器，该实现天生并发安全，此时通过 `setSearchers` 指定的查询器数量无效。
-5. 如果 `ip2region` 查询器在提供服务期间，调用 close 默认会最大等待 10 秒钟来等待尽量多的查询器归还。
 
+4. If the cache policy in the configuration is set to `Config.BufferCache` (i.e., `Full Memory Cache`), a single-instance memory searcher will be used by default. This implementation is natively concurrency-safe, and the number of searchers specified via `setSearchers` will be ignored.
+5. If `close` is called while the `ip2region` searcher is providing service, it will wait for a maximum of 10 seconds by default to allow as many searchers as possible to be returned.
 
-### 关于查询 API
-定位信息查询 API 的原型为：
+### About Query API
+
+The prototype of the location information query API is:
+
 ```java
 String search(String ipStr) throw Exception;
 String search(byte[] ip) throw Exception;
 ```
-查询出错会抛出异常，如果查询成功会返回字符串的 `region` 信息，如果指定的 ip 查询不到会返回空字符串 `""`，这对于自定义数据或者数据不完整的情况会出现。
 
-### 关于 IPv4 和 IPv6
-该 xdb 查询客户端实现同时支持对 IPv4 和 IPv6 的查询，使用方式如下：
+An exception will be thrown if the query fails. If the query is successful, the `region` information string will be returned. If the specified IP cannot be found, an empty string `""` will be returned, which may occur for custom data or incomplete data.
+
+### About IPv4 and IPv6
+
+This xdb query client implementation supports both IPv4 and IPv6 queries. The usage is as follows:
+
 ```java
 import org.lionsoul.ip2region.xdb.Version;
 
-// 如果是 IPv4: 设置 xdb 路径为 v4 的 xdb 文件，IP版本指定为 Version.IPv4
-final String dbPath = "../../data/ip2region_v4.xdb";  // 或者你的 ipv4 xdb 的路径
+// For IPv4: Set xdb path to the v4 xdb file, specify IP version as Version.IPv4
+final String dbPath = "../../data/ip2region_v4.xdb";  // or your ipv4 xdb path
 final Version version = Version.IPv4;
 
-// 如果是 IPv6: 设置 xdb 路径为 v6 的 xdb 文件，IP版本指定为 Version.IPv6
-final String dbPath = "../../data/ip2region_v6.xdb";  // 或者你的 ipv6 xdb 路径
+// For IPv6: Set xdb path to the v6 xdb file, specify IP version as Version.IPv6
+final String dbPath = "../../data/ip2region_v6.xdb";  // or your ipv6 xdb path
 final Version version = Version.IPv6;
 
-// dbPath 指定的 xdb 的 IP 版本必须和 version 指定的一致，不然查询执行的时候会报错
-// 备注：以下演示直接使用 dbPath 和 version 变量
+// The IP version of the xdb specified by dbPath must be consistent with version, otherwise an error will occur during query execution
+// Note: The following demonstration directly uses the dbPath and version variables
 ```
 
-### 文件验证
-建议您主动去验证 xdb 文件的适用性，因为后期的一些新功能可能会导致目前的 Searcher 版本无法适用你使用的 xdb 文件，验证可以避免运行过程中的一些不可预测的错误。 你不需要每次都去验证，例如在服务启动的时候，或者手动调用命令验证确认版本匹配即可，不要在每次创建的 Searcher 的时候运行验证，这样会影响查询的响应速度，尤其是高并发的使用场景。
+### File Verification
+
+It is recommended that you proactively verify the applicability of the xdb file, as some future new features may cause the current Searcher version to be incompatible with the xdb file you are using. Verification can avoid unpredictable errors during runtime. You do not need to verify every time; for example, verify when the service starts or manually call a command to confirm version matching. Do not run verification every time a Searcher is created, as this will affect query response speed, especially in high-concurrency scenarios.
+
 ```java
 try {
     Searcher.verifyFromFile(dbPath);
 } catch (Exception e) {
-    // 适用性验证失败！！！
-    // 当前查询客户端实现不适用于 dbPath 指定的 xdb 文件的查询.
-    // 应该停止启动服务，使用合适的 xdb 文件或者升级到适合 dbPath 的 Searcher 实现。
+    // Applicability verification failed!!!
+    // The current query client implementation is not suitable for querying the xdb file specified by dbPath.
+    // You should stop the service and use a suitable xdb file or upgrade to a Searcher implementation compatible with dbPath.
     return;
 }
 
-// 验证通过，当前使用的 Searcher 可以安全的用于对 dbPath 指向的 xdb 的查询操作
+// Verification passed, the current Searcher can be safely used for query operations on the xdb pointed to by dbPath
 ```
 
-### 完全基于文件的查询
+### File-Based Query
 
 ```java
 import org.lionsoul.ip2region.xdb.Searcher;
@@ -111,7 +126,7 @@ import java.util.concurrent.TimeUnit;
 
 public class SearcherTest {
     public static void main(String[] args) {
-        // 1、使用上述的 version 和 dbPath 创建 searcher 对象
+        // 1. Create a searcher object using the version and dbPath mentioned above
         Searcher searcher = null;
         try {
             searcher = Searcher.newWithFileOnly(version, dbPath);
@@ -120,7 +135,7 @@ public class SearcherTest {
             return;
         }
 
-        // 2、查询，IPv4 或者 IPv6 的地址都支持
+        // 2. Query, both IPv4 and IPv6 addresses are supported
         try {
             String ip = "1.2.3.4";
             // ip = "240e:3b7:3272:d8d0:db09:c067:8d59:539e";  // IPv6
@@ -132,17 +147,18 @@ public class SearcherTest {
             System.out.printf("failed to search(%s): %s\n", ip, e);
         }
 
-        // 3、关闭资源
+        // 3. Close resources
         searcher.close();
         
-        // 备注：并发使用，每个线程需要创建一个独立的 searcher 对象单独使用。
+        // Note: For concurrent use, each thread needs to create an independent searcher object for separate use.
     }
 }
 ```
 
-### 缓存 `VectorIndex` 索引
+### Caching `VectorIndex`
 
-我们可以提前从 `xdb` 文件中加载出来 `VectorIndex` 数据，然后全局缓存，每次创建 Searcher 对象的时候使用全局的 VectorIndex 缓存可以减少一次固定的 IO 操作，从而加速查询，减少 IO 压力。
+We can pre-load `VectorIndex` data from the `xdb` file and cache it globally. Using the global VectorIndex cache every time a Searcher object is created can reduce a fixed IO operation, thereby accelerating queries and reducing IO pressure.
+
 ```java
 import org.lionsoul.ip2region.xdb.Searcher;
 import java.io.*;
@@ -150,9 +166,9 @@ import java.util.concurrent.TimeUnit;
 
 public class SearcherTest {
     public static void main(String[] args) {
-        // 备注：version 和 dbPath 来源，请看上面的版本描述
+        // Note: For version and dbPath sources, please see the version description above
 
-        // 1、从 dbPath 中预先加载 VectorIndex 缓存，并且把这个得到的数据作为全局变量，后续反复使用。
+        // 1. Pre-load VectorIndex cache from dbPath and use the obtained data as a global variable for subsequent repeated use.
         byte[] vIndex;
         try {
             vIndex = Searcher.loadVectorIndexFromFile(dbPath);
@@ -161,7 +177,7 @@ public class SearcherTest {
             return;
         }
 
-        // 2、使用全局的 vIndex 创建带 VectorIndex 缓存的查询对象。
+        // 2. Use the global vIndex to create a query object with VectorIndex cache.
         Searcher searcher;
         try {
             searcher = Searcher.newWithVectorIndex(version, dbPath, vIndex);
@@ -170,7 +186,7 @@ public class SearcherTest {
             return;
         }
 
-        // 3、查询，IPv4 或者 IPv6 地址都支持
+        // 3. Query, both IPv4 and IPv6 addresses are supported
         try {
             String ip = "1.2.3.4";
             // ip = "240e:3b7:3272:d8d0:db09:c067:8d59:539e";  // IPv6
@@ -182,17 +198,18 @@ public class SearcherTest {
             System.out.printf("failed to search(%s): %s\n", ip, e);
         }
         
-        // 4、关闭资源
+        // 4. Close resources
         searcher.close();
 
-        // 备注：每个线程需要单独创建一个独立的 Searcher 对象，但是都共享全局的只读 vIndex 缓存。
+        // Note: Each thread needs to create an independent Searcher object, but they all share the same read-only global vIndex cache.
     }
 }
 ```
 
-### 缓存整个 `xdb` 数据
+### Caching the Entire `xdb` File
 
-我们也可以预先加载整个 xdb 文件的数据到内存，然后基于这个数据创建查询对象来实现完全基于文件的查询，类似之前的 memory search。
+We can also pre-load the entire xdb file data into memory and then create a query object based on this data to achieve a fully memory-based query, similar to the previous memory search.
+
 ```java
 import org.lionsoul.ip2region.xdb.Searcher;
 import java.io.*;
@@ -200,10 +217,10 @@ import java.util.concurrent.TimeUnit;
 
 public class SearcherTest {
     public static void main(String[] args) {
-        // 备注：version 和 dbPath 来源，请看上面的版本描述
+        // Note: For version and dbPath sources, please see the version description above
 
-        // 1、从 dbPath 加载整个 xdb 到内存。
-        // 从这个 release 版本开始，xdb 的 buffer 使用 LongByteArray 来存储，避免 xdb 文件过大的时候 int 类型的溢出
+        // 1. Load the entire xdb from dbPath into memory.
+        // Starting from this release version, the xdb buffer uses LongByteArray for storage to avoid int type overflow when the xdb file is too large
         LongByteArray cBuff;
         try {
             cBuff = Searcher.loadContentFromFile(dbPath);
@@ -212,7 +229,7 @@ public class SearcherTest {
             return;
         }
 
-        // 2、使用上述的 cBuff 创建一个完全基于内存的查询对象。
+        // 2. Use the above cBuff to create a fully memory-based query object.
         Searcher searcher;
         try {
             searcher = Searcher.newWithBuffer(version, cBuff);
@@ -221,7 +238,7 @@ public class SearcherTest {
             return;
         }
 
-        // 3、查询，IPv4 和 IPv6 都支持
+        // 3. Query, both IPv4 and IPv6 are supported
         try {
             String ip = "1.2.3.4";
             // ip = "240e:3b7:3272:d8d0:db09:c067:8d59:539e";  // IPv6
@@ -233,43 +250,44 @@ public class SearcherTest {
             System.out.printf("failed to search(%s): %s\n", ip, e);
         }
         
-        // 4、关闭资源 - 该 searcher 对象可以安全用于并发，等整个服务关闭的时候再关闭 searcher
+        // 4. Close resources - this searcher object can be safely used for concurrency; close it when the entire service is shut down
         // searcher.close();
 
-        // 备注：并发使用，用整个 xdb 数据缓存创建的查询对象可以安全的用于并发，也就是你可以把这个 searcher 对象做成全局对象去跨线程访问。
+        // Note: For concurrent use, the query object created with the entire xdb data cache can be safely used for concurrency, 
+        // meaning you can make this searcher object a global object for cross-thread access.
     }
 }
 ```
 
-如果调用 `loadContentXXX` 方法来加载 xdb buffer 的过程中出现了 OOM 错误，请参考以下的 [sliceBytes 设置](#slicebytes)，选择使用带 sliceBytes 参数的 `loadContentXXX` 方法来加载 。
+If an OOM error occurs while calling the `loadContentXXX` method to load the xdb buffer, please refer to the [sliceBytes setting](#slicebytes) below and choose the `loadContentXXX` method with the sliceBytes parameter.
 
 ### sliceBytes
 
-sliceBytes 表示 xdb 全内存缓存时 `LongByteArray` 类内部维护的 `List<byte[]> buffs` 集合的分片内存的大小，默认值为 `Searcher.DEFAULT_SLICE_BYTES` = `50MiB`，这个值的最大允许值为 `Searcher.MAX_WRITE_BYTES` = `0x7ffff000`，关于该取值的来源可以参考作者博客文章：[https://mp.weixin.qq.com/s/4xHRcnQbIcjtMGdXEGrxsA](https://mp.weixin.qq.com/s/4xHRcnQbIcjtMGdXEGrxsA)。
-1. 从 `3.3.3` 版本开始 `LongByteArray` 实现了固定分片尺寸支持，可以通过简单的计算快速的完成 `offset` 定位的从而实现 `slice` 或者 `copy` 操作。
-2. 从计算速度来说 sliceBytes 越大 buffs 的长度越小，计算耗时越小，不过有了固定 sliceBytes 实现这个差距完全可以忽略，所以建议保持默认值为 `50MiB` 即可，也不会出现之前弹性分片尺寸可能导致的 OOM 问题。
+sliceBytes represents the size of the partitioned memory for the `List<byte[]> buffs` collection maintained inside the `LongByteArray` class during full memory caching. The default value is `Searcher.DEFAULT_SLICE_BYTES` = `50MiB`. The maximum allowed value is `Searcher.MAX_WRITE_BYTES` = `0x7ffff000`. For the source of this value, please refer to the author's blog post: [https://mp.weixin.qq.com/s/4xHRcnQbIcjtMGdXEGrxsA](https://mp.weixin.qq.com/s/4xHRcnQbIcjtMGdXEGrxsA).
 
+1. Starting from version `3.3.3`, `LongByteArray` implements fixed partition size support, which allows for fast `offset` positioning through simple calculation to perform `slice` or `copy` operations.
+2. In terms of calculation speed, the larger the sliceBytes, the smaller the length of buffs and the lower the calculation time. However, with the fixed sliceBytes implementation, this gap is completely negligible. Therefore, it is recommended to keep the default value of `50MiB`, which also avoids the OOM issues that could be caused by elastic partition sizes previously.
 
+# Compiling the Test Program
 
-# 编译测试程序
+Compile the test program via Maven.
 
-通过 maven 来编译测试程序。
 ```bash
-# cd 到 java binding 的根目录
+# cd to the root directory of java binding
 cd binding/java/
 mvn compile package
 ```
 
-然后会在当前目录的 target 目录下得到一个 ip2region-{version}.jar 的打包文件。
+Then a packaged file named ip2region-{version}.jar will be generated in the target directory under the current folder.
 
+# Query Testing
 
+### Test Command
 
-# 查询测试
+You can test queries via the `java -jar target/ip2region-{version}.jar search` command:
 
-### 测试命令
-可以通过 `java -jar target/ip2region-{version}.jar search` 命令来测试查询：
 ```bash
-➜  java git:(master) ✗ java -jar target/ip2region-3.3.0.jar search --help
+➜  java git:(master) ✗ java -jar target/ip2region-3.3.4.jar search --help
 java -jar ip2region-{version}.jar search [command options]
 options:
  --v4-db string            ip2region ipv4 binary xdb file path
@@ -279,16 +297,19 @@ options:
  --help                    print this help menu
 ```
 
-### 参数解析
-1. `v4-xdb`: IPv4 的 xdb 文件路径，默认为仓库中的 data/ip2region_v4.xdb
-2. `v6-xdb`: IPv6 的 xdb 文件路径，默认为仓库中的 data/ip2region_v6.xdb
-3. `v4-cache-policy`: v4 查询使用的缓存策略，默认为 `vectorIndex`，可选：file/vectorIndex/content
-4. `v6-cache-policy`: v6 查询使用的缓存策略，默认为 `vectorIndex`，可选：file/vectorIndex/content
+### Parameter Parsing
 
-### 测试 Demo
-例如：使用默认的 data/ip2region_v4.xdb 和 data/ip2region_v6.xdb 进行查询测试：
+1. `v4-xdb`: IPv4 xdb file path, defaults to data/ip2region_v4.xdb in the repository.
+2. `v6-xdb`: IPv6 xdb file path, defaults to data/ip2region_v6.xdb in the repository.
+3. `v4-cache-policy`: Cache policy used for v4 queries, default is `vectorIndex`, options: file/vectorIndex/content.
+4. `v6-cache-policy`: Cache policy used for v6 queries, default is `vectorIndex`, options: file/vectorIndex/content.
+
+### Test Demo
+
+Example: performing query testing using default data/ip2region_v4.xdb and data/ip2region_v6.xdb:
+
 ```bash
-➜  java git:(java_app_with_ip2region_service) ✗ java -jar target/ip2region-3.3.0.jar search       
+➜  java git:(java_app_with_ip2region_service) ✗ java -jar target/ip2region-3.3.4.jar search
 ip2region search service test program
 +-v4 xdb: /data01/code/c/ip2region/data/ip2region_v4.xdb (vectorIndex)
 +-v6 xdb: /data01/code/c/ip2region/data/ip2region_v6.xdb (vectorIndex)
@@ -300,15 +321,17 @@ ip2region>> 240e:3b7:3272:d8d0:db09:c067:8d59:539e
 ip2region>> 2604:a840:3::a04d
 {region: United States|California|San Jose|xTom|US, took: 503 μs}
 ```
-输入 v4 或者 v6 的 IP 地址即可进行查询测试，也可以分别设置 `cache-policy` 为 file/vectorIndex/content 来测试三种不同缓存实现的查询效果。
 
+Enter a v4 or v6 IP address to perform a query test. You can also set `cache-policy` to file/vectorIndex/content respectively to test the effects of the three different cache implementations.
 
-# bench 测试
+# bench Testing
 
-### 测试命令
-可以通过 `java -jar ip2region-{version}.jar bench` 命令来进行 bench 测试，一方面确保 `xdb` 文件没有错误，一方面可以评估查询性能：
+### Test Command
+
+You can perform bench testing via the `java -jar ip2region-{version}.jar bench` command to ensure the `xdb` file is error-free and to evaluate query performance:
+
 ```bash
-➜  java git:(fr_java_ipv6) ✗ java -jar target/ip2region-3.1.0.jar bench                                  
+➜  java git:(fr_java_ipv6) ✗ java -jar target/ip2region-3.3.4.jar bench
 java -jar ip2region-{version}.jar bench [command options]
 options:
  --db string              ip2region binary xdb file path
@@ -317,16 +340,20 @@ options:
 ```
 
 ### v4 bench
-例如：通过默认的 data/ip2region_v4.xdb 和 data/ipv4_source.txt 文件进行 IPv4 的 bench 测试：
+
+Example: IPv4 bench testing using default data/ip2region_v4.xdb and data/ipv4_source.txt files:
+
 ```bash
-java -jar target/ip2region-3.1.0.jar bench --db=../../data/ip2region_v4.xdb --src=../../data/ipv4_source.txt
+java -jar target/ip2region-3.3.4.jar bench --db=../../data/ip2region_v4.xdb --src=../../data/ipv4_source.txt
 ```
 
 ### v6 bench
-例如：通过默认的 data/ip2region_v6.xdb 和 data/ipv6_source.txt 文件进行 IPv6 的 bench 测试：
+
+Example: IPv6 bench testing using default data/ip2region_v6.xdb and data/ipv6_source.txt files:
+
 ```bash
-java -jar target/ip2region-3.1.0.jar bench --db=../../data/ip2region_v6.xdb --src=../../data/ipv6_source.txt
+java -jar target/ip2region-3.3.4.jar bench --db=../../data/ip2region_v6.xdb --src=../../data/ipv6_source.txt
 ```
 
-可以通过分别设置 `cache-policy` 为 file/vectorIndex/content 来测试三种不同缓存实现的效果。
-@Note: 注意 bench 使用的 src 文件要是生成对应 xdb 文件相同的源文件。
+You can test the effects of the three different cache implementations by setting `cache-policy` to file/vectorIndex/content.
+@Note: Please ensure that the src file used for benching is the same source file used to generate the corresponding xdb file.
