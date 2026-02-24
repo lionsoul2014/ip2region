@@ -1,4 +1,4 @@
-[中文简体](README_zh.md) | [English](README.md)
+:globe_with_meridians: [中文简体](README_zh.md) | [English](README.md)
 
 # ip2region
 
@@ -41,7 +41,7 @@ API 介绍，使用文档和测试程序请参考对应 `searcher` 查询客户�
 | [Java](binding/java/README_zh.md)     | java xdb 查询客户端         | :white_check_mark: | :white_check_mark: |
 | [C](binding/c/README_zh.md)           | POSIX C xdb 查询客户端      | :white_check_mark: | :white_check_mark: |
 | [Lua_c](binding/lua_c/README_zh.md)   | lua c 扩展 xdb 查询客户端   | :white_check_mark: | :white_check_mark: |
-| [Lua](binding/lua)                    | lua xdb 查询客户端          | :white_check_mark: | :white_check_mark: |
+| [Lua](binding/lua/README_zh.md)       | lua xdb 查询客户端          | :white_check_mark: | :white_check_mark: |
 | [Rust](binding/rust)                  | rust xdb 查询客户端         | :white_check_mark: | :white_check_mark: |
 | [Python](binding/python)              | python xdb 查询客户端       | :white_check_mark: | :white_check_mark: |
 | [Javascript](binding/javascript)      | javascript xdb 查询客户端   | :white_check_mark: | :white_check_mark: |
