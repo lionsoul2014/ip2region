@@ -1,41 +1,38 @@
 :globe_with_meridians: [中文简体](README_zh.md) | [English](README.md)
 
-## `ip2region rust` Query Client
+## `ip2region rust` 查询客户端
 
 ## Features
+- 支持`ip`字符串和`u32`/`u28` 数字两种类型的查询
+- 支持 IPv4 和 IPv6
+- 支持无缓存，Vector 索引缓存，全部数据缓存三种模式
 
-* Supports queries using both `ip` strings and `u32`/`u28` numeric types
-* Supports IPv4 and IPv6
-* Supports three modes: No Cache, Vector Index Cache, and Full Data Cache
+## 缓存策略对比与说明
+| 缓存模式     | IPv4 数据内存占用 | IPv6 数据内存占用 | IPv4 benchmark 查询耗时 | IPv6 benchmark 查询耗时 |
+| ------------ | ----------- | ----------- | ------------------- |---------------------|
+| 无缓存       | 1-2MB       | 1-2MB       | 54 us               | 122us               |
+| vector index | 1-2MB       | 1-2MB       | 27 us               | 100us               |
+| 全部缓存     | 20 MB       | 200 MB      | 120 ns              | 178 ns              |
 
-## Cache Policy Comparison and Description
+- 在 `ip2region::Searcher` 初始化的时候会产生一次 IO, 读取 `xdb` 的 header 信息以初始化 `Searcher`，header 信息主要包含了 `xdb` 的 IP 版本，该操作对后续 IP 的查询不产生性能，耗时影响，多占用约 20 Byte 的内存
+- 在无缓存模式与 `vector index` 缓存模式下，所有 `xdb` 的 IO 读取都是按需（按照 bytes offset, bytes length）读取少量信息, 都是线程安全的，可以 benchmark 测试验证
+- 在全部缓存模式下，`xdb` 文件会一次读取，加载到内存中，测试 `IPv6 xdb` 文件大约占用内存 200MB 左右，查询不频繁的话，占用内存会逐渐降低
+- 所有缓存模式下，包括初始化 `ip2region::Searcher` 过程当中，程序都是线程安全的，不存在某个全局可修改的中间变量，`ip2region::Searcher` 初始化完成以后，调用函数`search`都是使用不可变引用，同时 `ip2region::Searcher` 也可以通过 `Arc` 方式传递给不同线程使用
 
-| Cache Mode | IPv4 Memory Usage | IPv6 Memory Usage | IPv4 benchmark query time | IPv6 benchmark query time |
-| --- | --- | --- | --- | --- |
-| No Cache | 1-2MB | 1-2MB | 54 us | 122us |
-| vector index | 1-2MB | 1-2MB | 27 us | 100us |
-| Full Cache | 20 MB | 200 MB | 120 ns | 178 ns |
+## 使用方式
 
-* During the initialization of `ip2region::Searcher`, an IO operation occurs to read the `xdb` header information to initialize the `Searcher`. The header information mainly includes the IP version of the `xdb`. This operation does not affect the performance or time consumption of subsequent IP queries and occupies approximately 20 additional bytes of memory.
-* In No Cache mode and `vector index` cache mode, all `xdb` IO reads are performed on-demand (based on bytes offset and bytes length) for small amounts of information. Both are thread-safe, as verified by benchmark testing.
-* In Full Cache mode, the `xdb` file is read and loaded into memory at once. Testing shows the `IPv6 xdb` file occupies about 200MB of memory. If queries are infrequent, memory usage will gradually decrease.
-* In all cache modes, including during the initialization of `ip2region::Searcher`, the program is thread-safe. There are no globally modifiable intermediate variables. After `ip2region::Searcher` initialization is complete, calling the `search` function uses immutable references. Meanwhile, `ip2region::Searcher` can also be passed to different threads using `Arc`.
+使用`cargo`新建一个项目，比如`cargo new ip-test`
 
-## Usage
-
-Create a new project using `cargo`, such as `cargo new ip-test`
-
-Configure `[dependencies]` in `Cargo.toml` as follows:
+配置`Cargo.toml`的`[dependencies]`如下
 
 ```toml
 [dependencies]
 ip2region = { git = "https://github.com/lionsoul2014/ip2region.git", branch = "master" }
-
 ```
 
-### Basic Usage Example
+### 基本使用示例
 
-Write `main.rs`
+编写`main.rs`
 
 ```rust
 use ip2region::{CachePolicy, Searcher};
@@ -46,7 +43,6 @@ fn main() {
         CachePolicy::FullMemory,
         CachePolicy::VectorIndex,
     ] {
-        // Create an IPv4 searcher
         let ipv4_seacher = Searcher::new("../ip2region/data/ip2region_v4.xdb".to_owned(), cache_policy).unwrap();
         for ip in [1_u32, 2, 3] {
             let result = ipv4_seacher.search(ip).unwrap();
@@ -58,7 +54,6 @@ fn main() {
             println!("CachePolicy: {cache_policy:?}, IP: {ip}, Result: {result}");
         }
 
-        // Create an IPv6 searcher
         let ipv6_seacher = Searcher::new("../ip2region/data/ip2region_v6.xdb".to_owned(), cache_policy).unwrap();
         for ip in ["2001::", "2001:4:112::"] {
             let result = ipv6_seacher.search(ip).unwrap();
@@ -118,20 +113,18 @@ Found 6 outliers among 100 measurements (6.00%)
 // --snip--
 ```
 
-## Testing, Result Verification, and Benchmark
-
+## 测试与结果验证，benchmark
 ```bash
 $ cd binding/rust/example
 $ cargo build -r
 ```
+构建的执行程序位置 `binding/rust/target/release/searcher`
 
-The location of the built executable is `binding/rust/target/release/searcher`
+测试 IPv6 以及 IPv4 需要结合 ipv6_source.txt 以及 ipv4_source.txt 的内容进行查询结果校验
 
-Testing IPv6 and IPv4 requires verifying query results against the contents of `ipv6_source.txt` and `ipv4_source.txt`.
+**此处展示的查询结果只表示当前时间数据的查询，后续查询结果可能会由于 ip_source.txt 以及 xdb 二进制数据的 IP region 段更新修正导致不同**
 
-**The query results shown here represent data at the current time; subsequent results may differ due to updates and corrections in the IP region segments of `ip_source.txt` and `xdb` binary data.**
-
-#### Test IPv6
+#### 测试 IPv6
 
 ```bash
 $ cd binding/rust
@@ -152,8 +145,7 @@ ip2region>> 2c99::
 region: Ok("0|0|Reserved|Reserved|Reserved"), took: 5.33µs
 ```
 
-#### Test IPv4
-
+#### 测试 IPv4
 ```bash
 $ cd binding/rust
 $ cargo build -r
@@ -167,21 +159,21 @@ ip2region>> 2.2.21.1
 region: Ok("United States|Texas|0|Oracle Svenska AB|US"), took: 4.556µs
 ```
 
-#### Benchmark and Result Verification
+#### Benchmark 与验证结果
 
-Test performance via the `searcher` program while comparing query results against `ip sources` files to check for errors.
+通过 searcher 程序来测试性能，同时依据 ip sources 文件对比查询结果，检测是否存在错误
 
 ```bash
 $ cd binding/rust/example
 $ cargo build -r
-## Perform IPv4 bench test using data/ip2region_v4.xdb and data/ipv4_source.txt:
+## 通过 data/ip2region_v4.xdb 和 data/ipv4_source.txt 进行 ipv4 的 bench 测试：
 $ RUST_LOG=debug ../target/release/searcher --xdb='../../../data/ip2region_v4.xdb' bench '../../../data/ipv4_source.txt'
 2025-09-24T07:02:07.840535Z DEBUG ip2region::searcher: Load xdb file with header header=Header { version: 3, index_policy: VectorIndex, create_time: 1757125456, start_index_ptr: 955933, end_index_ptr: 11042415, ip_version: V4, runtime_ptr_bytes: 4 }
 2025-09-24T07:02:07.840894Z DEBUG ip2region::searcher: Load vector index cache
 2025-09-24T07:02:07.840905Z DEBUG ip2region::searcher: Load full cache filepath="../../../data/ip2region_v4.xdb"
 2025-09-24T07:02:08.409990Z  INFO searcher: Benchmark finished count=3404406 took=569.388667ms avg_took=167ns
 
-## Perform IPv6 bench test using data/ip2region_v6.xdb and data/ipv6_source.txt:
+## 通过 data/ip2region_v6.xdb 和 data/ipv6_source.txt 进行 ipv6 的 bench 测试：
 $ RUST_LOG=debug ../target/release/searcher --xdb='../../../data/ip2region_v6.xdb' bench '../../../data/ipv6_source.txt'
 2025-09-24T07:01:48.991835Z DEBUG ip2region::searcher: Load xdb file with header header=Header { version: 3, index_policy: VectorIndex, create_time: 1756970508, start_index_ptr: 6585371, end_index_ptr: 647078145, ip_version: V6, runtime_ptr_bytes: 4 }
 2025-09-24T07:01:48.992557Z DEBUG ip2region::searcher: Load vector index cache

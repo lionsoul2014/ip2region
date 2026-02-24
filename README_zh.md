@@ -42,7 +42,7 @@ API 介绍，使用文档和测试程序请参考对应 `searcher` 查询客户�
 | [C](binding/c/README_zh.md)           | POSIX C xdb 查询客户端      | :white_check_mark: | :white_check_mark: |
 | [Lua_c](binding/lua_c/README_zh.md)   | lua c 扩展 xdb 查询客户端   | :white_check_mark: | :white_check_mark: |
 | [Lua](binding/lua/README_zh.md)       | lua xdb 查询客户端          | :white_check_mark: | :white_check_mark: |
-| [Rust](binding/rust)                  | rust xdb 查询客户端         | :white_check_mark: | :white_check_mark: |
+| [Rust](binding/rust/README_zh.md)     | rust xdb 查询客户端         | :white_check_mark: | :white_check_mark: |
 | [Python](binding/python)              | python xdb 查询客户端       | :white_check_mark: | :white_check_mark: |
 | [Javascript](binding/javascript)      | javascript xdb 查询客户端   | :white_check_mark: | :white_check_mark: |
 | [Csharp](binding/csharp)              | csharp xdb 查询客户端       | :white_check_mark: | :white_check_mark: |
