@@ -1,63 +1,72 @@
-# ip2region xdb php 查询客户端实现
+[中文简体](README_zh.md) | [English](README.md)
 
-# 使用方式
+# ip2region PHP Query Client
 
-### 关于查询 API
-查询 API 的原型如下：
+# Usage
+
+### About Query API
+
+The prototype of the Query API is as follows:
+
 ```php
-// 通过字符串 IP 进行查询
+// Query via string IP
 // @throw Exception
 search($ip_string) string
 
-// 通过 Util.parseIP 返回的二进制 IP 进行查询
+// Query via binary IP returned by Util.parseIP
 // @throw Exception
 searchByBytes($ip_bytes) string
 ```
-如果查询失败则会抛出异常，如果查询成功则会返回字符串的 `region` 信息，如果查询的 IP 找不到则会返回空字符串 `""`。
 
+If the query fails, an exception will be thrown; if the query is successful, the `region` information string will be returned; if the IP being queried cannot be found, an empty string `""` will be returned.
 
-### 关于 IPv4 和 IPv6
-该 xdb 查询客户端实现同时支持对 IPv4 和 IPv6 的查询，使用方式如下：
+### About IPv4 and IPv6
+
+This xdb query client implementation supports both IPv4 and IPv6 queries. The usage is as follows:
+
 ```php
 use \ip2region\xdb\{IPv4, IPv6};
 
-// 如果是 IPv4: 设置 xdb 路径为 v4 的 xdb 文件，IP版本指定为 IPv4
-$dbFile  = "../../data/ip2region_v4.xdb";  // 或者你的 ipv4 xdb 的路径
+// For IPv4: Set xdb path to the v4 xdb file, specify IP version as IPv4
+$dbFile  = "../../data/ip2region_v4.xdb";  // or your ipv4 xdb path
 $version = IPv4::default();
 
-// 如果是 IPv6: 设置 xdb 路径为 v6 的 xdb 文件，IP版本指定为 IPv6
-$dbFile  = "../../data/ip2region_v6.xdb";  // 或者你的 ipv6 xdb 路径
+// For IPv6: Set xdb path to the v6 xdb file, specify IP version as IPv6
+$dbFile  = "../../data/ip2region_v6.xdb";  // or your ipv6 xdb path
 $version = IPv6::default();
 
-// dbPath 指定的 xdb 的 IP 版本必须和 version 指定的一致，不然查询执行的时候会报错
-// 备注：以下演示直接使用 $dbFile 和 $version 变量
+// The IP version of the xdb specified by dbPath must be consistent with the version specified, otherwise an error will occur during query execution
+// Note: The following demonstration directly uses $dbFile and $version variables
 ```
 
-### XDB 文件验证
-建议您主动去验证 xdb 文件的适用性，因为后期的一些新功能可能会导致目前的 Searcher 版本无法适用你使用的 xdb 文件，验证可以避免运行过程中的一些不可预测的错误。 你不需要每次都去验证，例如在服务启动的时候，或者手动调用命令验证确认版本匹配即可，不要在每次创建的 Searcher 的时候运行验证，这样会影响查询的响应速度，尤其是高并发的使用场景。
+### XDB File Verification
+
+It is recommended that you proactively verify the applicability of the xdb file, as some new features in the future may cause the current Searcher version to be incompatible with the xdb file you are using. Verification can avoid unpredictable errors during runtime. You do not need to verify every time; for example, verify when the service starts or manually call the command to confirm version matching. Do not run verification every time a Searcher is created, as this will affect query response speed, especially in high-concurrency scenarios.
+
 ```php
 use \ip2region\xdb\Util;
 
 $err = Util::verify($dbFile);
 if ($err != null) {
-    // 适用性验证失败！！！
-    // 当前查询客户端实现不适用于 dbPath 指定的 xdb 文件的查询.
-    // 应该停止启动服务，使用合适的 xdb 文件或者升级到适合 dbPath 的 Searcher 实现。
+    // Applicability verification failed!!!
+    // The current query client implementation is not suitable for querying the xdb file specified by dbPath.
+    // You should stop the service and use a suitable xdb file or upgrade to a Searcher implementation compatible with dbPath.
     printf("failed to verify xdb file `%s`: %s\n", $dbFile, $err);
     return;
 }
 
-// 验证通过，当前使用的 Searcher 可以安全的用于对 dbPath 指向的 xdb 的查询操作
+// Verification passed, the current Searcher can be safely used for query operations on the xdb pointed to by dbPath
 ```
 
-### 完全基于文件的查询
+### File-Based Query
+
 ```php
 // require or autoload the xdb\Searcher
 require 'xdb\Searcher.php';
 use \ip2region\xdb\Util;
 use \ip2region\xdb\Searcher;
 
-// 1, 使用上述的 $version 和 $dbFile 创建 Searcher 对象
+// 1. Create a Searcher object using the $version and $dbFile mentioned above
 try {
     $searcher = Searcher::newWithFileOnly($version, $dbFile);
 } catch (Exception $e) {
@@ -65,7 +74,7 @@ try {
     return;
 }
 
-// 2, 查询，IPv4 或者 IPv6 的地址都支持
+// 2. Query, both IPv4 or IPv6 addresses are supported
 try {
     $ip = '1.2.3.4';
     // $ip = ""240e:3b7:3272:d8d0:db09:c067:8d59:539e; // IPv6
@@ -77,15 +86,16 @@ try {
     printf("failed to search(%s): %s", $ip, $e->getMessage());
 }
 
-// 3，关闭资源
+// 3. Close resources
 $searcher->close();
 
-// 备注：并发使用，每个线程或者协程需要创建一个独立的 searcher 对象。
+// Note: For concurrent use, each thread or coroutine needs to create an independent searcher object.
 ```
 
-### 缓存 `VectorIndex` 索引
+### Caching `VectorIndex`
 
-如果你的 php 母环境支持，可以预先加载 vectorIndex 缓存，然后做成全局变量，每次创建 Searcher 的时候使用全局的 vectorIndex，可以减少一次固定的 IO 操作从而加速查询，减少 io 压力。 
+If your PHP environment supports it, you can pre-load the vectorIndex cache and make it a global variable. Using the global vectorIndex every time you create a Searcher can reduce a fixed IO operation, thereby accelerating queries and reducing IO pressure.
+
 ```php
 // require or autoload the xdb\Searcher
 require 'xdb\Searcher.php';
@@ -93,14 +103,14 @@ use \ip2region\xdb\Util;
 use \ip2region\xdb\Searcher;
 
 
-// 1、从 $dbFile 加载 VectorIndex 缓存，把下述的 vIndex 变量缓存到内存里面。
+// 1. Load VectorIndex cache from $dbFile and cache the following vIndex variable in memory.
 $vIndex = Util::loadVectorIndexFromFile($dbFile);
 if ($vIndex === null) {
     printf("failed to load vector index from '%s'\n", $dbFile);
     return;
 }
 
-// 2、使用全局的 vIndex 创建带 VectorIndex 缓存的查询对象。
+// 2. Use the global vIndex to create a query object with VectorIndex cache.
 try {
     $searcher = Searcher::newWithVectorIndex($version, $dbFile, $vIndex);
 } catch (Exception $e) {
@@ -108,7 +118,7 @@ try {
     return;
 }
 
-// 3、查询，IPv4 或者 IPv6 都支持
+// 3. Query, both IPv4 or IPv6 are supported
 try {
     $ip = '1.2.3.4';
     // $ip = "240e:3b7:3272:d8d0:db09:c067:8d59:539e"; // IPv6
@@ -120,29 +130,30 @@ try {
     printf("failed to search(%s): %s", $ip, $e->getMessage());
 }
 
-// 4, 关闭资源
+// 4. Close resources
 $searcher->close();
 
-// 备注：并发使用，每个线程或者协程需要创建一个独立的 searcher 对象，但是都共享统一的只读全局 vectorIndex。。
+// Note: For concurrent use, each thread or coroutine needs to create an independent searcher object, but they all share the same read-only global vectorIndex.
 ```
 
-### 缓存整个 `xdb` 数据
+### Caching the Entire `xdb` File
 
-如果你的 PHP 母环境支持，可以预先加载整个 `xdb` 的数据到内存，这样可以实现完全基于内存的查询，类似之前的 memory search 查询。
+If your PHP environment supports it, you can pre-load the entire `xdb` file into memory. This allows for fully memory-based queries, similar to the previous memory search.
+
 ```php
 // require or autoload the xdb\Searcher
 require 'xdb\Searcher.php';
 use \ip2region\xdb\Util;
 use \ip2region\xdb\Searcher;
 
-// 1、从 $dbFile 加载整个 xdb 到内存。
+// 1. Load the entire xdb from $dbFile into memory.
 $cBuff = Util::loadContentFromFile($dbFile);
 if ($cBuff === null) {
     printf("failed to load content buffer from '%s'\n", $dbFile);
     return;
 }
 
-// 2、使用全局的 cBuff 创建带完全基于内存的查询对象。
+// 2. Use the global cBuff to create a query object that is fully based on memory.
 try {
     $searcher = Searcher::newWithBuffer($version, $cBuff);
 } catch (Exception $e) {
@@ -150,7 +161,7 @@ try {
     return;
 }
 
-// 3、查询，IPv4 或者 IPv6 都支持
+// 3. Query, both IPv4 or IPv6 are supported
 try {
     $ip = '1.2.3.4';
     // $ip = "240e:3b7:3272:d8d0:db09:c067:8d59:539e"; // IPv6
@@ -162,16 +173,17 @@ try {
     printf("failed to search(%s): %s", $ip, $e->getMessage());
 }
 
-// 4，关闭资源
-// 该 searcher 对象可以安全的用于并发，等整个服务都关闭的时候再关闭 searcher
+// 4. Close resources
+// This searcher object can be safely used for concurrency; close it when the entire service is shut down
 // $searcher->close();
 
-// 备注：并发使用，用整个 xdb 缓存创建的 searcher 对象可以安全用于并发。
+// Note: For concurrent use, the searcher object created with the entire xdb cache can be safely used for concurrency.
 ```
 
-# 查询测试
+# Query Testing
 
-通过 `search_test.php` 脚本来进行查询测试：
+Run query tests via the `search_test.php` script:
+
 ```bash
 ➜  php git:(fr_php_ipv6) ✗ php search_test.php 
 php search_test.php [command options]
@@ -180,7 +192,8 @@ options:
  --cache-policy string   cache policy: file/vectorIndex/content
 ```
 
-例如：使用默认的 data/ip2region_v4.xdb 进行 IPv4 的查询测试：
+For example: using the default data/ip2region_v4.xdb for IPv4 query testing:
+
 ```bash
 ➜  php git:(fr_php_ipv6) ✗ php search_test.php --db=../../data/ip2region_v4.xdb
 ip2region xdb searcher test program
@@ -192,7 +205,8 @@ ip2region>> 120.229.45.2
 {region: 中国|广东省|深圳市|移动|CN, ioCount: 3, took: 0.07397 ms}
 ```
 
-例如：使用默认的 data/ip2region_v6.xdb 进行 IPv6 的查询测试：
+For example: using the default data/ip2region_v6.xdb for IPv6 query testing:
+
 ```bash
 ➜  php git:(master) ✗ php ./search_test.php --db=../../data/ip2region_v6.xdb
 ip2region xdb searcher test program
@@ -206,11 +220,12 @@ ip2region>> 2604:a840:3::a04d
 {region: United States|California|San Jose|xTom|US, ioCount: 13, took: 0.04614 ms}
 ```
 
-输入 ip 即可进行查询测试。也可以分别设置 `cache-policy` 为 file/vectorIndex/content 来测试三种不同缓存实现的效率。
+Enter an IP to perform a query test. You can also set `cache-policy` to file/vectorIndex/content respectively to test the efficiency of the three different cache implementations.
 
-# bench 测试
+# Bench Testing
 
-通过 `bench_test.php` 脚本来进行自动 bench 测试，一方面确保 `xdb` 文件没有错误，另一方面通过大量的查询测试平均查询性能：
+Run automatic bench testing via the `bench_test.php` script. On one hand, this ensures that there are no errors in the `xdb` file; on the other hand, it tests average query performance through a large number of queries:
+
 ```bash
 ➜  php git:(fr_php_ipv6) ✗ php bench_test.php
 php bench_test.php [command options]
@@ -220,19 +235,21 @@ options:
  --cache-policy string   cache policy: file/vectorIndex/content
 ```
 
-例如：通过默认的 data/ip2region_v4.xdb 和 data/ipv4_source.txt 文件进行 IPv4 的 bench 测试：
+For example: perform an IPv4 bench test using the default data/ip2region_v4.xdb and data/ipv4_source.txt files:
+
 ```bash
 php bench_test.php --db=../../data/ip2region_v4.xdb --src=../../data/ipv4_source.txt
 ```
 
-例如：通过默认的 data/ip2region_v6.xdb 和 data/ipv6_source.txt 文件进行 IPv6 的 bench 测试：
+For example: perform an IPv6 bench test using the default data/ip2region_v6.xdb and data/ipv6_source.txt files:
+
 ```bash
 php bench_test.php --db=../../data/ip2region_v6.xdb --src=../../data/ipv6_source.txt
 ```
 
-可以通过设置 `cache-policy` 参数来分别测试 file/vectorIndex/content 三种不同的缓存实现的的性能。
-@Note：请注意 bench 使用的 src 文件需要是生成对应的 xdb 文件的相同的源文件。
+You can test the performance of the three different cache implementations (file/vectorIndex/content) by setting the `cache-policy` parameter.
+@Note: Please ensure that the src file used for benching is the same source file used to generate the corresponding xdb file.
 
+### Third-party Repository Support
 
-### 第三方仓库支持
-1. composer 支持的 [zoujingli/ip2region](https://github.com/zoujingli/ip2region) - 已提供 IPv6 支持。
+1. Composer supported [zoujingli/ip2region](https://github.com/zoujingli/ip2region) - IPv6 supported.

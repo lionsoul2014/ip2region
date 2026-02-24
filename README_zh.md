@@ -1,4 +1,4 @@
-[中文](README_zh.md) | [English](README.md)
+[中文简体](README_zh.md) | [English](README.md)
 
 # ip2region
 
@@ -34,44 +34,44 @@
 # `xdb` 查询
 
 API 介绍，使用文档和测试程序请参考对应 `searcher` 查询客户端下的 README 介绍，全部查询 binding 实现情况如下：
-| 编程语言 | 描述 | IPv4 支持 | IPv6 支持 | 贡献者 |
-| --- | --- | --- | --- | --- |
-| [Golang](binding/golang/README_zh.md) | golang xdb 查询客户端  | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
-| [PHP](binding/php)               | php xdb 查询客户端          | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
-| [Java](binding/java)             | java xdb 查询客户端         | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
-| [C](binding/c)                   | POSIX C xdb 查询客户端      | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
-| [Lua_c](binding/lua_c)           | lua c 扩展 xdb 查询客户端   | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
-| [Lua](binding/lua)               | lua xdb 查询客户端          | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
-| [Rust](binding/rust)             | rust xdb 查询客户端         | :white_check_mark: | :white_check_mark: | [gongzhengyang](https://github.com/gongzhengyang) |
-| [Python](binding/python)         | python xdb 查询客户端       | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
-| [Javascript](binding/javascript) | javascript xdb 查询客户端   | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
-| [Csharp](binding/csharp)         | csharp xdb 查询客户端       | :white_check_mark: | :white_check_mark: | [Alen Lee](https://github.com/malus2077) & [ArgoZhang](https://github.com/ArgoZhang) |
-| [Erlang](binding/erlang)         | erlang xdb 查询客户端       | :white_check_mark: | :x:                | [malou](https://github.com/malou996)              |
-| [Nginx](binding/nginx)           | nginx 扩展 xdb 查询客户端   | :white_check_mark: | :x:                | [Wu Jian Ping](https://github.com/wujjpp)         |
-| [C++](binding/cpp)               | C++ xdb 查询客户端          | :white_check_mark: | :white_check_mark: | [Yunbin Liu](https://github.com/liuyunbin)        |
+| 编程语言 | 描述 | IPv4 支持 | IPv6 支持 |
+| --- | --- | --- | --- |
+| [Golang](binding/golang/README_zh.md) | golang xdb 查询客户端       | :white_check_mark: | :white_check_mark: |
+| [PHP](binding/php/README_zh.md)       | php xdb 查询客户端          | :white_check_mark: | :white_check_mark: |
+| [Java](binding/java)                  | java xdb 查询客户端         | :white_check_mark: | :white_check_mark: |
+| [C](binding/c)                        | POSIX C xdb 查询客户端      | :white_check_mark: | :white_check_mark: |
+| [Lua_c](binding/lua_c)                | lua c 扩展 xdb 查询客户端   | :white_check_mark: | :white_check_mark: |
+| [Lua](binding/lua)                    | lua xdb 查询客户端          | :white_check_mark: | :white_check_mark: |
+| [Rust](binding/rust)                  | rust xdb 查询客户端         | :white_check_mark: | :white_check_mark: |
+| [Python](binding/python)              | python xdb 查询客户端       | :white_check_mark: | :white_check_mark: |
+| [Javascript](binding/javascript)      | javascript xdb 查询客户端   | :white_check_mark: | :white_check_mark: |
+| [Csharp](binding/csharp)              | csharp xdb 查询客户端       | :white_check_mark: | :white_check_mark: |
+| [Erlang](binding/erlang)              | erlang xdb 查询客户端       | :white_check_mark: | :x:                |
+| [Nginx](binding/nginx)                | nginx 扩展 xdb 查询客户端   | :white_check_mark: | :x:                |
+| [C++](binding/cpp)                    | C++ xdb 查询客户端          | :white_check_mark: | :white_check_mark: |
 
 
 以下工具链实现由社区开发者通过第三方仓库贡献：
-| 编程语言                                                        | 描述                    | 贡献者                                         |
-|:--------------------------------------------------------------- |:------------------------|:-----------------------------------------------|
-| [ip2region-composer](https://github.com/zoujingli/ip2region)    | php composer 管理客户端 | [邹景立](https://github.com/zoujingli)         |
-| [ip2region-ts](https://github.com/Steven-Qiang/ts-ip2region2)   | node.js addon 管理客户端| [Steven Qiang](https://github.com/Steven-Qiang)|
-| [ruby-ip2region](https://github.com/jicheng1014/ruby-ip2region) | ruby xdb 查询客户端实现 | [jicheng1014](https://github.com/jicheng1014)  |
-| [Ip2regionTool](https://github.com/orestonce/Ip2regionTool)     | ip2region 数据转换工具  | [orestonce](https://github.com/orestonce)      |
+| 编程语言 | 描述 |
+| --- | --- |
+| [ip2region-composer](https://github.com/zoujingli/ip2region)    | php composer 管理客户端 |
+| [ip2region-ts](https://github.com/Steven-Qiang/ts-ip2region2)   | node.js addon 管理客户端|
+| [ruby-ip2region](https://github.com/jicheng1014/ruby-ip2region) | ruby xdb 查询客户端实现 |
+| [Ip2regionTool](https://github.com/orestonce/Ip2regionTool)     | ip2region 数据转换工具  |
 
 
 # `xdb` 生成
 
 API 介绍，使用文档和测试程序请参考如下 `maker` 生成程序下的 README 文档：
 
-| 编程语言                | 描述                 | IPv4 支持          | IPv6 支持          | 贡献者                                                                                      |
-| :---------------------- | :------------------- |:-------------------|:-------------------| :------------------------------------------------------------------------------------------ |
-| [Golang](maker/golang)  | golang xdb 生成程序  | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)                                                     |
-| [Java](maker/java)      | java xdb 生成程序    | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)                                                     |
-| [Python](maker/python)  | python xdb 生成程序  | :white_check_mark: | :x:                | [leolin49](https://github.com/leolin49)                                                     |
-| [Csharp](maker/csharp)  | csharp xdb 生成程序  | :white_check_mark: | :x:                | [Alan Lee](https://github.com/malus2077)                                                    |
-| [Rust](maker/rust)      | rust xdb 生成程序    | :white_check_mark: | :white_check_mark: | [KevinWang](https://github.com/KevinWL) & [gongzhengyang](https://github.com/gongzhengyang) |
-| [C++](maker/cpp)        | C++ xdb 生成程序     | :white_check_mark: | :white_check_mark: | [Yunbin Liu](https://github.com/liuyunbin)                                                  |
+| 编程语言 | 描述 | IPv4 支持 | IPv6 支持 |
+| --- | --- | --- | --- |
+| [Golang](maker/golang)  | golang xdb 生成程序  | :white_check_mark: | :white_check_mark: |
+| [Java](maker/java)      | java xdb 生成程序    | :white_check_mark: | :white_check_mark: |
+| [Python](maker/python)  | python xdb 生成程序  | :white_check_mark: | :x:                |
+| [Csharp](maker/csharp)  | csharp xdb 生成程序  | :white_check_mark: | :x:                |
+| [Rust](maker/rust)      | rust xdb 生成程序    | :white_check_mark: | :white_check_mark: |
+| [C++](maker/cpp)        | C++ xdb 生成程序     | :white_check_mark: | :white_check_mark: |
 
 
 # `xdb` 更新
@@ -85,11 +85,11 @@ ip2region 项目的核心在于 <b>研究 IP 数据的存储和快速查询的�
 3. 其他自定义数据：例如客户提供的数据，或者通过 GPS 和 WIFI 定位得到的数据，或者来自其他平台的合法合规的数据
 
 原始 IP 数据编辑工具使用方法请参考如下的 `maker` 生成程序下的 README 文档：
-| 编程语言                            | 描述                     | IPv4 支持          | IPv6 支持          | 贡献者                                     |
-|:------------------------------------|:-------------------------|:-------------------|:-------------------|:-------------------------------------------|
-| [Golang](maker/golang#xdb-数据编辑) | golang IP 原始数据编辑器 | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)    |
-| [Java](maker/java#xdb-数据编辑)     | java IP 原始数据编辑器   | :white_check_mark: | :x:                | [Lion](https://github.com/lionsoul2014)    |
-| [C++](maker/cpp)                    | C++ IP 原始数据编辑器    | :white_check_mark: | :white_check_mark: | [Yunbin Liu](https://github.com/liuyunbin) |
+| 编程语言 | 描述 | IPv4 支持 | IPv6 支持 |
+| --- | --- | --- | --- |
+| [Golang](maker/golang#xdb-数据编辑) | golang IP 原始数据编辑器 | :white_check_mark: | :white_check_mark: |
+| [Java](maker/java#xdb-数据编辑)     | java IP 原始数据编辑器   | :white_check_mark: | :x:                |
+| [C++](maker/cpp)                    | C++ IP 原始数据编辑器    | :white_check_mark: | :white_check_mark: |
 
 
 ### 检测自动更新

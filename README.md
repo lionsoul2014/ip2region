@@ -1,4 +1,4 @@
-[中文](README_zh.md) | [English](README.md)
+[中文简体](README_zh.md) | [English](README.md)
 
 # ip2region
 
@@ -35,44 +35,44 @@ Even for queries based entirely on the `xdb` file, the single query response tim
 
 For API introductions, usage documentation, and test programs, please refer to the README introduction under the corresponding `searcher` query client. All query binding implementations are as follows:
 
-| Language | Description | IPv4 | IPv6 | Contributors |
-| --- | --- | --- | --- | --- |
-| [Golang](binding/golang/README.md) | golang xdb query client          | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
-| [PHP](binding/php)                 | php xdb query client             | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
-| [Java](binding/java)               | java xdb query client            | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
-| [C](binding/c)                     | POSIX C xdb query client         | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
-| [Lua_c](binding/lua_c)             | lua c extension xdb query client | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
-| [Lua](binding/lua)                 | lua xdb query client             | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
-| [Rust](binding/rust)               | rust xdb query client            | :white_check_mark: | :white_check_mark: | [gongzhengyang](https://github.com/gongzhengyang) |
-| [Python](binding/python)           | python xdb query client          | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
-| [Javascript](binding/javascript)   | javascript xdb query client      | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)           |
-| [Csharp](binding/csharp)           | csharp xdb query client          | :white_check_mark: | :white_check_mark: | [Alen Lee](https://github.com/malus2077) & [ArgoZhang](https://github.com/ArgoZhang) |
-| [Erlang](binding/erlang)           | erlang xdb query client          | :white_check_mark: | :x:                | [malou](https://github.com/malou996)              |
-| [Nginx](binding/nginx)             | nginx extension xdb query client | :white_check_mark: | :x:                | [Wu Jian Ping](https://github.com/wujjpp)         |
-| [C++](binding/cpp)                 | C++ xdb query client             | :white_check_mark: | :white_check_mark: | [Yunbin Liu](https://github.com/liuyunbin)        |
+| Language | Description | IPv4 Support | IPv6 Support |
+| --- | --- | --- | --- |
+| [Golang](binding/golang/README.md) | golang xdb query client          | :white_check_mark: | :white_check_mark: |
+| [PHP](binding/php/README.md)       | php xdb query client             | :white_check_mark: | :white_check_mark: |
+| [Java](binding/java)               | java xdb query client            | :white_check_mark: | :white_check_mark: |
+| [C](binding/c)                     | POSIX C xdb query client         | :white_check_mark: | :white_check_mark: |
+| [Lua_c](binding/lua_c)             | lua c extension xdb query client | :white_check_mark: | :white_check_mark: |
+| [Lua](binding/lua)                 | lua xdb query client             | :white_check_mark: | :white_check_mark: |
+| [Rust](binding/rust)               | rust xdb query client            | :white_check_mark: | :white_check_mark: |
+| [Python](binding/python)           | python xdb query client          | :white_check_mark: | :white_check_mark: |
+| [Javascript](binding/javascript)   | javascript xdb query client      | :white_check_mark: | :white_check_mark: |
+| [Csharp](binding/csharp)           | csharp xdb query client          | :white_check_mark: | :white_check_mark: |
+| [Erlang](binding/erlang)           | erlang xdb query client          | :white_check_mark: | :x:                |
+| [Nginx](binding/nginx)             | nginx extension xdb query client | :white_check_mark: | :x:                |
+| [C++](binding/cpp)                 | C++ xdb query client             | :white_check_mark: | :white_check_mark: |
 
 The following toolchain implementations are contributed by community developers via third-party repositories:
 
-| Language | Description | Contributors |
-| --- | --- | --- |
-| [ip2region-composer](https://github.com/zoujingli/ip2region)    | php composer management client       | [Zou Jingli](https://github.com/zoujingli)      |
-| [ip2region-ts](https://github.com/Steven-Qiang/ts-ip2region2)   | node.js addon management client      | [Steven Qiang](https://github.com/Steven-Qiang) |
-| [ruby-ip2region](https://github.com/jicheng1014/ruby-ip2region) | ruby xdb query client implementation | [jicheng1014](https://github.com/jicheng1014)   |
-| [Ip2regionTool](https://github.com/orestonce/Ip2regionTool)     | ip2region data conversion tool       | [orestonce](https://github.com/orestonce)       |
+| Language | Description |
+| --- | --- |
+| [ip2region-composer](https://github.com/zoujingli/ip2region)    | php composer management client       |
+| [ip2region-ts](https://github.com/Steven-Qiang/ts-ip2region2)   | node.js addon management client      |
+| [ruby-ip2region](https://github.com/jicheng1014/ruby-ip2region) | ruby xdb query client implementation |
+| [Ip2regionTool](https://github.com/orestonce/Ip2regionTool)     | ip2region data conversion tool       |
 
 
 # `xdb` Generation
 
 For API introductions, usage documentation, and test programs, please refer to the README documents under the following `maker` generation programs:
 
-| Language | Description | IPv4 | IPv6 | Contributors |
-| --- | --- | --- | --- | --- |
-| [Golang](maker/golang) | golang xdb generation program | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)    |
-| [Java](maker/java)     | java xdb generation program   | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)    |
-| [Python](maker/python) | python xdb generation program | :white_check_mark: | :x:                | [leolin49](https://github.com/leolin49)    |
-| [Csharp](maker/csharp) | csharp xdb generation program | :white_check_mark: | :x:                | [Alan Lee](https://github.com/malus2077)   |
-| [Rust](maker/rust)     | rust xdb generation program   | :white_check_mark: | :white_check_mark: | [KevinWang](https://github.com/KevinWL) & [gongzhengyang](https://github.com/gongzhengyang) |
-| [C++](maker/cpp)       | C++ xdb generation program    | :white_check_mark: | :white_check_mark: | [Yunbin Liu](https://github.com/liuyunbin) |
+| Language | Description | IPv4 Support | IPv6 Support |
+| --- | --- | --- | --- |
+| [Golang](maker/golang) | golang xdb generation program | :white_check_mark: | :white_check_mark: |
+| [Java](maker/java)     | java xdb generation program   | :white_check_mark: | :white_check_mark: |
+| [Python](maker/python) | python xdb generation program | :white_check_mark: | :x:                |
+| [Csharp](maker/csharp) | csharp xdb generation program | :white_check_mark: | :x:                |
+| [Rust](maker/rust)     | rust xdb generation program   | :white_check_mark: | :white_check_mark: |
+| [C++](maker/cpp)       | C++ xdb generation program    | :white_check_mark: | :white_check_mark: |
 
 
 # `xdb` Update
@@ -89,11 +89,11 @@ You can modify the data yourself based on the raw IP data provided by ip2region 
 
 For instructions on using the raw IP data editing tools, please refer to the README documents under the following `maker` generation programs:
 
-| Language | Description | IPv4 | IPv6 | Contributors |
-| --- | --- | --- | --- | --- |
-| [Golang](maker/golang%23xdb-%E6%95%B0%E6%8D%AE%E7%BC%96%E8%BE%91) | golang IP raw data editor | :white_check_mark: | :white_check_mark: | [Lion](https://github.com/lionsoul2014)    |
-| [Java](maker/java%23xdb-%E6%95%B0%E6%8D%AE%E7%BC%96%E8%BE%91)     | java IP raw data editor   | :white_check_mark: | :x:                | [Lion](https://github.com/lionsoul2014)    |
-| [C++](maker/cpp)                                                  | C++ IP raw data editor    | :white_check_mark: | :white_check_mark: | [Yunbin Liu](https://github.com/liuyunbin) |
+| Language | Description | IPv4 Support | IPv6 Support |
+| --- | --- | --- | --- |
+| [Golang](maker/golang%23xdb-%E6%95%B0%E6%8D%AE%E7%BC%96%E8%BE%91) | golang IP raw data editor | :white_check_mark: | :white_check_mark: |
+| [Java](maker/java%23xdb-%E6%95%B0%E6%8D%AE%E7%BC%96%E8%BE%91)     | java IP raw data editor   | :white_check_mark: | :x:                |
+| [C++](maker/cpp)                                                  | C++ IP raw data editor    | :white_check_mark: | :white_check_mark: |
 
 ### Detection Automatic Update
 

@@ -1,4 +1,4 @@
-[中文](README_zh.md) | [English](README.md)
+[中文简体](README_zh.md) | [English](README.md)
 
 # ip2region golang query client
 
