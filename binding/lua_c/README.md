@@ -1,95 +1,109 @@
-# ip2region xdb lua c 扩展查询客户端实现
+[中文简体](README_zh.md) | [English](README.md)
 
-# 版本兼容
-该实现兼容 lua `5.1`，`5.2`，`5.3`, `5.4`
+# ip2region lua c extension query client
 
-# 编译安装
+# Version Compatibility
 
-### 默认编译
-通过如下方式来编译安装默认的 `Lua5.4` 版本的扩展：
+This implementation is compatible with lua `5.1`, `5.2`, `5.3`, and `5.4`.
+
+# Compilation and Installation
+
+### Default Compilation
+
+Use the following commands to compile and install the default `Lua5.4` version of the extension:
+
 ```bash
-# cd 到 lua_c binding 的根目录
+# cd to the root directory of lua_c binding
 make
 sudo make install
 ```
 
-### 指定 Lua 版本
-通过如下的 `LuaVersion` 参数指定 Lua 版本编译，例如：`5.1` / `5.2` / `5.3` / `5.4`
+### Specify Lua Version
+
+Specify the Lua version for compilation using the `LuaVersion` parameter, for example: `5.1` / `5.2` / `5.3` / `5.4`
+
 ```bash
-# cd 到 lua_c binding 的根目录
-# 例如，编译 5.1 版本兼容的扩展
+# cd to the root directory of lua_c binding
+# For example, compile the extension compatible with version 5.1
 make LuaVersion=5.1
 sudo make install
 ```
 
-备注：使用了指定的版本的 lua 编译的扩展就请使用相同版本的`lua`去运行以下的测试，例如：
+Note: Please use the same version of `lua` to run the following tests as the one used to compile the extension. For example:
+
 ```bash
-# 使用 lua 5.1 编译扩展
+# Compile extension using lua 5.1
 make LuaVersion=5.1
 
-# 使用 lua5.1 运行查询测试
+# Run query test using lua5.1
 lua5.1 search_test.py --db=../../data/ip2region_v4.xdb
 ```
 
+# Usage
 
+### About Query API
 
-# 使用方式
+The prototype of the query API is as follows:
 
-### 关于查询 API
-查询 API 的原型如下：
 ```lua
--- 通过字符串 IP 或者 xdb.parse_ip 解析得到的二进制 IP 进行查询
+-- Query via IP string or binary IP parsed by xdb.parse_ip
 search(ip_string | ip_bytes) (region, error)
 ```
-如果查询失败则 error 将会为一个非 `nil` 的错误描述字符串，查询成功将会返回字符串的 `region` 信息，如果查询的 IP 地址没找到则会返回一个空字符 `""`。
 
-### 关于 IPv4 和 IPv6
-该 xdb 查询客户端实现同时支持对 IPv4 和 IPv6 的查询，使用方式如下：
+If the query fails, `error` will be a non-`nil` error description string. If successful, it returns the `region` information as a string. If the IP address is not found, it returns an empty string `""`.
+
+### About IPv4 and IPv6
+
+This xdb query client implementation supports both IPv4 and IPv6 queries. Usage is as follows:
+
 ```lua
--- 引入 xdb searcher 扩展
+-- Import xdb searcher extension
 local xdb = require("xdb_searcher")
 
--- 如果是 IPv4: 设置 xdb 路径为 v4 的 xdb 文件，IP版本指定为 IPv4
-local db_path  = "../../data/ip2region_v4.xdb"  -- 或者你的 ipv4 xdb 的路径
+-- For IPv4: Set xdb path to v4 xdb file, specify IP version as IPv4
+local db_path  = "../../data/ip2region_v4.xdb"  -- or your ipv4 xdb path
 local version = xdb.IPv4
 
--- 如果是 IPv6: 设置 xdb 路径为 v6 的 xdb 文件，IP版本指定为 IPv6
-local db_path  = "../../data/ip2region_v6.xdb";  -- 或者你的 ipv6 xdb 路径
+-- For IPv6: Set xdb path to v6 xdb file, specify IP version as IPv6
+local db_path  = "../../data/ip2region_v6.xdb";  -- or your ipv6 xdb path
 local version = xdb.IPv6
 
--- db_path 指定的 xdb 的 IP 版本必须和 version 指定的一致，不然查询执行的时候会报错
--- 备注：以下演示直接使用 db_path 和 version 变量
+-- The IP version of the xdb specified by db_path must match the version specified, otherwise an error will occur during query execution
+-- Note: The following demonstration directly uses the db_path and version variables
 ```
 
-### XDB 文件验证
-建议您主动去验证 xdb 文件的适用性，因为后期的一些新功能可能会导致目前的 Searcher 版本无法适用你使用的 xdb 文件，验证可以避免运行过程中的一些不可预测的错误。 你不需要每次都去验证，例如在服务启动的时候，或者手动调用命令验证确认版本匹配即可，不要在每次创建的 Searcher 的时候运行验证，这样会影响查询的响应速度，尤其是高并发的使用场景。
+### XDB File Verification
+
+It is recommended to actively verify the suitability of the xdb file. New features in the future may cause the current Searcher version to be incompatible with the xdb file you are using. Verification helps avoid unpredictable errors during runtime. You don't need to verify every time; for example, verify when the service starts or by manually calling the verification command. Do not run verification every time a Searcher is created, as this will affect query response speed, especially in high-concurrency scenarios.
+
 ```lua
 local xdb = require("xdb_searcher")
 
 -- verify the xdb
 if xdb.verify(db_path) == false then
-    -- 适用性验证失败！！！
-    -- 当前查询客户端实现不适用于 db_path 指定的 xdb 文件的查询.
-    -- 应该停止启动服务，使用合适的 xdb 文件或者升级到适合 db_path 的 Searcher 实现。
+    -- Suitability verification failed!!!
+    -- The current query client implementation is not suitable for the xdb file specified by db_path.
+    -- You should stop the service and use a suitable xdb file or upgrade to a Searcher implementation compatible with db_path.
     print(string.format("failed to verify the xdb file: %s", db_path))
     return
 end
 
--- 验证通过，当前使用的 Searcher 可以安全的用于对 db_path 指向的 xdb 的查询操作
+-- Verification passed, the current Searcher can safely be used for query operations on the xdb pointed to by db_path
 ```
 
-### 完全基于文件的查询
+### Entirely File-Based Query
+
 ```lua
 local xdb = require("xdb_searcher")
 
--- 1、使用 version 从 db_path 创建基于文件的 xdb 查询对象
+-- 1. Create a file-based xdb query object from db_path using version
 local searcher, err = xdb.new_with_file_only(version, db_path)
 if err ~= nil then
     print(string.format("failed to create searcher: %s", err))
     return
 end
 
--- 2、调用查询 API 进行查询，IPv4 和 IPv6 都支持
+-- 2. Call the query API; both IPv4 and IPv6 are supported
 local ip_str = "1.2.3.4"
 -- ip_str = "240e:3b7:3272:d8d0:db09:c067:8d59:539e" // IPv6
 local s_time = xdb.now()
@@ -102,38 +116,39 @@ end
 
 print(string.format("{region: %s, took: %.5f μs}", region, c_time))
 
--- 备注：并发使用，每个协程需要创建单独的 xdb 查询对象
+-- Note: For concurrent use, each coroutine needs to create a separate xdb query object
 
--- 3，关闭 xdb 查询器
+-- 3. Close the xdb searcher
 searcher:close()
 
 --
--- 4，模块资源清理，仅在需要将整个服务完全关闭前调用
+-- 4. Module resource cleanup, only call before the entire service is completely shut down
 xdb.cleanup()
 ```
 
-### 缓存 `VectorIndex` 索引
+### Caching `VectorIndex`
 
-如果你的 `lua` 母环境支持，可以预先加载 vectorIndex 缓存，然后做成全局变量，每次创建 Searcher 的时候使用全局的 vectorIndex，可以减少一次固定的 IO 操作从而加速查询，减少 io 压力。
+If supported by your `lua` environment, you can pre-load the `vectorIndex` cache and make it a global variable. Using the global `vectorIndex` every time a Searcher is created can reduce one fixed IO operation, thereby accelerating queries and reducing IO pressure.
+
 ```lua
 local xdb = require("xdb_searcher")
 
--- 1、从指定的 db_path 加载 VectorIndex 缓存，把下述的 v_index 对象做成全局变量。
--- vectorIndex 加载一次即可，建议在服务启动的时候加载为全局对象。
+-- 1. Load VectorIndex cache from the specified db_path and make the v_index object below a global variable.
+-- vectorIndex only needs to be loaded once; it is recommended to load it as a global object when the service starts.
 v_index, err = xdb.load_vector_index(db_path)
 if err ~= nil then
     print(string.format("failed to load vector index from '%s'", db_path))
     return
 end
 
--- 2、使用全局的 v_index 创建带 VectorIndex 缓存的查询对象。
+-- 2. Use the global v_index to create a query object with VectorIndex cache.
 searcher, err = xdb.new_with_vector_index(version, db_path, v_index)
 if err ~= nil then
     print(string.format("failed to create vector index searcher: %s", err))
     return
 end
 
--- 3、调用查询 API ，IPv4 和 IPv6 都支持
+-- 3. Call the query API; both IPv4 and IPv6 are supported
 local ip_str = "1.2.3.4"
 -- ip_str = "240e:3b7:3272:d8d0:db09:c067:8d59:539e" // IPv6
 local s_time = xdb.now()
@@ -146,38 +161,39 @@ end
 
 print(string.format("{region: %s, took: %.5f μs}", region, c_time))
 
--- 备注：并发使用，每个协程需要创建单独的 xdb 查询对象，但是共享全局的 v_index 对象
+-- Note: For concurrent use, each coroutine needs to create a separate xdb query object, but they share the global v_index object
 
--- 4，关闭 xdb 查询器
+-- 4. Close the xdb searcher
 searcher:close()
 
 --
--- 5，模块资源清理，仅在需要将整个服务完全关闭前调用
+-- 5. Module resource cleanup, only call before the entire service is completely shut down
 xdb.cleanup()
 ```
 
-### 缓存整个 `xdb` 数据
+### Caching the Entire `xdb` File
 
-如果你的 `lua` 母环境支持，可以预先加载整个 xdb 的数据到内存，这样可以实现完全基于内存的查询，类似之前的 memory search 查询。
+If supported by your `lua` environment, you can pre-load the entire xdb data into memory to achieve completely memory-based queries, similar to the previous memory search.
+
 ```lua
 local xdb = require("xdb_searcher")
 
--- 1、从指定的 db_path 加载整个 xdb 到内存。
--- xdb内容加载一次即可，建议在服务启动的时候加载为全局对象。
+-- 1. Load the entire xdb into memory from the specified db_path.
+-- xdb content only needs to be loaded once; it is recommended to load it as a global object when the service starts.
 local content = xdb.load_content(db_path)
 if content == nil then
     print(string.format("failed to load xdb content from '%s'", db_path))
     return
 end
 
--- 2、使用全局的 content 创建带完全基于内存的查询对象。
+-- 2. Use the global content to create a query object based entirely on memory.
 searcher, err = xdb.new_with_buffer(version, content)
 if err ~= nil then
     print(string.format("failed to create content buffer searcher: %s", err))
     return
 end
 
--- 3、调用查询 API ，IPv4 和 IPv6 都支持
+-- 3. Call the query API; both IPv4 and IPv6 are supported
 local ip_str = "1.2.3.4"
 -- ip_str = "240e:3b7:3272:d8d0:db09:c067:8d59:539e" // IPv6
 local s_time = xdb.now()
@@ -190,21 +206,21 @@ end
 
 print(string.format("{region: %s, took: %.5f μs}", region, c_time))
 
--- 备注：并发使用，用 xdb 整个缓存创建的查询对象可以安全的用于并发。
--- 建议在服务启动的时候创建好全局的 searcher 对象，然后全局并发使用。
+-- Note: For concurrent use, query objects created with the entire xdb cache can be safely used concurrently.
+-- It is recommended to create a global searcher object when the service starts and then use it globally and concurrently.
 
--- 4，关闭 xdb 查询器
+-- 4. Close the xdb searcher
 searcher:close()
 
 --
--- 5，模块资源清理，仅在需要将整个服务完全关闭前调用
+-- 5. Module resource cleanup, only call before the entire service is completely shut down
 xdb.cleanup()
 ```
 
+# Query Testing
 
-# 查询测试
+Perform query tests via the `search_test.lua` script:
 
-通过 `search_test.lua` 脚本来进行查询测试：
 ```bash
 ➜  lua_c git:(fr_lua_c_ipv6) ✗ lua ./search_test.lua 
 lua search_test.lua [command options]
@@ -213,7 +229,8 @@ options:
  --cache-policy string   cache policy: file/vectorIndex/content
 ```
 
-例如：使用默认的 data/ip2region_v4.xdb 进行 IPv4 查询测试：
+For example: using the default `data/ip2region_v4.xdb` for IPv4 query testing:
+
 ```bash
 ➜  lua_c git:(fr_lua_c_ipv6) ✗ lua ./search_test.lua --db=../../data/ip2region_v4.xdb
 ip2region xdb searcher test program
@@ -225,7 +242,8 @@ ip2region>> 120.229.45.2
 {region: 中国|广东省|深圳市|移动|CN, io_count: 3, took: 40μs}
 ```
 
-例如：使用默认的 data/ip2region_v6.xdb 进行 IPv6 查询测试：
+For example: using the default `data/ip2region_v6.xdb` for IPv6 query testing:
+
 ```bash
 ➜  lua_c git:(master) lua ./search_test.lua --db=../../data/ip2region_v6.xdb
 ip2region xdb searcher test program
@@ -239,12 +257,12 @@ ip2region>> 2604:a840:3::a04d
 {region: United States|California|San Jose|xTom|US, io_count: 13, took: 35μs}
 ```
 
-输入 ip 即可进行查询测试。也可以分别设置 `cache-policy` 为 file/vectorIndex/content 来测试三种不同缓存实现的效率。
+Enter an IP to perform a query test. You can also set `cache-policy` to `file`/`vectorIndex`/`content` respectively to test the efficiency of the three different cache implementations.
 
+# Bench Testing
 
-# bench 测试
+Perform automatic bench testing via the `bench_test.lua` script. This ensures that the `xdb` file has no errors and tests average query performance through a large number of queries:
 
-通过 `bench_test.lua` 脚本来进行自动 bench 测试，一方面确保 `xdb` 文件没有错误，另一方面通过大量的查询测试平均查询性能：
 ```bash
 ➜  lua_c git:(fr_lua_c_ipv6) ✗ lua ./bench_test.lua 
 lua bench_test.lua [command options]
@@ -254,17 +272,19 @@ options:
  --cache-policy string   cache policy: file/vectorIndex/content
 ```
 
-例如：通过默认的 data/ip2region_v4.xdb 和 data/ipv4_source.txt 来进行 IPv4 的 bench 测试：
+For example: perform IPv4 bench testing using default `data/ip2region_v4.xdb` and `data/ipv4_source.txt`:
+
 ```bash
 ➜  lua_c git:(fr_lua_c_ipv6) ✗ lua ./bench_test.lua --db=../../data/ip2region_v4.xdb --src=../../data/ipv4_source.txt
 Bench finished, {cachePolicy: vectorIndex, total: 1367686, took: 8.593 s, cost: 5.433 μs/op}
 ```
 
-例如：通过默认的 data/ip2region_v6.xdb 和 data/ipv6_source.txt 来进行 IPv6 的 bench 测试：
+For example: perform IPv6 bench testing using default `data/ip2region_v6.xdb` and `data/ipv6_source.txt`:
+
 ```bash
 ➜  lua_c git:(fr_lua_c_ipv6) ✗ lua ./bench_test.lua --db=../../data/ip2region_v6.xdb --src=../../data/ipv6_source.txt                       
 Bench finished, {cachePolicy: vectorIndex, total: 34159862, took: 829.008 s, cost: 23.176 μs/op}
 ```
 
-可以通过设置 `cache-policy` 参数来分别测试 file/vectorIndex/content 三种不同的缓存实现的的性能。
-@Note：请注意 bench 使用的 src 文件需要是生成对应的 xdb 文件的相同的源文件。
+You can test the performance of the three different cache implementations (`file`/`vectorIndex`/`content`) by setting the `cache-policy` parameter.
+@Note: Please ensure that the `src` file used for the bench is the same source file used to generate the corresponding `xdb` file.
