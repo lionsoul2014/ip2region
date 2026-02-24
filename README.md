@@ -39,7 +39,7 @@ For API introductions, usage documentation, and test programs, please refer to t
 | --- | --- | --- | --- |
 | [Golang](binding/golang/README.md) | golang xdb query client          | :white_check_mark: | :white_check_mark: |
 | [PHP](binding/php/README.md)       | php xdb query client             | :white_check_mark: | :white_check_mark: |
-| [Java](binding/java)               | java xdb query client            | :white_check_mark: | :white_check_mark: |
+| [Java](binding/java/README.md)     | java xdb query client            | :white_check_mark: | :white_check_mark: |
 | [C](binding/c)                     | POSIX C xdb query client         | :white_check_mark: | :white_check_mark: |
 | [Lua_c](binding/lua_c)             | lua c extension xdb query client | :white_check_mark: | :white_check_mark: |
 | [Lua](binding/lua)                 | lua xdb query client             | :white_check_mark: | :white_check_mark: |
