@@ -1,4 +1,4 @@
-:globe_with_meridians: Supported Languages: [中文简体](README_zh.md) | [English](README.md)
+:globe_with_meridians: [中文简体](README_zh.md) | [English](README.md)
 
 # ip2region lua query client
 
