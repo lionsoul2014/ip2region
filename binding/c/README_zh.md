@@ -1,4 +1,4 @@
-[中文简体](README_zh.md) | [English](README.md)
+:globe_with_meridians: [中文简体](README_zh.md) | [English](README.md)
 
 # ip2region c 查询客户端
 

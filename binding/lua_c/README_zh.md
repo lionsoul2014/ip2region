@@ -1,4 +1,4 @@
-[中文简体](README_zh.md) | [English](README.md)
+:globe_with_meridians: [中文简体](README_zh.md) | [English](README.md)
 
 # ip2region lua c 扩展查询客户端
 
