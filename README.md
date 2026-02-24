@@ -44,7 +44,7 @@ For API introductions, usage documentation, and test programs, please refer to t
 | [Lua_c](binding/lua_c/README.md)   | lua c extension xdb query client | :white_check_mark: | :white_check_mark: |
 | [Lua](binding/lua/README.md)       | lua xdb query client             | :white_check_mark: | :white_check_mark: |
 | [Rust](binding/rust/README.md)     | rust xdb query client            | :white_check_mark: | :white_check_mark: |
-| [Python](binding/python)           | python xdb query client          | :white_check_mark: | :white_check_mark: |
+| [Python](binding/python/README.md) | python xdb query client          | :white_check_mark: | :white_check_mark: |
 | [Javascript](binding/javascript)   | javascript xdb query client      | :white_check_mark: | :white_check_mark: |
 | [Csharp](binding/csharp)           | csharp xdb query client          | :white_check_mark: | :white_check_mark: |
 | [Erlang](binding/erlang)           | erlang xdb query client          | :white_check_mark: | :x:                |
