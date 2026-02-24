@@ -1,53 +1,61 @@
-# ip2region xdb c 查询客户端实现
+[中文简体](README_zh.md) | [English](README.md)
 
+# ip2region c Query Client
 
-# 使用方式
+# Usage
 
-### 关于查询 API
-查询 API 的原型如下：
+### About Query API
+
+The prototype of the Query API is as follows:
+
 ```c
-// 通过字符串 IP 进行查询
+// Query via string IP
 int xdb_search_by_string(xdb_searcher_t *, const string_ip_t *, xdb_region_buffer_t *);
-// 通过 xdb_parse_ip 返回的二进制 IP 进行查询
+// Query via binary IP returned by xdb_parse_ip
 int xdb_search(xdb_searcher_t *, const bytes_ip_t *, int, xdb_region_buffer_t *);
 ```
-如果查询失败将会返回非 `0` 的错误代码，如果查询成功 xdb_region_buffer_t 可以获取到字符串的 `region` 信息，如果输入的 IP 找不到相关的信息，xdb_region_buffer_t 将会得到一个空的字符串 `""`。
 
-### 关于 IPv4 和 IPv6
-该 xdb 查询客户端实现同时支持对 IPv4 和 IPv6 的查询，使用方式如下：
+If the query fails, a non-`0` error code will be returned. If the query is successful, the `region` information string can be obtained from `xdb_region_buffer_t`. If the input IP cannot be found, `xdb_region_buffer_t` will receive an empty string `""`.
+
+### About IPv4 and IPv6
+
+This xdb query client implementation supports both IPv4 and IPv6 queries. The usage is as follows:
+
 ```c
 #include "xdb_api.h";
 
-// 如果是 IPv4: 设置 xdb 路径为 v4 的 xdb 文件，IP版本指定为 IPv4
-const char *db_path  = "../../data/ip2region_v4.xdb";  // 或者你的 ipv4 xdb 的路径
+// For IPv4: Set xdb path to the v4 xdb file, specify IP version as IPv4
+const char *db_path  = "../../data/ip2region_v4.xdb";  // or your ipv4 xdb path
 xdb_version_t *version = XDB_IPv4;
 
-// 如果是 IPv6: 设置 xdb 路径为 v6 的 xdb 文件，IP版本指定为 IPv6
-const char *db_path  = "../../data/ip2region_v6.xdb";  // 或者你的 ipv6 xdb 路径
+// For IPv6: Set xdb path to the v6 xdb file, specify IP version as IPv6
+const char *db_path  = "../../data/ip2region_v6.xdb";  // or your ipv6 xdb path
 xdb_version_t *version = XDB_IPv6;
 
-// db_path 指定的 xdb 的 IP 版本必须和 version 指定的一致，不然查询执行的时候会报错
-// 备注：以下演示直接使用 db_path 和 version 变量
+// The IP version of the xdb specified by db_path must be consistent with the version, otherwise an error will occur during query execution
+// Note: The following demonstration directly uses db_path and version variables
 ```
 
-### XDB 文件验证
-建议您主动去验证 xdb 文件的适用性，因为后期的一些新功能可能会导致目前的 Searcher 版本无法适用你使用的 xdb 文件，验证可以避免运行过程中的一些不可预测的错误。 你不需要每次都去验证，例如在服务启动的时候，或者手动调用命令验证确认版本匹配即可，不要在每次创建的 Searcher 的时候运行验证，这样会影响查询的响应速度，尤其是高并发的使用场景。
+### XDB File Verification
+
+It is recommended that you proactively verify the applicability of the xdb file, as some future new features may cause the current Searcher version to be incompatible with the xdb file you are using. Verification can avoid unpredictable errors during runtime. You do not need to verify every time; for example, verify when the service starts or manually call a command to confirm version matching. Do not run verification every time a Searcher is created, as this will affect query response speed, especially in high-concurrency scenarios.
+
 ```c
 #include "xdb_api.h";
 
 int errcode = xdb_verify(db_path);
 if ($err != 0) {
-    // 适用性验证失败！！！
-    // 当前查询客户端实现不适用于 db_path 指定的 xdb 文件的查询.
-    // 应该停止启动服务，使用合适的 xdb 文件或者升级到适合 db_path 的 Searcher 实现。
+    // Applicability verification failed!!!
+    // The current query client implementation is not suitable for querying the xdb file specified by db_path.
+    // You should stop the service and use a suitable xdb file or upgrade to a Searcher implementation compatible with db_path.
     printf("failed to verify xdb file `%s`, errcode: %d\n", db_path, errcode);
     return;
 }
 
-// 验证通过，当前使用的 Searcher 可以安全的用于对 dbPath 指向的 xdb 的查询操作
+// Verification passed, the current Searcher can be safely used for query operations on the xdb pointed to by dbPath
 ```
 
-### 完全基于文件的查询
+### File-Based Query
 
 ```c
 #include <stdio.h>
@@ -58,29 +66,29 @@ int main(int argc, char *argv[]) {
     char region_buffer[512] = {'\0'};
     xdb_region_buffer_t region;
 
-    // 使用栈空间的 region_buffer 初始化 region_buffer_t
+    // Initialize region_buffer_t using region_buffer from stack space
     int err = xdb_region_buffer_init(&region, region_buffer, sizeof(region_buffer));
     if (err != 0) {
         printf("failed to init the region buffer with errcode=%d\n", err);
         return 1;
     }
 
-    // 在服务启动的时候初始化 winsock，不需要重复调用，只需要在 windows 系统下调用
+    // Initialize winsock when the service starts; no need to call repeatedly, only needed on Windows systems
     err = xdb_init_winsock();
     if (err != 0) {
         printf("failed to init the winsock with errno=%d\n", err);
         return 1;
     }
 
-    // 1、从 db_path 初始化 xdb 查询对象.
-    // @Note: 使用顶部描述的 db_path 和 version 来创建 searcher
+    // 1. Initialize xdb query object from db_path.
+    // @Note: Use the db_path and version described above to create the searcher
     err = xdb_new_with_file_only(version, &searcher, db_path);
     if (err != 0) {
         printf("failed to create xdb searcher from `%s` with errno=%d\n", db_path, err);
         return 1;
     }
 
-    // 2、调用 search API 查询，IPv4 和 IPv6 都支持.
+    // 2. Call search API to query, both IPv4 and IPv6 are supported.
     const char *ip_string = "1.2.3.4";
     // ip_string = "240e:3b7:3272:d8d0:db09:c067:8d59:539e"; // IPv6
 
@@ -93,21 +101,22 @@ int main(int argc, char *argv[]) {
         printf("{region: %s, took: %d μs}", region.value, cost_time);
     }
 
-    // 清理 region 信息的内存资源，每次 search 之后都得调用
+    // Clean up memory resources for region info; must be called after every search
     xdb_region_buffer_free(&region);
 
-    // 备注：并发使用，每一个线程需要单独定义并且初始化一个 searcher 查询对象。
+    // Note: For concurrent use, each thread needs to define and initialize its own searcher query object independently.
 
-    // 3、关闭 xdb 查询器
+    // 3. Close xdb searcher
     xdb_close(&searcher);
-    xdb_clean_winsock();    // windows 下调用
+    xdb_clean_winsock();    // Call on Windows
     return 0;
 }
 ```
 
-### 缓存 `VectorIndex` 索引
+### Caching `VectorIndex`
 
-我们可以提前从 xdb 文件中加载出来 VectorIndex 数据，然后全局缓存，每次创建 Searcher 对象的时候使用全局的 VectorIndex 缓存可以减少一次固定的 IO 操作，从而加速查询，减少 IO 压力。
+We can pre-load VectorIndex data from the xdb file and cache it globally. Using the global VectorIndex cache every time a Searcher object is created can reduce a fixed IO operation, thereby accelerating queries and reducing IO pressure.
+
 ```c
 #include <stdio.h>
 #include "xdb_api.h"
@@ -117,31 +126,31 @@ int main(int argc, char *argv[]) {
     xdb_searcher_t searcher;
     xdb_region_buffer_t region;
 
-    // 使用 NULL 初始化 region_buffer，让其自动管理内存的分配
+    // Initialize region_buffer with NULL to let it manage memory allocation automatically
     int err = xdb_region_buffer_init(&region, NULL, 0);
     if (err != 0) {
         printf("failed to init the region buffer with errcode=%d\n", err);
         return 0;
     }
 
-    // 在服务启动的时候初始化 winsock，不需要重复调用，只需要在 windows 系统下调用
+    // Initialize winsock when the service starts; no need to call repeatedly, only needed on Windows systems
     err = xdb_init_winsock();
     if (err != 0) {
         printf("failed to init the winsock with errno=%d\n", err);
         return 1;
     }
 
-    // 1、从顶部描述的 db_path 加载 VectorIndex 索引。
-    // 得到 v_index 做成全局缓存，便于后续反复使用。
-    // 注意：v_index 不需要每次都加载，建议在服务启动的时候加载一次，然后做成全局资源。
+    // 1. Load VectorIndex from the db_path described above.
+    // Obtain v_index to create a global cache for subsequent repeated use.
+    // Note: v_index does not need to be loaded every time; it is recommended to load it once at service startup as a global resource.
     v_index = xdb_load_vector_index_from_file(db_path);
     if (v_index == NULL) {
         printf("failed to load vector index from `%s`\n", db_path);
         return 1;
     }
 
-    // 2、使用全局的 VectorIndex 变量创建带 VectorIndex 缓存的 xdb 查询对象.
-    // @Note: 使用顶部描述的 db_path 和 version 来创建 searcher
+    // 2. Use the global VectorIndex variable to create an xdb searcher with VectorIndex cache.
+    // @Note: Use the db_path and version described above to create the searcher
     err = xdb_new_with_vector_index(version, &searcher, db_path, v_index);
     if (err != 0) {
         printf("failed to create vector index cached searcher with errcode=%d\n", err);
@@ -149,7 +158,7 @@ int main(int argc, char *argv[]) {
     }
 
 
-    // 3、调用 search API 查询，IPv4 和 IPv6 都支持
+    // 3. Call search API to query, both IPv4 and IPv6 are supported
     const char *ip_string = "1.2.3.4";
     // ip_string = "240e:3b7:3272:d8d0:db09:c067:8d59:539e"; // IPv6
 
@@ -162,13 +171,13 @@ int main(int argc, char *argv[]) {
         printf("{region: %s, took: %d μs}", region.value, cost_time);
     }
 
-    // 清理 region 信息的内存资源，每次 search 之后都得调用
+    // Clean up memory resources for region info; must be called after every search
     xdb_region_buffer_free(&region);
 
 
-    // 备注：并发使用，每一个线程需要单独定义并且初始化一个 searcher 查询对象。
+    // Note: For concurrent use, each thread needs to define and initialize its own searcher query object independently.
 
-    // 4、关闭 xdb 查询器，如果是要关闭服务，也需要释放 v_index 的内存。
+    // 4. Close xdb searcher; if the service is being shut down, the memory for v_index also needs to be freed.
     xdb_close(&searcher);
     xdb_close_vector_index(v_index);
     xdb_clean_winsock();
@@ -176,9 +185,10 @@ int main(int argc, char *argv[]) {
 }
 ```
 
-### 缓存整个 `xdb` 数据
+### Caching the Entire `xdb` File
 
-我们也可以预先加载整个 xdb 文件到内存，然后基于这个数据创建查询对象来实现完全基于内存的查询，类似之前的 memory search。
+We can also pre-load the entire xdb file into memory and then create a query object based on this data to achieve fully memory-based queries, similar to the previous memory search.
+
 ```c
 #include <stdio.h>
 #include "xdb_api.h"
@@ -188,7 +198,7 @@ int main(int argc, char *argv[]) {
     xdb_searcher_t searcher;
     xdb_region_buffer_t region;
 
-    // 使用 NULL 初始化 region_buffer，让其自动管理内存的分配
+    // Initialize region_buffer with NULL to let it manage memory allocation automatically
     int err = xdb_region_buffer_init(&region, NULL, 0);
     if (err != 0) {
         printf("failed to init the region buffer with errcode=%d\n", err);
@@ -196,29 +206,29 @@ int main(int argc, char *argv[]) {
     }
 
 
-    // 在服务启动的时候初始化 winsock，不需要重复调用，只需要在 windows 系统下调用
+    // Initialize winsock when the service starts; no need to call repeatedly, only needed on Windows systems
     err = xdb_init_winsock();
     if (err != 0) {
         printf("failed to init the winsock with errno=%d\n", err);
         return 1;
     }
 
-    // 1、从 顶部描述的 db_path 加载整个 xdb 的数据。
+    // 1. Load the entire xdb data from the db_path described above.
     c_buffer = xdb_load_content_from_file(db_path);
     if (v_index == NULL) {
         printf("failed to load xdb content from `%s`\n", db_path);
         return 1;
     }
 
-    // 2、使用全局的 c_buffer 变量创建一个完全基于内存的 xdb 查询对象.
-    // @Note: 使用顶部描述的 version 来创建 searcher.
+    // 2. Use the global c_buffer variable to create a fully memory-based xdb query object.
+    // @Note: Use the version described above to create the searcher.
     err = xdb_new_with_buffer(version, &searcher, c_buffer);
     if (err != 0) {
         printf("failed to create content cached searcher with errcode=%d\n", err);
         return 2;
     }
 
-    // 3、调用 search API 查询，IPv4 和 IPv6 都支持
+    // 3. Call search API to query, both IPv4 and IPv6 are supported
     const char *ip_string = "1.2.3.4";
     // ip_string = "240e:3b7:3272:d8d0:db09:c067:8d59:539e"; // IPv6
 
@@ -231,14 +241,14 @@ int main(int argc, char *argv[]) {
         printf("{region: %s, took: %d μs}", region.value, cost_time);
     }
 
-    // 清理 region 信息的内存资源，每次 search 之后都得调用
+    // Clean up memory resources for region info; must be called after every search
     xdb_region_buffer_free(&region);
 
 
-    // 备注：并发使用，使用这种方式创建的 xdb 查询对象可以安全用于并发。
-    // 建议在服务启动的时候创建好，然后一直安全并发使用，直到服务关闭。
+    // Note: For concurrent use, xdb query objects created this way can be safely used for concurrency.
+    // It is recommended to create them when the service starts and then use them safely in parallel until the service shuts down.
 
-    // 4、关闭 xdb 查询器，关闭服务的时候需要释放 c_buffer 的内存。
+    // 4. Close xdb searcher; memory for c_buffer needs to be freed when shutting down the service.
     xdb_close(&searcher);
     xdb_close_content(c_buffer);
     xdb_clean_winsock();
@@ -246,50 +256,52 @@ int main(int argc, char *argv[]) {
 }
 ```
 
-### 关于定位信息的存储
-在旧版本的实现中，search相关的函数都是依靠指定一个 `region_buffer` 内存来用于存储地域信息，这种方式还是有很大的局限性。
-新的实现提供了一个 `xdb_region_buffer_t` 对象来管理这些内存的分配，你依然可以指定一个固定的 `region_buffer` 来创建 region 的内存管理，这个情况适合当你的地域信息的最大长度是可知的，这种方式可以减少运行过程中内存的碎片堆积。如果地域信息的长度不确定或者你的程序不适合提前分配一块内存来管理，你可以通过指定 NULL 的方式来初始化 `xdb_region_buffer_t`，这样对象会自动管理内存的分配，也适合任意长度的地域信息的存储，不过这种方式在长期的运行过程中肯定会增加内存碎片的堆积。
+### About Storage of Location Information
+
+In older implementations, search-related functions relied on a specified `region_buffer` memory to store location information, which had significant limitations.
+The new implementation provides an `xdb_region_buffer_t` object to manage these memory allocations. You can still specify a fixed `region_buffer` to create memory management for the region; this is suitable when the maximum length of your location information is known, which helps reduce memory fragmentation during runtime. If the length of the location information is uncertain or if your program is not suited for pre-allocating a block of memory, you can initialize `xdb_region_buffer_t` by specifying `NULL`. In this case, the object will automatically manage memory allocation, making it suitable for storing location information of any length, though this approach will certainly increase memory fragmentation over long-term operation.
+
 ```c
-// 1, 通过指定一块内存来创建 region_buffer
+// 1. Create region_buffer by specifying a memory block
 char buffer[512];
 xdb_region_buffer_t region;
 int err = xdb_region_buffer_init(&region, buffer, sizeof(buffer));
 if (err != 0) {
-    // 初始化失败
+    // Initialization failed
     printf("failed to init region buffer width errcode=%d", err);
     return;
 }
 
-// 2，通过指定 NULL 来创建 region_buffer，让其自动按需分配内存
+// 2. Create region_buffer by specifying NULL to let it allocate memory as needed automatically
 xdb_region_buffer_t region;
 int err = xdb_region_buffer_init(&region, NULL, 0);
 if (err != 0) {
-    // 初始化失败
+    // Initialization failed
     printf("failed to init region buffer width errcode=%d", err);
     return;
 }
 
 
-// 备注：在每次调用 search 完成 IP 定位信息的查询后，你需要手动调用函数来释放内存 .
-// search 函数使用未经清理的 region 信息会报错。
+// Note: After each query call, you must manually call the function to free memory.
+// The search function will report an error if used with uncleaned region info.
 xdb_region_buffer_free(&region);
 ```
 
+# Compiling the Test Program
 
-# 测试程序编译
+Compile and obtain the `xdb_searcher` executable as follows:
 
-通过如下方式编译得到 xdb_searcher 可执行程序：
 ```bash
-# cd 到 c binding 根目录
+# cd to the c binding root directory
 ➜  c git:(master) ✗ make
 gcc -std=c99 -Wall -O2 -I./ xdb_util.c xdb_searcher.c main.c -o xdb_searcher
 gcc -std=c99 -Wall -O2 -I./ xdb_util.c test_util.c -o test_util
 ```
 
+# Query Testing
 
-# 查询测试
+Test queries against xdb via the `xdb_searcher search` command:
 
-通过 `xdb_searcher search` 命令来测试对 xdb 的查询：
 ```bash
 ➜  c git:(fr_c_ipv6) ✗ ./xdb_searcher search
 ./xdb_searcher search [command options]
@@ -298,7 +310,8 @@ options:
  --cache-policy string    cache policy: file/vectorIndex/content
 ```
 
-例如：使用默认的 data/ip2region_v4.xdb 进行 IPv4 查询测试：
+Example: performing IPv4 query testing using the default data/ip2region_v4.xdb:
+
 ```bash
 ➜  c git:(fr_c_ipv6) ✗ ./xdb_searcher search --db=../../data/ip2region_v4.xdb
 ip2region xdb searcher test program
@@ -310,7 +323,8 @@ ip2region>> 120.229.45.2
 {region: 中国|广东省|深圳市|移动|CN, io_count: 3, took: 13 μs}
 ```
 
-例如：使用默认的 data/ip2region_v6.xdb 进行 IPv6 查询测试：
+Example: performing IPv6 query testing using the default data/ip2region_v6.xdb:
+
 ```bash
 ➜  c git:(fr_c_ipv6) ✗ ./xdb_searcher search --db=../../data/ip2region_v6.xdb
 ip2region xdb searcher test program
@@ -324,13 +338,12 @@ ip2region>> 240e:3b7:3272:d8d0:db09:c067:8d59:539e
 {region: 中国|广东省|深圳市|电信|CN, io_count: 8, took: 42 μs}
 ```
 
-输入 ip 即可进行查询，输入 quit 即可退出测试程序。也可以分别设置 `cache-policy` 为 file/vectorIndex/content 来测试三种不同的缓存实现的效率。
+Enter an IP to perform a query; enter `quit` to exit the test program. You can also set `cache-policy` to file/vectorIndex/content respectively to test the efficiency of the three different cache implementations.
 
+# bench Testing
 
+Perform bench testing via the `xdb_searcher bench` command. This ensures there are no errors in the query program and the `xdb` file, while also providing average query performance through a large number of queries:
 
-# bench 测试
-
-通过 `xdb_searcher bench` 命令来进行 bench 测试，一方面确保查询程序和 `xdb` 文件没有错误，另一方面可以通过大量的查询得到平均的查询性能：
 ```bash
 ➜  c git:(fr_c_ipv6) ✗ ./xdb_searcher bench                                  
 ./xdb_searcher bench [command options]
@@ -340,16 +353,18 @@ options:
  --cache-policy string    cache policy: file/vectorIndex/content
 ```
 
-例如：通过默认的 data/ip2region_v4.xdb 和 data/ipv4_source.txt 来进行 IPv4 的 bench 测试：
+Example: performing IPv4 bench testing via the default data/ip2region_v4.xdb and data/ipv4_source.txt:
+
 ```bash
 ➜  c git:(fr_c_ipv6) ✗ ./xdb_searcher bench --db=../../data/ip2region_v4.xdb --src=../../data/ipv4_source.txt
 Bench finished, {cache_policy: vectorIndex, total: 1367686, took: 7.640s, cost: 5 μs/op}
 ```
 
-例如：通过默认的 data/ip2region_v6.xdb 和 data/ipv6_source.txt 来进行 IPv6 的 bench 测试：
+Example: performing IPv6 bench testing via the default data/ip2region_v6.xdb and data/ipv6_source.txt:
+
 ```bash
 ➜  c git:(fr_c_ipv6) ✗ ./xdb_searcher bench --db=../../data/ip2region_v6.xdb --src=../../data/ipv6_source.txt
 Bench finished, {cache_policy: vectorIndex, total: 34159862, took: 857.750s, cost: 24 μs/op}
 ```
 
-可以设置 `cache-policy` 参数来分别测试 file/vectorIndex/content 不同缓存实现机制的效率。 @Note：请注意 bench 使用的 src 文件需要是生成对应的 xdb 文件相同的源文件。
+You can set the `cache-policy` parameter to test the efficiency of different cache mechanisms (file/vectorIndex/content). @Note: Please ensure that the `src` file used for benching is the same source file used to generate the corresponding `xdb` file.
