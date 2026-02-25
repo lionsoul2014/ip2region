@@ -67,12 +67,12 @@ For API introductions, usage documentation, and test programs, please refer to t
 
 | Language | Description | IPv4 Support | IPv6 Support |
 | --- | --- | --- | --- |
-| [Golang](maker/golang) | golang xdb generation program | :white_check_mark: | :white_check_mark: |
-| [Java](maker/java)     | java xdb generation program   | :white_check_mark: | :white_check_mark: |
-| [Python](maker/python) | python xdb generation program | :white_check_mark: | :x:                |
-| [Csharp](maker/csharp) | csharp xdb generation program | :white_check_mark: | :x:                |
-| [Rust](maker/rust)     | rust xdb generation program   | :white_check_mark: | :white_check_mark: |
-| [C++](maker/cpp)       | C++ xdb generation program    | :white_check_mark: | :white_check_mark: |
+| [Golang](maker/golang/README.md) | golang xdb generation program | :white_check_mark: | :white_check_mark: |
+| [Java](maker/java)               | java xdb generation program   | :white_check_mark: | :white_check_mark: |
+| [Python](maker/python)           | python xdb generation program | :white_check_mark: | :x:                |
+| [Csharp](maker/csharp)           | csharp xdb generation program | :white_check_mark: | :x:                |
+| [Rust](maker/rust)               | rust xdb generation program   | :white_check_mark: | :white_check_mark: |
+| [C++](maker/cpp)                 | C++ xdb generation program    | :white_check_mark: | :white_check_mark: |
 
 
 # `xdb` Update
