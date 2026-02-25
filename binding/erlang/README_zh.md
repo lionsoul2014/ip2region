@@ -1,41 +1,33 @@
 :globe_with_meridians: [中文简体](README_zh.md) | [English](README.md)
 
-# ip2region erlang query client
+# ip2region erlang 查询客户端
 
-### Introduction
+### 简介
+该bingding以erlang语言实现xdb查询客户端，基于Erlang OTP Application，查询逻辑由ip2region_worker工作进程实现，支持配多个工作进程来进行负载均衡。
 
-This binding implements the xdb query client in Erlang, based on the Erlang OTP Application. The query logic is implemented by the `ip2region_worker` worker process, supporting multiple worker processes for load balancing.
-
-### Application Configuration
-
-The configurable parameters for this application are in `ip2region.app.src`, as follows:
-
-```erlang
+### 应用配置
+该应用可配置的参数在ip2region.app.src中,如下：
+``` erlang
   {env,[
     {poolargs, [
-        {size, 1},  %% Default number of worker processes
-        {max_overflow, 5}  %% Maximum number of worker processes
+        {size, 1},  %% 工作进程默认数量
+        {max_overflow, 5}  %% 工作进程最大数量
     ]}
   ]}
 ```
 
-### Compile
+### 编译
 
 ```
 $ rebar3 compile
-
 ```
-
-### Run
-
-Place the xdb file in the `priv` directory, then start the Erlang node:
-
+### 运行
+将xdb文件放到priv目录下，然后启动erlang节点：
 ```
 $ rebar3 shell
+
 ```
-
-Call the `xdb:search/1` interface in the Erlang shell to query IP address information. This interface supports IP addresses represented as list strings, binary strings, tuples, and integers, as follows:
-
+在erlang shell中调用xdb:search/1接口查询Ip地址信息, 该接口支持以list格式字符串、binary格式字符串、tuple和整数表示的IP地址，如下：
 ```
 1> xdb:search("1.0.8.0").
 [20013,22269,124,48,124,24191,19996,30465,124,24191,24030,
@@ -51,18 +43,14 @@ io:format("~ts~n", [xdb:search(<<"1.0.8.0">>)]).
 中国|0|广东省|广州市|电信
 ```
 
-### Usage
-
-* Add the dependency in `rebar.config`
-
+### 使用方法
+* 在rebar.config中引入依赖
 ```
 {deps, [
   ip2region
 ]}.
 ```
-
-* Start the ip2region Application
-
+* 启动ip2region Application
 ```
 ......
 
@@ -71,8 +59,7 @@ application:ensure_started(ip2region),
 ......
 ```
 
-* Call the `xdb:search/1` interface to query IP information
-
+* 调用xdb:search/1接口查询IP信息
 ```
 ......
 
@@ -81,7 +68,7 @@ ip2region:search("1.0.8.0"),
 ......
 ```
 
-### Unit Test
+### 单元测试
 
 ```
 $ rebar3 eunit
@@ -97,8 +84,7 @@ Finished in 0.074 seconds
 4 tests, 0 failures
 ```
 
-### Benchmark
-
+### 基准测试
 ```
 $ cd benchmarks/
 $ sh xdb-benchmark.sh
