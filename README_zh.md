@@ -36,19 +36,19 @@
 API 介绍，使用文档和测试程序请参考对应 `searcher` 查询客户端下的 README 介绍，全部查询 binding 实现情况如下：
 | 编程语言 | 描述 | IPv4 支持 | IPv6 支持 |
 | --- | --- | --- | --- |
-| [Golang](binding/golang/README_zh.md) | golang xdb 查询客户端       | :white_check_mark: | :white_check_mark: |
-| [PHP](binding/php/README_zh.md)       | php xdb 查询客户端          | :white_check_mark: | :white_check_mark: |
-| [Java](binding/java/README_zh.md)     | java xdb 查询客户端         | :white_check_mark: | :white_check_mark: |
-| [C](binding/c/README_zh.md)           | POSIX C xdb 查询客户端      | :white_check_mark: | :white_check_mark: |
-| [Lua_c](binding/lua_c/README_zh.md)   | lua c 扩展 xdb 查询客户端   | :white_check_mark: | :white_check_mark: |
-| [Lua](binding/lua/README_zh.md)       | lua xdb 查询客户端          | :white_check_mark: | :white_check_mark: |
-| [Rust](binding/rust/README_zh.md)     | rust xdb 查询客户端         | :white_check_mark: | :white_check_mark: |
-| [Python](binding/python/README_zh.md) | python xdb 查询客户端       | :white_check_mark: | :white_check_mark: |
-| [Javascript](binding/javascript)      | javascript xdb 查询客户端   | :white_check_mark: | :white_check_mark: |
-| [Csharp](binding/csharp)              | csharp xdb 查询客户端       | :white_check_mark: | :white_check_mark: |
-| [Erlang](binding/erlang)              | erlang xdb 查询客户端       | :white_check_mark: | :x:                |
-| [Nginx](binding/nginx)                | nginx 扩展 xdb 查询客户端   | :white_check_mark: | :x:                |
-| [C++](binding/cpp)                    | C++ xdb 查询客户端          | :white_check_mark: | :white_check_mark: |
+| [Golang](binding/golang/README_zh.md)         | golang xdb 查询客户端       | :white_check_mark: | :white_check_mark: |
+| [PHP](binding/php/README_zh.md)               | php xdb 查询客户端          | :white_check_mark: | :white_check_mark: |
+| [Java](binding/java/README_zh.md)             | java xdb 查询客户端         | :white_check_mark: | :white_check_mark: |
+| [C](binding/c/README_zh.md)                   | POSIX C xdb 查询客户端      | :white_check_mark: | :white_check_mark: |
+| [Lua_c](binding/lua_c/README_zh.md)           | lua c 扩展 xdb 查询客户端   | :white_check_mark: | :white_check_mark: |
+| [Lua](binding/lua/README_zh.md)               | lua xdb 查询客户端          | :white_check_mark: | :white_check_mark: |
+| [Rust](binding/rust/README_zh.md)             | rust xdb 查询客户端         | :white_check_mark: | :white_check_mark: |
+| [Python](binding/python/README_zh.md)         | python xdb 查询客户端       | :white_check_mark: | :white_check_mark: |
+| [Javascript](binding/javascript/README_zh.md) | javascript xdb 查询客户端   | :white_check_mark: | :white_check_mark: |
+| [Csharp](binding/csharp)                      | csharp xdb 查询客户端       | :white_check_mark: | :white_check_mark: |
+| [Erlang](binding/erlang)                      | erlang xdb 查询客户端       | :white_check_mark: | :x:                |
+| [Nginx](binding/nginx)                        | nginx 扩展 xdb 查询客户端   | :white_check_mark: | :x:                |
+| [C++](binding/cpp)                            | C++ xdb 查询客户端          | :white_check_mark: | :white_check_mark: |
 
 
 以下工具链实现由社区开发者通过第三方仓库贡献：

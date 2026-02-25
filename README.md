@@ -37,19 +37,19 @@ For API introductions, usage documentation, and test programs, please refer to t
 
 | Language | Description | IPv4 Support | IPv6 Support |
 | --- | --- | --- | --- |
-| [Golang](binding/golang/README.md) | golang xdb query client          | :white_check_mark: | :white_check_mark: |
-| [PHP](binding/php/README.md)       | php xdb query client             | :white_check_mark: | :white_check_mark: |
-| [Java](binding/java/README.md)     | java xdb query client            | :white_check_mark: | :white_check_mark: |
-| [C](binding/c/README.md)           | POSIX C xdb query client         | :white_check_mark: | :white_check_mark: |
-| [Lua_c](binding/lua_c/README.md)   | lua c extension xdb query client | :white_check_mark: | :white_check_mark: |
-| [Lua](binding/lua/README.md)       | lua xdb query client             | :white_check_mark: | :white_check_mark: |
-| [Rust](binding/rust/README.md)     | rust xdb query client            | :white_check_mark: | :white_check_mark: |
-| [Python](binding/python/README.md) | python xdb query client          | :white_check_mark: | :white_check_mark: |
-| [Javascript](binding/javascript)   | javascript xdb query client      | :white_check_mark: | :white_check_mark: |
-| [Csharp](binding/csharp)           | csharp xdb query client          | :white_check_mark: | :white_check_mark: |
-| [Erlang](binding/erlang)           | erlang xdb query client          | :white_check_mark: | :x:                |
-| [Nginx](binding/nginx)             | nginx extension xdb query client | :white_check_mark: | :x:                |
-| [C++](binding/cpp)                 | C++ xdb query client             | :white_check_mark: | :white_check_mark: |
+| [Golang](binding/golang/README.md)         | golang xdb query client          | :white_check_mark: | :white_check_mark: |
+| [PHP](binding/php/README.md)               | php xdb query client             | :white_check_mark: | :white_check_mark: |
+| [Java](binding/java/README.md)             | java xdb query client            | :white_check_mark: | :white_check_mark: |
+| [C](binding/c/README.md)                   | POSIX C xdb query client         | :white_check_mark: | :white_check_mark: |
+| [Lua_c](binding/lua_c/README.md)           | lua c extension xdb query client | :white_check_mark: | :white_check_mark: |
+| [Lua](binding/lua/README.md)               | lua xdb query client             | :white_check_mark: | :white_check_mark: |
+| [Rust](binding/rust/README.md)             | rust xdb query client            | :white_check_mark: | :white_check_mark: |
+| [Python](binding/python/README.md)         | python xdb query client          | :white_check_mark: | :white_check_mark: |
+| [Javascript](binding/javascript/README.md) | javascript xdb query client      | :white_check_mark: | :white_check_mark: |
+| [Csharp](binding/csharp)                   | csharp xdb query client          | :white_check_mark: | :white_check_mark: |
+| [Erlang](binding/erlang)                   | erlang xdb query client          | :white_check_mark: | :x:                |
+| [Nginx](binding/nginx)                     | nginx extension xdb query client | :white_check_mark: | :x:                |
+| [C++](binding/cpp)                         | C++ xdb query client             | :white_check_mark: | :white_check_mark: |
 
 The following toolchain implementations are contributed by community developers via third-party repositories:
 

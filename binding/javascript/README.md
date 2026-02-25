@@ -1,61 +1,71 @@
-# ip2region xdb javascript 查询客户端实现
+:globe_with_meridians: [中文简体](README_zh.md) | [English](README.md)
 
-# 使用方式
+# ip2region JavaScript Query Client
 
-### 安装 `ip2region.js`
+# Usage
+
+### Install `ip2region.js`
+
 ```bash
 npm install ip2region.js --save 
 ```
 
-### 关于查询 API
-查询 API 的原型为：
-```javascript 
-// 通过字符串 IP 或者 parseIP 解析得到的二进制 IP (Buffer类型) 进行查询
+### About Query API
+
+The prototype of the Query API is:
+
+```javascript
+// Query via a string IP or a binary IP (Buffer type) parsed by parseIP
 search(ip: string | Buffer): string;
 ```
-如果查询出错会抛异常，查询成功则会返回字符的 `region` 信息，如果指定的 IP 查询不到则会返回空字符串 `""`。
 
-### 关于 IPv4 和 IPv6
-该 xdb 查询客户端实现同时支持对 IPv4 和 IPv6 的查询，使用方式如下：
+If an error occurs during the query, an exception will be thrown. If the query is successful, the `region` information string will be returned. If the specified IP cannot be found, an empty string `""` will be returned.
+
+### About IPv4 and IPv6
+
+This xdb query client implementation supports both IPv4 and IPv6 queries. The usage is as follows:
+
 ```javascript
 import {IPv4, IPv6} from 'ip2region.js';
 
-// 如果是 IPv4: 设置 xdb 路径为 v4 的 xdb 文件，IP版本指定为 Version.IPv4
-let dbPath  = "../../data/ip2region_v4.xdb";  // 或者你的 ipv4 xdb 的路径
+// For IPv4: Set xdb path to the v4 xdb file, and set IP version to Version.IPv4
+let dbPath  = "../../data/ip2region_v4.xdb";  // or your ipv4 xdb path
 let version = IPv4;
 
-// 如果是 IPv6: 设置 xdb 路径为 v6 的 xdb 文件，IP版本指定为 Version.IPv6
-let dbPath  = "../../data/ip2region_v6.xdb";  // 或者你的 ipv6 xdb 路径
+// For IPv6: Set xdb path to the v6 xdb file, and set IP version to Version.IPv6
+let dbPath  = "../../data/ip2region_v6.xdb";  // or your ipv6 xdb path
 let version = IPv6;
 
-// dbPath 指定的 xdb 的 IP 版本必须和 version 指定的一致，不然查询执行的时候会报错
-// 备注：以下演示直接使用 dbPath 和 version 变量
+// The IP version of the xdb specified by dbPath must match the version specified; otherwise, an error will occur during execution.
+// Note: The following demonstrations directly use the dbPath and version variables.
 ```
 
-### 文件验证
-建议您主动去验证 xdb 文件的适用性，因为后期的一些新功能可能会导致目前的 Searcher 版本无法适用你使用的 xdb 文件，验证可以避免运行过程中的一些不可预测的错误。 你不需要每次都去验证，例如在服务启动的时候，或者手动调用命令验证确认版本匹配即可，不要在每次创建的 Searcher 的时候运行验证，这样会影响查询的响应速度，尤其是高并发的使用场景。
+### File Verification
+
+It is recommended that you proactively verify the applicability of the xdb file. Some new features in the future may cause the current Searcher version to be incompatible with the xdb file you are using. Verification helps avoid unpredictable errors during runtime. You do not need to verify every time; for example, verify once when the service starts or manually call the command to confirm version matching. Do not run verification every time a Searcher is created, as this will affect query response speed, especially in high-concurrency scenarios.
+
 ```javascript
 import {verifyFromFile} from 'ip2region.js';
 
 try {
     verifyFromFile(dbPath);
 } catch (e) {
-    // 适用性验证失败！！！
-    // 当前查询客户端实现不适用于 dbPath 指定的 xdb 文件的查询.
-    // 应该停止启动服务，使用合适的 xdb 文件或者升级到适合 dbPath 的 Searcher 实现。
+    // Applicability verification failed!!!
+    // The current query client implementation is not applicable for queries on the xdb file specified by dbPath.
+    // You should stop the service and use a suitable xdb file or upgrade to a Searcher implementation that fits dbPath.
     console.log(`binding is not applicable for xdb file '${dbPath}': ${e.message}`);
     return;
 }
 
-// 验证通过，当前使用的 Searcher 可以安全的用于对 dbPath 指向的 xdb 的查询操作
+// Verification passed. The current Searcher can be safely used for query operations on the xdb pointed to by dbPath.
 ```
 
-### 完全基于文件的查询
+### File-Only Query
 
 ```javascript
 import {newWithFileOnly} from 'ip2region.js';
 
-// 1，使用上述的 version 和 dbPath 创建完全基于文件的查询对象
+// 1. Create a file-only query object using the version and dbPath mentioned above
 let searcher;
 try {
     searcher = newWithFileOnly(version, dbPath);
@@ -65,7 +75,7 @@ try {
 }
 
 
-// 2、查询，IPv4 或者 IPv6 的地址都是同一个接口
+// 2. Query; the interface is the same for both IPv4 and IPv6 addresses
 let ip = "1.2.3.4";
 // ip = "240e:3b7:3272:d8d0:db09:c067:8d59:539e";  // IPv6
 try {
@@ -75,19 +85,20 @@ try {
     console.log(`${err.message}`);
 }
 
-// 3、关闭资源
+// 3. Close resources
 searcher.close();
 
-// 备注：每个线程需要单独创建一个独立的 Searcher 对象
+// Note: Each thread needs to create an independent Searcher object separately
 ```
 
-### 缓存 `VectorIndex` 索引
+### Caching `VectorIndex`
 
-我们可以提前从 `xdb` 文件中加载出来 `VectorIndex` 数据，然后全局缓存，每次创建 Searcher 对象的时候使用全局的 VectorIndex 缓存可以减少一次固定的 IO 操作，从而加速查询，减少 IO 压力。
+We can pre-load the `VectorIndex` data from the `xdb` file and cache it globally. Using a global VectorIndex cache every time a Searcher object is created can reduce one fixed IO operation, thereby accelerating queries and reducing IO pressure.
+
 ```javascript
 import {loadVectorIndexFromFile, newWithVectorIndex} from 'ip2region.js';
 
-// 1、从 dbPath 中预先加载 VectorIndex 缓存，并且把这个得到的数据作为全局变量，后续反复使用。
+// 1. Pre-load VectorIndex cache from dbPath and keep this data as a global variable for subsequent repeated use.
 let vIndex;
 try {
     vIndex = loadVectorIndexFromFile(dbPath);
@@ -96,7 +107,7 @@ try {
     return;
 }
 
-// 2、使用全局的 vIndex 创建带 VectorIndex 缓存的查询对象。
+// 2. Create a query object with VectorIndex cache using the global vIndex.
 let searcher;
 try {
     searcher = newWithVectorIndex(version, dbPath, vIndex);
@@ -106,7 +117,7 @@ try {
 }
 
 
-// 3、查询，IPv4 或者 IPv6 的地址都是同一个接口
+// 3. Query; the interface is the same for both IPv4 and IPv6 addresses
 let ip = "1.2.3.4";
 // ip = "240e:3b7:3272:d8d0:db09:c067:8d59:539e";  // IPv6
 try {
@@ -116,19 +127,20 @@ try {
     console.log(`${err.message}`);
 }
 
-// 4、关闭资源
+// 4. Close resources
 searcher.close();
 
-// 备注：每个线程需要单独创建一个独立的 Searcher 对象，但是都共享全局的只读 vIndex 缓存。
+// Note: Each thread needs to create a separate independent Searcher object, but they all share the global read-only vIndex cache.
 ```
 
-### 缓存整个 `xdb` 数据
+### Caching the entire `xdb` file
 
-我们也可以预先加载整个 xdb 文件的数据到内存，然后基于这个数据创建查询对象来实现完全基于内存的查询，类似之前的 memory search。
+We can also pre-load the data of the entire xdb file into memory and then create a query object based on this data to achieve a completely memory-based query, similar to the previous memory search.
+
 ```javascript
 import {loadContentFromFile, newWithBuffer} from 'ip2region.js';
 
-// 1、从 dbPath 加载整个 xdb 到内存。
+// 1. Load the entire xdb from dbPath into memory.
 let cBuffer;
 try {
     cBuffer = loadContentFromFile(dbPath);
@@ -137,7 +149,7 @@ try {
     return;
 }
 
-// 2、使用上述的 cBuff 创建一个完全基于内存的查询对象。
+// 2. Use the cBuff above to create a completely memory-based query object.
 let searcher;
 try {
     searcher = newWithBuffer(version, cBuffer);
@@ -146,7 +158,7 @@ try {
     return;
 }
 
-// 3、查询，IPv4 或者 IPv6 的地址都是同一个接口
+// 3. Query; the interface is the same for both IPv4 and IPv6 addresses
 let ip = "1.2.3.4";
 // ip = "240e:3b7:3272:d8d0:db09:c067:8d59:539e";  // IPv6
 try {
@@ -156,16 +168,16 @@ try {
     console.log(`${err.message}`);
 }
         
-// 4、关闭资源 - 该 searcher 对象可以安全用于并发，等整个服务关闭的时候再关闭 searcher
+// 4. Close resources - This searcher object is safe for concurrent use; close the searcher only when the entire service shuts down.
 // searcher.close();
 
-// 备注：并发使用，用整个 xdb 数据缓存创建的查询对象可以安全的用于并发，也就是你可以把这个 searcher 对象做成全局对象去跨线程访问。
+// Note: For concurrent use, the query object created with the entire xdb data cache can be safely used concurrently, meaning you can make this searcher object a global object for cross-thread access.
 ```
 
+# Query Test
 
-# 查询测试
+You can test queries using the `node tests/search.app.js` command:
 
-可以通过 `node tests/search.app.js` 命令来测试查询：
 ```bash
 ➜  javascript git:(fr_javascript_ipv6) node tests/search.app.js                                                                 
 usage: Usage node tests/search.app.js [command options]
@@ -179,7 +191,8 @@ optional arguments:
                         cache policy: file/vectorIndex/content, default: vectorIndex
 ```
 
-例如：使用默认的 data/ip2region_v4.xdb 文件进行 IPv4 的查询测试：
+Example: Using the default data/ip2region_v4.xdb file for IPv4 query testing:
+
 ```bash
 ➜  javascript git:(fr_javascript_ipv6) ✗ node tests/search.app.js --db=../../data/ip2region_v4.xdb                                
 ip2region xdb searcher test program
@@ -191,7 +204,8 @@ ip2region>> 113.118.113.77
 {region: 中国|广东省|深圳市|电信|CN, ioCount: 2, took: 169.927 μs}
 ```
 
-例如：使用默认的 data/ip2region_v6.xdb 文件进行 IPv6 的查询测试：
+Example: Using the default data/ip2region_v6.xdb file for IPv6 query testing:
+
 ```bash
 ➜  javascript git:(fr_javascript_ipv6) ✗ node tests/search.app.js --db=../../data/ip2region_v6.xdb
 ip2region xdb searcher test program
@@ -203,12 +217,12 @@ ip2region>> 2604:a840:3::a04d
 {region: United States|California|San Jose|xTom|US, ioCount: 13, took: 287.703 μs}
 ```
 
-输入 ip 即可进行查询测试，也可以分别设置 `cache-policy` 为 file/vectorIndex/content 来测试三种不同缓存实现的查询效果。
+Enter an IP to perform a query test. You can also set `cache-policy` to file/vectorIndex/content respectively to test the effects of the three different cache implementations.
 
+# bench Test
 
-# bench 测试
+You can perform a bench test via the `node tests/bench.app.js` command, which ensures the `xdb` file is error-free and evaluates query performance:
 
-可以通过 `node tests/bench.app.js` 命令来进行 bench 测试，一方面确保 `xdb` 文件没有错误，一方面可以评估查询性能：
 ```bash
 ➜  javascript git:(fr_javascript_ipv6) ✗ node tests/bench.app.js 
 usage: Usage node tests/bench.app.js [command options]
@@ -223,18 +237,21 @@ optional arguments:
                         cache policy: file/vectorIndex/content, default: vectorIndex
 ```
 
-例如：通过默认的 data/ip2region_v4.xdb 和 data/ipv4_source.txt 文件进行 IPv4 的 bench 测试：
+Example: Perform an IPv4 bench test using the default data/ip2region_v4.xdb and data/ipv4_source.txt files:
+
 ```bash
 node tests/bench.app.js --db=../../data/ip2region_v4.xdb --src=../../data/ipv4_source.txt
 ```
 
-例如：通过默认的 data/ip2region_v6.xdb 和 data/ipv6_source.txt 文件进行 IPv6 的 bench 测试：
+Example: Perform an IPv6 bench test using the default data/ip2region_v6.xdb and data/ipv6_source.txt files:
+
 ```bash
 node tests/bench.app.js --db=../../data/ip2region_v6.xdb --src=../../data/ipv6_source.txt
 ```
 
-可以通过分别设置 `cache-policy` 为 file/vectorIndex/content 来测试三种不同缓存实现的效果。
-@Note: 注意 bench 使用的 src 文件要是生成对应 xdb 文件相同的源文件。
+You can test the effects of the three different cache implementations by setting `cache-policy` to file/vectorIndex/content.
+@Note: Ensure the src file used for bench is the same source file used to generate the corresponding xdb file.
 
-### 第三方库支持：
-1. [ts-ip2region2](https://github.com/Steven-Qiang/ts-ip2region2) - 基于官方的 C 扩展，比纯 JS 有更高的运行效率。
+### Third-party Library Support:
+
+1. [ts-ip2region2](https://github.com/Steven-Qiang/ts-ip2region2) - Based on the official C extension, providing higher execution efficiency than pure JS.
