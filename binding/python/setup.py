@@ -2,9 +2,9 @@
 
 setuptools.setup(
     name="py-ip2region",
-    version="3.0.2",
+    version="3.0.3",
     description="ip2region official python binding with both IPv4 and IPv6 supported",
-    long_description=open("ReadMe.md", encoding='utf-8').read(),
+    long_description=open("README.md", encoding='utf-8').read(),
     long_description_content_type='text/markdown',
 
     url="https://github.com/lionsoul2014/ip2region",
