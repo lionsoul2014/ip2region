@@ -51,4 +51,4 @@ For custom data fields during the generation process, please refer to [xdb-æ–‡ä»
 
 # Data Search/bench Test
 
-All [bindings](../../binding/) provided search and bench test programs as well as usage documentation. You can use the searcher of your familiar language for query testing or bench testing to confirm the correctness and integrity of the data.
+All [bindings](../../binding/) come with search and bench test programs as well as usage documentation. You can use the searcher of your familiar language for query testing or bench testing to confirm the correctness and integrity of the data.

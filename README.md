@@ -71,7 +71,7 @@ For API introductions, usage documentation, and test programs, please refer to t
 | [Java](maker/java/README.md)     | java xdb generation program   | :white_check_mark: | :white_check_mark: |
 | [Python](maker/python)           | python xdb generation program | :white_check_mark: | :x:                |
 | [Csharp](maker/csharp)           | csharp xdb generation program | :white_check_mark: | :x:                |
-| [Rust](maker/rust)               | rust xdb generation program   | :white_check_mark: | :white_check_mark: |
+| [Rust](maker/rust/README.md)     | rust xdb generation program   | :white_check_mark: | :white_check_mark: |
 | [C++](maker/cpp)                 | C++ xdb generation program    | :white_check_mark: | :white_check_mark: |
 
 
