@@ -67,7 +67,7 @@ API 介绍，使用文档和测试程序请参考如下 `maker` 生成程序下�
 | 编程语言 | 描述 | IPv4 支持 | IPv6 支持 |
 | --- | --- | --- | --- |
 | [Golang](maker/golang/README_zh.md) | golang xdb 生成程序  | :white_check_mark: | :white_check_mark: |
-| [Java](maker/java)                  | java xdb 生成程序    | :white_check_mark: | :white_check_mark: |
+| [Java](maker/java/README_zh.md)     | java xdb 生成程序    | :white_check_mark: | :white_check_mark: |
 | [Python](maker/python)              | python xdb 生成程序  | :white_check_mark: | :x:                |
 | [Csharp](maker/csharp)              | csharp xdb 生成程序  | :white_check_mark: | :x:                |
 | [Rust](maker/rust)                  | rust xdb 生成程序    | :white_check_mark: | :white_check_mark: |

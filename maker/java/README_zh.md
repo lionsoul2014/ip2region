@@ -1,22 +1,19 @@
 :globe_with_meridians: [中文简体](README_zh.md) | [English](README.md)
 
-# ip2region xdb java generation implementation
+# ip2region xdb java 生成实现
 
-# Compilation and Installation
-
-Compile the executable jar program via maven:
-
+# 编译安装
+通过 maven 来编译可运行 jar 程序：
 ```bash
-# cd to the maker/java root directory
+# cd 到 maker/java 根目录
 mvn clean compile package
 ```
 
-Then you will get an ip2region-maker-{version}.jar package file in the target directory of the current directory.
+然会会在当前目录的 target 目录下得到一个 ip2region-maker-{version}.jar 的打包文件。
 
-# Data Generation
+# 数据生成
 
-Generate the xdb binary file via `java -jar ip2region-maker-{version}.jar`:
-
+通过 `java -jar ip2region-maker-{version}.jar` 来生成 xdb 二进制文件：
 ```bash
 ➜  java git:(master) java -jar target/ip2region-maker-3.0.0.jar 
 ip2region xdb maker
@@ -29,8 +26,7 @@ options:
  --log-level string     set the log level, options: debug/info/warn/error
 ```
 
-For example, generate an IPv4 ip2region_v4.xdb binary file in the current directory using the default data/ipv4_source.txt raw data:
-
+例如，通过默认的 data/ipv4_source.txt 原始数据，在当前目录生成一个 IPv4 的 ip2region_v4.xdb 二进制文件：
 ```bash
 java -jar target/ip2region-maker-3.0.0.jar --src=../../data/ipv4_source.txt --dst=./ip2region_v4.xdb --version=ipv4
 ...
@@ -38,8 +34,7 @@ java -jar target/ip2region-maker-3.0.0.jar --src=../../data/ipv4_source.txt --ds
 2025-09-13 00:33:06 INFO  org.lionsoul.ip2region.MakerApp Done, elapsed: 2 s
 ```
 
-For example, generate an IPv6 ip2region_v6.xdb binary file in the current directory using the default data/ipv6_source.txt raw data:
-
+例如，通过默认的 data/ipv6_source.txt 有原始据，在当前目录生成一个 IPv6 的 ip2region_v6.xdb 二进制文件：
 ```bash
 java -jar target/ip2region-maker-3.0.0.jar --src=../../data/ipv6_source.txt --dst=./ip2region_v6.xdb --version=ipv6
 ...
@@ -47,8 +42,8 @@ java -jar target/ip2region-maker-3.0.0.jar --src=../../data/ipv6_source.txt --ds
 2025-09-13 00:35:34 INFO  org.lionsoul.ip2region.MakerApp Done, elapsed: 67 s
 ```
 
-For custom data fields during the generation process, please refer to [xdb-文件生成#自定义数据字段](https://ip2region.net/doc/data/xdb_make#field-list)
+生成过程中数据字段自定义请参考 [xdb-文件生成#自定义数据字段](https://ip2region.net/doc/data/xdb_make#field-list)
 
-# Data Search/bench Test
+# 数据 查询/bench 测试
 
-All [bindings](../../binding/) provided search and bench test programs as well as usage documentation. You can use the searcher of your familiar language for query testing or bench testing to confirm the correctness and integrity of the data.
+已经完成开发的 [binding](../../binding/) 都有查询和 bench 测试程序以及使用文档，你可以使用你熟悉的语言的 searcher 进行查询测试或者bench测试，来确认数据的正确性和完整性。

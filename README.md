@@ -68,7 +68,7 @@ For API introductions, usage documentation, and test programs, please refer to t
 | Language | Description | IPv4 Support | IPv6 Support |
 | --- | --- | --- | --- |
 | [Golang](maker/golang/README.md) | golang xdb generation program | :white_check_mark: | :white_check_mark: |
-| [Java](maker/java)               | java xdb generation program   | :white_check_mark: | :white_check_mark: |
+| [Java](maker/java/README.md)     | java xdb generation program   | :white_check_mark: | :white_check_mark: |
 | [Python](maker/python)           | python xdb generation program | :white_check_mark: | :x:                |
 | [Csharp](maker/csharp)           | csharp xdb generation program | :white_check_mark: | :x:                |
 | [Rust](maker/rust)               | rust xdb generation program   | :white_check_mark: | :white_check_mark: |
@@ -91,9 +91,9 @@ For instructions on using the raw IP data editing tools, please refer to the REA
 
 | Language | Description | IPv4 Support | IPv6 Support |
 | --- | --- | --- | --- |
-| [Golang](maker/golang%23xdb-%E6%95%B0%E6%8D%AE%E7%BC%96%E8%BE%91) | golang IP raw data editor | :white_check_mark: | :white_check_mark: |
-| [Java](maker/java%23xdb-%E6%95%B0%E6%8D%AE%E7%BC%96%E8%BE%91)     | java IP raw data editor   | :white_check_mark: | :x:                |
-| [C++](maker/cpp)                                                  | C++ IP raw data editor    | :white_check_mark: | :white_check_mark: |
+| [Golang](maker/golang#xdb-%E6%95%B0%E6%8D%AE%E7%BC%96%E8%BE%91) | golang IP raw data editor | :white_check_mark: | :white_check_mark: |
+| [Java](maker/java#xdb-%E6%95%B0%E6%8D%AE%E7%BC%96%E8%BE%91)     | java IP raw data editor   | :white_check_mark: | :x:                |
+| [C++](maker/cpp)                                                | C++ IP raw data editor    | :white_check_mark: | :white_check_mark: |
 
 ### Detection Automatic Update
 
