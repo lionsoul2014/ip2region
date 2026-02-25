@@ -49,7 +49,7 @@ For API introductions, usage documentation, and test programs, please refer to t
 | [Csharp](binding/csharp)                   | csharp query client          | :white_check_mark: | :white_check_mark: |
 | [Erlang](binding/erlang/README.md)         | erlang query client          | :white_check_mark: | :x:                |
 | [Nginx](binding/nginx)                     | nginx extension query client | :white_check_mark: | :x:                |
-| [C++](binding/cpp)                         | C++ query client             | :white_check_mark: | :white_check_mark: |
+| [C++](binding/cpp/README.md)               | C++ query client             | :white_check_mark: | :white_check_mark: |
 
 The following toolchain implementations are contributed by community developers via third-party repositories:
 
