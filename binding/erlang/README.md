@@ -23,7 +23,6 @@ The configurable parameters for this application are in `ip2region.app.src`, as 
 
 ```
 $ rebar3 compile
-
 ```
 
 ### Run

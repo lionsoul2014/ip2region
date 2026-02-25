@@ -21,11 +21,11 @@
 ```
 $ rebar3 compile
 ```
+
 ### 运行
 将xdb文件放到priv目录下，然后启动erlang节点：
 ```
 $ rebar3 shell
-
 ```
 在erlang shell中调用xdb:search/1接口查询Ip地址信息, 该接口支持以list格式字符串、binary格式字符串、tuple和整数表示的IP地址，如下：
 ```
