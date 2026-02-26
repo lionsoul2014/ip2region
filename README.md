@@ -70,7 +70,7 @@ For API introductions, usage documentation, and test programs, please refer to t
 | [Golang](maker/golang/README.md) | golang xdb generation program | :white_check_mark: | :white_check_mark: |
 | [Java](maker/java/README.md)     | java xdb generation program   | :white_check_mark: | :white_check_mark: |
 | [Python](maker/python/README.md) | python xdb generation program | :white_check_mark: | :x:                |
-| [Csharp](maker/csharp)           | csharp xdb generation program | :white_check_mark: | :x:                |
+| [Csharp](maker/csharp/README.md) | csharp xdb generation program | :white_check_mark: | :x:                |
 | [Rust](maker/rust/README.md)     | rust xdb generation program   | :white_check_mark: | :white_check_mark: |
 | [C++](maker/cpp)                 | C++ xdb generation program    | :white_check_mark: | :white_check_mark: |
 
