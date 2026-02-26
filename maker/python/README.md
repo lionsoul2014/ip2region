@@ -15,7 +15,7 @@ Command:
 
 # `xdb` Data Generation
 
-Generate the ip2region_v4.xdb binary file via the `python main.py gen` command:
+Generate the xdb binary file via the `python main.py gen` command:
 
 ```
 ➜  python git:(v2.0_xdb) ✗ python main.py gen

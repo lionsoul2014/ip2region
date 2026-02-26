@@ -16,7 +16,7 @@ Command:
 
 # `xdb` 数据生成
 
-通过 `python main.py gen` 命令生成 ip2region_v4.xdb 二进制文件:
+通过 `python main.py gen` 命令生成 xdb 二进制文件:
 ```
 ➜  python git:(v2.0_xdb) ✗ python main.py gen
 main.py gen [command options]
