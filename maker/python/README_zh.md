@@ -3,7 +3,7 @@
 # ip2region xdb python 生成实现
 
 
-# 脚本执行
+# cli 命令
 
 ```
 # 切换到python maker 根目录

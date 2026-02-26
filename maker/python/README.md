@@ -2,7 +2,7 @@
 
 # ip2region xdb python generation implementation
 
-# Script Execution
+# Cli Command
 
 ```
 # cd to the python maker root directory
