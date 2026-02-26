@@ -1,11 +1,12 @@
 :globe_with_meridians: [中文简体](README_zh.md) | [English](README.md)
 
-# ip2region xdb python generation implementation
+# ip2region xdb python 生成实现
 
-# Cli Command
+
+# cli 命令
 
 ```
-# cd to the python maker root directory
+# 切换到python maker 根目录
 > python main.py
 ip2region xdb maker
 main.py [command] [command options]
@@ -13,10 +14,9 @@ Command:
   gen      generate the binary db file
 ```
 
-# `xdb` Data Generation
+# `xdb` 数据生成
 
-Generate the ip2region_v4.xdb binary file via the `python main.py gen` command:
-
+通过 `python main.py gen` 命令生成 ip2region_v4.xdb 二进制文件:
 ```
 ➜  python git:(v2.0_xdb) ✗ python main.py gen
 main.py gen [command options]
@@ -25,16 +25,16 @@ options:
  --dst string    destination binary xdb file path
 ```
 
-For example, using the default data/ipv4_source.txt as the source data to generate an ip2region_v4.xdb in the current directory:
-
+例如，使用默认的 data/ipv4_source.txt 作为源数据，生成一个 ip2region_v4.xdb 到当前目录：
 ```
 ➜  python git:(v2.0_xdb) ✗ python main.py gen --src=../../data/ipv4_source.txt --dst=./ip2region_v4.xdb
-# You will see a lot of output; eventually, you will see something like the following output indicating the end of the execution
+# 会看到一堆输出，最终会看到类似如下输出表示运行结束
 ...
 2022-07-13 19:58:00,540-root-238-INFO - write done, dataBlocks: 13804, indexBlocks: (683591, 720221), indexPtr: (982904, 11065984)
 2022-07-13 19:58:00,540-root-63-INFO - Done, elapsed: 3m3s
 ```
 
-# `xdb` Data Query and bench Test
 
-For query functions and testing based on the xdb format, see ip2region [bindings](../../binding)
+# `xdb` 数据查询 和 bench 测试
+
+基于xdb 格式的查询功能和测试见 ip2region [binding](../../binding)
