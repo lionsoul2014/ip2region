@@ -87,9 +87,8 @@ ip2region 项目的核心在于 <b>研究 IP 数据的存储和快速查询的�
 原始 IP 数据编辑工具使用方法请参考如下的 `maker` 生成程序下的 README 文档：
 | 编程语言 | 描述 | IPv4 支持 | IPv6 支持 |
 | --- | --- | --- | --- |
-| [Golang](maker/golang#xdb-数据编辑) | golang IP 原始数据编辑器 | :white_check_mark: | :white_check_mark: |
-| [Java](maker/java#xdb-数据编辑)     | java IP 原始数据编辑器   | :white_check_mark: | :x:                |
-| [C++](maker/cpp)                    | C++ IP 原始数据编辑器    | :white_check_mark: | :white_check_mark: |
+| [Golang](maker/golang/README_zh.md#xdb-数据编辑) | golang IP 原始数据编辑器 | :white_check_mark: | :white_check_mark: |
+| [C++](maker/cpp)                                 | C++ IP 原始数据编辑器    | :white_check_mark: | :white_check_mark: |
 
 
 ### 检测自动更新

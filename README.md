@@ -91,9 +91,8 @@ For instructions on using the raw IP data editing tools, please refer to the REA
 
 | Language | Description | IPv4 Support | IPv6 Support |
 | --- | --- | --- | --- |
-| [Golang](maker/golang#xdb-%E6%95%B0%E6%8D%AE%E7%BC%96%E8%BE%91) | golang IP raw data editor | :white_check_mark: | :white_check_mark: |
-| [Java](maker/java#xdb-%E6%95%B0%E6%8D%AE%E7%BC%96%E8%BE%91)     | java IP raw data editor   | :white_check_mark: | :x:                |
-| [C++](maker/cpp)                                                | C++ IP raw data editor    | :white_check_mark: | :white_check_mark: |
+| [Golang](maker/golang/README.md#xdb-data-editing) | golang IP raw data editor | :white_check_mark: | :white_check_mark: |
+| [C++](maker/cpp/README.md)                        | C++ IP raw data editor    | :white_check_mark: | :white_check_mark: |
 
 ### Detection Automatic Update
 
