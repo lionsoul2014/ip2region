@@ -1,3 +1,5 @@
+:globe_with_meridians: [中文简体](README_zh.md) | [English](README.md)
+
 # ip2region xdb csharp 生成实现
 
 ## 编译安装
@@ -11,7 +13,7 @@ dotnet publish -o ./bin
 
 # 数据生成
 
-通过 `dotnet IP2RegionMaker.dll` 来生成 ip2region.xdb 二进制文件：
+通过 `dotnet IP2RegionMaker.dll` 来生成 xdb 二进制文件：
 ```bash  
 ➜  csharp git:(master) ✗ dotnet IP2RegionMaker.dll
 ip2region xdb maker
@@ -20,9 +22,9 @@ dotnet IP2RegionMaker.dll [command options]
 --dst string    destination binary xdb file path
 ```
 
-例如，通过默认的 data/ip.merge.txt 原数据，在当前目录生成一个 ip2region.xdb 二进制文件：
+例如，通过默认的 data/ipv4_source.txt 原数据，在当前目录生成一个 ip2region_v4.xdb 二进制文件：
 ```bash
-➜  csharp git:(master) ✗ dotnet ./IP2RegionMaker/bin/IP2RegionMaker.dll --src=../../data/ip.merge.txt --dst=./ip2region.xdb
+➜  csharp git:(master) ✗ dotnet ./IP2RegionMaker/bin/IP2RegionMaker.dll --src=../../data/ipv4_source.txt --dst=./ip2region_v4.xdb
 # 会看到一堆输出，最终会看到如下输出表示运行成功
 ...
 ...
