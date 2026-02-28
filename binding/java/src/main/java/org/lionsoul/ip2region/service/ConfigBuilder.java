@@ -49,16 +49,19 @@ public class ConfigBuilder {
     }
 
     public ConfigBuilder setXdbPath(String xdbPath) {
+        assert xdbPath != null && xdbPath.length() > 0;
         this.xdbPath = xdbPath;
         return this;
     }
 
     public ConfigBuilder setXdbFile(File xdbFile) {
+        assert xdbFile != null;
         this.xdbFile = xdbFile;
         return this;
     }
 
     public ConfigBuilder setXdbInputStream(InputStream xdbInputStream) {
+        assert xdbInputStream != null;
         this.xdbInputStream = xdbInputStream;
         return this;
     }
