@@ -1,6 +1,6 @@
 [package]
 name = "ip2region"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2024"
 rust-version = "1.89.0"
 description = "The rust binding for ip2region"

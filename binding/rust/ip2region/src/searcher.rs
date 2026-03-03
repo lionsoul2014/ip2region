@@ -68,6 +68,12 @@ impl Searcher {
         let end_ptr =
             u32::from_le_bytes(vector_index[start_point + 4..start_point + 8].try_into()?) as usize;
 
+        // @Note: ptr validate, zero ptr means source data missing
+        // so we could just stop here and return an empty string.
+        if start_ptr == 0 || end_ptr == 0 {
+            return Ok(String::new())
+        }
+
         // Binary search the segment index to get the region
         let segment_index_size = self.header.segment_index_size();
         let ip_bytes_len = self.header.ip_bytes_len();

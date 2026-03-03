@@ -68,6 +68,11 @@ class Searcher(object):
             e_ptr = util.le_get_uint32(buff, 4)
         
         # print("s_ptr: {}, e_ptr: {}".format(s_ptr, e_ptr))
+        # @Note: ptr validate, zero ptr means source data missing
+        # so we could just stop here and return an empty string.
+        if s_ptr == 0 or e_ptr == 0:
+            return ""
+
         # binary search the segment index block to get the region info
         _bytes, _d_bytes = len(ip_bytes), len(ip_bytes) << 1
         index_size = self.version.index_size

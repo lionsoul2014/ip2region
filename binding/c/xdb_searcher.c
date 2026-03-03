@@ -196,6 +196,13 @@ XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, const bytes_ip_t *ip_bytes, int 
     }
 
     // printf("s_ptr=%u, e_ptr=%u\n", s_ptr, e_ptr);
+    // @Note: ptr validate, zero ptr means source data missing
+    // so we could just stop here and return an empty string.
+    if (s_ptr == 0 || e_ptr == 0) {
+        xdb_region_buffer_empty(region);
+        return err;
+    }
+
     // binary search to get the final region info
     // segment_buffer = xdb_malloc(seg_index_size);
     seg_index_size = xdb->version->segment_index_size;

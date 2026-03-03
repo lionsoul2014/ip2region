@@ -132,6 +132,11 @@ func (s *Searcher) Search(ip []byte) (string, error) {
 	}
 
 	// fmt.Printf("sPtr=%d, ePtr=%d\n", sPtr, ePtr)
+	// @Note: ptr validate, zero ptr means source data missing
+	// so we could just stop here and return an empty string.
+	if sPtr == 0 || ePtr == 0 {
+		return "", nil
+	}
 
 	// binary search the segment index to get the region
 	var bytes, dBytes = len(ip), len(ip) << 1
