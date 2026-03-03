@@ -75,6 +75,14 @@ public class Searcher(CachePolicy cachePolicy, string xdbPath) : ISearcher
         var sPtr = BinaryPrimitives.ReadUInt32LittleEndian(vector.Span);
         var ePtr = BinaryPrimitives.ReadUInt32LittleEndian(vector.Span.Slice(4));
 
+        // @Note: ptr validate, zero ptr means source data missing
+        // so we could just stop here and return an empty string.
+        if (sPtr == 0 || ePtr == 0)
+        {
+            return "";
+        }
+
+
         var length = ipBytes.Length;
         var indexSize = length * 2 + 6;
         var l = 0;

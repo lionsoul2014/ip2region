@@ -66,6 +66,12 @@ export class Searcher {
         }
 
         // console.log(`sPtr: ${sPtr}, ePtr: ${ePtr}`);
+        // @Note: ptr validate, zero ptr means source data missing
+        // so we could just stop here and return an empty string.
+        if (sPtr == 0 || ePtr == 0) {
+            return "";
+        }
+
         // binary search the segment index block to get the region info
         const bytes = ipBytes.length, dBytes = ipBytes.length << 1;
         const indexSize = this.version.indexSize;

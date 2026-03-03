@@ -504,6 +504,12 @@ class Searcher {
         }
 
         // printf("sPtr: %d, ePtr: %d\n", $sPtr, $ePtr);
+        // @Note: ptr validate, zero ptr means source data missing
+        // so we could just stop here and return an empty string.
+        if ($sPtr == 0 || $ePtr == 0) {
+            return "";
+        }
+
         [$bytes, $dBytes] = [strlen($ipBytes), strlen($ipBytes) << 1];
 
         // binary search the segment index to get the region info

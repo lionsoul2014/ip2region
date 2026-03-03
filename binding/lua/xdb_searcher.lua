@@ -129,6 +129,13 @@ function xdb:search(ip_bytes)
     end
 
     -- print(string.format("s_ptr: %d, e_ptr: %d", s_ptr, e_ptr))
+    -- @Note: ptr validate, zero ptr means source data missing
+    -- so we could just stop here and return an empty string.
+    if s_ptr == 0 or e_ptr == 0 then
+        return "", nil
+    end
+
+
     -- binary search to get the data
     local index_size, ip_sub_compare = version.index_size, version.ip_sub_compare
     local bytes, d_bytes = version.bytes, version.bytes << 1

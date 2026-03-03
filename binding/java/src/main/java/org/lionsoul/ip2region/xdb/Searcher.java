@@ -138,6 +138,11 @@ public class Searcher {
         }
 
         // System.out.printf("sPtr: %d, ePtr: %d\n", sPtr, ePtr);
+        // @Note: ptr validate, zero ptr means source data missing
+        // so we could just stop here and return an empty string.
+        if (sPtr == 0 || ePtr == 0) {
+            return "";
+        }
 
         // binary search the segment index block to get the region info
         final int bytes = ip.length, dBytes = ip.length << 1;
