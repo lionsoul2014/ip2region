@@ -8,6 +8,8 @@ $ cd workspace
 $ wget https://nginx.org/download/nginx-1.23.4.tar.gz
 $ tar -zxf nginx-1.23.4.tar.gz && rm -rf nginx-1.23.4.tar.gz
 $ git clone https://github.com/lionsoul2014/ip2region.git
+$ # please check to version v2.13.0 by running
+$ git checkout v2.13.0
 $ cd ip2region/binding/c
 $ make xdb_searcher_lib
 $ cd ../../../nginx-1.23.4
@@ -59,14 +61,11 @@ http {
 
 ```
 
-Copy `ip2region.xdb` to `nginx/config` folder, then restart nginx, the `region` data stored in `ip2region` variable
+Copy `ip2region_v4.xdb` to `nginx/config` folder (rename name it to ip2region.xdb), then restart nginx, the `region` data stored in `ip2region` variable
 
 nginx access log sample
 
 ```log
-{"remote_addr": "127.0.0.1", "region": "0|0|0|内网IP|内网IP", "http_x_forwarded_for": ""}
-{"remote_addr": "127.0.0.1", "region": "0|0|0|内网IP|内网IP", "http_x_forwarded_for": ""}
-
+{"remote_addr": "127.0.0.1", "region": "Reserved|Reserved|Reserved|0|0", "http_x_forwarded_for": ""}
+{"remote_addr": "127.0.0.1", "region": "Reserved|Reserved|Reserved|0|0", "http_x_forwarded_for": ""}
 ```
-
-Made with ♥ by Wu Jian Ping
