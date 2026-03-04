@@ -66,7 +66,7 @@ func (e *Editor) loadSegments() error {
 		}
 
 		// check the continuity of the data segment
-		if err := seg.AfterCheck(last); err != nil {
+		if err := seg.RightBehind(last); err != nil {
 			return err
 		}
 
@@ -189,16 +189,13 @@ func (e *Editor) PutSegment(seg *Segment) (int, int, error) {
 	sList = append(sList, seg)
 
 	// check and do the tailing segment append
-	if len(sList) > 0 {
-		// check and append the tailing
-		var tail = eList[len(eList)-1].Value.(*Segment)
-		if IPCompare(seg.EndIP, tail.EndIP) < 0 {
-			sList = append(sList, &Segment{
-				StartIP: IPAddOne(seg.EndIP),
-				EndIP:   tail.EndIP,
-				Region:  tail.Region,
-			})
-		}
+	var tail = eList[len(eList)-1].Value.(*Segment)
+	if IPCompare(seg.EndIP, tail.EndIP) < 0 {
+		sList = append(sList, &Segment{
+			StartIP: IPAddOne(seg.EndIP),
+			EndIP:   tail.EndIP,
+			Region:  tail.Region,
+		})
 	}
 
 	// print for debug

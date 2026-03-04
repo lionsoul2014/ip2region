@@ -169,7 +169,7 @@ func IterateSegments(handle *os.File, before func(l string), filter func(region 
 			last = seg
 			continue
 		} else if last.Region == seg.Region {
-			if err = seg.AfterCheck(last); err == nil {
+			if err = seg.RightBehind(last); err == nil {
 				last.EndIP = seg.EndIP
 				continue
 			}
