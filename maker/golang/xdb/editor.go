@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 )
 
 type Editor struct {
@@ -56,6 +57,8 @@ func NewEditor(version *Version, srcFile string) (*Editor, error) {
 // Load all the segments from the source file
 func (e *Editor) loadSegments() error {
 	var last *Segment = nil
+	var segments []*Segment
+	var sorting = false
 
 	var iErr = IterateSegments(e.srcHandle, func(l string) {
 		// do nothing here
@@ -65,12 +68,17 @@ func (e *Editor) loadSegments() error {
 			return fmt.Errorf("invalid ip segment(%s expected)", e.verison.Name)
 		}
 
-		// check the continuity of the data segment
-		if err := seg.RightBehind(last); err != nil {
-			return err
+		// check the order of the data segment
+		// if err := seg.RightBehind(last); err != nil {
+		if err := seg.After(last); err != nil {
+			// return err
+			// @Note: If the continuity is disrupted,
+			// we will sort all these segments later.
+			sorting = true
 		}
 
-		e.segments.PushBack(seg)
+		// e.segments.PushBack(seg)
+		segments = append(segments, seg)
 		last = seg
 		return nil
 	})
@@ -78,6 +86,33 @@ func (e *Editor) loadSegments() error {
 		return iErr
 	}
 
+	// check and do the sorting
+	if sorting {
+		sort.Slice(segments, func(i, j int) bool {
+			return IPCompare(segments[i].StartIP, segments[j].StartIP) < 0
+		})
+
+		last = nil
+		for _, seg := range segments {
+			// check the order of the data segment
+			if err := seg.After(last); err != nil {
+				return fmt.Errorf("overlap checking: %w", err)
+			}
+
+			// reset the last
+			last = seg
+		}
+
+		// open the to save
+		e.toSave = true
+	}
+
+	// export the segments to e.segments
+	for _, seg := range segments {
+		e.segments.PushBack(seg)
+	}
+
+	segments = nil // let GC do it work
 	return nil
 }
 
