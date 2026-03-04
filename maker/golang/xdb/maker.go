@@ -58,6 +58,7 @@ import (
 	"log/slog"
 	"math"
 	"os"
+	"sort"
 	"time"
 )
 
@@ -159,6 +160,7 @@ func (m *Maker) loadSegments() error {
 	slog.Info("try to load the segments ... ")
 	var last *Segment = nil
 	var tStart = time.Now()
+	var sorting = false
 
 	var iErr = IterateSegments(m.srcHandle, func(l string) {
 		slog.Debug("loaded", "segment", l)
@@ -171,9 +173,13 @@ func (m *Maker) loadSegments() error {
 			return fmt.Errorf("invalid ip segment(%s expected)", m.version.Name)
 		}
 
-		// check the continuity of the data segment
-		if err := seg.AfterCheck(last); err != nil {
-			return err
+		// check the order of the data segment
+		// if err := seg.RightBehind(last); err != nil {
+		if err := seg.After(last); err != nil {
+			// return err
+			// @Note: If the continuity is disrupted,
+			// we will sort all these segments later.
+			sorting = true
 		}
 
 		m.segments = append(m.segments, seg)
@@ -184,7 +190,27 @@ func (m *Maker) loadSegments() error {
 		return fmt.Errorf("failed to load segments: %s", iErr)
 	}
 
-	slog.Info("all segments loaded", "length", len(m.segments), "elapsed", time.Since(tStart))
+	// check and do the sorting
+	if sorting {
+		slog.Info("try to sort all the segments based on its start ip ...")
+		sort.Slice(m.segments, func(i, j int) bool {
+			return IPCompare(m.segments[i].StartIP, m.segments[j].StartIP) < 0
+		})
+
+		slog.Info("try to check if there is overlap in the segments  ...")
+		last = nil
+		for _, seg := range m.segments {
+			// check the order of the data segment
+			if err := seg.After(last); err != nil {
+				return fmt.Errorf("overlap checking: %w", err)
+			}
+
+			// reset the last
+			last = seg
+		}
+	}
+
+	slog.Info("all segments loaded", "length", len(m.segments), "sorting", sorting, "elapsed", time.Since(tStart))
 	return nil
 }
 

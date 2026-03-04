@@ -42,12 +42,28 @@ func SegmentFrom(seg string) (*Segment, error) {
 	}, nil
 }
 
-// AfterCheck check the current segment is the one just after the specified one
-func (s *Segment) AfterCheck(last *Segment) error {
+// RightBehind check the current segment is just right behind the specified one
+// which mean last.EndIP + 1 = s.startIP
+func (s *Segment) RightBehind(last *Segment) error {
 	if last != nil {
 		if IPCompare(IPAddOne(last.EndIP), s.StartIP) != 0 {
 			return fmt.Errorf(
 				"discontinuous data segment: last.eip(%s)+1 != seg.sip(%s, %s)",
+				IP2String(last.EndIP), IP2String(s.StartIP), s.Region,
+			)
+		}
+	}
+
+	return nil
+}
+
+// After check the current segment is after the specified one
+// which means last.EndIP < s.startIP
+func (s *Segment) After(last *Segment) error {
+	if last != nil {
+		if IPCompare(last.EndIP, s.StartIP) >= 0 {
+			return fmt.Errorf(
+				"disorder data segment: last.eip(%s) >= seg.sip(%s, %s)",
 				IP2String(last.EndIP), IP2String(s.StartIP), s.Region,
 			)
 		}

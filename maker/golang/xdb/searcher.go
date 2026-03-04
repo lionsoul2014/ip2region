@@ -125,6 +125,10 @@ func (s *Searcher) Search(ip []byte) (string, int, error) {
 	}
 
 	//log.Printf("vIndex=%s", vIndex)
+	if sPtr == 0 || ePtr == 0 {
+		return "", ioCount, nil
+	}
+
 	// binary search the segment index to get the region
 	var segIndexSize = uint32(s.version.SegmentIndexSize)
 	var dataLen, dataPtr = 0, uint32(0)
