@@ -92,24 +92,55 @@ func (e *Editor) loadSegments() error {
 			return IPCompare(segments[i].StartIP, segments[j].StartIP) < 0
 		})
 
-		last = nil
-		for _, seg := range segments {
-			// check the order of the data segment
-			if err := seg.After(last); err != nil {
-				return fmt.Errorf("overlap checking: %w", err)
-			}
-
-			// reset the last
-			last = seg
-		}
-
 		// open the to save
 		e.toSave = true
 	}
 
-	// export the segments to e.segments
+	// check and fill in the discontinuous segments
+	// to Keep the entire data continuous.
+	last = nil
 	for _, seg := range segments {
+		if err := seg.After(last); err != nil {
+		}
+
+		if last == nil {
+			if IPCompare(seg.StartIP, e.verison.Min) > 0 {
+				e.segments.PushBack(&Segment{
+					StartIP: e.verison.Min,
+					EndIP:   IPSubOne(seg.StartIP),
+					Region:  "",
+				})
+			}
+		} else if err := seg.RightBehind(last); err == nil {
+			// Do nothing here since it just right behind the last
+		} else if err := seg.After(last); err != nil {
+			// segments overlap
+			return fmt.Errorf("overlap checking: %w", err)
+		} else {
+			// push the padding segments
+			e.segments.PushBack(&Segment{
+				StartIP: IPAddOne(last.EndIP),
+				EndIP:   IPSubOne(seg.StartIP),
+				Region:  "",
+			})
+		}
+
+		// push the current segment
 		e.segments.PushBack(seg)
+
+		// reset the last
+		last = seg
+	}
+
+	// check and padding the tailing segmnet
+	if back := e.segments.Back(); back != nil {
+		if IPCompare(e.verison.Max, back.Value.(*Segment).EndIP) > 0 {
+			e.segments.PushBack(&Segment{
+				StartIP: IPAddOne(back.Value.(*Segment).EndIP),
+				EndIP:   e.verison.Max,
+				Region:  "",
+			})
+		}
 	}
 
 	segments = nil // let GC do it work
@@ -173,21 +204,24 @@ func (e *Editor) Put(ip string) (int, int, error) {
 func (e *Editor) PutSegment(seg *Segment) (int, int, error) {
 	var next *list.Element
 	var eList []*list.Element
-	var found = false
+	var found, counter = false, 0
 	for ele := e.segments.Front(); ele != nil; ele = next {
 		next = ele.Next()
 		s, ok := ele.Value.(*Segment)
 		if !ok {
 			// could this even be a case ?
-			continue
+			return 0, 0, fmt.Errorf("type error: ele not a Segment ptr")
 		}
+
+		counter++
 
 		// found the related segment
-		if IPCompare(seg.StartIP, s.EndIP) <= 0 && IPCompare(seg.StartIP, s.StartIP) >= 0 {
+		if found {
+			// just keep going
+		} else if IPCompare(seg.StartIP, s.StartIP) >= 0 &&
+			IPCompare(seg.StartIP, s.EndIP) <= 0 {
 			found = true
-		}
-
-		if !found {
+		} else {
 			continue
 		}
 
@@ -199,8 +233,6 @@ func (e *Editor) PutSegment(seg *Segment) (int, int, error) {
 
 	if len(eList) == 0 {
 		// could this even be a case ?
-		// if the loaded segments contains all the segments we have
-		// from 0 to 0xffffffff
 		return 0, 0, fmt.Errorf("failed to find the related segment")
 	}
 
@@ -307,6 +339,11 @@ func (e *Editor) Save() error {
 		s, ok := ele.Value.(*Segment)
 		if !ok {
 			// could this even be a case ?
+			continue
+		}
+
+		// ignore the padded or empty segment
+		if s.Region == "" {
 			continue
 		}
 
