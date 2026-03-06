@@ -98,9 +98,16 @@ public class Segment {
         return Util.ipCompare(ip, startIP) >= 0 && Util.ipCompare(ip, endIP) <= 0;
     }
 
-    // check if the current segment just after the specified one.
-    public boolean after(final Segment last) {
+    // check if the current segment just right behind the specified one.
+    // which mean last.endIP + 1 = this.startIP
+    public boolean rightBehind(final Segment last) {
         return Util.ipCompare(Util.ipAddOne(last.endIP), startIP) == 0;
+    }
+
+    // check if the current segment is after the specified one.
+    // which means last.endIP < this.startIP
+    public boolean after(final Segment last) {
+        return Util.ipCompare(last.endIP, startIP) < 0;
     }
 
     // parser the Segment from an input string
@@ -121,6 +128,11 @@ public class Segment {
 
     // static class to handler the iterate callback
     public static interface IterateAction {
+        // need sort all the iterated segments ?
+        default boolean sorting() {
+            return false;
+        }
+
         public void before(final String line);
         public String filter(final String region);
         public void handle(final Segment seg) throws Exception;
@@ -186,7 +198,7 @@ public class Segment {
             // check and automatic merging the Consecutive Segments, which means:
             // 1, region info is the same
             // 2, last.eip+1 = cur.sip
-            if (last.region.equals(seg.region) && seg.after(last)) {
+            if (last.region.equals(seg.region) && seg.rightBehind(last)) {
                 // last.endIP = seg.endIP;
                 System.arraycopy(seg.endIP, 0, last.endIP, 0, seg.endIP.length);
                 continue;
