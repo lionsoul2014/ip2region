@@ -179,7 +179,9 @@ public class Maker {
                     throw new Exception("invalid ip segment("+version.name+" expected)");
                 }
 
-                if (last != null && !seg.after(last)) {
+                if (sorting) {
+                    // just keep going
+                } else if (last != null && !seg.after(last)) {
                     // throw new Exception("discontinuous data segment: last.eip("
                     //    + Util.ipToString(last.endIP)+")+1 != seg.sip("+ Util.ipToString(seg.startIP) + ", "+ seg.region +")");
 
