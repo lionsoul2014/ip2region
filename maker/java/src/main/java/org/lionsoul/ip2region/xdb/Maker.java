@@ -57,6 +57,8 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.util.*;
 
+import org.lionsoul.ip2region.xdb.Segment.IterateAction;
+
 public class Maker {
     // constants define
     public static final int VersionNo         = 3;  // 2 for XDB 2.0, 3 for XDB 3.0
@@ -108,7 +110,7 @@ public class Maker {
         /// }
 
         this.bytesCharset = Charset.forName("utf-8");
-        this.segments = new LinkedList<Segment>();
+        this.segments = new ArrayList<Segment>();
         this.dstHandle = new RandomAccessFile(dstPath, "rw");
         this.indexPolicy = policy;
         this.regionPool = new HashMap<String, DataEntry>();
@@ -156,8 +158,9 @@ public class Maker {
     private void loadSegments() throws Exception {
         log.infof("try to load the segments ... ");
         final long tStart = System.currentTimeMillis();
-        Segment.iterate(srcFile, new Segment.IterateAction() {
+        final IterateAction itAct = new Segment.IterateAction() {
             private Segment last = null;
+            private boolean sorting = false;
 
             @Override
             public void before(String line) {
@@ -176,22 +179,53 @@ public class Maker {
                     throw new Exception("invalid ip segment("+version.name+" expected)");
                 }
 
-                if (last != null && !seg.after(last)) {
-                    throw new Exception("discontinuous data segment: last.eip("
-                        + Util.ipToString(last.endIP)+")+1 != seg.sip("+ Util.ipToString(seg.startIP) + ", "+ seg.region +")");
-                }
+                if (sorting) {
+                    // just keep going
+                } else if (last != null && !seg.after(last)) {
+                    // throw new Exception("discontinuous data segment: last.eip("
+                    //    + Util.ipToString(last.endIP)+")+1 != seg.sip("+ Util.ipToString(seg.startIP) + ", "+ seg.region +")");
 
-                // allow empty region
-                // if (region.length() < 1) {
-                //     throw new Exception("empty region info for segment `"+seg+"`");
-                // }
+                    // @Note: If the continuity is disrupted,
+                    // we will sort all these segments later.
+                    sorting = true;
+                }
 
                 segments.add(seg);
                 last = seg;
             }
-        });
 
-        log.infof("all segments loaded, length: %d, elapsed: %d ms", segments.size(), System.currentTimeMillis() - tStart);
+            public boolean sorting() {
+                return sorting;
+            }
+        };
+
+        // load iterate all the segments
+        Segment.iterate(srcFile, itAct);
+        final boolean sorting = itAct.sorting();
+
+        // check and sort all the segments
+        if (sorting) {
+            log.infof("try to sort all the segments based on its start ip ...");
+            segments.sort((o1, o2) -> {return Util.ipCompare(o1.startIP, o2.startIP);});
+
+            log.infof("try to check if there is overlap in the segments  ...");
+            Segment last = null;
+            for (final Segment seg : segments) {
+                // check the order of the data segment
+                if (last != null && !seg.after(last)) {
+                    throw new Exception("overlap checking: last.eip("
+                       + Util.ipToString(last.endIP)+") >= seg.sip("+ Util.ipToString(seg.startIP) + ", "+ seg.region +")");
+                }
+
+                // reset the last
+                last = seg;
+            }
+        }
+
+        log.infof(
+            "all segments loaded, length: %d, sorting: %s, elapsed: %d ms", 
+            segments.size(), sorting ? "true" : "false", System.currentTimeMillis() - tStart
+        );
     }
 
     // init the maker

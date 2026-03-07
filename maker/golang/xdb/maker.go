@@ -174,8 +174,9 @@ func (m *Maker) loadSegments() error {
 		}
 
 		// check the order of the data segment
-		// if err := seg.RightBehind(last); err != nil {
-		if err := seg.After(last); err != nil {
+		if sorting {
+			// just keep going
+		} else if err := seg.After(last); err != nil {
 			// return err
 			// @Note: If the continuity is disrupted,
 			// we will sort all these segments later.
