@@ -89,9 +89,15 @@ type Maker struct {
 
 func NewMaker(version *Version, policy IndexPolicy, srcFile string, dstFile string, fields []int) (*Maker, error) {
 	// open the source file with READONLY mode
-	srcHandle, err := os.OpenFile(srcFile, os.O_RDONLY, 0600)
-	if err != nil {
-		return nil, fmt.Errorf("open source file `%s`: %w", srcFile, err)
+	var err error
+	var srcHandle *os.File
+	if srcFile == "" {
+		srcHandle = nil
+	} else {
+		srcHandle, err = os.OpenFile(srcFile, os.O_RDONLY, 0600)
+		if err != nil {
+			return nil, fmt.Errorf("open source file `%s`: %w", srcFile, err)
+		}
 	}
 
 	// open the destination file with Read/Write mode
@@ -224,12 +230,21 @@ func (m *Maker) Init() error {
 	}
 
 	// load all the segments
-	err = m.loadSegments()
-	if err != nil {
-		return fmt.Errorf("load segments: %w", err)
+	if m.srcHandle == nil {
+		// do nothing here
+	} else {
+		err = m.loadSegments()
+		if err != nil {
+			return fmt.Errorf("load segments: %w", err)
+		}
 	}
 
 	return nil
+}
+
+// Append a new segment
+func (m *Maker) Append(seg *Segment) {
+	m.segments = append(m.segments, seg)
 }
 
 // refresh the vector index of the specified ip
