@@ -117,8 +117,8 @@ Put(36.132.128.0|36.132.147.255|中国|黑龙江省|哈尔滨市|移动|CN): Ok,
 Batch load modifications from a file using the `put_file` command. The IP segments in the file do not need to be as strict as the data in `./data/ipvx_source.txt`; they do not need to be continuous, and it does not matter if different IP segments overlap. The editor will automatically analyze and process them, for example:
 
 ```bash
-*editor>> put_file ../../data/ip.test.txt
-PutFile(../../data/ip.test.txt): Ok, with 25 deletes and 25 additions
+*editor>> put_file ../../data/sample/ip.test.txt
+PutFile(../../data/sample/ip.test.txt): Ok, with 25 deletes and 25 additions
 *editor>> 
 ```
 
@@ -126,7 +126,7 @@ Save modifications using the `save` command. After saving successfully, you can 
 
 ```bash
 *editor>> save
-all segments saved to ../../data/ip.merge.txt
+all segments saved to ../../data/ipv4_source.txt
 editor>> 
 ```
 

@@ -48,7 +48,7 @@ public class SegmentTest {
         }
 
         final String base = new File(res.getPath()).getParentFile().getParentFile().getParentFile().getParent();
-        Segment.iterate(base+"/data/segments.tests.mixed", new Segment.IterateAction() {
+        Segment.iterate(base+"/data/sample/segments.tests.mixed", new Segment.IterateAction() {
             @Override
             public void before(String line) {
                 // log.debugf("load segment: `%s`", line);

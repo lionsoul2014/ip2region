@@ -107,17 +107,17 @@ Put(36.132.128.0|36.132.147.255|中国|黑龙江省|哈尔滨市|移动): Ok, wi
 *editor>> 
 ```
 
-通过 `put_file` 命令从文件中批量载入修改，文件中的 IP 段不需要像　./data/ip.merge.txt 中的数据那么严格，不需要前后连续，不同 IP　段有重叠也没关系，编辑器会自动分析处理，例如：
+通过 `put_file` 命令从文件中批量载入修改，文件中的 IP 段不需要像　./data/ipvx_source.txt 中的数据那么严格，不需要前后连续，不同 IP　段有重叠也没关系，编辑器会自动分析处理，例如：
 ```bash
-*editor>> put_file ../../data/ip.test.txt
-PutFile(../../data/ip.test.txt): Ok, with 25 deletes and 25 additions
+*editor>> put_file ../../data/sample/ip.test.txt
+PutFile(../../data/sample/ip.test.txt): Ok, with 25 deletes and 25 additions
 *editor>> 
 ```
 
 通过 `save` 命令保存修改，保存成功后，再通过上面的命令从修改后的原始 IP 文件重新生成 xdb 即可：
 ```bash
 *editor>> save
-all segments saved to ../../data/ip.merge.txt
+all segments saved to ../../data/ipv4_source.txt
 editor>> 
 ```
 
