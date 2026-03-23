@@ -12,7 +12,7 @@ if test -n "$ngx_module_link"; then
     ngx_module_name=$ngx_addon_name
     ngx_module_deps="$NGX_HTTP_IP2REGION_DEPS"
     ngx_module_srcs="$NGX_HTTP_IP2REGION_SRCS"
-    ngx_module_libs="-lxdb_searcher"
+    ngx_module_libs="-lxdb"
 
     . auto/module
 else

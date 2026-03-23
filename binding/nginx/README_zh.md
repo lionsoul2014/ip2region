@@ -16,7 +16,7 @@ $ cd ../../../nginx-1.23.6
 $ ./configure                                                            \
     --add-module=$(PWD)/../ip2region/binding/nginx                       \
     --with-cc-opt="-I $(PWD)/../ip2region/binding/c/build/include"       \
-    --with-ld-opt="-L $(PWD)/../ip2region/binding/c/build/lib"
+    --with-ld-opt="-L$(PWD)/../ip2region/binding/c/build/lib"
 $ make
 $ make install
 ```
@@ -70,19 +70,19 @@ nginx access log sample
 {"remote_addr": "127.0.0.1", "region": "Reserved|Reserved|Reserved|0|0", "http_x_forwarded_for": ""}
 ```
 
-Additionally, you can build the nginx dynamic module using the Dockerfile in the current directory.
+另外，也可以使用当前路径的 Dockerfile 构建 nginx 动态模块
 
-> * The [buildx](https://github.com/docker/buildx) plugin is required to enable export functionality.
+> *需要安装 [buildx](https://github.com/docker/buildx) 插件以支持导出*
 
 ```shell
 
 docker build -t export_so -o type=tar,dest=./so.tar .
-# The final result is a dynamic module named ngx_http_ip2region_module.so.
+# 最终得到一个叫 ngx_http_ip2region_module.so 的动态模块
 tar xf so.tar && rm so.tar
 
 ```
 
-usage of dynamic modules
+动态模块使用方式
 
 ```
 

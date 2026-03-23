@@ -156,3 +156,34 @@ For example: use the source files under data to bench test the xdb files in data
 
 *Please note that the `src` file used for the bench test must be the same as the source file used to generate the xdb*.
 If an error occurs during execution, it will stop immediately. You can also execute with the `--ignore-error=true` parameter to ignore errors and view the failed statistics at the end.
+
+
+# Docker
+
+```bash
+# Build the image (run in the maker/golang directory).
+cd ip2region/maker/golang
+docker build -t ip2region-maker .
+
+# Generate IPv4 xdb
+docker run --rm -v $(pwd)/../../data:/app/data ip2region-maker \
+    gen --src=/app/data/ipv4_source.txt \
+        --dst=/app/data/ip2region_v4.xdb \
+        --version=ipv4
+
+# Generate IPv6 xdb
+docker run --rm -v $(pwd)/../../data:/app/data ip2region-maker \
+    gen --src=/app/data/ipv6_source.txt \
+        --dst=/app/data/ip2region_v6.xdb \
+        --version=ipv6
+
+# Interactive IPv4 Query
+docker run -it --rm -v $(pwd)/../../data:/app/data ip2region-maker \
+    search --db=/app/data/ip2region_v4.xdb
+
+# Bench test IPv4
+docker run --rm -v $(pwd)/../../data:/app/data ip2region-maker \
+    bench --db=/app/data/ip2region_v4.xdb \
+          --src=/app/data/ipv4_source.txt \
+          --version=ipv4
+```
