@@ -1,0 +1,23 @@
+# IP2Region Patch Override Tool - Requirements
+#
+# This tool uses only Python standard library modules.
+# No external dependencies are required!
+#
+# Required Python version: 3.7 or higher
+#
+# Standard library modules used:
+# - json (JSON serialization)
+# - ipaddress (IP address handling)
+# - sys (system-specific parameters)
+# - argparse (command-line argument parsing)
+# - pathlib (path handling)
+# - typing (type hints)
+# - datetime (timestamp generation)
+#
+# All these modules are included in Python 3.7+ standard library.
+#
+# To verify your Python version:
+#   python --version
+#
+# Should show Python 3.7.0 or higher.
+
