@@ -87,22 +87,62 @@ func IPSubOne(ip []byte) []byte {
 	return r
 }
 
-func IPMiddle(sip, eip []byte) []byte {
-	var result = make([]byte, len(sip))
-	var carry uint16 = 0
+// IPSub Sub the spcecified two byte ip
+func IPSub(sip, eip []byte) ([]byte, error) {
+	if len(sip) != len(eip) {
+		return []byte{}, fmt.Errorf("length of the two ips are not the same")
+	}
 
-	// Add the two addresses with carry
+	var carry uint16 = 0
+	var result = make([]byte, len(sip)+1)
+
 	for i := len(sip) - 1; i >= 0; i-- {
 		sum := uint16(sip[i]) + uint16(eip[i]) + carry
-		result[i] = byte(sum >> 0x01) // Divide by 2
-		carry = (sum & 0x01) << 7     // Carry for next byte (shift to MSB)
+		result[i+1] = byte(sum) // Store standard 8-bit result
+		carry = sum >> 8        // Extract the 1-bit carry for the next byte
+	}
+
+	// check and append the carry
+	if carry > 0 {
+		result[0] = byte(carry)
+		return result, nil
+	} else {
+		return result[1:], nil
+	}
+}
+
+// IPHalf get the half value of an input byte ip
+func IPHalf(ip []byte) []byte {
+	var length = len(ip)
+	var result = make([]byte, length)
+	// Tracks the bit falling off from the previous byte
+	var carry byte = 0
+
+	for i := 0; i < length; i++ {
+		// 1. Shift current byte right by 1
+		// 2. Or (|) with the carry from the previous byte (shifted to the MSB position)
+		result[i] = (ip[i] >> 1) | (carry << 7)
+
+		// 3. Capture the Least Significant Bit (LSB) to use as carry for the next byte
+		carry = ip[i] & 1
 	}
 
 	return result
 }
 
-func IterateSegments(handle *os.File, before func(l string), filter func(region string) (string, error), done func(seg *Segment) error) error {
+// IPMiddle get the middle value of two input ip address
+func IPMiddle(sip, eip []byte) ([]byte, error) {
+	buf, err := IPSub(sip, eip)
+	if err != nil {
+		return []byte{}, fmt.Errorf("IPSub(%s, %s): %w", IP2String(sip), IP2String(eip), err)
+	}
+
+	return IPHalf(buf), nil
+}
+
+func IterateSegments(handle *os.File, autoMerge bool, before func(l string), filter func(region string) (string, error), done func(seg *Segment) error) (int, int, error) {
 	var last *Segment = nil
+	var totalCount, mergeCount = 0, 0
 	var scanner = bufio.NewScanner(handle)
 	scanner.Split(bufio.ScanLines)
 	for scanner.Scan() {
@@ -115,31 +155,32 @@ func IterateSegments(handle *os.File, before func(l string), filter func(region 
 			continue
 		}
 
+		totalCount++
 		if before != nil {
 			before(l)
 		}
 
 		var ps = strings.SplitN(l, "|", 3)
 		if len(ps) != 3 {
-			return fmt.Errorf("invalid ip segment line `%s`", l)
+			return totalCount, mergeCount, fmt.Errorf("invalid ip segment line `%s`", l)
 		}
 
 		sip, err := ParseIP(ps[0])
 		if err != nil {
-			return fmt.Errorf("check start ip `%s`: %s", ps[0], err)
+			return totalCount, mergeCount, fmt.Errorf("check start ip `%s`: %s", ps[0], err)
 		}
 
 		eip, err := ParseIP(ps[1])
 		if err != nil {
-			return fmt.Errorf("check end ip `%s`: %s", ps[1], err)
+			return totalCount, mergeCount, fmt.Errorf("check end ip `%s`: %s", ps[1], err)
 		}
 
 		if len(sip) != len(eip) {
-			return fmt.Errorf("invalid ip segment line `%s`, sip/eip version not match", l)
+			return totalCount, mergeCount, fmt.Errorf("invalid ip segment line `%s`, sip/eip version not match", l)
 		}
 
 		if IPCompare(sip, eip) > 0 {
-			return fmt.Errorf("start ip(%s) should not be greater than end ip(%s)", ps[0], ps[1])
+			return totalCount, mergeCount, fmt.Errorf("start ip(%s) should not be greater than end ip(%s)", ps[0], ps[1])
 		}
 
 		// Allow empty region info since 2024/09/24
@@ -152,7 +193,7 @@ func IterateSegments(handle *os.File, before func(l string), filter func(region 
 		if filter != nil {
 			region, err = filter(ps[2])
 			if err != nil {
-				return fmt.Errorf("failed to filter region `%s`: %s", ps[2], err)
+				return totalCount, mergeCount, fmt.Errorf("failed to filter region `%s`: %s", ps[2], err)
 			}
 		}
 
@@ -168,15 +209,16 @@ func IterateSegments(handle *os.File, before func(l string), filter func(region 
 		if last == nil {
 			last = seg
 			continue
-		} else if last.Region == seg.Region {
+		} else if autoMerge && last.Region == seg.Region {
 			if err = seg.RightBehind(last); err == nil {
+				mergeCount++
 				last.EndIP = seg.EndIP
 				continue
 			}
 		}
 
 		if err = done(last); err != nil {
-			return err
+			return totalCount, mergeCount, err
 		}
 
 		// reset the last
@@ -185,10 +227,10 @@ func IterateSegments(handle *os.File, before func(l string), filter func(region 
 
 	// process the last segment
 	if last != nil {
-		return done(last)
+		return totalCount, mergeCount, done(last)
 	}
 
-	return nil
+	return totalCount, mergeCount, nil
 }
 
 func CheckSegments(segList []*Segment) error {

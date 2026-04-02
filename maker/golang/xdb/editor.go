@@ -60,7 +60,7 @@ func (e *Editor) loadSegments() error {
 	var segments []*Segment
 	var sorting = false
 
-	var iErr = IterateSegments(e.srcHandle, func(l string) {
+	_, _, iErr := IterateSegments(e.srcHandle, true, func(l string) {
 		// do nothing here
 	}, nil, func(seg *Segment) error {
 		// version check
@@ -302,7 +302,7 @@ func (e *Editor) PutFile(src string) (int, int, error) {
 	}
 
 	var oldRows, newRows = 0, 0
-	iErr := IterateSegments(handle, func(l string) {
+	_, _, iErr := IterateSegments(handle, true, func(l string) {
 		// do nothing here
 	}, nil, func(seg *Segment) error {
 		o, n, err := e.PutSegment(seg)

@@ -29,10 +29,6 @@ META-INF/
 .vscode
 
 # binding
-/v1.0//binding/java/classes/
-/v1.0//binding/java/doc/
-/v1.0//binding/java/target/
-/v1.0//binding/java/*.jar
 /binding/java/classes/
 /binding/java/doc/
 /binding/java/target/
@@ -61,18 +57,12 @@ target
 
 # VS ignore cases
 /**/*.sln
-/v1.0/binding/c#/**/.vs/
-/v1.0/binding/c#/**/packages
-/v1.0/binding/c#/**/bin
-/v1.0/binding/c#/**/obj
 /binding/c#/**/.vs/
 /binding/c#/**/packages
 /binding/c#/**/bin
 /binding/c#/**/obj
 
 # Nodejs
-/v1.0/binding/nodejs/tests/unitTests/__snapshots__
-/v1.0/binding/nodejs/coverage
 /binding/nodejs/tests/unitTests/__snapshots__
 /binding/nodejs/coverage
 /binding/nodejs/node_modules
