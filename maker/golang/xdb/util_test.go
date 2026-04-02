@@ -5,6 +5,7 @@
 package xdb
 
 import (
+	"encoding/binary"
 	"fmt"
 	"os"
 	"testing"
@@ -97,6 +98,102 @@ func TestIPSubOne2(t *testing.T) {
 	var ip = []byte{0, 1, 2, 3}
 	nip := IPSubOne(ip)
 	fmt.Printf("nip: %+v, ip:%+v", ip, nip)
+}
+
+func TestIPSub(t *testing.T) {
+	var strToSub = "1.2.3.4"
+	bytesToSub, err := ParseIP(strToSub)
+	if err != nil {
+		t.Fatalf("failed to parse ip %s", strToSub)
+	}
+	var intToSub = int(binary.BigEndian.Uint32(bytesToSub))
+	t.Logf("to sub ip: %d -> %s", intToSub, strToSub)
+
+	counter := 0
+	buf := make([]byte, 4)
+	for i := 0; i < 0x2FFFFFFF; i++ {
+		binary.BigEndian.PutUint32(buf, uint32(i))
+		subVal, err := IPSub(buf, bytesToSub)
+		if err != nil {
+			t.Fatalf("failed to IPSub(%s,%s): %s", IP2String(buf), strToSub, err)
+		}
+
+		// do it as two integers
+		byteSub := int(binary.BigEndian.Uint32(subVal))
+		intSub := i + intToSub
+		if byteSub != intSub {
+			t.Fatal("byte and int sub value are not the same")
+		}
+
+		counter++
+	}
+
+	t.Logf("test done with %d ips", counter)
+}
+
+func TestIPHalf(t *testing.T) {
+	var buf = make([]byte, 4)
+	for i := 0; i < 0xFFFFFFFF; i++ {
+		binary.BigEndian.PutUint32(buf, uint32(i))
+		half := IPHalf(buf)
+
+		// do it as two integers
+		byteMiddle := binary.BigEndian.Uint32(half)
+		intMidle := i >> 1
+		if byteMiddle != uint32(intMidle) {
+			t.Fatal("byte middle and int middle are not the same")
+		}
+	}
+}
+
+func TestSubOverflow(t *testing.T) {
+	var ip1Str = "255.255.255.250"
+	ip1Bytes, err := ParseIP(ip1Str)
+	if err != nil {
+		t.Fatalf("failed to ParseIP(%s): %s", ip1Str, err)
+	}
+
+	var buff = make([]byte, 4)
+	for i := 0; i < 10; i++ {
+		binary.BigEndian.PutUint32(buff, uint32(i))
+		ipSub, err := IPSub(ip1Bytes, buff)
+		if err != nil {
+			t.Fatalf("failed to IPSub(%s, %s): %s", ip1Str, IP2String(buff), err)
+		}
+
+		t.Logf("IPSub(%s, %s) = %+v", ip1Str, IP2String(buff), ipSub)
+	}
+}
+
+func TestIPMiddle(t *testing.T) {
+	var sIPStr = "0.0.0.0"
+	sBytes, err := ParseIP(sIPStr)
+	if err != nil {
+		t.Fatalf("failed to parse ip %s", sIPStr)
+	}
+	var sInt = int(binary.BigEndian.Uint32(sBytes))
+	t.Logf("start ip: %d -> %s", sInt, sIPStr)
+
+	counter := 0
+	buf := make([]byte, 4)
+	for i := 0; i < 0x0FFFFFFF; i++ {
+		binary.BigEndian.PutUint32(buf, uint32(i))
+		midVal, err := IPMiddle(sBytes, buf)
+		if err != nil {
+			t.Fatalf("failed to IPMiddle(%s,%s): %s", sIPStr, IP2String(buf), err)
+		}
+
+		// do it as two integers
+		byteMid := int(binary.BigEndian.Uint32(midVal))
+		intMid := (sInt + i) >> 1
+		if byteMid != intMid {
+			t.Fatal("byte and int middle value are not the same")
+		}
+
+		counter++
+	}
+
+	t.Logf("test done with %d ips", counter)
 }
 
 func TestSplitSegmentV4(t *testing.T) {
