@@ -258,7 +258,7 @@ func TestIterateSegments(t *testing.T) {
 		t.Fatalf("failed to open tests file: %s", err)
 	}
 
-	_ = IterateSegments(handle, func(l string) {
+	_, _, _ = IterateSegments(handle, true, func(l string) {
 		// fmt.Printf("load segment: `%s`\n", l)
 	}, nil, func(seg *Segment) error {
 		fmt.Printf("get segment: `%s`\n", seg)

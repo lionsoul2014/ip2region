@@ -140,8 +140,9 @@ func IPMiddle(sip, eip []byte) ([]byte, error) {
 	return IPHalf(buf), nil
 }
 
-func IterateSegments(handle *os.File, before func(l string), filter func(region string) (string, error), done func(seg *Segment) error) error {
+func IterateSegments(handle *os.File, autoMerge bool, before func(l string), filter func(region string) (string, error), done func(seg *Segment) error) (int, int, error) {
 	var last *Segment = nil
+	var totalCount, mergeCount = 0, 0
 	var scanner = bufio.NewScanner(handle)
 	scanner.Split(bufio.ScanLines)
 	for scanner.Scan() {
@@ -154,31 +155,32 @@ func IterateSegments(handle *os.File, before func(l string), filter func(region 
 			continue
 		}
 
+		totalCount++
 		if before != nil {
 			before(l)
 		}
 
 		var ps = strings.SplitN(l, "|", 3)
 		if len(ps) != 3 {
-			return fmt.Errorf("invalid ip segment line `%s`", l)
+			return totalCount, mergeCount, fmt.Errorf("invalid ip segment line `%s`", l)
 		}
 
 		sip, err := ParseIP(ps[0])
 		if err != nil {
-			return fmt.Errorf("check start ip `%s`: %s", ps[0], err)
+			return totalCount, mergeCount, fmt.Errorf("check start ip `%s`: %s", ps[0], err)
 		}
 
 		eip, err := ParseIP(ps[1])
 		if err != nil {
-			return fmt.Errorf("check end ip `%s`: %s", ps[1], err)
+			return totalCount, mergeCount, fmt.Errorf("check end ip `%s`: %s", ps[1], err)
 		}
 
 		if len(sip) != len(eip) {
-			return fmt.Errorf("invalid ip segment line `%s`, sip/eip version not match", l)
+			return totalCount, mergeCount, fmt.Errorf("invalid ip segment line `%s`, sip/eip version not match", l)
 		}
 
 		if IPCompare(sip, eip) > 0 {
-			return fmt.Errorf("start ip(%s) should not be greater than end ip(%s)", ps[0], ps[1])
+			return totalCount, mergeCount, fmt.Errorf("start ip(%s) should not be greater than end ip(%s)", ps[0], ps[1])
 		}
 
 		// Allow empty region info since 2024/09/24
@@ -191,7 +193,7 @@ func IterateSegments(handle *os.File, before func(l string), filter func(region 
 		if filter != nil {
 			region, err = filter(ps[2])
 			if err != nil {
-				return fmt.Errorf("failed to filter region `%s`: %s", ps[2], err)
+				return totalCount, mergeCount, fmt.Errorf("failed to filter region `%s`: %s", ps[2], err)
 			}
 		}
 
@@ -207,15 +209,16 @@ func IterateSegments(handle *os.File, before func(l string), filter func(region 
 		if last == nil {
 			last = seg
 			continue
-		} else if last.Region == seg.Region {
+		} else if autoMerge && last.Region == seg.Region {
 			if err = seg.RightBehind(last); err == nil {
+				mergeCount++
 				last.EndIP = seg.EndIP
 				continue
 			}
 		}
 
 		if err = done(last); err != nil {
-			return err
+			return totalCount, mergeCount, err
 		}
 
 		// reset the last
@@ -224,10 +227,10 @@ func IterateSegments(handle *os.File, before func(l string), filter func(region 
 
 	// process the last segment
 	if last != nil {
-		return done(last)
+		return totalCount, mergeCount, done(last)
 	}
 
-	return nil
+	return totalCount, mergeCount, nil
 }
 
 func CheckSegments(segList []*Segment) error {

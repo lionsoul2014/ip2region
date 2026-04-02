@@ -168,7 +168,7 @@ func (m *Maker) loadSegments() error {
 	var tStart = time.Now()
 	var sorting = false
 
-	var iErr = IterateSegments(m.srcHandle, func(l string) {
+	_, mergeCount, iErr := IterateSegments(m.srcHandle, true, func(l string) {
 		slog.Debug("loaded", "segment", l)
 	}, func(region string) (string, error) {
 		// apply the field filter
@@ -217,7 +217,7 @@ func (m *Maker) loadSegments() error {
 		}
 	}
 
-	slog.Info("all segments loaded", "length", len(m.segments), "sorting", sorting, "elapsed", time.Since(tStart))
+	slog.Info("all segments loaded", "length", len(m.segments), "merged", mergeCount, "sorting", sorting, "elapsed", time.Since(tStart))
 	return nil
 }
 

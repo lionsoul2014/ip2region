@@ -62,7 +62,7 @@ func (p *Processor) loadSegments() error {
 	slog.Info("try to load the segments ... ")
 	var tStart = time.Now()
 
-	var iErr = IterateSegments(p.srcHandle, func(l string) {
+	_, mergeCount, iErr := IterateSegments(p.srcHandle, true, func(l string) {
 		slog.Debug("loaded", "segment", l)
 	}, func(region string) (string, error) {
 		if p.clearBasedIndex > -1 {
@@ -108,7 +108,7 @@ func (p *Processor) loadSegments() error {
 		return fmt.Errorf("failed to load segments: %s", iErr)
 	}
 
-	slog.Info("all segments loaded", "length", len(p.segments), "elapsed", time.Since(tStart))
+	slog.Info("all segments loaded", "length", len(p.segments), "merged", mergeCount, "elapsed", time.Since(tStart))
 	return nil
 }
 
