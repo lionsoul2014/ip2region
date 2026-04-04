@@ -118,16 +118,21 @@ func NewIp2RegionWithPath(v4XdbPath string, v6XdbPath string) (*Ip2Region, error
 	return NewIp2Region(v4Config, v6Config)
 }
 
-func (ip2r *Ip2Region) SearchByStr(ipStr string) (string, error) {
-	ipBytes, err := xdb.ParseIP(ipStr)
-	if err != nil {
-		return "", err
+func (ip2r *Ip2Region) Search(ip any) (string, error) {
+	var err error
+	var ipBytes []byte
+	switch v := ip.(type) {
+	case string:
+		ipBytes, err = xdb.ParseIP(v)
+		if err != nil {
+			return "", fmt.Errorf("parse ip %s: %w", v, err)
+		}
+	case []byte:
+		ipBytes = v
+	default:
+		return "", fmt.Errorf("invalid ip value type %s", v)
 	}
 
-	return ip2r.Search(ipBytes)
-}
-
-func (ip2r *Ip2Region) Search(ipBytes []byte) (string, error) {
 	if l := len(ipBytes); l == 4 {
 		return ip2r.v4Search(ipBytes)
 	} else if l == 16 {

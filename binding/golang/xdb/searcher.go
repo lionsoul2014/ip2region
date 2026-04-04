@@ -89,20 +89,24 @@ func (s *Searcher) GetIOCount() int {
 	return s.ioCount
 }
 
-// SearchByStr find the region for the specified ip string
-func (s *Searcher) SearchByStr(str string) (string, error) {
-	ip, err := ParseIP(str)
-	if err != nil {
-		return "", err
+// Search the region for the specified string or bytes ip address
+func (s *Searcher) Search(ip any) (string, error) {
+	var err error
+	var ipBytes []byte
+	switch v := ip.(type) {
+	case string:
+		ipBytes, err = ParseIP(v)
+		if err != nil {
+			return "", fmt.Errorf("parse ip %s: %w", v, err)
+		}
+	case []byte:
+		ipBytes = v
+	default:
+		return "", fmt.Errorf("invalid ip value type %s", v)
 	}
 
-	return s.Search(ip)
-}
-
-// Search find the region for the specified long ip
-func (s *Searcher) Search(ip []byte) (string, error) {
 	// ip version check
-	if len(ip) != s.version.Bytes {
+	if len(ipBytes) != s.version.Bytes {
 		return "", fmt.Errorf("invalid ip address(%s expected)", s.version.Name)
 	}
 
@@ -110,7 +114,7 @@ func (s *Searcher) Search(ip []byte) (string, error) {
 	s.ioCount = 0
 
 	// locate the segment index block based on the vector index
-	var il0, il1 = int(ip[0]), int(ip[1])
+	var il0, il1 = int(ipBytes[0]), int(ipBytes[1])
 	var idx = il0*VectorIndexCols*VectorIndexSize + il1*VectorIndexSize
 	var sPtr, ePtr = uint32(0), uint32(0)
 	if s.vectorIndex != nil {
@@ -139,7 +143,7 @@ func (s *Searcher) Search(ip []byte) (string, error) {
 	}
 
 	// binary search the segment index to get the region
-	var bytes, dBytes = len(ip), len(ip) << 1
+	var bytes, dBytes = len(ipBytes), len(ipBytes) << 1
 	var segIndexSize = uint32(s.version.SegmentIndexSize)
 	var dataLen, dataPtr = 0, uint32(0)
 	var buff = make([]byte, segIndexSize)
@@ -153,9 +157,9 @@ func (s *Searcher) Search(ip []byte) (string, error) {
 		}
 
 		// decode the data step by step to reduce the unnecessary operations
-		if s.version.IPCompare(ip, buff[0:bytes]) < 0 {
+		if s.version.IPCompare(ipBytes, buff[0:bytes]) < 0 {
 			h = m - 1
-		} else if s.version.IPCompare(ip, buff[bytes:dBytes]) > 0 {
+		} else if s.version.IPCompare(ipBytes, buff[bytes:dBytes]) > 0 {
 			l = m + 1
 		} else {
 			dataLen = int(binary.LittleEndian.Uint16(buff[dBytes:]))
@@ -171,7 +175,7 @@ func (s *Searcher) Search(ip []byte) (string, error) {
 
 	// load and return the region data
 	var regionBuff = make([]byte, dataLen)
-	err := s.read(int64(dataPtr), regionBuff)
+	err = s.read(int64(dataPtr), regionBuff)
 	if err != nil {
 		return "", fmt.Errorf("read region at %d: %w", dataPtr, err)
 	}
