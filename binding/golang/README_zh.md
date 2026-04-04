@@ -36,8 +36,8 @@ if err != nil {
 }
 
 // 4，导出 ip2region 服务进行双版本的IP地址的并发查询，例如：
-v4Region, err := ip2region.SearchByStr("113.92.157.29")                          // 进行 IPv4 查询
-v6Region, err := ip2region.SearchByStr("240e:3b7:3272:d8d0:db09:c067:8d59:539e") // 进行 IPv6 查询
+v4Region, err := ip2region.Search("113.92.157.29")                          // 进行 IPv4 查询
+v6Region, err := ip2region.Search("240e:3b7:3272:d8d0:db09:c067:8d59:539e") // 进行 IPv6 查询
 
 
 // 5，在服务需要关闭的时候，同时关闭 ip2region 查询服务
@@ -55,8 +55,7 @@ ip2region.Close()
 ### 关于查询 API
 定位信息查询 API 原型为：
 ```go
-SearchByStr(string) (string, error)
-Search([]byte) (string, error)
+Search(string | []byte) (string, error)
 ```
 查询出错则 error 会包含具体的错误信息，查询成功会返回字符串的 `region` 信息，如果指定的 IP 查询不到则会返回空字符串 `""`。
 
@@ -111,9 +110,9 @@ func main() {
     var ip = "1.2.3.4"  // IPv4
 	// ip = "240e:3b7:3272:d8d0:db09:c067:8d59:539e" // IPv6
     var tStart = time.Now()
-    region, err := searcher.SearchByStr(ip)
+    region, err := searcher.Search(ip)
     if err != nil {
-        fmt.Printf("failed to SearchIP(%s): %s\n", ip, err)
+        fmt.Printf("failed to Search(%s): %s\n", ip, err)
         return
     }
 

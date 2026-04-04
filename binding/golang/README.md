@@ -39,8 +39,8 @@ if err != nil {
 }
 
 // 4. Export the ip2region service for concurrent dual-version IP address queries, for example:
-v4Region, err := ip2region.SearchByStr("113.92.157.29")                          // Perform IPv4 query
-v6Region, err := ip2region.SearchByStr("240e:3b7:3272:d8d0:db09:c067:8d59:539e") // Perform IPv6 query
+v4Region, err := ip2region.Search("113.92.157.29")                          // Perform IPv4 query
+v6Region, err := ip2region.Search("240e:3b7:3272:d8d0:db09:c067:8d59:539e") // Perform IPv6 query
 
 
 // 5. When the parent service needs to be closed, close the ip2region query service as well
@@ -60,8 +60,7 @@ ip2region.Close()
 The location information query API prototypes are:
 
 ```go
-SearchByStr(string) (string, error)
-Search([]byte) (string, error)
+Search(string | []byte) (string, error)
 ```
 
 If a query fails, the `error` will contain specific error details. If successful, it returns the `region` string. If the specified IP cannot be found, it returns an empty string `""`.
@@ -121,9 +120,9 @@ func main() {
     var ip = "1.2.3.4"  // IPv4
 	// ip = "240e:3b7:3272:d8d0:db09:c067:8d59:539e" // IPv6
     var tStart = time.Now()
-    region, err := searcher.SearchByStr(ip)
+    region, err := searcher.Search(ip)
     if err != nil {
-        fmt.Printf("failed to SearchIP(%s): %s\n", ip, err)
+        fmt.Printf("failed to Search(%s): %s\n", ip, err)
         return
     }
 

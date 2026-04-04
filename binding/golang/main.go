@@ -239,7 +239,7 @@ type 'quit' to exit
 		}
 
 		tStart := time.Now()
-		region, err := ip2region.SearchByStr(line)
+		region, err := ip2region.Search(line)
 		if err != nil {
 			fmt.Printf("\x1b[0;31m{err: %s}\x1b[0m\n", err.Error())
 		} else {
@@ -339,7 +339,13 @@ func testBench() {
 			return
 		}
 
-		for _, ip := range [][]byte{sip, eip} {
+		mip, err := xdb.IPMiddle(sip, eip)
+		if err != nil {
+			fmt.Printf("IPMiddle(%s,%s): %s", xdb.IP2String(sip), xdb.IP2String(eip), err)
+			return
+		}
+
+		for _, ip := range [][]byte{sip, mip, eip} {
 			sTime := time.Now()
 			region, err := searcher.Search(ip)
 			if err != nil {

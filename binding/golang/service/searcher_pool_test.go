@@ -23,7 +23,7 @@ func TestV4SearcherPool(t *testing.T) {
 	ipString := "219.133.110.197"
 	for i := 0; i < 20; i++ {
 		searcher := searcherPool.BorrowSearcher()
-		region, err := searcher.SearchByStr(ipString)
+		region, err := searcher.Search(ipString)
 		if err != nil {
 			t.Fatalf("failed to search(%s): %s", ipString, err)
 		}
@@ -53,7 +53,7 @@ func TestV6SearcherPool(t *testing.T) {
 	ipString := "240e:3b7:3275:f090:d2a3:7d1a:dd90:c3b6"
 	for i := 0; i < 20; i++ {
 		searcher := searcherPool.BorrowSearcher()
-		region, err := searcher.SearchByStr(ipString)
+		region, err := searcher.Search(ipString)
 		if err != nil {
 			t.Fatalf("failed to search(%s): %s", ipString, err)
 		}
