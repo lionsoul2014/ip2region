@@ -39,13 +39,16 @@ public class Config {
 
     public final int searchers;
 
+    // force ReenTrantLock to use fair Lock
+    public final boolean fairLock;
+
     // config builder
     public static ConfigBuilder custom() {
         return new ConfigBuilder();
     }
 
     protected Config(int cachePolicy, Version ipVersion, File xdbFile, 
-        Header header, byte[] vIndex, LongByteArray cBuffer, int searchers) throws IOException, XdbException {
+        Header header, byte[] vIndex, LongByteArray cBuffer, int searchers, boolean fairLock) throws IOException, XdbException {
         this.cachePolicy = cachePolicy;
         this.ipVersion = ipVersion;
 
@@ -62,6 +65,7 @@ public class Config {
         }
 
         this.searchers = searchers;
+        this.fairLock = fairLock;
     }
 
     @Override public String toString() {
