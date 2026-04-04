@@ -9,7 +9,7 @@
 <dependency>
     <groupId>org.lionsoul</groupId>
     <artifactId>ip2region</artifactId>
-    <version>3.3.6</version>
+    <version>3.3.7</version>
 </dependency>
 ```
 
@@ -26,6 +26,7 @@ final Config v4Config = Config.custom()
     // .setCacheSliceBytes(int)             // 设置缓存的分片字节数，默认为 50MiB
     // .setXdbInputStream(InputStream)      // 设置 v4 xdb 文件的 inputstream 对象
     // .setXdbFile(File)                    // 设置 v4 xdb File 对象
+    // .setFairLock()                       // 设置 ReentrantLock 是否使用公平锁
     .setXdbPath("ip2region v4 xdb path")    // 设置 v4 xdb 文件的路径
     .asV4();    // 指定为 v4 配置
 
@@ -36,6 +37,7 @@ final Config v6Config = Config.custom()
     // .setCacheSliceBytes(int)             // 设置缓存的分片字节数，默认为 50MiB
     // .setXdbInputStream(InputStream)      // 设置 v6 xdb 文件的 inputstream 对象
     // .setXdbFile(File)                    // 设置 v6 xdb File 对象
+    // .setFairLock()                       // 设置 ReentrantLock 是否使用公平锁
     .setXdbPath("ip2region v6 xdb path")    // 设置 v6 xdb 文件的路径
     .asV6();    // 指定为 v6 配置
 
@@ -56,10 +58,7 @@ ip2Region.close();
 ##### `Ip2Region` 查询备注：
 1. 该查询服务的 API 并发安全且同时支持 `IPv4` 和 `IPv6` 的地址，内部实现会自动判断。
 2. v4 和 v6 的配置需要单独创建，可以给 v4 和 v6 设置使用不同的缓存策略，也可以指定其中一个为 `null` 则该版本的 IP 地址查询都会返回 `null`。
-3. 请结合您项目的并发数给 `setSearchers` 一个合适的查询器数量，默认为 20 个，这个值在运行过程中是固定的，每次查询会从池子里租借一个查询器来完成查询操作，查询完成后再归还回去，如果租借的时候池子已经空了则等待直到有可用的查询器来完成查询服务，租借的锁是使用的 `ReentrantLock` 来管理，也可以通过如下方式来设置 `Ip2Region` 查询服务使用公平锁：
-```java
-final Ip2Region ip2region = Ip2Region.create(v4Config, v6Config, true);
-```
+3. 请结合您项目的并发数给 `setSearchers` 一个合适的查询器数量，默认为 20 个，这个值在运行过程中是固定的，每次查询会从池子里租借一个查询器来完成查询操作，查询完成后再归还回去，如果租借的时候池子已经空了则等待直到有可用的查询器来完成查询服务，租借的锁是使用的 `ReentrantLock` 来管理，也可以通过调用 `ConfigBuilder.setFairLock(true)` 来配置查询服务使用公平锁：
 4. 如果配置设置的缓存策略为 `Config.BufferCache` 即 `全内存缓存` 则默认会使用单实例的内存查询器，该实现天生并发安全，此时通过 `setSearchers` 指定的查询器数量无效。
 5. 如果 `ip2region` 查询器在提供服务期间，调用 close 默认会最大等待 10 秒钟来等待尽量多的查询器归还。
 

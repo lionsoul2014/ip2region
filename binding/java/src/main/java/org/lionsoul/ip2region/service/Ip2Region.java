@@ -81,7 +81,7 @@ public class Ip2Region {
             this.v4Pool = null;
         } else {
             this.v4InMemSearcher = null;
-            this.v4Pool = new SearcherPool(v4Config);
+            this.v4Pool = new SearcherPool(v4Config, v4Config.fairLock);
         }
 
         if (v6Config == null) {
@@ -93,7 +93,7 @@ public class Ip2Region {
             this.v6Pool = null;
         } else {
             this.v6InMemSearcher = null;
-            this.v6Pool = new SearcherPool(v6Config);
+            this.v6Pool = new SearcherPool(v6Config, v6Config.fairLock);
         }
     }
 

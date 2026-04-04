@@ -37,6 +37,9 @@ public class ConfigBuilder {
     // searchers
     private int searchers = 20;
 
+    // fair lock
+    private boolean fairLock = false;
+
     public ConfigBuilder() {}
 
     public ConfigBuilder(String xdbPath) {
@@ -76,6 +79,11 @@ public class ConfigBuilder {
         return this;
     }
 
+    public ConfigBuilder setFairLock(boolean fairLock) {
+        this.fairLock = fairLock;
+        return this;
+    }
+
     private Config build(Version ipVersion) throws IOException, XdbException, InvalidConfigException {
         if (xdbInputStream == null) {
             // everyting is fine
@@ -94,7 +102,7 @@ public class ConfigBuilder {
             final Header header = Searcher.loadHeaderFromBuffer(cBuffer);
 
             // create the config without xdbFile and vIndex
-            return new Config(cachePolicy, ipVersion, null, header, null, cBuffer, searchers);
+            return new Config(cachePolicy, ipVersion, null, header, null, cBuffer, searchers, fairLock);
         }
 
         // load the header and the cache buffer
@@ -122,7 +130,7 @@ public class ConfigBuilder {
         final LongByteArray cBuffer = cachePolicy == Config.BufferCache ? Searcher.loadContent(raf, cacheSliceBytes) : null;
 
         raf.close();
-        return new Config(cachePolicy, ipVersion, xdbFile, header, vIndex, cBuffer, searchers);
+        return new Config(cachePolicy, ipVersion, xdbFile, header, vIndex, cBuffer, searchers, fairLock);
     }
 
     // build the final #Config instance for IPv4

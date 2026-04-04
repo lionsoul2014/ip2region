@@ -10,7 +10,7 @@
 <dependency>
     <groupId>org.lionsoul</groupId>
     <artifactId>ip2region</artifactId>
-    <version>3.3.6</version>
+    <version>3.3.7</version>
 </dependency>
 ```
 
@@ -29,6 +29,7 @@ final Config v4Config = Config.custom()
     // .setCacheSliceBytes(int)             // Set cache slice bytes, default is 50MiB
     // .setXdbInputStream(InputStream)      // Set v4 xdb file inputstream object
     // .setXdbFile(File)                    // Set v4 xdb File object
+    // .setFairLock(boolean)                // Set whether ReentrantLock uses a fair lock
     .setXdbPath("ip2region v4 xdb path")    // Set the path of v4 xdb file
     .asV4();    // Specify as v4 configuration
 
@@ -39,6 +40,7 @@ final Config v6Config = Config.custom()
     // .setCacheSliceBytes(int)             // Set cache slice bytes, default is 50MiB
     // .setXdbInputStream(InputStream)      // Set v6 xdb file inputstream object
     // .setXdbFile(File)                    // Set v6 xdb File object
+    // .setFairLock(boolean)                // Set whether ReentrantLock uses a fair lock
     .setXdbPath("ip2region v6 xdb path")    // Set the path of v6 xdb file
     .asV6();    // Specify as v6 configuration
 
@@ -61,12 +63,7 @@ ip2Region.close();
 
 1. The API of this query service is concurrency-safe and supports both `IPv4` and `IPv6` addresses; the internal implementation will automatically distinguish them.
 2. v4 and v6 configurations need to be created separately. You can set different cache policies for v4 and v6, or specify one of them as `null`, in which case IP address queries for that version will return `null`.
-3. Please set a suitable number of searchers for `setSearchers` based on your project's concurrency. The default is 20. This value is fixed during runtime. Each query will borrow a searcher from the pool and return it after the query is completed. If the pool is empty when borrowing, it will wait until a searcher becomes available. The borrow lock is managed using `ReentrantLock`. You can also set the `Ip2Region` query service to use a fair lock as follows:
-
-```java
-final Ip2Region ip2region = Ip2Region.create(v4Config, v6Config, true);
-```
-
+3. Please set a suitable number of searchers for `setSearchers` based on your project's concurrency. The default is 20. This value is fixed during runtime. Each query will borrow a searcher from the pool and return it after the query is completed. If the pool is empty when borrowing, it will wait until a searcher becomes available. The borrow lock is managed using `ReentrantLock`. You can also call `ConfigBuilder.setFairLock(true)` to force the service to use a fair lock.
 4. If the cache policy in the configuration is set to `Config.BufferCache` (i.e., `Full Memory Cache`), a single-instance memory searcher will be used by default. This implementation is natively concurrency-safe, and the number of searchers specified via `setSearchers` will be ignored.
 5. If `close` is called while the `ip2region` searcher is providing service, it will wait for a maximum of 10 seconds by default to allow as many searchers as possible to be returned.
 
