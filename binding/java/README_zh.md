@@ -26,7 +26,7 @@ final Config v4Config = Config.custom()
     // .setCacheSliceBytes(int)             // 设置缓存的分片字节数，默认为 50MiB
     // .setXdbInputStream(InputStream)      // 设置 v4 xdb 文件的 inputstream 对象
     // .setXdbFile(File)                    // 设置 v4 xdb File 对象
-    // .setFairLock()                       // 设置 ReentrantLock 是否使用公平锁
+    // .setFairLock(boolean)                // 设置 ReentrantLock 是否使用公平锁
     .setXdbPath("ip2region v4 xdb path")    // 设置 v4 xdb 文件的路径
     .asV4();    // 指定为 v4 配置
 
@@ -37,7 +37,7 @@ final Config v6Config = Config.custom()
     // .setCacheSliceBytes(int)             // 设置缓存的分片字节数，默认为 50MiB
     // .setXdbInputStream(InputStream)      // 设置 v6 xdb 文件的 inputstream 对象
     // .setXdbFile(File)                    // 设置 v6 xdb File 对象
-    // .setFairLock()                       // 设置 ReentrantLock 是否使用公平锁
+    // .setFairLock(boolean)                // 设置 ReentrantLock 是否使用公平锁
     .setXdbPath("ip2region v6 xdb path")    // 设置 v6 xdb 文件的路径
     .asV6();    // 指定为 v6 配置
 
