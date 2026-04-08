@@ -21,7 +21,7 @@ import (
 func Search() {
 	var err error
 	var dbFile = ""
-	var fErr = iterateFlags(func(key string, val string) error {
+	var fErr = IterateFlags(func(key string, val string) error {
 		if key == "db" {
 			dbFile = val
 		} else {

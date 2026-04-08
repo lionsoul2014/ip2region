@@ -21,7 +21,7 @@ import (
 func Edit() {
 	var err error
 	var srcFile, ipVersion = "", ""
-	var fErr = iterateFlags(func(key string, val string) error {
+	var fErr = IterateFlags(func(key string, val string) error {
 		switch key {
 		case "src":
 			srcFile = val

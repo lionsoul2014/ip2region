@@ -22,7 +22,7 @@ func PrintHelp() {
 }
 
 // Iterate the cli flags
-func iterateFlags(cb func(key string, val string) error) error {
+func IterateFlags(cb func(key string, val string) error) error {
 	for i := 2; i < len(os.Args); i++ {
 		r := os.Args[i]
 		if len(r) < 5 {
@@ -46,7 +46,7 @@ func iterateFlags(cb func(key string, val string) error) error {
 	return nil
 }
 
-func applyLogLevel(logLevel string) error {
+func ApplyLogLevel(logLevel string) error {
 	// check and apply the log level
 	var levelLog = slog.LevelInfo
 	switch strings.ToLower(logLevel) {
@@ -71,7 +71,7 @@ func applyLogLevel(logLevel string) error {
 
 var pattern = regexp.MustCompile(`^(\d+(-\d+)?)$`)
 
-func getFilterFields(fieldList string) ([]int, error) {
+func GetFilterFields(fieldList string) ([]int, error) {
 	if len(fieldList) == 0 {
 		return []int{}, nil
 	}

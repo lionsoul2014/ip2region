@@ -13,7 +13,7 @@ func Bench() {
 	var err error
 	var dbFile, srcFile, ipVersion, logLevel = "", "", "", ""
 	var ignoreError = false
-	var fErr = iterateFlags(func(key string, val string) error {
+	var fErr = IterateFlags(func(key string, val string) error {
 		switch key {
 		case "db":
 			dbFile = val
@@ -65,7 +65,7 @@ func Bench() {
 	}
 
 	// check and apply the log level
-	err = applyLogLevel(logLevel)
+	err = ApplyLogLevel(logLevel)
 	if err != nil {
 		slog.Error("failed to apply log level", "error", err)
 		return

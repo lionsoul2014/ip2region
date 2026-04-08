@@ -20,7 +20,7 @@ func Generate() {
 	var srcFile, dstFile = "", ""
 	var ipVersion, fieldList, logLevel = "", "", "info"
 	var indexPolicy = xdb.VectorIndexPolicy
-	var fErr = iterateFlags(func(key string, val string) error {
+	var fErr = IterateFlags(func(key string, val string) error {
 		switch key {
 		case "src":
 			srcFile = val
@@ -72,13 +72,13 @@ func Generate() {
 	}
 
 	// check and apply the log level
-	err = applyLogLevel(logLevel)
+	err = ApplyLogLevel(logLevel)
 	if err != nil {
 		slog.Error("failed to apply log level", "error", err)
 		return
 	}
 
-	fields, err := getFilterFields(fieldList)
+	fields, err := GetFilterFields(fieldList)
 	if err != nil {
 		slog.Error("failed to get filter fields", "error", err)
 		return
