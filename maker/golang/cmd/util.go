@@ -10,17 +10,6 @@ import (
 	"strings"
 )
 
-func PrintHelp() {
-	fmt.Printf("ip2region xdb maker\n")
-	fmt.Printf("%s [command] [command options]\n", os.Args[0])
-	fmt.Printf("Command: \n")
-	fmt.Printf("  gen      generate the binary xdb file\n")
-	fmt.Printf("  search   binary xdb search test\n")
-	fmt.Printf("  bench    binary xdb bench test\n")
-	fmt.Printf("  edit     edit the source ip data\n")
-	fmt.Printf("  process  process the source ip data\n")
-}
-
 // Iterate the cli flags
 func IterateFlags(cb func(key string, val string) error) error {
 	for i := 2; i < len(os.Args); i++ {

@@ -16,7 +16,7 @@ import (
 
 // source data process, sort, de-duplicate, merge
 
-func Process() {
+func Process(sCmd string) {
 	var err error
 	var srcFile, dstFile = "", ""
 	var fieldList, logLevel = "", ""
@@ -54,7 +54,7 @@ func Process() {
 	}
 
 	if srcFile == "" || dstFile == "" {
-		fmt.Printf("%s process [command options]\n", os.Args[0])
+		fmt.Printf("%s %s [command options]\n", os.Args[0], sCmd)
 		fmt.Printf("options:\n")
 		fmt.Printf(" --src string                 source ip text file path\n")
 		fmt.Printf(" --dst string                 target ip text file path\n")

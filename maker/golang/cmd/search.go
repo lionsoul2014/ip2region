@@ -18,7 +18,7 @@ import (
 
 // xdb searcher test
 
-func Search() {
+func Search(sCmd string) {
 	var err error
 	var dbFile = ""
 	var fErr = IterateFlags(func(key string, val string) error {
@@ -35,7 +35,7 @@ func Search() {
 	}
 
 	if dbFile == "" {
-		fmt.Printf("%s search [command options]\n", os.Args[0])
+		fmt.Printf("%s %s [command options]\n", os.Args[0], sCmd)
 		fmt.Printf("options:\n")
 		fmt.Printf(" --db string         ip2region binary xdb file path\n")
 		return
@@ -49,21 +49,21 @@ func Search() {
 	}
 
 	var version *xdb.Version = nil
-	versionNo := binary.LittleEndian.Uint16(header[0:])
-	if versionNo == 2 {
+	switch versionNo := binary.LittleEndian.Uint16(header[0:]); versionNo {
+	case 2:
 		// old xdb file
 		version = xdb.IPv4
-	} else if versionNo == 3 {
-		ipNo := int(binary.LittleEndian.Uint16(header[16:]))
-		if ipNo == xdb.IPv4.Id {
+	case 3:
+		switch ipNo := int(binary.LittleEndian.Uint16(header[16:])); ipNo {
+		case xdb.IPv4.Id:
 			version = xdb.IPv4
-		} else if ipNo == xdb.IPv6.Id {
+		case xdb.IPv6.Id:
 			version = xdb.IPv6
-		} else {
+		default:
 			slog.Error("invalid ip version", "id", ipNo)
 			return
 		}
-	} else {
+	default:
 		slog.Error("invalid xdb version", "versionNo", versionNo, "xdbFile", dbFile)
 		return
 	}

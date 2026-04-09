@@ -9,7 +9,7 @@ import (
 	"github.com/lionsoul2014/ip2region/maker/golang/xdb"
 )
 
-func Bench() {
+func Bench(sCmd string) {
 	var err error
 	var dbFile, srcFile, ipVersion, logLevel = "", "", "", ""
 	var ignoreError = false
@@ -24,11 +24,12 @@ func Bench() {
 		case "log-level":
 			logLevel = val
 		case "ignore-error":
-			if val == "true" || val == "1" {
+			switch val {
+			case "true", "1":
 				ignoreError = true
-			} else if val == "false" || val == "0" {
+			case "false", "0":
 				ignoreError = false
-			} else {
+			default:
 				return fmt.Errorf("invalid value for ignore-error option, could be false/0 or true/1")
 			}
 		default:
@@ -42,7 +43,7 @@ func Bench() {
 	}
 
 	if dbFile == "" || srcFile == "" {
-		fmt.Printf("%s bench [command options]\n", os.Args[0])
+		fmt.Printf("%s %s [command options]\n", os.Args[0], sCmd)
 		fmt.Printf("options:\n")
 		fmt.Printf(" --db string            ip2region binary xdb file path\n")
 		fmt.Printf(" --src string           source ip text file path\n")

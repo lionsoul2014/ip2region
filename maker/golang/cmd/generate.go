@@ -15,7 +15,7 @@ import (
 
 // script to do the xdb generate
 
-func Generate() {
+func Generate(sCmd string) {
 	var err error
 	var srcFile, dstFile = "", ""
 	var ipVersion, fieldList, logLevel = "", "", "info"
@@ -49,7 +49,7 @@ func Generate() {
 	}
 
 	if srcFile == "" || dstFile == "" {
-		fmt.Printf("%s gen [command options]\n", os.Args[0])
+		fmt.Printf("%s %s [command options]\n", os.Args[0], sCmd)
 		fmt.Printf("options:\n")
 		fmt.Printf(" --src string           source ip text file path\n")
 		fmt.Printf(" --dst string           destination binary xdb file path\n")

@@ -18,7 +18,7 @@ import (
 
 // source ip data editor
 
-func Edit() {
+func Edit(sCmd string) {
 	var err error
 	var srcFile, ipVersion = "", ""
 	var fErr = IterateFlags(func(key string, val string) error {
@@ -38,7 +38,7 @@ func Edit() {
 	}
 
 	if srcFile == "" {
-		fmt.Printf("%s edit [command options]\n", os.Args[0])
+		fmt.Printf("%s %s [command options]\n", os.Args[0], sCmd)
 		fmt.Printf("options:\n")
 		fmt.Printf(" --src string        source ip text file path\n")
 		fmt.Printf(" --version string    IP version, options: ipv4/ipv6, specify this flag so you don't get confused \n")

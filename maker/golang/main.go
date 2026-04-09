@@ -5,6 +5,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -12,25 +13,36 @@ import (
 	"github.com/lionsoul2014/ip2region/maker/golang/cmd"
 )
 
+func printHelp() {
+	fmt.Printf("ip2region xdb maker\n")
+	fmt.Printf("%s [command] [command options]\n", os.Args[0])
+	fmt.Printf("Command: \n")
+	fmt.Printf("  gen      generate the binary xdb file\n")
+	fmt.Printf("  search   binary xdb search test\n")
+	fmt.Printf("  bench    binary xdb bench test\n")
+	fmt.Printf("  edit     edit the source ip data\n")
+	fmt.Printf("  process  process the source ip data\n")
+}
+
 func main() {
 	if len(os.Args) < 2 {
-		cmd.PrintHelp()
+		printHelp()
 		return
 	}
 
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
-	switch strings.ToLower(os.Args[1]) {
+	switch sCmd := strings.ToLower(os.Args[1]); sCmd {
 	case "gen":
-		cmd.Generate()
+		cmd.Generate(sCmd)
 	case "search":
-		cmd.Search()
+		cmd.Search(sCmd)
 	case "bench":
-		cmd.Bench()
+		cmd.Bench(sCmd)
 	case "edit":
-		cmd.Edit()
+		cmd.Edit(sCmd)
 	case "process":
-		cmd.Process()
+		cmd.Process(sCmd)
 	default:
-		cmd.PrintHelp()
+		printHelp()
 	}
 }
