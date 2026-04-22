@@ -20,11 +20,14 @@ import (
 
 func Search(sCmd string) {
 	var err error
-	var dbFile = ""
+	var dbFile, help = "", false
 	var fErr = IterateFlags(func(key string, val string) error {
-		if key == "db" {
+		switch key {
+		case "db":
 			dbFile = val
-		} else {
+		case "help":
+			help = GetDefaultOnBool(val)
+		default:
 			return fmt.Errorf("undefined option '%s=%s'", key, val)
 		}
 		return nil
@@ -34,10 +37,11 @@ func Search(sCmd string) {
 		return
 	}
 
-	if dbFile == "" {
+	if dbFile == "" || help {
 		fmt.Printf("%s %s [command options]\n", os.Args[0], sCmd)
 		fmt.Printf("options:\n")
 		fmt.Printf(" --db string         ip2region binary xdb file path\n")
+		fmt.Printf(" --help bool         print this help menu\n")
 		return
 	}
 

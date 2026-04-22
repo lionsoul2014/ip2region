@@ -14,7 +14,7 @@ import (
 func IterateFlags(cb func(key string, val string) error) error {
 	for i := 2; i < len(os.Args); i++ {
 		r := os.Args[i]
-		if len(r) < 5 {
+		if len(r) < 3 {
 			continue
 		}
 
@@ -22,17 +22,30 @@ func IterateFlags(cb func(key string, val string) error) error {
 			continue
 		}
 
-		var sIdx = strings.Index(r, "=")
-		if sIdx < 0 {
-			return fmt.Errorf("missing = for args pair '%s'", r)
+		var k, v = "", "" // default empty value
+		if idx := strings.Index(r, "="); idx == -1 {
+			k = r[2:]
+		} else {
+			k = r[2:idx]
+			v = r[idx+1:]
 		}
 
-		if err := cb(r[2:sIdx], r[sIdx+1:]); err != nil {
+		// fmt.Printf("k=%s, v=%s\n", k, v)
+		if err := cb(k, v); err != nil {
 			return err
 		}
 	}
 
 	return nil
+}
+
+// Parse help
+func GetDefaultOnBool(val string) bool {
+	if val == "false" || val == "0" || val == "off" {
+		return false
+	} else {
+		return true
+	}
 }
 
 func ApplyLogLevel(logLevel string) error {

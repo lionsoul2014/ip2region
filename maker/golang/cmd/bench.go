@@ -11,7 +11,8 @@ import (
 
 func Bench(sCmd string) {
 	var err error
-	var dbFile, srcFile, ipVersion, logLevel = "", "", "", ""
+	var dbFile, srcFile, ipVersion = "", "", ""
+	var help, logLevel = false, ""
 	var ignoreError = false
 	var fErr = IterateFlags(func(key string, val string) error {
 		switch key {
@@ -23,6 +24,8 @@ func Bench(sCmd string) {
 			ipVersion = val
 		case "log-level":
 			logLevel = val
+		case "help":
+			help = GetDefaultOnBool(val)
 		case "ignore-error":
 			switch val {
 			case "true", "1":
@@ -42,7 +45,7 @@ func Bench(sCmd string) {
 		return
 	}
 
-	if dbFile == "" || srcFile == "" {
+	if dbFile == "" || srcFile == "" || help {
 		fmt.Printf("%s %s [command options]\n", os.Args[0], sCmd)
 		fmt.Printf("options:\n")
 		fmt.Printf(" --db string            ip2region binary xdb file path\n")
@@ -50,6 +53,7 @@ func Bench(sCmd string) {
 		fmt.Printf(" --version string       IP version, options: ipv4/ipv6, specify this flag so you don't get confused \n")
 		fmt.Printf(" --log-level string     set the log level, options: debug/info/warn/error\n")
 		fmt.Printf(" --ignore-error bool    keep going if bench failed\n")
+		fmt.Printf(" --help bool            print this help menu\n")
 		return
 	}
 

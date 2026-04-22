@@ -19,7 +19,7 @@ func Generate(sCmd string) {
 	var err error
 	var srcFile, dstFile = "", ""
 	var ipVersion, fieldList, logLevel = "", "", "info"
-	var indexPolicy = xdb.VectorIndexPolicy
+	var help, indexPolicy = false, xdb.VectorIndexPolicy
 	var fErr = IterateFlags(func(key string, val string) error {
 		switch key {
 		case "src":
@@ -32,6 +32,8 @@ func Generate(sCmd string) {
 			logLevel = val
 		case "field-list":
 			fieldList = val
+		case "help":
+			help = GetDefaultOnBool(val)
 		case "index":
 			indexPolicy, err = xdb.IndexPolicyFromString(val)
 			if err != nil {
@@ -48,7 +50,7 @@ func Generate(sCmd string) {
 		return
 	}
 
-	if srcFile == "" || dstFile == "" {
+	if srcFile == "" || dstFile == "" || help {
 		fmt.Printf("%s %s [command options]\n", os.Args[0], sCmd)
 		fmt.Printf("options:\n")
 		fmt.Printf(" --src string           source ip text file path\n")
@@ -56,6 +58,7 @@ func Generate(sCmd string) {
 		fmt.Printf(" --version string       IP version, options: ipv4/ipv6, specify this flag so you don't get confused \n")
 		fmt.Printf(" --field-list string    field index list imploded with ',' eg: 0,1,2,3-6,7\n")
 		fmt.Printf(" --log-level string     set the log level, options: debug/info/warn/error\n")
+		fmt.Printf(" --help bool            print this help menu\n")
 		return
 	}
 

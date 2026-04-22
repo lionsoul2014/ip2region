@@ -18,8 +18,8 @@ import (
 
 func Process(sCmd string) {
 	var err error
-	var srcFile, dstFile = "", ""
-	var fieldList, logLevel = "", ""
+	var srcFile, dstFile, fieldList = "", "", ""
+	var help, logLevel = false, ""
 	var clearBasedIndex = -1
 	var clearValueEqual, clearValueExcept = "", ""
 	var fErr = IterateFlags(func(key string, val string) error {
@@ -41,6 +41,8 @@ func Process(sCmd string) {
 			clearValueEqual = val
 		case "clear-value-except":
 			clearValueExcept = val
+		case "help":
+			help = GetDefaultOnBool(val)
 		case "log-level":
 			logLevel = val
 		default:
@@ -53,7 +55,7 @@ func Process(sCmd string) {
 		return
 	}
 
-	if srcFile == "" || dstFile == "" {
+	if srcFile == "" || dstFile == "" || help {
 		fmt.Printf("%s %s [command options]\n", os.Args[0], sCmd)
 		fmt.Printf("options:\n")
 		fmt.Printf(" --src string                 source ip text file path\n")
@@ -63,6 +65,7 @@ func Process(sCmd string) {
 		fmt.Printf(" --clear-value-equal string   clear value equal to the specified one\n")
 		fmt.Printf(" --clear-value-except string  clear value except the specified one\n")
 		fmt.Printf(" --log-level string           set the log level, options: debug/info/warn/error\n")
+		fmt.Printf(" --help bool                  print this help menu\n")
 		return
 	}
 

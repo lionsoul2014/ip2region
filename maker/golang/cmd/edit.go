@@ -21,12 +21,15 @@ import (
 func Edit(sCmd string) {
 	var err error
 	var srcFile, ipVersion = "", ""
+	var help = false
 	var fErr = IterateFlags(func(key string, val string) error {
 		switch key {
 		case "src":
 			srcFile = val
 		case "version":
 			ipVersion = val
+		case "help":
+			help = GetDefaultOnBool(val)
 		default:
 			return fmt.Errorf("undefined option '%s=%s'", key, val)
 		}
@@ -37,11 +40,12 @@ func Edit(sCmd string) {
 		return
 	}
 
-	if srcFile == "" {
+	if srcFile == "" || help {
 		fmt.Printf("%s %s [command options]\n", os.Args[0], sCmd)
 		fmt.Printf("options:\n")
 		fmt.Printf(" --src string        source ip text file path\n")
 		fmt.Printf(" --version string    IP version, options: ipv4/ipv6, specify this flag so you don't get confused \n")
+		fmt.Printf(" --help bool         print this help menu\n")
 		return
 	}
 
@@ -72,7 +76,7 @@ func Edit(sCmd string) {
 	}
 
 	fmt.Printf("all segments loaded, length: %d, elapsed: %s\n", editor.SegLen(), time.Since(tStart))
-	var help = func() {
+	var printHelp = func() {
 		fmt.Printf("command list: \n")
 		fmt.Printf("  put [segment]        : put the specifield $segment\n")
 		fmt.Printf("  put_file [file]      : put all the segments from the specified $file\n")
@@ -82,7 +86,7 @@ func Edit(sCmd string) {
 		fmt.Printf("  help                 : print this help menu\n")
 	}
 
-	help()
+	printHelp()
 	var sTip = ""
 	var reader = bufio.NewReader(os.Stdin)
 	for {
@@ -101,7 +105,7 @@ func Edit(sCmd string) {
 
 		cmd := strings.TrimSpace(line)
 		if cmd == "help" {
-			help()
+			printHelp()
 		} else if cmd == "quit" {
 			if editor.NeedSave() {
 				fmt.Printf("there are changes that need to save, type 'quit!' to force quit\n")
@@ -158,7 +162,7 @@ func Edit(sCmd string) {
 			}
 			fmt.Printf("PutFile(%s): Ok, with %d deletes and %d additions\n", file, o, n)
 		} else if len(cmd) > 0 {
-			help()
+			printHelp()
 		}
 	}
 }
