@@ -181,13 +181,13 @@ func (e *Editor) Slice(offset int, size int) []*Segment {
 	return out
 }
 
-func (e *Editor) Put(ip string) (int, int, error) {
+func (e *Editor) Put(ip string, cb func(newSeg *Segment, oldList []*Segment) []*Segment) (int, int, error) {
 	seg, err := SegmentFrom(ip)
 	if err != nil {
 		return 0, 0, err
 	}
 
-	return e.PutSegment(seg)
+	return e.PutSegment(seg, cb)
 }
 
 // PutSegment put the specified segment into the current segment list with
@@ -201,7 +201,7 @@ func (e *Editor) Put(ip string) (int, int, error) {
 // StartIP------seg.StartIP------EndIP------|
 //
 //	|---------------------seg.EndIP
-func (e *Editor) PutSegment(seg *Segment) (int, int, error) {
+func (e *Editor) PutSegment(seg *Segment, cb func(newSeg *Segment, oldList []*Segment) []*Segment) (int, int, error) {
 	var next *list.Element
 	var eList []*list.Element
 	var found, counter = false, 0
@@ -252,8 +252,18 @@ func (e *Editor) PutSegment(seg *Segment) (int, int, error) {
 		})
 	}
 
-	// append the new segment
-	sList = append(sList, seg)
+	// check the callback and append the new segment
+	if cb == nil {
+		sList = append(sList, seg)
+	} else {
+		var tsList []*Segment
+		for _, ele := range eList {
+			tsList = append(tsList, ele.Value.(*Segment))
+		}
+
+		// call the callback and append the segments
+		sList = append(sList, cb(seg, tsList)...)
+	}
 
 	// check and do the tailing segment append
 	var tail = eList[len(eList)-1].Value.(*Segment)
@@ -264,6 +274,10 @@ func (e *Editor) PutSegment(seg *Segment) (int, int, error) {
 			Region:  tail.Region,
 		})
 	}
+
+	// check and merge the sList
+	// for all the continuous segments with the same region
+	sList = MergeSegments(sList)
 
 	// print for debug
 	// for i, s := range sList {
@@ -295,7 +309,7 @@ func (e *Editor) PutSegment(seg *Segment) (int, int, error) {
 	return oldRows, newRows, nil
 }
 
-func (e *Editor) PutFile(src string) (int, int, error) {
+func (e *Editor) PutFile(src string, cb func(newSeg *Segment, oldList []*Segment) []*Segment) (int, int, error) {
 	handle, err := os.OpenFile(src, os.O_RDONLY, 0600)
 	if err != nil {
 		return 0, 0, err
@@ -305,7 +319,7 @@ func (e *Editor) PutFile(src string) (int, int, error) {
 	_, _, iErr := IterateSegments(handle, true, func(l string) {
 		// do nothing here
 	}, nil, func(seg *Segment) error {
-		o, n, err := e.PutSegment(seg)
+		o, n, err := e.PutSegment(seg, cb)
 		if err == nil {
 			oldRows += o
 			newRows += n

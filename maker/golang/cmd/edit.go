@@ -147,7 +147,7 @@ func Edit(sCmd string) {
 			}
 		} else if strings.HasPrefix(cmd, "put ") {
 			seg := strings.TrimSpace(cmd[len("put "):])
-			o, n, err := editor.Put(seg)
+			o, n, err := editor.Put(seg, nil)
 			if err != nil {
 				fmt.Printf("failed to Put(%s): %s\n", seg, err)
 				continue
@@ -155,7 +155,7 @@ func Edit(sCmd string) {
 			fmt.Printf("Put(%s): Ok, with %d deletes and %d additions\n", seg, o, n)
 		} else if strings.HasPrefix(cmd, "put_file ") {
 			file := strings.TrimSpace(cmd[len("put_file "):])
-			o, n, err := editor.PutFile(file)
+			o, n, err := editor.PutFile(file, nil)
 			if err != nil {
 				fmt.Printf("failed to PutFile(%s): %s\n", file, err)
 				continue
