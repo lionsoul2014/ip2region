@@ -254,6 +254,40 @@ func CheckSegments(segList []*Segment) error {
 	return nil
 }
 
+// check and merge the continuous segments with the same region
+func MergeSegments(segList []*Segment) []*Segment {
+	var err error
+	var last *Segment = nil
+	var mergedList []*Segment
+	for _, seg := range segList {
+		// check and automatic merging the Consecutive Segments, which means:
+		// 1, region info is the same
+		// 2, last.eip+1 = cur.sip
+		if last == nil {
+			last = seg
+			continue
+		} else if last.Region == seg.Region {
+			if err = seg.RightBehind(last); err == nil {
+				last.EndIP = seg.EndIP
+				continue
+			}
+		}
+
+		// append the segment
+		mergedList = append(mergedList, last)
+
+		// track the last value
+		last = seg
+	}
+
+	// process the last segment
+	if last != nil {
+		mergedList = append(mergedList, last)
+	}
+
+	return mergedList
+}
+
 func RegionFiltering(region string, fields []int) (string, error) {
 	if len(fields) == 0 {
 		return region, nil
