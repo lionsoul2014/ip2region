@@ -238,7 +238,7 @@ func (e *Editor) PutSegment(seg *Segment, cb func(newSeg *Segment, oldList []*Se
 
 	// print for debug
 	// for i, s := range eList {
-	// 	fmt.Printf("ele %d: %s\n", i, s.Value.(*Segment))
+	// 	fmt.Printf("find -> %d: %s\n", i, s.Value.(*Segment))
 	// }
 
 	// segment split
@@ -256,13 +256,8 @@ func (e *Editor) PutSegment(seg *Segment, cb func(newSeg *Segment, oldList []*Se
 	if cb == nil {
 		sList = append(sList, seg)
 	} else {
-		var tsList []*Segment
-		for _, ele := range eList {
-			tsList = append(tsList, ele.Value.(*Segment))
-		}
-
 		// call the callback and append the segments
-		sList = append(sList, cb(seg, tsList)...)
+		sList = append(sList, cb(seg, e._getSegments(seg, eList))...)
 	}
 
 	// check and do the tailing segment append
@@ -281,7 +276,7 @@ func (e *Editor) PutSegment(seg *Segment, cb func(newSeg *Segment, oldList []*Se
 
 	// print for debug
 	// for i, s := range sList {
-	// 	fmt.Printf("%d: %s\n", i, s)
+	// 	fmt.Printf("replace -> %d: %s\n", i, s)
 	// }
 
 	// delete all the in-range segments and
@@ -307,6 +302,47 @@ func (e *Editor) PutSegment(seg *Segment, cb func(newSeg *Segment, oldList []*Se
 	e.toSave = true
 
 	return oldRows, newRows, nil
+}
+
+func (e *Editor) _getSegments(seg *Segment, eList []*list.Element) []*Segment {
+	var sList []*Segment
+	var eLen = len(eList)
+	switch eLen {
+	case 0:
+		return sList
+	case 1:
+		fSeg := eList[0].Value.(*Segment)
+		return append(sList, &Segment{
+			StartIP: seg.StartIP,
+			EndIP:   seg.EndIP,
+			Region:  fSeg.Region,
+		})
+	}
+
+	var maxIdx = eLen - 1
+
+	// append the first segment
+	fSeg := eList[0].Value.(*Segment)
+	sList = append(sList, &Segment{
+		StartIP: seg.StartIP,
+		EndIP:   fSeg.EndIP,
+		Region:  fSeg.Region,
+	})
+
+	// append the middle segments
+	for i := 1; i < maxIdx; i++ {
+		sList = append(sList, eList[i].Value.(*Segment))
+	}
+
+	// append the last segment
+	lSeg := eList[maxIdx].Value.(*Segment)
+	sList = append(sList, &Segment{
+		StartIP: lSeg.StartIP,
+		EndIP:   seg.EndIP,
+		Region:  lSeg.Region,
+	})
+
+	return sList
 }
 
 func (e *Editor) PutFile(src string, cb func(newSeg *Segment, oldList []*Segment) []*Segment) (int, int, error) {
