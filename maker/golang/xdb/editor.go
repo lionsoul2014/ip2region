@@ -270,10 +270,6 @@ func (e *Editor) PutSegment(seg *Segment, cb func(newSeg *Segment, oldList []*Se
 		})
 	}
 
-	// check and merge the sList
-	// for all the continuous segments with the same region
-	sList = MergeSegments(sList)
-
 	// print for debug
 	// for i, s := range sList {
 	// 	fmt.Printf("replace -> %d: %s\n", i, s)
@@ -371,16 +367,22 @@ func (e *Editor) PutFile(src string, cb func(newSeg *Segment, oldList []*Segment
 	return oldRows, newRows, nil
 }
 
+// save the changes to the source file.
 func (e *Editor) Save() error {
+	return e.SaveToFile(e.srcPath)
+}
+
+func (e *Editor) SaveToFile(dstFile string) error {
 	// check the to-save flag
 	if !e.toSave {
 		return fmt.Errorf("nothing changed")
 	}
 
-	dstHandle, err := os.OpenFile(e.srcPath, os.O_WRONLY|os.O_TRUNC, 0644)
+	dstHandle, err := os.OpenFile(dstFile, os.O_WRONLY|os.O_TRUNC, 0644)
 	if err != nil {
 		return err
 	}
+	defer dstHandle.Close()
 
 	// loop and flush all the segments to the dstHandle
 	var next *list.Element
@@ -405,9 +407,7 @@ func (e *Editor) Save() error {
 		}
 	}
 
-	// close the handle
-	// and close the to-save flag
-	_ = dstHandle.Close()
+	// close the to-save flag
 	e.toSave = false
 
 	return nil
