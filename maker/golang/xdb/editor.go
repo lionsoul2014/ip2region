@@ -378,7 +378,7 @@ func (e *Editor) SaveToFile(dstFile string) error {
 		return fmt.Errorf("nothing changed")
 	}
 
-	dstHandle, err := os.OpenFile(dstFile, os.O_WRONLY|os.O_TRUNC, 0644)
+	dstHandle, err := os.OpenFile(dstFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return err
 	}
