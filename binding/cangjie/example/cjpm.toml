@@ -1,0 +1,10 @@
+[package]
+  cjc-version = "1.1.0"
+  name = "ip2regionExample"
+  version = "1.0.0"
+  output-type = "executable"
+  compile-option = "-Woff unused"
+  description = "ip2region Cangjie CLI example"
+
+[dependencies]
+  ip2region = { path = ".." }

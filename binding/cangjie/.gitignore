@@ -1,0 +1,5 @@
+# build cache
+.cache/
+
+# dependency lock
+cjpm.lock
