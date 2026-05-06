@@ -1,0 +1,15 @@
+[package]
+  cjc-version = "1.1.0"
+  name = "ip2region"
+  organization = ""
+  description = "ip2region xdb searcher library for Cangjie"
+  version = "1.0.0"
+  target-dir = ""
+  script-dir = ""
+  output-type = "static"
+  compile-option = "-Woff unused"
+  override-compile-option = ""
+  link-option = ""
+  package-configuration = {}
+
+[dependencies]
