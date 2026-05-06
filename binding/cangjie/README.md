@@ -1,6 +1,6 @@
-# ip2region xdb searcher — Cangjie Binding
+# ip2region Cangjie Query Client
 
-ip2region (v2.0/v3.0) xdb 数据库的仓颉语言查询库，支持 IPv4 和 IPv6，提供多线程安全的服务层。
+This implementation supports both `IPv4` and `IPv6`, and provides a `thread-safe` service layer.
 
 ## Architecture
 
