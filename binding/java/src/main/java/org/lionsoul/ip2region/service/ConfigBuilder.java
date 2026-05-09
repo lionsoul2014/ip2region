@@ -95,11 +95,11 @@ public class ConfigBuilder {
             // 1, load the content buffer
             final LongByteArray cBuffer = Searcher.loadContentFromInputStream(xdbInputStream, cacheSliceBytes);
 
-            // 2, verify the xdb from the buffer
-            Searcher.verify(Searcher.loadHeaderFromBuffer(cBuffer), cBuffer.length());
-
-            // 3, load the header
+            // 2, load the header
             final Header header = Searcher.loadHeaderFromBuffer(cBuffer);
+
+            // 3, verify the xdb from the buffer
+            Searcher.verify(header, cBuffer.length());
 
             // create the config without xdbFile and vIndex
             return new Config(cachePolicy, ipVersion, null, header, null, cBuffer, searchers, fairLock);
