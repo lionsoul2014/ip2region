@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"math/big"
 	"net"
+	"net/netip"
 	"os"
 	"strings"
 )
@@ -33,6 +34,44 @@ func ParseIP(ip string) ([]byte, error) {
 	}
 
 	return nil, fmt.Errorf("invalid ip address: %s", ip)
+}
+
+var bitMaskList = []uint8{
+	0b1111_1111, // all zero
+	0b0111_1111,
+	0b0011_1111,
+	0b0001_1111,
+	0b0000_1111,
+	0b0000_0111,
+	0b0000_0011,
+	0b0000_0001,
+}
+
+func CIDR2Range(cidrStr string) ([]byte, []byte, error) {
+	prefix, err := netip.ParsePrefix(cidrStr)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Get the start IP (Network Address)
+	// Masked() zeros out the host bits, which gives the starting IP of the subnet.
+	sip := prefix.Masked().Addr().AsSlice()
+	eip := make([]byte, len(sip))
+	copy(eip, sip)
+
+	// Calculate the end IP (Broadcast Address)
+	bits := prefix.Bits()
+
+	// border byte rest bit filled with 1
+	bByteIdx := bits / 8
+	eip[bByteIdx] |= bitMaskList[bits-(bByteIdx*8)]
+
+	// fill all the rest bits with 1
+	for bi := bByteIdx + 1; bi < len(sip); bi++ {
+		eip[bi] |= 0b1111_1111
+	}
+
+	return sip, eip, nil
 }
 
 func IP2String(ip []byte) string {
@@ -308,4 +347,42 @@ func RegionFiltering(region string, fields []int) (string, error) {
 	}
 
 	return strings.Join(sb, "|"), nil
+}
+
+// do the string split step by step as caller needed
+func StringTokenizer(str, substr string, cb func(s string, start int) bool) []string {
+	var tokens []string
+	var token string
+	var sIdx, oIdx, isEOF = 0, 0, false
+	for {
+		// do the token match
+		nIdx := strings.Index(str[sIdx:], substr)
+		if nIdx == -1 {
+			isEOF = true
+			token = str[sIdx:]
+		} else {
+			token = str[sIdx : sIdx+nIdx]
+		}
+
+		oIdx = sIdx                    // backup the old index
+		sIdx = sIdx + nIdx + 1         // reset the next start index
+		tokens = append(tokens, token) // append the token
+
+		// check and call the callback
+		if cb(token, oIdx) == false {
+			// keep the last token
+			if sIdx < len(str) {
+				tokens = append(tokens, str[sIdx:])
+			}
+
+			break
+		}
+
+		// check the EOF
+		if isEOF {
+			break
+		}
+	}
+
+	return tokens
 }

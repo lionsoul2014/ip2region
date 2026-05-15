@@ -8,6 +8,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 )
 
@@ -264,4 +265,60 @@ func TestIterateSegments(t *testing.T) {
 		fmt.Printf("get segment: `%s`\n", seg)
 		return nil
 	})
+}
+
+func TestStringTokenizer(t *testing.T) {
+	var strList = []string{
+		"24.231.126.0/24|14537 2914 29866|IGP",
+		"24.231.126.0|24.231.126.255|14537 2914 29866|IGP",
+	}
+
+	var counter = 0
+	for _, str := range strList {
+		tokens := StringTokenizer(str, "|", func(s string, start int) bool {
+			// fmt.Printf("%s[idx=%d, |]=%s\n", str, start, s)
+			if counter == 0 {
+				if strings.Index(s, "/") > 0 {
+					return false
+				}
+			}
+
+			counter++
+			return counter < 2
+		})
+		fmt.Printf("%d tokens: %s\n", len(tokens), strings.Join(tokens, ", "))
+	}
+}
+
+func TestCIDR2Range(t *testing.T) {
+	var strList = [][3]string{
+		{"43.247.92.0/22", "43.247.92.0", "43.247.95.255"},
+		{"64.252.86.39/29", "64.252.86.32", "64.252.86.39"},
+		{"103.37.44.0/22", "103.37.44.0", "103.37.47.255"},
+		{"111.223.12.0/22", "111.223.12.0", "111.223.15.255"},
+		{"43.248.80.0/20", "43.248.80.0", "43.248.95.255"},
+		{"192.168.100.0/22", "192.168.100.0", "192.168.103.255"},
+		{"2403:3380::/32", "2403:3380::", "2403:3380:ffff:ffff:ffff:ffff:ffff:ffff"},
+		{"2001:db8:85a3::/64", "2001:db8:85a3::", "2001:db8:85a3:0:ffff:ffff:ffff:ffff"},
+		{"2001:db8:abcd::/48", "2001:db8:abcd::", "2001:db8:abcd:ffff:ffff:ffff:ffff:ffff"},
+	}
+
+	for _, item := range strList {
+		sip, eip, err := CIDR2Range(item[0])
+		if err != nil {
+			t.Fatalf("CIDR2Range: %s", err)
+		}
+
+		sStr := IP2String(sip)
+		eStr := IP2String(eip)
+		if sStr != item[1] {
+			t.Fatalf("start ip %s != %s", sStr, item[1])
+		}
+
+		if eStr != item[2] {
+			t.Fatalf("end ip %s != %s", eStr, item[2])
+		}
+
+		fmt.Printf("cidr=%s: {sip=%s, eip=%s}\n", item[0], sStr, eStr)
+	}
 }

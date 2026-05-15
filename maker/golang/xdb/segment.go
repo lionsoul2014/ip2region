@@ -16,19 +16,42 @@ type Segment struct {
 }
 
 func SegmentFrom(seg string, cRegion func(string) *Region) (*Segment, error) {
-	var ps = strings.SplitN(strings.TrimSpace(seg), "|", 3)
-	if len(ps) != 3 {
+	var count = 0
+	var ps = StringTokenizer(strings.TrimSpace(seg), "|", func(s string, start int) bool {
+		// CIDR format
+		if strings.Index(s, "/") > 0 {
+			return false
+		}
+
+		count++
+		return count < 2
+	})
+
+	var err error
+	var sip, eip []byte
+	var rIdx = 0
+	switch pl := len(ps); pl {
+	case 2:
+		// CIDR format
+		rIdx = 1
+	case 3:
+		// triditional ip range
+		rIdx = 2
+		sip, err = ParseIP(ps[0])
+		if err != nil {
+			return nil, fmt.Errorf("parser start ip `%s`: %s", ps[0], err)
+		}
+
+		eip, err = ParseIP(ps[1])
+		if err != nil {
+			return nil, fmt.Errorf("check end ip `%s`: %s", ps[1], err)
+		}
+	default:
 		return nil, fmt.Errorf("invalid ip segment `%s`", seg)
 	}
 
-	sip, err := ParseIP(ps[0])
-	if err != nil {
-		return nil, fmt.Errorf("check start ip `%s`: %s", ps[0], err)
-	}
-
-	eip, err := ParseIP(ps[1])
-	if err != nil {
-		return nil, fmt.Errorf("check end ip `%s`: %s", ps[1], err)
+	if len(sip) != len(eip) {
+		return nil, fmt.Errorf("invalid ip segment line `%s`, sip/eip version not match", seg)
 	}
 
 	if IPCompare(sip, eip) > 0 {
@@ -38,7 +61,7 @@ func SegmentFrom(seg string, cRegion func(string) *Region) (*Segment, error) {
 	return &Segment{
 		StartIP: sip,
 		EndIP:   eip,
-		Region:  cRegion(ps[2]),
+		Region:  cRegion(ps[rIdx]),
 	}, nil
 }
 
