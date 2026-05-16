@@ -292,12 +292,17 @@ func TestIterateSegments(t *testing.T) {
 		t.Fatalf("failed to open tests file: %s", err)
 	}
 
-	_, _, _ = IterateSegments(handle, true, func(l string) {
+	total, merged, err := IterateSegments(handle, true, func(l string) {
 		// fmt.Printf("load segment: `%s`\n", l)
 	}, nil, NewRegion, func(seg *Segment) error {
-		fmt.Printf("get segment: `%s`\n", seg)
+		fmt.Printf("{%s, %s} -> `%s`\n", IP2String(seg.StartIP), IP2String(seg.EndIP), seg.Region)
 		return nil
 	})
+	if err != nil {
+		t.Fatalf("iterate error: %s", err)
+	}
+
+	fmt.Printf("done iterate -> total:%d, merged:%d\n", total, merged)
 }
 
 func TestStringTokenizer(t *testing.T) {

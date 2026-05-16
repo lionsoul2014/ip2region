@@ -200,38 +200,14 @@ func IterateSegments(handle *os.File, autoMerge bool, before func(l string), fil
 			before(l)
 		}
 
-		var ps = strings.SplitN(l, "|", 3)
-		if len(ps) != 3 {
-			return totalCount, mergeCount, fmt.Errorf("invalid ip segment line `%s`", l)
-		}
-
-		sip, err := ParseIP(ps[0])
+		sip, eip, region, err := ParseSegment(l)
 		if err != nil {
-			return totalCount, mergeCount, fmt.Errorf("check start ip `%s`: %s", ps[0], err)
+			return totalCount, mergeCount, err
 		}
-
-		eip, err := ParseIP(ps[1])
-		if err != nil {
-			return totalCount, mergeCount, fmt.Errorf("check end ip `%s`: %s", ps[1], err)
-		}
-
-		if len(sip) != len(eip) {
-			return totalCount, mergeCount, fmt.Errorf("invalid ip segment line `%s`, sip/eip version not match", l)
-		}
-
-		if IPCompare(sip, eip) > 0 {
-			return totalCount, mergeCount, fmt.Errorf("start ip(%s) should not be greater than end ip(%s)", ps[0], ps[1])
-		}
-
-		// Allow empty region info since 2024/09/24
-		// if len(ps[2]) < 1 {
-		// 	return fmt.Errorf("empty region info in segment line `%s`", l)
-		// }
 
 		// check and do the region filter
-		var region = ps[2]
 		if filter != nil {
-			region, err = filter(ps[2])
+			region, err = filter(region)
 			if err != nil {
 				return totalCount, mergeCount, fmt.Errorf("failed to filter region `%s`: %s", region, err)
 			}
