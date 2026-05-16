@@ -56,18 +56,19 @@ func CIDR2Range(cidrStr string) ([]byte, []byte, error) {
 	// Get the start IP (Network Address)
 	// Masked() zeros out the host bits, which gives the starting IP of the subnet.
 	sip := prefix.Masked().Addr().AsSlice()
-	eip := make([]byte, len(sip))
+	ipl := len(sip)
+	eip := make([]byte, ipl)
 	copy(eip, sip)
 
 	// Calculate the end IP (Broadcast Address)
 	bits := prefix.Bits()
 
 	// border byte rest bit filled with 1
-	bByteIdx := bits / 8
-	eip[bByteIdx] |= bitMaskList[bits-(bByteIdx*8)]
+	byteIdx := bits / 8
+	eip[byteIdx] |= bitMaskList[bits-(byteIdx*8)]
 
 	// fill all the rest bits with 1
-	for bi := bByteIdx + 1; bi < len(sip); bi++ {
+	for bi := byteIdx + 1; bi < ipl; bi++ {
 		eip[bi] |= 0b1111_1111
 	}
 

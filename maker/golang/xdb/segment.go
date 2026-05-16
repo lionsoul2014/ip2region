@@ -34,12 +34,16 @@ func SegmentFrom(seg string, cRegion func(string) *Region) (*Segment, error) {
 	case 2:
 		// CIDR format
 		rIdx = 1
+		sip, eip, err = CIDR2Range(ps[0])
+		if err != nil {
+			return nil, fmt.Errorf("parse cidr: %s", err)
+		}
 	case 3:
 		// triditional ip range
 		rIdx = 2
 		sip, err = ParseIP(ps[0])
 		if err != nil {
-			return nil, fmt.Errorf("parser start ip `%s`: %s", ps[0], err)
+			return nil, fmt.Errorf("parse start ip `%s`: %s", ps[0], err)
 		}
 
 		eip, err = ParseIP(ps[1])

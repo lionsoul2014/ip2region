@@ -197,6 +197,39 @@ func TestIPMiddle(t *testing.T) {
 	t.Logf("test done with %d ips", counter)
 }
 
+func TestSegmentFromt(t *testing.T) {
+	var lines = []string{
+		// ipv4 range
+		"2.10.222.0|2.10.223.255|France|Brittany|0|Orange S.A.|FR",
+		"8.35.35.0|8.35.159.255|United States|Colorado|0|ZSCALER, INC.|US",
+		"223.104.64.128|223.104.64.159|中国|广东省|深圳市|移动|CN",
+
+		// ipv4 CIDR
+		"1.0.4.0/24|2497 6453 7545 2764 38803|IGP",
+		"2.18.209.0/24|14537 3356 1299 34164 34164|IGP",
+		"14.32.46.0/24|2497 4766 9696|IGP",
+
+		// IPv6 range
+		"2001:200:17c::|2001:200:180:ffff:ffff:ffff:ffff:ffff|Japan|Tokyo|Tokyo|WIDE Project|JP",
+		"2001:506:100:226e::8|2001:506:100:226f::7|United States|Michigan|Detroit|Transact Ltd.|US",
+		"2a13:aac4:1000::|2a13:aac4:ffff:ffff:ffff:ffff:ffff:ffff|中国|广东省|深圳市|MLGT|CN",
+
+		// IPv6 CIDR
+		"2c0f:fc89:8081::/48|32590 9002 3257 8452 36992 36992 36992 36992 36992 36992 36992 36992 36992|EGP",
+		"2c0f:fe08:20a::/48|2497 6939 36914|IGP",
+		"2c0f:ffc8::/32|14537 23764 37468 22355|IGP",
+	}
+
+	for _, str := range lines {
+		seg, err := SegmentFrom(str, NewRegion)
+		if err != nil {
+			t.Fatalf("parse segment: %s", err)
+		}
+
+		fmt.Printf("seg={%s, %s, %s}\n", IP2String(seg.StartIP), IP2String(seg.EndIP), seg.Region.Str)
+	}
+}
+
 func TestSplitSegmentV4(t *testing.T) {
 	// var str = "1.1.0.0|1.3.3.24|中国|广东|深圳|电信"
 	// var str = "0.0.0.0|1.255.225.254|0|0|0|内网IP|内网IP"
@@ -309,16 +342,20 @@ func TestCIDR2Range(t *testing.T) {
 			t.Fatalf("CIDR2Range: %s", err)
 		}
 
-		sStr := IP2String(sip)
-		eStr := IP2String(eip)
-		if sStr != item[1] {
-			t.Fatalf("start ip %s != %s", sStr, item[1])
+		tSip, err := ParseIP(item[1])
+		if err != nil {
+			t.Fatalf("parse start ip: %s", err)
+		} else if IPCompare(sip, tSip) != 0 {
+			t.Fatalf("start ip %s != %s", IP2String(sip), item[1])
 		}
 
-		if eStr != item[2] {
-			t.Fatalf("end ip %s != %s", eStr, item[2])
+		tEip, err := ParseIP(item[2])
+		if err != nil {
+			t.Fatalf("parse end ip: %s", err)
+		} else if IPCompare(eip, tEip) != 0 {
+			t.Fatalf("end ip %s != %s", IP2String(eip), item[2])
 		}
 
-		fmt.Printf("cidr=%s: {sip=%s, eip=%s}\n", item[0], sStr, eStr)
+		fmt.Printf("cidr=%s: {sip=%s, eip=%s}\n", item[0], item[1], item[2])
 	}
 }
