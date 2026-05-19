@@ -55,6 +55,7 @@ package xdb
 import (
 	"encoding/binary"
 	"fmt"
+	"io"
 	"log/slog"
 	"math"
 	"os"
@@ -72,11 +73,17 @@ const (
 	VectorIndexLength = VectorIndexRows * VectorIndexCols * VectorIndexSize
 )
 
+type WriteSeekCloser interface {
+	io.Writer
+	io.Seeker
+	io.Closer
+}
+
 type Maker struct {
 	version *Version
 
-	srcHandle *os.File
-	dstHandle *os.File
+	srcHandle io.ReadCloser
+	dstHandle WriteSeekCloser
 
 	// self-define field index
 	fields []int
@@ -107,11 +114,15 @@ func NewMaker(version *Version, policy IndexPolicy, srcFile string, dstFile stri
 		return nil, fmt.Errorf("open target file `%s`: %w", dstFile, err)
 	}
 
+	return INewMaker(version, policy, srcHandle, dstHandle, fields), nil
+}
+
+func INewMaker(version *Version, policy IndexPolicy, srcReader io.ReadCloser, dstWriter WriteSeekCloser, fields []int) *Maker {
 	return &Maker{
 		version: version,
 
-		srcHandle: srcHandle,
-		dstHandle: dstHandle,
+		srcHandle: srcReader,
+		dstHandle: dstWriter,
 
 		// fields filter index
 		fields: fields,
@@ -121,7 +132,7 @@ func NewMaker(version *Version, policy IndexPolicy, srcFile string, dstFile stri
 		regionPool:  map[string]uint32{},
 		regionCache: NewRegionCache(),
 		vectorIndex: make([]byte, VectorIndexLength),
-	}, nil
+	}
 }
 
 func (m *Maker) initDbHeader() error {

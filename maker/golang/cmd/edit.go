@@ -116,7 +116,7 @@ func Edit(sCmd string) {
 			// quit directly
 			break
 		} else if cmd == "save" {
-			err = editor.Save()
+			err = editor.SaveToFile(srcFile)
 			if err != nil {
 				fmt.Printf("failed to save the changes: %s\n", err)
 				continue

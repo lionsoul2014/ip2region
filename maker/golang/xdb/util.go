@@ -8,10 +8,10 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"io"
 	"math/big"
 	"net"
 	"net/netip"
-	"os"
 	"strings"
 )
 
@@ -180,10 +180,10 @@ func IPMiddle(sip, eip []byte) ([]byte, error) {
 	return IPHalf(buf), nil
 }
 
-func IterateSegments(handle *os.File, autoMerge bool, before func(l string), filter func(region string) (string, error), cRegion func(string) *Region, done func(seg *Segment) error) (int, int, error) {
+func IterateSegments(reader io.Reader, autoMerge bool, before func(l string), filter func(region string) (string, error), cRegion func(string) *Region, done func(seg *Segment) error) (int, int, error) {
 	var last *Segment = nil
 	var totalCount, mergeCount = 0, 0
-	var scanner = bufio.NewScanner(handle)
+	var scanner = bufio.NewScanner(reader)
 	scanner.Split(bufio.ScanLines)
 	for scanner.Scan() {
 		var l = strings.TrimSpace(strings.TrimSuffix(scanner.Text(), "\n"))
