@@ -185,7 +185,7 @@ func VerifyFromFile(dbFile string) error {
 }
 
 // LoadHeader load the header info from the specified handle
-func LoadHeader(handle *os.File) (*Header, error) {
+func LoadHeader(handle io.ReadSeeker) (*Header, error) {
 	_, err := handle.Seek(0, 0)
 	if err != nil {
 		return nil, fmt.Errorf("seek to the header: %w", err)
@@ -226,7 +226,7 @@ func LoadHeaderFromBuff(cBuff []byte) (*Header, error) {
 }
 
 // LoadVectorIndex util function to load the vector index from the specified file handle
-func LoadVectorIndex(handle *os.File) ([]byte, error) {
+func LoadVectorIndex(handle io.ReadSeeker) ([]byte, error) {
 	// load all the vector index block
 	_, err := handle.Seek(HeaderInfoLength, 0)
 	if err != nil {
@@ -263,32 +263,14 @@ func LoadVectorIndexFromFile(dbFile string) ([]byte, error) {
 }
 
 // LoadContent load the whole xdb content from the specified file handle
-func LoadContent(handle *os.File) ([]byte, error) {
-	// get file size
-	fi, err := handle.Stat()
-	if err != nil {
-		return nil, fmt.Errorf("stat: %w", err)
-	}
-
-	size := fi.Size()
-
+func LoadContent(handle io.ReadSeeker) ([]byte, error) {
 	// seek to the head of the file
-	_, err = handle.Seek(0, 0)
+	_, err := handle.Seek(0, 0)
 	if err != nil {
 		return nil, fmt.Errorf("seek to get xdb file length: %w", err)
 	}
 
-	var buff = make([]byte, size)
-	rLen, err := handle.Read(buff)
-	if err != nil {
-		return nil, err
-	}
-
-	if rLen != len(buff) {
-		return nil, fmt.Errorf("incomplete read: readed bytes should be %d", len(buff))
-	}
-
-	return buff, nil
+	return io.ReadAll(handle)
 }
 
 // LoadContentFromFile load the whole xdb content from the specified db file path
