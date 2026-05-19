@@ -14,12 +14,13 @@ package xdb
 import (
 	"encoding/binary"
 	"fmt"
+	"io"
 	"os"
 )
 
 type Searcher struct {
-	version *Version
-	handle  *os.File
+	version  *Version
+	dbReader io.ReadSeekCloser
 
 	ioCount int
 
@@ -65,14 +66,31 @@ func NewSearcher(version *Version, dbFile string, vIndex []byte, cBuff []byte) (
 
 	return &Searcher{
 		version:     version,
-		handle:      handle,
+		dbReader:    handle,
 		vectorIndex: vIndex,
 	}, nil
 }
 
+func INewSearcher(version *Version, dbReader io.ReadSeekCloser, vIndex []byte, cBuff []byte) *Searcher {
+	// content buff first
+	if cBuff != nil {
+		return &Searcher{
+			version:     version,
+			vectorIndex: nil,
+			contentBuff: cBuff,
+		}
+	} else {
+		return &Searcher{
+			version:     version,
+			dbReader:    dbReader,
+			vectorIndex: vIndex,
+		}
+	}
+}
+
 func (s *Searcher) Close() {
-	if s.handle != nil {
-		err := s.handle.Close()
+	if s.dbReader != nil {
+		err := s.dbReader.Close()
 		if err != nil {
 			// do error log here ?
 		}
@@ -193,13 +211,13 @@ func (s *Searcher) read(offset int64, buff []byte) error {
 			return fmt.Errorf("incomplete read: readed bytes should be %d", len(buff))
 		}
 	} else {
-		_, err := s.handle.Seek(offset, 0)
+		_, err := s.dbReader.Seek(offset, 0)
 		if err != nil {
 			return fmt.Errorf("seek to %d: %w", offset, err)
 		}
 
 		s.ioCount++
-		rLen, err := s.handle.Read(buff)
+		rLen, err := s.dbReader.Read(buff)
 		if err != nil {
 			return fmt.Errorf("handle read: %w", err)
 		}
