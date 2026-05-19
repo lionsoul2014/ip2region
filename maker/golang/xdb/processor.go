@@ -8,6 +8,7 @@ package xdb
 
 import (
 	"fmt"
+	"io"
 	"log/slog"
 	"os"
 	"sort"
@@ -16,8 +17,8 @@ import (
 )
 
 type Processor struct {
-	srcHandle *os.File
-	dstHandle *os.File
+	srcReader io.ReadCloser
+	dstWriter io.WriteCloser
 
 	// value clear
 	clearBasedIndex  int
@@ -45,9 +46,17 @@ func NewProcessor(srcFile string, dstFile string, fields []int,
 		return nil, fmt.Errorf("open target file `%s`: %w", dstFile, err)
 	}
 
+	return INewProcessor(
+		srcHandle, dstHandle, fields,
+		clearBasedIndex, clearValueEqual, clearValueExcept,
+	), nil
+}
+
+func INewProcessor(srcReader io.ReadCloser, dstWriter io.WriteCloser, fields []int,
+	clearBasedIndex int, clearValueEqual string, clearValueExcept string) *Processor {
 	return &Processor{
-		srcHandle: srcHandle,
-		dstHandle: dstHandle,
+		srcReader: srcReader,
+		dstWriter: dstWriter,
 
 		// clear
 		clearBasedIndex:  clearBasedIndex,
@@ -59,14 +68,14 @@ func NewProcessor(srcFile string, dstFile string, fields []int,
 
 		segments: []*Segment{},
 		rgCache:  NewRegionCache(),
-	}, nil
+	}
 }
 
 func (p *Processor) loadSegments() error {
 	slog.Info("try to load the segments ... ")
 	var tStart = time.Now()
 
-	_, mergeCount, iErr := IterateSegments(p.srcHandle, true, func(l string) {
+	_, mergeCount, iErr := IterateSegments(p.srcReader, true, func(l string) {
 		slog.Debug("loaded", "segment", l)
 	}, func(region string) (string, error) {
 		if p.clearBasedIndex > -1 {
@@ -135,7 +144,7 @@ func (p *Processor) Start() error {
 
 	slog.Info("try to write all segments to target file ...")
 	for _, seg := range p.segments {
-		_, err := fmt.Fprintln(p.dstHandle, seg.String())
+		_, err := fmt.Fprintln(p.dstWriter, seg.String())
 		if err != nil {
 			return fmt.Errorf("write segment index for '%s': %w", seg.String(), err)
 		}
@@ -146,12 +155,12 @@ func (p *Processor) Start() error {
 }
 
 func (p *Processor) End() error {
-	err := p.dstHandle.Close()
+	err := p.dstWriter.Close()
 	if err != nil {
 		return err
 	}
 
-	err = p.srcHandle.Close()
+	err = p.srcReader.Close()
 	if err != nil {
 		return err
 	}

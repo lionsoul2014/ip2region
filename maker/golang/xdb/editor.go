@@ -9,6 +9,7 @@ package xdb
 import (
 	"container/list"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"sort"
@@ -18,8 +19,7 @@ type Editor struct {
 	verison *Version
 
 	// source ip file
-	srcPath   string
-	srcHandle *os.File
+	srcHandle io.ReadCloser
 	toSave    bool
 
 	// segments list
@@ -41,17 +41,20 @@ func NewEditor(version *Version, srcFile string) (*Editor, error) {
 		return nil, err
 	}
 
+	return INewEditor(version, srcHandle)
+}
+
+func INewEditor(version *Version, srcReader io.ReadCloser) (*Editor, error) {
 	e := &Editor{
 		verison:   version,
-		srcPath:   srcPath,
-		srcHandle: srcHandle,
+		srcHandle: srcReader,
 		toSave:    false,
 		segments:  list.New(),
 		rgCache:   NewRegionCache(),
 	}
 
 	// load the segments
-	if err = e.loadSegments(); err != nil {
+	if err := e.loadSegments(); err != nil {
 		return nil, fmt.Errorf("failed to load segments: %s", err)
 	}
 
@@ -370,11 +373,6 @@ func (e *Editor) PutFile(src string, cb func(newSeg *Segment, oldList []*Segment
 
 	_ = handle.Close()
 	return oldRows, newRows, nil
-}
-
-// save the changes to the source file.
-func (e *Editor) Save() error {
-	return e.SaveToFile(e.srcPath)
 }
 
 func (e *Editor) SaveToFile(dstFile string) error {

@@ -13,13 +13,14 @@ package xdb
 import (
 	"encoding/binary"
 	"fmt"
+	"io"
 	"os"
 )
 
 type Searcher struct {
 	version *Version
 
-	handle *os.File
+	handle io.ReadSeekCloser
 
 	// header info
 	header []byte
@@ -36,14 +37,16 @@ func NewSearcher(version *Version, dbFile string) (*Searcher, error) {
 		return nil, err
 	}
 
+	return INewSearcher(version, handle), nil
+}
+
+func INewSearcher(version *Version, handle io.ReadSeekCloser) *Searcher {
 	return &Searcher{
-		version: version,
-
-		handle: handle,
-		header: nil,
-
+		version:     version,
+		handle:      handle,
+		header:      nil,
 		vectorIndex: nil,
-	}, nil
+	}
 }
 
 func (s *Searcher) Close() {
