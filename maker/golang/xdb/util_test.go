@@ -364,3 +364,19 @@ func TestCIDR2Range(t *testing.T) {
 		fmt.Printf("cidr=%s: {sip=%s, eip=%s}\n", item[0], item[1], item[2])
 	}
 }
+
+func TestCIDR2Range_Fix(t *testing.T) {
+	var strList = []string{
+		// "14.200.21.0/24",
+		"14.200.21.158/32",
+	}
+
+	for _, cidr := range strList {
+		sip, eip, err := CIDR2Range(cidr)
+		if err != nil {
+			t.Fatalf("CIDR2Range: %s", err)
+		}
+
+		fmt.Printf("cidr=%s: {sip=%s, eip=%s}\n", cidr, IP2String(sip), IP2String(eip))
+	}
+}

@@ -65,7 +65,14 @@ func CIDR2Range(cidrStr string) ([]byte, []byte, error) {
 
 	// border byte rest bit filled with 1
 	byteIdx := bits / 8
-	eip[byteIdx] |= bitMaskList[bits-(byteIdx*8)]
+
+	// check and fill the border byte bits.
+	// @Note this check is possible since there will be bits
+	// like 32 in IPv4 and 128 in IPv6.
+	// fmt.Printf("%s -> bits=%d, byteIdx=%d, maskIdx=%d\n", cidrStr, bits, byteIdx, bits-byteIdx*8)
+	if byteIdx < ipl {
+		eip[byteIdx] |= bitMaskList[bits-(byteIdx*8)]
+	}
 
 	// fill all the rest bits with 1
 	for bi := byteIdx + 1; bi < ipl; bi++ {
