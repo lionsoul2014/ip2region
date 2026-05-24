@@ -82,8 +82,8 @@ type WriteSeekCloser interface {
 type Maker struct {
 	version *Version
 
-	srcHandle io.ReadCloser
-	dstHandle WriteSeekCloser
+	srcReader io.ReadCloser
+	dstWriter WriteSeekCloser
 
 	// self-define field index
 	fields []int
@@ -121,8 +121,8 @@ func INewMaker(version *Version, policy IndexPolicy, srcReader io.ReadCloser, ds
 	return &Maker{
 		version: version,
 
-		srcHandle: srcReader,
-		dstHandle: dstWriter,
+		srcReader: srcReader,
+		dstWriter: dstWriter,
 
 		// fields filter index
 		fields: fields,
@@ -138,7 +138,7 @@ func INewMaker(version *Version, policy IndexPolicy, srcReader io.ReadCloser, ds
 func (m *Maker) initDbHeader() error {
 	slog.Info("try to init the db header ... ")
 
-	_, err := m.dstHandle.Seek(0, 0)
+	_, err := m.dstWriter.Seek(0, 0)
 	if err != nil {
 		return err
 	}
@@ -167,7 +167,7 @@ func (m *Maker) initDbHeader() error {
 	// 7, runtime ptr bytes
 	binary.LittleEndian.PutUint16(header[18:], uint16(RuntimePtrSize))
 
-	_, err = m.dstHandle.Write(header)
+	_, err = m.dstWriter.Write(header)
 	if err != nil {
 		return err
 	}
@@ -181,7 +181,7 @@ func (m *Maker) loadSegments() error {
 	var tStart = time.Now()
 	var sorting = false
 
-	_, mergeCount, iErr := IterateSegments(m.srcHandle, true, func(l string) {
+	_, mergeCount, iErr := IterateSegments(m.srcReader, true, func(l string) {
 		slog.Debug("loaded", "segment", l)
 	}, func(region string) (string, error) {
 		// apply the field filter
@@ -243,9 +243,7 @@ func (m *Maker) Init() error {
 	}
 
 	// load all the segments
-	if m.srcHandle == nil {
-		// do nothing here
-	} else {
+	if m.srcReader != nil {
 		err = m.loadSegments()
 		if err != nil {
 			return fmt.Errorf("load segments: %w", err)
@@ -281,7 +279,7 @@ func (m *Maker) Start() error {
 	}
 
 	// 1, write all the region/data to the binary file
-	_, err := m.dstHandle.Seek(int64(HeaderInfoLength+VectorIndexLength), 0)
+	_, err := m.dstWriter.Seek(int64(HeaderInfoLength+VectorIndexLength), 0)
 	if err != nil {
 		return fmt.Errorf("seek to data first ptr: %w", err)
 	}
@@ -301,7 +299,7 @@ func (m *Maker) Start() error {
 		}
 
 		// get the first ptr of the next region
-		pos, err := m.dstHandle.Seek(0, 1)
+		pos, err := m.dstWriter.Seek(0, 1)
 		if err != nil {
 			return fmt.Errorf("seek to current ptr: %w", err)
 		}
@@ -311,7 +309,7 @@ func (m *Maker) Start() error {
 			return fmt.Errorf("region ptr exceed the max length of %d", math.MaxUint32)
 		}
 
-		_, err = m.dstHandle.Write(region)
+		_, err = m.dstWriter.Write(region)
 		if err != nil {
 			return fmt.Errorf("write region '%s': %w", seg.Region, err)
 		}
@@ -343,7 +341,7 @@ func (m *Maker) Start() error {
 		var segList = seg.Split()
 		slog.Debug("try to index segment", "length", len(segList), "splits", seg.String())
 		for _, s := range segList {
-			pos, err := m.dstHandle.Seek(0, 1)
+			pos, err := m.dstWriter.Seek(0, 1)
 			if err != nil {
 				return fmt.Errorf("seek to segment index block: %w", err)
 			}
@@ -365,7 +363,7 @@ func (m *Maker) Start() error {
 			_offset = len(s.StartIP) + len(s.EndIP)
 			binary.LittleEndian.PutUint16(indexBuff[_offset:], uint16(dataLen))
 			binary.LittleEndian.PutUint32(indexBuff[_offset+2:], dataPtr)
-			_, err = m.dstHandle.Write(indexBuff)
+			_, err = m.dstWriter.Write(indexBuff)
 			if err != nil {
 				return fmt.Errorf("write segment index for '%s': %w", s.String(), err)
 			}
@@ -385,11 +383,11 @@ func (m *Maker) Start() error {
 
 	// synchronized the vector index block
 	slog.Info("try to write the vector index block ... ")
-	_, err = m.dstHandle.Seek(int64(HeaderInfoLength), 0)
+	_, err = m.dstWriter.Seek(int64(HeaderInfoLength), 0)
 	if err != nil {
 		return fmt.Errorf("seek vector index first ptr: %w", err)
 	}
-	_, err = m.dstHandle.Write(m.vectorIndex)
+	_, err = m.dstWriter.Write(m.vectorIndex)
 	if err != nil {
 		return fmt.Errorf("write vector index: %w", err)
 	}
@@ -398,12 +396,12 @@ func (m *Maker) Start() error {
 	slog.Info("try to write the segment index ptr ... ")
 	binary.LittleEndian.PutUint32(indexBuff, uint32(startIndexPtr))
 	binary.LittleEndian.PutUint32(indexBuff[4:], uint32(endIndexPtr))
-	_, err = m.dstHandle.Seek(8, 0)
+	_, err = m.dstWriter.Seek(8, 0)
 	if err != nil {
 		return fmt.Errorf("seek segment index ptr: %w", err)
 	}
 
-	_, err = m.dstHandle.Write(indexBuff[:8])
+	_, err = m.dstWriter.Write(indexBuff[:8])
 	if err != nil {
 		return fmt.Errorf("write segment index ptr: %w", err)
 	}
@@ -415,12 +413,12 @@ func (m *Maker) Start() error {
 }
 
 func (m *Maker) End() error {
-	err := m.dstHandle.Close()
+	err := m.dstWriter.Close()
 	if err != nil {
 		return err
 	}
 
-	err = m.srcHandle.Close()
+	err = m.srcReader.Close()
 	if err != nil {
 		return err
 	}

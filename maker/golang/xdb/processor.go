@@ -128,9 +128,11 @@ func (p *Processor) loadSegments() error {
 // Init the db binary file
 func (p *Processor) Init() error {
 	// load all the segments
-	err := p.loadSegments()
-	if err != nil {
-		return fmt.Errorf("load segments: %w", err)
+	if p.srcReader != nil {
+		err := p.loadSegments()
+		if err != nil {
+			return fmt.Errorf("load segments: %w", err)
+		}
 	}
 
 	return nil
