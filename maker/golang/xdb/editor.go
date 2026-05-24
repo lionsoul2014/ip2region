@@ -54,8 +54,11 @@ func INewEditor(version *Version, srcReader io.ReadCloser) (*Editor, error) {
 	}
 
 	// load the segments
-	if err := e.loadSegments(); err != nil {
-		return nil, fmt.Errorf("failed to load segments: %s", err)
+	if srcReader != nil {
+		err := e.loadSegments()
+		if err != nil {
+			return nil, fmt.Errorf("failed to load segments: %s", err)
+		}
 	}
 
 	return e, nil
@@ -241,7 +244,10 @@ func (e *Editor) PutSegment(seg *Segment, cb func(newSeg *Segment, oldList []*Se
 
 	if len(eList) == 0 {
 		// could this even be a case ?
-		return 0, 0, fmt.Errorf("failed to find the related segment")
+		// return 0, 0, fmt.Errorf("failed to find the related segment")
+
+		e.segments.PushBack(seg)
+		return 0, 1, nil
 	}
 
 	// print for debug
