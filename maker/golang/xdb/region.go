@@ -28,8 +28,12 @@ func NewRegion(str string) *Region {
 }
 
 func (r *Region) Fields() []string {
+	return r.SepFields("|")
+}
+
+func (r *Region) SepFields(sep string) []string {
 	if r.fields == nil {
-		r.fields = strings.Split(r.Str, "|")
+		r.fields = strings.Split(r.Str, sep)
 	}
 
 	return r.fields
