@@ -207,7 +207,7 @@ func IterateSegments(reader io.Reader, autoMerge bool, before func(l string), fi
 			before(l)
 		}
 
-		sip, eip, region, err := ParseSegment(l)
+		sip, eip, region, err := ParseSegment(l, "|")
 		if err != nil {
 			return totalCount, mergeCount, err
 		}

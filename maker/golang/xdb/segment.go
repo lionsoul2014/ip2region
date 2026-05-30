@@ -15,9 +15,9 @@ type Segment struct {
 	Region  *Region
 }
 
-func ParseSegment(seg string) ([]byte, []byte, string, error) {
+func ParseSegment(seg string, sep string) ([]byte, []byte, string, error) {
 	var count = 0
-	var ps = StringTokenizer(strings.TrimSpace(seg), "|", func(s string, start int) bool {
+	var ps = StringTokenizer(strings.TrimSpace(seg), sep, func(s string, start int) bool {
 		// CIDR format
 		if strings.Index(s, "/") > 0 {
 			return false
@@ -66,7 +66,7 @@ func ParseSegment(seg string) ([]byte, []byte, string, error) {
 }
 
 func SegmentFrom(seg string, cRegion func(string) *Region) (*Segment, error) {
-	sip, eip, region, err := ParseSegment(seg)
+	sip, eip, region, err := ParseSegment(seg, "|")
 	if err != nil {
 		return nil, err
 	}
