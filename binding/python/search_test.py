@@ -49,7 +49,7 @@ def run_search_test(db_path: str, cache_policy: str):
     # create the searcher
     searcher = None
     try:
-        searcher = create_searcher(args.db, args.cache_policy)
+        searcher = create_searcher(db_path, cache_policy)
     except Exception as e:
         print("failed to create searcher: {}".format(str(e)))
         return
