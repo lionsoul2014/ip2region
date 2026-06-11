@@ -245,12 +245,12 @@ func TestConcurrentCall(t *testing.T) {
 				}
 
 				if l := len(ipBytes); l == 4 {
-					if region != "中国|广东省|深圳市|电信" {
+					if region != "中国|广东省|深圳市|电信|CN" {
 						fmt.Print("Error: region not equals")
 						break
 					}
 				} else {
-					if region != "中国|广东省|深圳市|家庭宽带" {
+					if region != "中国|广东省|深圳市|电信|CN" {
 						fmt.Print("Error: region not equals")
 						break
 					}

@@ -339,13 +339,7 @@ func testBench() {
 			return
 		}
 
-		mip, err := xdb.IPMiddle(sip, eip)
-		if err != nil {
-			fmt.Printf("IPMiddle(%s,%s): %s", xdb.IP2String(sip), xdb.IP2String(eip), err)
-			return
-		}
-
-		for _, ip := range [][]byte{sip, mip, eip} {
+		for _, ip := range [][]byte{sip, eip} {
 			sTime := time.Now()
 			region, err := searcher.Search(ip)
 			if err != nil {
