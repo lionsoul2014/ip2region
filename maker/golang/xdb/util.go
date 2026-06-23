@@ -187,7 +187,7 @@ func IPMiddle(sip, eip []byte) ([]byte, error) {
 	return IPHalf(buf), nil
 }
 
-func IterateSegments(reader io.Reader, autoMerge bool, before func(l string), filter func(region string) (string, error), cRegion func(string) *Region, done func(seg *Segment) error) (int, int, error) {
+func IterateSegmentsFull(reader io.Reader, sep string, autoMerge bool, before func(l string), filter func(region string) (string, error), cRegion func(string) *Region, done func(seg *Segment) error) (int, int, error) {
 	var last *Segment = nil
 	var totalCount, mergeCount = 0, 0
 	var scanner = bufio.NewScanner(reader)
@@ -207,7 +207,7 @@ func IterateSegments(reader io.Reader, autoMerge bool, before func(l string), fi
 			before(l)
 		}
 
-		sip, eip, region, err := ParseSegment(l, "|")
+		sip, eip, region, err := ParseSegment(l, sep)
 		if err != nil {
 			return totalCount, mergeCount, err
 		}
@@ -254,6 +254,14 @@ func IterateSegments(reader io.Reader, autoMerge bool, before func(l string), fi
 	}
 
 	return totalCount, mergeCount, nil
+}
+
+func IterateSegments(reader io.Reader, autoMerge bool, before func(l string), filter func(region string) (string, error), cRegion func(string) *Region, done func(seg *Segment) error) (int, int, error) {
+	return IterateSegmentsFull(reader, "|", autoMerge, before, filter, cRegion, done)
+}
+
+func IterateSegmentsBase(reader io.Reader, done func(seg *Segment) error) (int, int, error) {
+	return IterateSegmentsFull(reader, "|", false, nil, nil, NewRegion, done)
 }
 
 func CheckSegments(segList []*Segment) error {
