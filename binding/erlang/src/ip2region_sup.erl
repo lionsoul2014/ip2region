@@ -58,16 +58,9 @@ ensure_table(Name, Opts) ->
 pool_child_specs() ->
     {ok, DbConfig} = application:get_env(db),
     {ok, PoolArgsCfg} = application:get_env(poolargs),
-    Versions = [Version || {Version, _File} <- DbConfig],
-    UseLegacyName = (Versions == [ipv4]),
-    V4PoolName = case UseLegacyName of
-                     true -> ?IP2REGION_POOL;
-                     false -> ?IP2REGION_POOL_V4
-                 end,
-    ok = application:set_env(?APP_NAME, v4_pool_name, V4PoolName),
     lists:foldl(
         fun({ipv4, File}, Acc) ->
-                [make_pool_spec(V4PoolName, ipv4, File, PoolArgsCfg) | Acc];
+                [make_pool_spec(?IP2REGION_POOL_V4, ipv4, File, PoolArgsCfg) | Acc];
            ({ipv6, File}, Acc) ->
                 [make_pool_spec(?IP2REGION_POOL_V6, ipv6, File, PoolArgsCfg) | Acc];
            (_, Acc) ->

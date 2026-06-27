@@ -134,6 +134,7 @@ do_info(Info, State) ->
     error_logger:error_report(io:format("unknown info: ~p", [Info])),
     {noreply, State}.
 
+-spec resolve_version(#xdb_header{}) -> {ok, ipv4 | ipv6} | {error, term()}.
 resolve_version(Header) ->
     case ip2region_xdb:header_version(Header) of
         2 -> {ok, ipv4};
@@ -147,6 +148,10 @@ resolve_version(Header) ->
     end.
 
 load_vector_index(IoDevice, Version) ->
+    %% The vector index ETS table is global and shared by all pool workers.
+    %% Only the first worker (or the first worker after a restart) populates it.
+    %% Subsequent workers skip the file:read here; search_ip/2 uses file:pread/3,
+    %% so the current file pointer position does not affect correctness.
     Table = ip2region_xdb:vector_index_table(Version),
     case ets:info(Table, size) of
         undefined ->

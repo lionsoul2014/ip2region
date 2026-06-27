@@ -18,16 +18,6 @@
 
 -include("ip2region.hrl").
 
--record(xdb_header, {
-    version :: non_neg_integer(),
-    index_policy :: non_neg_integer(),
-    created_at :: non_neg_integer(),
-    start_index_ptr :: non_neg_integer(),
-    end_index_ptr :: non_neg_integer(),
-    ip_version :: non_neg_integer(),
-    runtime_ptr_bytes :: non_neg_integer()
-}).
-
 -spec parse_header(binary()) -> {ok, #xdb_header{}} | {error, invalid_header}.
 parse_header(Bin) when is_binary(Bin), byte_size(Bin) >= 20 ->
     <<Version:16/little, IndexPolicy:16/little, CreatedAt:32/little,
@@ -57,11 +47,14 @@ header_runtime_ptr_bytes(#xdb_header{runtime_ptr_bytes = B}) -> B.
 segment_index_size(ipv4) -> ?XDB_SEGMENT_INDEX_SIZE_V4;
 segment_index_size(ipv6) -> ?XDB_SEGMENT_INDEX_SIZE_V6.
 
+-spec vector_index_table(ipv4 | ipv6) -> atom().
 vector_index_table(ipv4) -> ?XDB_VECTOR_INDEX_V4;
 vector_index_table(ipv6) -> ?XDB_VECTOR_INDEX_V6.
 
+-spec segment_index_table(ipv4 | ipv6) -> atom().
 segment_index_table(ipv4) -> ?XDB_SEGMENT_INDEX_V4;
 segment_index_table(ipv6) -> ?XDB_SEGMENT_INDEX_V6.
 
+-spec cache_table(ipv4 | ipv6) -> atom().
 cache_table(ipv4) -> ?IP2REGION_CACHE_V4;
 cache_table(ipv6) -> ?IP2REGION_CACHE_V6.

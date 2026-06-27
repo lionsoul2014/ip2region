@@ -110,6 +110,9 @@ Finished in 0.074 seconds
 
 IPv4 与 IPv6 共用一个脚本，通过参数指定版本：
 
+> `cold` = 第一次遍历源文件：每个 IP 都会触发真实查询，并把结果写入 ETS 缓存。
+> `warm` = 第二次遍历同一列表，所有查询都直接命中 ETS 缓存。
+
 ```
 $ cd benchmarks/
 $ sh xdb-benchmark.sh ipv4

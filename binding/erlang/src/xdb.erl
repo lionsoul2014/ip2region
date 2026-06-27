@@ -17,7 +17,7 @@
 search(Ip) ->
     case ip2region_util:ip_to_bytes(Ip) of
         {ok, ipv4, IpBin} ->
-            do_search(v4_pool(), ipv4, IpBin);
+            do_search(?IP2REGION_POOL_V4, ipv4, IpBin);
         {ok, ipv6, IpBin} ->
             do_search(?IP2REGION_POOL_V6, ipv6, IpBin);
         Ret ->
@@ -31,16 +31,13 @@ do_search(PoolName, Version, IpBin) ->
         _ ->
             Worker = poolboy:checkout(PoolName, true, infinity),
             try
-                Region = ip2region_worker:search(Worker, IpBin),
-                ets:insert(CacheTable, {IpBin, Region}),
-                Region
+                case ip2region_worker:search(Worker, IpBin) of
+                    {error, _} = Err -> Err;
+                    Region ->
+                        ets:insert(CacheTable, {IpBin, Region}),
+                        Region
+                end
             after
                 poolboy:checkin(PoolName, Worker)
             end
-    end.
-
-v4_pool() ->
-    case application:get_env(?APP_NAME, v4_pool_name) of
-        {ok, PoolName} -> PoolName;
-        undefined -> ?IP2REGION_POOL
     end.

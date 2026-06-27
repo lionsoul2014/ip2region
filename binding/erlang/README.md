@@ -133,6 +133,10 @@ Finished in 0.150 seconds
 
 Both IPv4 and IPv6 benchmarks share the same script. Run it with the desired IP version:
 
+> `cold` = first pass over the source file: each IP triggers a real search and the
+> result is written into the ETS cache. `warm` = second pass over the same list,
+> where every lookup is served directly from the ETS cache.
+
 ```
 $ cd benchmarks/
 $ sh xdb-benchmark.sh ipv4

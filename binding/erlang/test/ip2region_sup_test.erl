@@ -6,6 +6,10 @@ pools_started_test() ->
     application:stop(ip2region),
     application:unload(ip2region),
     ok = application:load(ip2region),
+    %% NOTE: rebar3 compiles tests under _build/test/lib/ip2region via a
+    %% symlink back to the source tree, so ?FILE resolves to the original
+    %% binding/erlang/test/... path. If rebar3 is configured to copy
+    %% instead of symlink, this path traversal must be adjusted.
     TestDir = filename:dirname(?FILE),
     ErlangDir = filename:dirname(TestDir),
     BindingDir = filename:dirname(ErlangDir),

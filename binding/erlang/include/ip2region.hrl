@@ -9,15 +9,6 @@
 -define(XDB_VECTOR_INDEX_SIZE, 8).
 -define(XDB_VECTOR_INDEX_COUNT, (16#10000)). %% 256*256
 
-%% xdb header field offsets (bytes)
--define(XDB_HEADER_VERSION_OFFSET, 0).
--define(XDB_HEADER_INDEX_POLICY_OFFSET, 2).
--define(XDB_HEADER_CREATED_AT_OFFSET, 4).
--define(XDB_HEADER_START_INDEX_PTR_OFFSET, 8).
--define(XDB_HEADER_END_INDEX_PTR_OFFSET, 12).
--define(XDB_HEADER_IP_VERSION_OFFSET, 16).
--define(XDB_HEADER_RUNTIME_PTR_BYTES_OFFSET, 18).
-
 %% IP versions as stored in xdb header
 -define(IP_VERSION_4, 4).
 -define(IP_VERSION_6, 6).
@@ -34,9 +25,18 @@
 -define(IP2REGION_CACHE_V4, ets_ip2region_cache_v4).
 -define(IP2REGION_CACHE_V6, ets_ip2region_cache_v6).
 
-%% Per-version pool names. ?IP2REGION_POOL is kept as the legacy v4 pool name.
--define(IP2REGION_POOL, ip2region_pool).
+%% Per-version pool names.
 -define(IP2REGION_POOL_V4, ip2region_pool_v4).
 -define(IP2REGION_POOL_V6, ip2region_pool_v6).
+
+-record(xdb_header, {
+    version :: non_neg_integer(),
+    index_policy :: non_neg_integer(),
+    created_at :: non_neg_integer(),
+    start_index_ptr :: non_neg_integer(),
+    end_index_ptr :: non_neg_integer(),
+    ip_version :: non_neg_integer(),
+    runtime_ptr_bytes :: non_neg_integer()
+}).
 
 -endif.
