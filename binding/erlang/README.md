@@ -1,10 +1,10 @@
 :globe_with_meridians: [中文简体](README_zh.md) | [English](README.md)
 
-# ip2region erlang query client
+# ip2region Erlang query client
 
 ### Introduction
 
-This binding implements the xdb query client in Erlang, based on the Erlang OTP Application. The query logic is implemented by the `ip2region_worker` worker process, supporting multiple worker processes for load balancing.
+This binding implements the xdb query client in `Erlang`, based on the `Erlang OTP Application`. The query logic is implemented by the `ip2region_worker` worker process, supporting multiple worker processes for load balancing.
 
 ### Application Configuration
 
@@ -43,7 +43,7 @@ The `xdb:search/1` interface automatically detects IPv4 and IPv6 inputs and rout
 
 ### Compile
 
-```
+```bash
 $ rebar3 compile
 ```
 
@@ -51,13 +51,13 @@ $ rebar3 compile
 
 Place the xdb file in the `priv` directory, then start the Erlang node:
 
-```
+```bash
 $ rebar3 shell
 ```
 
 Call the `xdb:search/1` interface in the Erlang shell to query IP address information. This interface supports IP addresses represented as list strings, binary strings, tuples, and integers:
 
-```
+```erlang
 1> xdb:search("1.0.8.0").
 [20013,22269,124,24191,19996,30465,124,24191,24030,24066,
  124,20013,22269,30005,20449,124,67,78]
@@ -74,7 +74,7 @@ Call the `xdb:search/1` interface in the Erlang shell to query IP address inform
 
 With dual-stack enabled, IPv6 addresses are supported in the same way:
 
-```
+```erlang
 1> io:format("~ts~n", [xdb:search("2001:4860:4860::8888")]).
 United States|Florida|Miami|Google LLC|US
 2> io:format("~ts~n", [xdb:search(<<"2001:4860:4860::8888">>)]).
@@ -85,21 +85,21 @@ United States|Florida|Miami|Google LLC|US
 
 ### Usage
 
-* Add the dependency in `rebar.config`
+- Add the dependency in `rebar.config`
 
-```
+```erlang
 {deps, [
   ip2region
 ]}.
 ```
 
-* Start the ip2region Application
+- Start the ip2region Application
 
 ```erlang
 {ok, _} = application:ensure_all_started(ip2region).
 ```
 
-* Call the `xdb:search/1` interface to query IP information
+- Call the `xdb:search/1` interface to query IP information
 
 ```erlang
 xdb:search("1.0.8.0").
@@ -107,7 +107,7 @@ xdb:search("1.0.8.0").
 
 ### Unit Test
 
-```
+```bash
 $ rebar3 eunit
 ===> Verifying dependencies...
 ===> Analyzing applications...
@@ -129,27 +129,27 @@ Both IPv4 and IPv6 benchmarks share the same script. Run it with the desired IP 
 > result is written into the ETS cache. `warm` = second pass over the same list,
 > where every lookup is served directly from the ETS cache.
 
-```
+```bash
 $ cd benchmarks/
 $ sh xdb-benchmark.sh ipv4
 ```
 
 For IPv6:
 
-```
+```bash
 $ sh xdb-benchmark.sh ipv6
 ```
 
 Or use the Makefile targets from the `binding/erlang` directory:
 
-```
+```bash
 $ make bench-v4
 $ make bench-v6
 ```
 
 #### IPv4 benchmark example
 
-```
+```bash
 System:
   CPU    : Apple M4
   Cores  : 10 cores / 10 threads
@@ -165,7 +165,7 @@ Done.
 
 #### IPv6 benchmark example
 
-```
+```bash
 System:
   CPU    : Apple M4
   Cores  : 10 cores / 10 threads

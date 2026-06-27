@@ -1,13 +1,16 @@
 :globe_with_meridians: [中文简体](README_zh.md) | [English](README.md)
 
-# ip2region erlang 查询客户端
+# ip2region Erlang 查询客户端
 
 ### 简介
-该bingding以erlang语言实现xdb查询客户端，基于Erlang OTP Application，查询逻辑由ip2region_worker工作进程实现，支持配多个工作进程来进行负载均衡。
+
+该 bingding 以 `Erlang` 语言实现 xdb 查询客户端，基于 `Erlang OTP Application`，查询逻辑由 `ip2region_worker` 工作进程实现，支持配多个工作进程来进行负载均衡。
 
 ### 应用配置
-该应用可配置的参数在ip2region.app.src中,如下：
-``` erlang
+
+该应用可配置的参数在 `ip2region.app.src` 中, 如下：
+
+```erlang
   {env,[
     {poolargs, [
         {size, 1},  %% 工作进程默认数量
@@ -23,7 +26,7 @@
 
 如需启用 IPv6 查询，在 `db` 列表中加入 `ipv6` 项，并将两个 xdb 文件放到 `priv/` 目录下：
 
-``` erlang
+```erlang
   {env,[
     {poolargs, [
         {size, 1},
@@ -40,17 +43,21 @@
 
 ### 编译
 
-```
+```bash
 $ rebar3 compile
 ```
 
 ### 运行
-将xdb文件放到priv目录下，然后启动erlang节点：
-```
+
+将 xdb 文件放到 `priv` 目录下，然后启动 Erlang 节点：
+
+```bash
 $ rebar3 shell
 ```
+
 在 Erlang shell 中调用 `xdb:search/1` 接口查询 IP 地址信息。该接口支持 list 字符串、binary 字符串、tuple 和整数表示的 IP 地址：
-```
+
+```erlang
 1> xdb:search("1.0.8.0").
 [20013,22269,124,24191,19996,30465,124,24191,24030,24066,
  124,20013,22269,30005,20449,124,67,78]
@@ -66,7 +73,8 @@ $ rebar3 shell
 ```
 
 启用双栈后，IPv6 地址也按同样方式支持：
-```
+
+```erlang
 1> io:format("~ts~n", [xdb:search("2001:4860:4860::8888")]).
 United States|Florida|Miami|Google LLC|US
 2> io:format("~ts~n", [xdb:search(<<"2001:4860:4860::8888">>)]).
@@ -76,25 +84,30 @@ United States|Florida|Miami|Google LLC|US
 ```
 
 ### 使用方法
-* 在rebar.config中引入依赖
-```
+
+- 在 `rebar.config` 中引入依赖
+
+```erlang
 {deps, [
   ip2region
 ]}.
 ```
-* 启动 ip2region Application
+
+- 启动 ip2region Application
+
 ```erlang
 {ok, _} = application:ensure_all_started(ip2region).
 ```
 
-* 调用 `xdb:search/1` 接口查询 IP 信息
+- 调用 `xdb:search/1` 接口查询 IP 信息
+
 ```erlang
 xdb:search("1.0.8.0").
 ```
 
 ### 单元测试
 
-```
+```bash
 $ rebar3 eunit
 ===> Verifying dependencies...
 ===> Analyzing applications...
@@ -115,27 +128,27 @@ IPv4 与 IPv6 共用一个脚本，通过参数指定版本：
 > `cold` = 第一次遍历源文件：每个 IP 都会触发真实查询，并把结果写入 ETS 缓存。
 > `warm` = 第二次遍历同一列表，所有查询都直接命中 ETS 缓存。
 
-```
+```bash
 $ cd benchmarks/
 $ sh xdb-benchmark.sh ipv4
 ```
 
 IPv6：
 
-```
+```bash
 $ sh xdb-benchmark.sh ipv6
 ```
 
 也可以在 `binding/erlang` 目录直接用 Makefile：
 
-```
+```bash
 $ make bench-v4
 $ make bench-v6
 ```
 
 #### IPv4 基准测试示例
 
-```
+```bash
 System:
   CPU    : Apple M4
   Cores  : 10 cores / 10 threads
@@ -151,7 +164,7 @@ Done.
 
 #### IPv6 基准测试示例
 
-```
+```bash
 System:
   CPU    : Apple M4
   Cores  : 10 cores / 10 threads
