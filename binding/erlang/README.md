@@ -158,11 +158,11 @@ System:
   CPU    : Apple M4
   Cores  : 10 cores / 10 threads
   Erlang : Erlang/OTP 29 [erts-17.0.2] [source] [64-bit] [smp:10:10] [ds:10:10:10] [async-threads:1] [jit] [dtrace]
-  Loaded : 487169 IPs in 1.574 s
+  Loaded : 487169 IPs in 1.335 s
 
 Benchmarks:
-  file      total=  9.460s  count= 487169  qps=    51500.40  avg= 0.019417 ms/op (19.417 us/op)
-  cache     total=  0.150s  count= 487169  qps=  3245240.41  avg= 0.000308 ms/op ( 0.308 us/op)
+  cold      total=  9.601s  count= 487169  qps=    50740.66  avg= 0.019708 ms/op (19.708 us/op)
+  warm      total=  0.160s  count= 487169  qps=  3053164.29  avg= 0.000328 ms/op ( 0.328 us/op)
 
 Done.
 ```
@@ -174,11 +174,11 @@ System:
   CPU    : Apple M4
   Cores  : 10 cores / 10 threads
   Erlang : Erlang/OTP 29 [erts-17.0.2] [source] [64-bit] [smp:10:10] [ds:10:10:10] [async-threads:1] [jit] [dtrace]
-  Loaded : 638953 IPs in 2.724 s
+  Loaded : 638953 IPs in 2.949 s
 
 Benchmarks:
-  file      total= 16.326s  count= 638953  qps=    39137.65  avg= 0.025551 ms/op (25.551 us/op)
-  cache     total=  0.469s  count= 638953  qps=  1361972.38  avg= 0.000734 ms/op ( 0.734 us/op)
+  cold      total= 20.504s  count= 638953  qps=    31162.52  avg= 0.032090 ms/op (32.090 us/op)
+  warm      total=  0.444s  count= 638953  qps=  1437781.56  avg= 0.000696 ms/op ( 0.696 us/op)
 
 Done.
 ```

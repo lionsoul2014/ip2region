@@ -13,7 +13,7 @@
 -export([search/1]).
 
 -spec search(Ip :: tuple() | list() | binary() | integer()) ->
-    Result :: list() | {error, Reason::atom()}.
+    Result :: list() | {error, term()}.
 search(Ip) ->
     case ip2region_util:ip_to_bytes(Ip) of
         {ok, ipv4, IpBin} ->
@@ -25,23 +25,22 @@ search(Ip) ->
     end.
 
 do_search(PoolName, Version, IpBin) ->
-    CacheTable = cache_table(Version),
+    CacheTable = ip2region_xdb:cache_table(Version),
     case ets:lookup(CacheTable, IpBin) of
         [{_, Region}] -> Region;
         _ ->
             Worker = poolboy:checkout(PoolName, true, infinity),
             try
-                ip2region_worker:search(Worker, IpBin)
+                Region = ip2region_worker:search(Worker, IpBin),
+                ets:insert(CacheTable, {IpBin, Region}),
+                Region
             after
                 poolboy:checkin(PoolName, Worker)
             end
     end.
 
 v4_pool() ->
-    case whereis(?IP2REGION_POOL) of
-        Pid when is_pid(Pid) -> ?IP2REGION_POOL;
-        undefined -> ?IP2REGION_POOL_V4
+    case application:get_env(?APP_NAME, v4_pool_name) of
+        {ok, PoolName} -> PoolName;
+        undefined -> ?IP2REGION_POOL
     end.
-
-cache_table(ipv4) -> ?IP2REGION_CACHE_V4;
-cache_table(ipv6) -> ?IP2REGION_CACHE_V6.

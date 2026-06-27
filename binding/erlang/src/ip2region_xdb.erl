@@ -14,6 +14,7 @@
          header_start_index_ptr/1, header_end_index_ptr/1,
          header_ip_version/1, header_runtime_ptr_bytes/1]).
 -export([segment_index_size/1]).
+-export([vector_index_table/1, segment_index_table/1, cache_table/1]).
 
 -include("ip2region.hrl").
 
@@ -55,3 +56,12 @@ header_runtime_ptr_bytes(#xdb_header{runtime_ptr_bytes = B}) -> B.
 -spec segment_index_size(ipv4 | ipv6) -> pos_integer().
 segment_index_size(ipv4) -> ?XDB_SEGMENT_INDEX_SIZE_V4;
 segment_index_size(ipv6) -> ?XDB_SEGMENT_INDEX_SIZE_V6.
+
+vector_index_table(ipv4) -> ?XDB_VECTOR_INDEX_V4;
+vector_index_table(ipv6) -> ?XDB_VECTOR_INDEX_V6.
+
+segment_index_table(ipv4) -> ?XDB_SEGMENT_INDEX_V4;
+segment_index_table(ipv6) -> ?XDB_SEGMENT_INDEX_V6.
+
+cache_table(ipv4) -> ?IP2REGION_CACHE_V4;
+cache_table(ipv6) -> ?IP2REGION_CACHE_V6.

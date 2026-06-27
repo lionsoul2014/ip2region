@@ -13,7 +13,7 @@
 
 -spec ip_version(Ip :: tuple() | list() | binary() | integer()) ->
     ipv4 | ipv6 | {error, atom()}.
-ip_version(Ip) when is_integer(Ip) -> ipv4;
+ip_version(Ip) when is_integer(Ip), Ip >= 0, Ip =< 16#FFFFFFFF -> ipv4;
 ip_version({_, _, _, _}) -> ipv4;
 ip_version({_, _, _, _, _, _, _, _}) -> ipv6;
 ip_version(Ip) when is_binary(Ip) ->
@@ -29,7 +29,7 @@ ip_version(_) ->
 
 -spec ip_to_bytes(Ip :: tuple() | list() | binary() | integer()) ->
     {ok, ipv4 | ipv6, binary()} | {error, atom()}.
-ip_to_bytes(Ip) when is_integer(Ip) ->
+ip_to_bytes(Ip) when is_integer(Ip), Ip >= 0, Ip =< 16#FFFFFFFF ->
     {ok, ipv4, <<Ip:32>>};
 ip_to_bytes({A, B, C, D}) ->
     {ok, ipv4, <<A, B, C, D>>};
@@ -51,7 +51,7 @@ ip_to_bytes(_) ->
 
 -spec ipv4_to_n(Ip :: tuple() | list() | binary() | integer()) ->
     non_neg_integer() | {error, atom()}.
-ipv4_to_n(IntIp) when is_integer(IntIp) -> IntIp;
+ipv4_to_n(IntIp) when is_integer(IntIp), IntIp >= 0, IntIp =< 16#FFFFFFFF -> IntIp;
 ipv4_to_n({A, B, C, D}) ->
     <<N:32>> = <<A, B, C, D>>,
     N;

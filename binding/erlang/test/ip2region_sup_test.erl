@@ -6,8 +6,11 @@ pools_started_test() ->
     application:stop(ip2region),
     application:unload(ip2region),
     ok = application:load(ip2region),
-    {ok, Cwd} = file:get_cwd(),
-    V6File = filename:join([Cwd, "..", "..", "data", "ip2region_v6.xdb"]),
+    TestDir = filename:dirname(?FILE),
+    ErlangDir = filename:dirname(TestDir),
+    BindingDir = filename:dirname(ErlangDir),
+    RepoRoot = filename:dirname(BindingDir),
+    V6File = filename:join([RepoRoot, "data", "ip2region_v6.xdb"]),
     ok = application:set_env(ip2region, db, [
         {ipv4, "ip2region.xdb"},
         {ipv6, V6File}

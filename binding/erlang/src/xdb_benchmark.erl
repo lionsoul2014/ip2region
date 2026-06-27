@@ -46,7 +46,7 @@ cpu_info() ->
         {unix, linux} ->
             Model = linux_cpu_field("model name"),
             Clock = format_clock_mhz(linux_cpu_field("cpu MHz")),
-            Cores = trim(os:cmd("grep -c '^processor' /proc/cpuinfo 2>/dev/null")),
+            Cores = string:trim(os:cmd("grep -c '^processor' /proc/cpuinfo 2>/dev/null")),
             Threads = Cores,
             {Model, Clock, Cores, Threads};
         _ ->
@@ -54,28 +54,28 @@ cpu_info() ->
     end.
 
 sysctl(Key) ->
-    trim(os:cmd("sysctl -n " ++ Key ++ " 2>/dev/null")).
+    string:trim(os:cmd("sysctl -n " ++ Key ++ " 2>/dev/null")).
 
 linux_cpu_field(Key) ->
     Cmd = "grep -m1 '^" ++ Key ++ "' /proc/cpuinfo 2>/dev/null | cut -d: -f2- | sed 's/^ *//'",
-    trim(os:cmd(Cmd)).
+    string:trim(os:cmd(Cmd)).
 
 first_non_empty(["" | Rest]) -> first_non_empty(Rest);
 first_non_empty([Val | _]) -> Val;
 first_non_empty([]) -> "".
 
 format_clock(HzStr) ->
-    case string:to_integer(trim(HzStr)) of
+    case string:to_integer(string:trim(HzStr)) of
         {ok, Hz, _} when Hz > 1000000000 ->
             lists:flatten(io_lib:format("~.2f GHz", [Hz / 1000000000]));
         {ok, Hz, _} when Hz > 1000000 ->
-            lists:flatten(io_lib:format("~.2f GHz", [Hz / 1000000000]));
+            lists:flatten(io_lib:format("~.2f MHz", [Hz / 1000000]));
         _ ->
             ""
     end.
 
 format_clock_mhz(MhzStr) ->
-    case string:to_float(trim(MhzStr)) of
+    case string:to_float(string:trim(MhzStr)) of
         {ok, Mhz, _} ->
             lists:flatten(io_lib:format("~.3f GHz", [Mhz / 1000]));
         _ ->
@@ -108,8 +108,8 @@ load_test_data(Fd, IpList) ->
 run(IpList) ->
     garbage_collect(),
     io:format("~nBenchmarks:~n", []),
-    run_test("file", IpList),
-    run_test("cache", IpList),
+    run_test("cold", IpList),
+    run_test("warm", IpList),
     io:format("~nDone.~n", []).
 
 run_test(Label, IpList) ->
@@ -128,5 +128,3 @@ run_test_aux([]) -> ok;
 run_test_aux([Ip | Tail]) ->
     xdb:search(Ip),
     run_test_aux(Tail).
-
-trim(Str) -> string:trim(Str).

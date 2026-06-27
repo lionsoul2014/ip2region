@@ -41,10 +41,6 @@ init([]) ->
 %%
 create_table() ->
     Opts = [named_table, set, public, {read_concurrency, true}, {keypos, 1}],
-    %% Legacy tables (kept for backward compatibility)
-    ensure_table(?XDB_VECTOR_INDEX, Opts),
-    ensure_table(?XDB_SEGMENT_INDEX, Opts),
-    ensure_table(?IP2REGION_CACHE, Opts),
     %% Version-specific tables for dual-stack support
     ensure_table(?XDB_VECTOR_INDEX_V4, Opts),
     ensure_table(?XDB_VECTOR_INDEX_V6, Opts),
@@ -64,11 +60,14 @@ pool_child_specs() ->
     {ok, PoolArgsCfg} = application:get_env(poolargs),
     Versions = [Version || {Version, _File} <- DbConfig],
     UseLegacyName = (Versions == [ipv4]),
+    V4PoolName = case UseLegacyName of
+                     true -> ?IP2REGION_POOL;
+                     false -> ?IP2REGION_POOL_V4
+                 end,
+    ok = application:set_env(?APP_NAME, v4_pool_name, V4PoolName),
     lists:foldl(
-        fun({ipv4, File}, Acc) when UseLegacyName ->
-                [make_pool_spec(?IP2REGION_POOL, ipv4, File, PoolArgsCfg) | Acc];
-           ({ipv4, File}, Acc) ->
-                [make_pool_spec(?IP2REGION_POOL_V4, ipv4, File, PoolArgsCfg) | Acc];
+        fun({ipv4, File}, Acc) ->
+                [make_pool_spec(V4PoolName, ipv4, File, PoolArgsCfg) | Acc];
            ({ipv6, File}, Acc) ->
                 [make_pool_spec(?IP2REGION_POOL_V6, ipv6, File, PoolArgsCfg) | Acc];
            (_, Acc) ->

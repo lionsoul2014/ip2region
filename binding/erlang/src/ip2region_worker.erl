@@ -18,8 +18,7 @@
 
 -record(state, {
     xdb_fd,
-    version :: ipv4 | ipv6,
-    segment_index_size :: pos_integer()
+    version :: ipv4 | ipv6
 }).
 
 %%==========================================
@@ -63,14 +62,14 @@ init(Args) ->
     {ok, IoDevice} = file:open(XdbFileName, [read, binary]),
     {ok, HeaderBin} = file:read(IoDevice, ?XDB_HEADER_SIZE),
     {ok, Header} = ip2region_xdb:parse_header(HeaderBin),
-    Version = resolve_version(Header),
-    SegmentIndexSize = ip2region_xdb:segment_index_size(Version),
-    load_vector_index(IoDevice, Version),
-    {ok, #state{
-        xdb_fd = IoDevice,
-        version = Version,
-        segment_index_size = SegmentIndexSize
-    }}.
+    case resolve_version(Header) of
+        {ok, Version} ->
+            load_vector_index(IoDevice, Version),
+            {ok, #state{xdb_fd = IoDevice, version = Version}};
+        {error, Reason} ->
+            file:close(IoDevice),
+            {stop, Reason}
+    end.
 
 handle_call(Request, From, State) ->
     try
@@ -137,18 +136,18 @@ do_info(Info, State) ->
 
 resolve_version(Header) ->
     case ip2region_xdb:header_version(Header) of
-        2 -> ipv4;
+        2 -> {ok, ipv4};
         3 ->
             case ip2region_xdb:header_ip_version(Header) of
-                ?IP_VERSION_4 -> ipv4;
-                ?IP_VERSION_6 -> ipv6;
-                _ -> ipv4
+                ?IP_VERSION_4 -> {ok, ipv4};
+                ?IP_VERSION_6 -> {ok, ipv6};
+                V -> {error, {invalid_xdb_ip_version, V}}
             end;
-        _ -> ipv4
+        V -> {error, {invalid_xdb_version, V}}
     end.
 
 load_vector_index(IoDevice, Version) ->
-    Table = vector_index_table(Version),
+    Table = ip2region_xdb:vector_index_table(Version),
     case ets:info(Table, size) of
         undefined ->
             Opts = [named_table, set, public, {read_concurrency, true}, {keypos, 1}],
@@ -162,7 +161,7 @@ load_vector_index(IoDevice, Version) ->
 
 load_vector_index_data(IoDevice, Table) ->
     {ok, VectorIndexBin} =
-        file:read(IoDevice, ?XDB_VECTOR_INDEX_COUNT * 8),
+        file:read(IoDevice, ?XDB_VECTOR_INDEX_COUNT * ?XDB_VECTOR_INDEX_SIZE),
     load_vector_index_aux(VectorIndexBin, 0, Table).
 
 load_vector_index_aux(<<>>, _Index, _Table) -> ok;
@@ -170,24 +169,15 @@ load_vector_index_aux(<<SPtr:32/little, EPtr:32/little, VectorIndexBin/binary>>,
     ets:insert(Table, {Index, SPtr, EPtr}),
     load_vector_index_aux(VectorIndexBin, Index + 1, Table).
 
-search_ip(IoDevice, IpInt, State) when is_integer(IpInt) ->
-    search_ip(IoDevice, <<IpInt:32>>, State);
-search_ip(IoDevice, Ip, #state{version = Version, segment_index_size = SegSize}) ->
-    CacheTable = cache_table(Version),
-    VectorTable = vector_index_table(Version),
-    SegmentTable = segment_index_table(Version),
-    case ets:lookup(CacheTable, Ip) of
-        [{_, RegionInfo}] ->
-            RegionInfo;
-        _ ->
-            <<A:8, B:8, _/binary>> = Ip,
-            VectorIdx = A * ?XDB_VECTOR_COLS + B,
-            [{_, SPtr, EPtr}] = ets:lookup(VectorTable, VectorIdx),
-            RegionInfo = search_ip(IoDevice, Ip, SPtr, EPtr, 0,
-                                   (EPtr - SPtr) div SegSize, SegSize, Version, SegmentTable),
-            ets:insert_new(CacheTable, {Ip, RegionInfo}),
-            RegionInfo
-    end.
+search_ip(IoDevice, Ip, #state{version = Version}) ->
+    SegSize = ip2region_xdb:segment_index_size(Version),
+    VectorTable = ip2region_xdb:vector_index_table(Version),
+    SegmentTable = ip2region_xdb:segment_index_table(Version),
+    <<A:8, B:8, _/binary>> = Ip,
+    VectorIdx = A * ?XDB_VECTOR_COLS + B,
+    [{_, SPtr, EPtr}] = ets:lookup(VectorTable, VectorIdx),
+    search_ip(IoDevice, Ip, SPtr, EPtr, 0,
+              (EPtr - SPtr) div SegSize, SegSize, Version, SegmentTable).
 
 search_ip(IoDevice, Ip, SPtr, EPtr, Low, High, SegSize, Version, SegmentTable) when Low =< High ->
     Middle = (Low + High) bsr 1,
@@ -240,12 +230,3 @@ decode_segment_index(Bin, ?XDB_SEGMENT_INDEX_SIZE_V4) ->
 decode_segment_index(Bin, ?XDB_SEGMENT_INDEX_SIZE_V6) ->
     <<SIp:16/binary, EIp:16/binary, DataLen:16/little, DataPtr:32/little>> = Bin,
     {SIp, EIp, DataLen, DataPtr}.
-
-vector_index_table(ipv4) -> ?XDB_VECTOR_INDEX_V4;
-vector_index_table(ipv6) -> ?XDB_VECTOR_INDEX_V6.
-
-segment_index_table(ipv4) -> ?XDB_SEGMENT_INDEX_V4;
-segment_index_table(ipv6) -> ?XDB_SEGMENT_INDEX_V6.
-
-cache_table(ipv4) -> ?IP2REGION_CACHE_V4;
-cache_table(ipv6) -> ?IP2REGION_CACHE_V6.
