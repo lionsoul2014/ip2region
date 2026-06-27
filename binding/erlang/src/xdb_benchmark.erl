@@ -11,30 +11,76 @@
 -export([main/1]).
 
 main(DataFile) ->
-	application:ensure_started(ip2region),
+    %% Keep benchmark output clean while still surfacing real errors.
+    _ = logger:set_handler_config(default, level, error),
+    _ = logger:set_primary_config(level, error),
+    application:ensure_started(ip2region),
     show_hw_sw_info(),
     IpList = load_test_data(DataFile),
     run(IpList).
 
 show_hw_sw_info() ->
-    io:format("CPU info:~n", []),
+    {Model, Clock, Cores, Threads} = cpu_info(),
+    io:format("~nSystem:~n", []),
+    io:format("  CPU    : ~s", [Model]),
+    case Clock of
+        "" -> io:format("~n", []);
+        _ -> io:format(" @ ~s~n", [Clock])
+    end,
+    io:format("  Cores  : ~s cores / ~s threads~n", [Cores, Threads]),
+    io:format("  Erlang : ~s~n", [string:trim(erlang:system_info(system_version))]),
+    ok.
+
+cpu_info() ->
     case os:type() of
         {unix, darwin} ->
-            io:format("model name      : ~s~n", [string:trim(os:cmd("sysctl -n machdep.cpu.brand_string 2>/dev/null"))]),
-            io:format("cores/threads   : ~s/~s~n", [string:trim(os:cmd("sysctl -n hw.physicalcpu 2>/dev/null")),
-                                                    string:trim(os:cmd("sysctl -n hw.logicalcpu 2>/dev/null"))]);
+            Model = sysctl("machdep.cpu.brand_string"),
+            Clock = first_non_empty([
+                format_clock(sysctl("hw.cpufrequency")),
+                format_clock(sysctl("hw.perflevel0.frequency")),
+                format_clock(sysctl("hw.perflevel1.frequency"))
+            ]),
+            Cores = sysctl("hw.physicalcpu"),
+            Threads = sysctl("hw.logicalcpu"),
+            {Model, Clock, Cores, Threads};
         {unix, linux} ->
-            io:format("~s", [os:cmd("egrep '^model name' /proc/cpuinfo | head -1")]),
-            io:format("~s", [os:cmd("egrep '^cache' /proc/cpuinfo | head -1")]),
-            io:format("~s", [os:cmd("egrep '^cpu MHz' /proc/cpuinfo | head -1")]),
-            io:format("~s", [os:cmd("egrep '^bogomips' /proc/cpuinfo | head -1")]),
-            io:format("cores/threads   : ~s~n", [os:cmd("egrep -c '^processor' /proc/cpuinfo")]);
+            Model = linux_cpu_field("model name"),
+            Clock = format_clock_mhz(linux_cpu_field("cpu MHz")),
+            Cores = trim(os:cmd("grep -c '^processor' /proc/cpuinfo 2>/dev/null")),
+            Threads = Cores,
+            {Model, Clock, Cores, Threads};
         _ ->
-            io:format("unsupported os~n", [])
-    end,
-    io:format("Erlang info:~n", []),
-    io:format("system_version:~s", [erlang:system_info(system_version)]),
-    ok.
+            {"unknown", "", "?", "?"}
+    end.
+
+sysctl(Key) ->
+    trim(os:cmd("sysctl -n " ++ Key ++ " 2>/dev/null")).
+
+linux_cpu_field(Key) ->
+    Cmd = "grep -m1 '^" ++ Key ++ "' /proc/cpuinfo 2>/dev/null | cut -d: -f2- | sed 's/^ *//'",
+    trim(os:cmd(Cmd)).
+
+first_non_empty(["" | Rest]) -> first_non_empty(Rest);
+first_non_empty([Val | _]) -> Val;
+first_non_empty([]) -> "".
+
+format_clock(HzStr) ->
+    case string:to_integer(trim(HzStr)) of
+        {ok, Hz, _} when Hz > 1000000000 ->
+            lists:flatten(io_lib:format("~.2f GHz", [Hz / 1000000000]));
+        {ok, Hz, _} when Hz > 1000000 ->
+            lists:flatten(io_lib:format("~.2f GHz", [Hz / 1000000000]));
+        _ ->
+            ""
+    end.
+
+format_clock_mhz(MhzStr) ->
+    case string:to_float(trim(MhzStr)) of
+        {ok, Mhz, _} ->
+            lists:flatten(io_lib:format("~.3f GHz", [Mhz / 1000]));
+        _ ->
+            ""
+    end.
 
 load_test_data(DataFile) ->
     {ok, Fd} = file:open(DataFile, [read]),
@@ -42,7 +88,7 @@ load_test_data(DataFile) ->
     IpList = load_test_data(Fd, []),
     T1 = os:timestamp(),
     Sec = timer:now_diff(T1, T0) / 1000000,
-    io:format("load test data use ~ps~n", [Sec]),
+    io:format("  Loaded : ~p IPs in ~.3f s~n", [length(IpList), Sec]),
     IpList.
 
 load_test_data(Fd, IpList) ->
@@ -55,30 +101,32 @@ load_test_data(Fd, IpList) ->
                 load_test_data(Fd, IpList)
             end;
         _ ->
-			file:close(Fd),
+            file:close(Fd),
             IpList
     end.
 
 run(IpList) ->
     garbage_collect(),
-    io:format("~nstart run benchmark tests~n", []),
-    io:format("~nsearch from file:~n", []),
-    run_test(IpList),
-    io:format("~nsearch from cache:~n", []),
-    run_test(IpList),
-    io:format("~nbenchmark test finish~n", []).
+    io:format("~nBenchmarks:~n", []),
+    run_test("file", IpList),
+    run_test("cache", IpList),
+    io:format("~nDone.~n", []).
 
-run_test(IpList) ->
+run_test(Label, IpList) ->
     T0 = os:timestamp(),
     run_test_aux(IpList),
     T1 = os:timestamp(),
     Sec = timer:now_diff(T1, T0) / 1000000,
-    IpCount = length(IpList),
-    io:format("ip count:~p,~ntotal time: ~ps,~nsearch ~p times per second,~nuse ~p micro second per search~n", 
-        [IpCount, Sec, IpCount / Sec, Sec * 1000000/IpCount]).
+    Count = length(IpList),
+    Qps = Count / Sec,
+    MsOp = Sec * 1000 / Count,
+    UsOp = Sec * 1000000 / Count,
+    io:format("  ~-8s  total=~7.3fs  count=~7w  qps=~12.2f  avg=~9.6f ms/op (~6.3f us/op)~n",
+              [Label, Sec, Count, Qps, MsOp, UsOp]).
 
 run_test_aux([]) -> ok;
 run_test_aux([Ip | Tail]) ->
     xdb:search(Ip),
     run_test_aux(Tail).
 
+trim(Str) -> string:trim(Str).

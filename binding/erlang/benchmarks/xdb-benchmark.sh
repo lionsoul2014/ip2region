@@ -32,5 +32,6 @@ init:stop()."
 # shellcheck disable=SC2090
 erl -pa _build/default/lib/poolboy/ebin \
     -pa _build/default/lib/ip2region/ebin \
+    -kernel logger_level error \
     -noshell \
     -eval "${EVAL}"

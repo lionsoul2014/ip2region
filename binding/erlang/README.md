@@ -154,55 +154,31 @@ $ make bench-v6
 #### IPv4 benchmark example
 
 ```
-CPU info:
-model name      : Apple M4
-cores/threads   : 10/10
+System:
+  CPU    : Apple M4
+  Cores  : 10 cores / 10 threads
+  Erlang : Erlang/OTP 29 [erts-17.0.2] [source] [64-bit] [smp:10:10] [ds:10:10:10] [async-threads:1] [jit] [dtrace]
+  Loaded : 487169 IPs in 1.574 s
 
-Erlang info:
-system_version:Erlang/OTP 29 [erts-17.0.2] [source] [64-bit] [smp:10:10] [ds:10:10:10] [async-threads:1] [jit] [dtrace]
-load test data use 1.34496s
+Benchmarks:
+  file      total=  9.460s  count= 487169  qps=    51500.40  avg= 0.019417 ms/op (19.417 us/op)
+  cache     total=  0.150s  count= 487169  qps=  3245240.41  avg= 0.000308 ms/op ( 0.308 us/op)
 
-start run benchmark tests
-
-search from file:
-ip count:487169,
-total time: 11.564375s,
-search 42126.70377776577 times per second,
-use 23.737912305585947 micro second per search
-
-search from cache:
-ip count:487169,
-total time: 0.213552s,
-search 2281266.389450813 times per second,
-use 0.43835301507279817 micro second per search
-
-benchmark test finish
+Done.
 ```
 
 #### IPv6 benchmark example
 
 ```
-CPU info:
-model name      : Apple M4
-cores/threads   : 10/10
+System:
+  CPU    : Apple M4
+  Cores  : 10 cores / 10 threads
+  Erlang : Erlang/OTP 29 [erts-17.0.2] [source] [64-bit] [smp:10:10] [ds:10:10:10] [async-threads:1] [jit] [dtrace]
+  Loaded : 638953 IPs in 2.724 s
 
-Erlang info:
-system_version:Erlang/OTP 29 [erts-17.0.2] [source] [64-bit] [smp:10:10] [ds:10:10:10] [async-threads:1] [jit] [dtrace]
-load test data use 2.472659s
+Benchmarks:
+  file      total= 16.326s  count= 638953  qps=    39137.65  avg= 0.025551 ms/op (25.551 us/op)
+  cache     total=  0.469s  count= 638953  qps=  1361972.38  avg= 0.000734 ms/op ( 0.734 us/op)
 
-start run benchmark tests
-
-search from file:
-ip count:638953,
-total time: 18.463896s,
-search 34605.535039842085 times per second,
-use 28.897111368128797 micro second per search
-
-search from cache:
-ip count:638953,
-total time: 0.541899s,
-search 1179099.7953493178 times per second,
-use 0.8481046336741513 micro second per search
-
-benchmark test finish
+Done.
 ```
