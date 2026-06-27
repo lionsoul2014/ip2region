@@ -62,10 +62,14 @@ init(Args) ->
     {ok, IoDevice} = file:open(XdbFileName, [read, binary]),
     {ok, HeaderBin} = file:read(IoDevice, ?XDB_HEADER_SIZE),
     {ok, Header} = ip2region_xdb:parse_header(HeaderBin),
+    ExpectedVersion = proplists:get_value(expected_version, Args),
     case resolve_version(Header) of
-        {ok, Version} ->
+        {ok, Version} when ExpectedVersion =:= undefined; ExpectedVersion =:= Version ->
             load_vector_index(IoDevice, Version),
             {ok, #state{xdb_fd = IoDevice, version = Version}};
+        {ok, Version} ->
+            file:close(IoDevice),
+            {stop, {xdb_version_mismatch, ExpectedVersion, Version}};
         {error, Reason} ->
             file:close(IoDevice),
             {stop, Reason}

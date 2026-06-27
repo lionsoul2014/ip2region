@@ -67,12 +67,12 @@ pool_child_specs() ->
                 Acc
         end, [], DbConfig).
 
-make_pool_spec(PoolName, _Version, File, PoolArgsCfg) ->
+make_pool_spec(PoolName, Version, File, PoolArgsCfg) ->
     PoolArgs = [
         {strategy, fifo},
         {name, {local, PoolName}},
         {worker_module, ip2region_worker}
         | PoolArgsCfg
     ],
-    WorkerArgs = [{xdb_file, File}],
+    WorkerArgs = [{xdb_file, File}, {expected_version, Version}],
     poolboy:child_spec(PoolName, PoolArgs, WorkerArgs).
