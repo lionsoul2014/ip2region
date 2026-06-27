@@ -34,8 +34,15 @@ invalid_inputs_test_() ->
         ?_assertEqual({error, bad_ip_format}, ip2region_util:ip_to_bytes(atom)),
         ?_assertEqual({error, bad_ip_format}, ip2region_util:ip_to_bytes(-1)),
         ?_assertEqual({error, bad_ip_format}, ip2region_util:ip_to_bytes(16#100000000)),
+        ?_assertEqual({error, bad_ip_format}, ip2region_util:ip_to_bytes({256, 0, 0, 1})),
+        ?_assertEqual({error, bad_ip_format}, ip2region_util:ip_to_bytes({-1, 0, 0, 0})),
+        ?_assertEqual({error, bad_ip_format},
+                      ip2region_util:ip_to_bytes({0, 0, 0, 0, 0, 0, 0, 65536})),
+        ?_assertEqual({error, bad_ip_format},
+                      ip2region_util:ip_to_bytes({0, 0, 0, 0, 0, 0, 0, -1})),
         ?_assertEqual({error, bad_ip_format}, ip2region_util:ipv4_to_n(-1)),
-        ?_assertEqual({error, bad_ip_format}, ip2region_util:ipv4_to_n(16#100000000))
+        ?_assertEqual({error, bad_ip_format}, ip2region_util:ipv4_to_n(16#100000000)),
+        ?_assertEqual({error, bad_ip_format}, ip2region_util:ipv4_to_n({256, 0, 0, 1}))
     ].
 
 ip_version_test_() ->
@@ -45,6 +52,8 @@ ip_version_test_() ->
         ?_assertEqual(ipv4, ip2region_util:ip_version(16779264 + 1)),
         ?_assertEqual({error, bad_ip_format}, ip2region_util:ip_version("::ggg")),
         ?_assertEqual({error, bad_ip_format}, ip2region_util:ip_version({1,2,3})),
+        ?_assertEqual({error, bad_ip_format}, ip2region_util:ip_version({256,0,0,1})),
+        ?_assertEqual({error, bad_ip_format}, ip2region_util:ip_version({0,0,0,0,0,0,0,65536})),
         ?_assertEqual({error, bad_ip_format}, ip2region_util:ip_version(16#100000000))
     ].
 
