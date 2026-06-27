@@ -118,7 +118,7 @@ XdbFile:/Users/nana/Documents/code/ip2region/.worktrees/erlang-ipv6/binding/erla
 
 ....
 Finished in 0.192 seconds
-38 tests, 0 failures
+63 tests, 0 failures
 ```
 
 ### Benchmark
