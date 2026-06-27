@@ -29,15 +29,20 @@ do_search(PoolName, Version, IpBin) ->
     case ets:lookup(CacheTable, IpBin) of
         [{_, Region}] -> Region;
         _ ->
-            Worker = poolboy:checkout(PoolName, true, infinity),
-            try
-                case ip2region_worker:search(Worker, IpBin) of
-                    {error, _} = Err -> Err;
-                    Region ->
-                        ets:insert(CacheTable, {IpBin, Region}),
-                        Region
-                end
-            after
-                poolboy:checkin(PoolName, Worker)
+            case whereis(PoolName) of
+                undefined ->
+                    {error, pool_not_configured};
+                _ ->
+                    Worker = poolboy:checkout(PoolName, true, infinity),
+                    try
+                        case ip2region_worker:search(Worker, IpBin) of
+                            {error, _} = Err -> Err;
+                            Region ->
+                                ets:insert(CacheTable, {IpBin, Region}),
+                                Region
+                        end
+                    after
+                        poolboy:checkin(PoolName, Worker)
+                    end
             end
     end.

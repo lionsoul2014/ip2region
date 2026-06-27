@@ -34,6 +34,14 @@ invalid_search_test_() ->
         ?_assertEqual({error, bad_ip_format}, xdb:search({1,2,3}))
     ].
 
+ipv6_pool_not_configured_test() ->
+    try application:stop(ip2region) catch _:_ -> ok end,
+    try application:unload(ip2region) catch _:_ -> ok end,
+    ok = application:load(ip2region),
+    ok = application:set_env(ip2region, db, [{ipv4, "ip2region.xdb"}]),
+    {ok, _} = application:ensure_all_started(ip2region),
+    ?assertEqual({error, pool_not_configured}, xdb:search("2001:4860:4860::8888")).
+
 setup_ipv6() ->
     try application:stop(ip2region) catch _:_ -> ok end,
     try application:unload(ip2region) catch _:_ -> ok end,
