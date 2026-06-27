@@ -42,9 +42,23 @@ init([]) ->
 %% 
 create_table() ->
     Opts = [named_table, set, public, {read_concurrency, true}, {keypos, 1}],
-    ets:new(?XDB_VECTOR_INDEX, Opts),
-    ets:new(?XDB_SEGMENT_INDEX, Opts),
-    ets:new(?IP2REGION_CACHE, Opts).
+    %% Legacy tables (kept for backward compatibility)
+    ensure_table(?XDB_VECTOR_INDEX, Opts),
+    ensure_table(?XDB_SEGMENT_INDEX, Opts),
+    ensure_table(?IP2REGION_CACHE, Opts),
+    %% Version-specific tables for dual-stack support
+    ensure_table(?XDB_VECTOR_INDEX_V4, Opts),
+    ensure_table(?XDB_VECTOR_INDEX_V6, Opts),
+    ensure_table(?XDB_SEGMENT_INDEX_V4, Opts),
+    ensure_table(?XDB_SEGMENT_INDEX_V6, Opts),
+    ensure_table(?IP2REGION_CACHE_V4, Opts),
+    ensure_table(?IP2REGION_CACHE_V6, Opts).
+
+ensure_table(Name, Opts) ->
+    case ets:whereis(Name) of
+        undefined -> ets:new(Name, Opts);
+        _ -> ok
+    end.
 
 start_ip2region_pool(Sup) ->
     {ok, PoolArgsCfg} = application:get_env(poolargs),
