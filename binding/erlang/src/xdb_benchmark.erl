@@ -18,11 +18,20 @@ main(DataFile) ->
 
 show_hw_sw_info() ->
     io:format("CPU info:~n", []),
-    io:format("~s", [os:cmd("egrep '^model name' /proc/cpuinfo | head -1")]),
-    io:format("~s", [os:cmd("egrep '^cache' /proc/cpuinfo | head -1")]),
-    io:format("~s", [os:cmd("egrep '^cpu MHz' /proc/cpuinfo | head -1")]),
-    io:format("~s", [os:cmd("egrep '^bogomips' /proc/cpuinfo | head -1")]),
-    io:format("cores/threads   : ~s~n", [os:cmd("egrep -c '^processor' /proc/cpuinfo")]),
+    case os:type() of
+        {unix, darwin} ->
+            io:format("model name      : ~s~n", [string:trim(os:cmd("sysctl -n machdep.cpu.brand_string 2>/dev/null"))]),
+            io:format("cores/threads   : ~s/~s~n", [string:trim(os:cmd("sysctl -n hw.physicalcpu 2>/dev/null")),
+                                                    string:trim(os:cmd("sysctl -n hw.logicalcpu 2>/dev/null"))]);
+        {unix, linux} ->
+            io:format("~s", [os:cmd("egrep '^model name' /proc/cpuinfo | head -1")]),
+            io:format("~s", [os:cmd("egrep '^cache' /proc/cpuinfo | head -1")]),
+            io:format("~s", [os:cmd("egrep '^cpu MHz' /proc/cpuinfo | head -1")]),
+            io:format("~s", [os:cmd("egrep '^bogomips' /proc/cpuinfo | head -1")]),
+            io:format("cores/threads   : ~s~n", [os:cmd("egrep -c '^processor' /proc/cpuinfo")]);
+        _ ->
+            io:format("unsupported os~n", [])
+    end,
     io:format("Erlang info:~n", []),
     io:format("system_version:~s", [erlang:system_info(system_version)]),
     ok.

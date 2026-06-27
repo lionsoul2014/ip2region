@@ -107,44 +107,79 @@ Finished in 0.074 seconds
 ```
 
 ### 基准测试
+
+IPv4 与 IPv6 共用一个脚本，通过参数指定版本：
+
 ```
 $ cd benchmarks/
-$ sh xdb-benchmark.sh
-===> Verifying dependencies...
-===> Analyzing applications...
-===> Compiling ip2region
-Erlang/OTP 24 [erts-12.3.2.2] [source] [64-bit] [smp:2:2] [ds:2:2:10] [async-threads:1] [jit]
+$ sh xdb-benchmark.sh ipv4
+```
 
-Eshell V12.3.2.2  (abort with ^G)
-1> =INFO REPORT==== 17-Jan-2023::11:37:35.631095 ===
-XdbFile:/home/admin/erl-workspace/ip2region/binding/erlang/_build/default/lib/ip2region/priv/ip2region.xdb
+IPv6：
 
-===> Booted ip2region
-===> Evaluating: "xdb_benchmark:main(\"../../data/ip.merge.txt\"), init:stop()."
+```
+$ sh xdb-benchmark.sh ipv6
+```
+
+也可以在 `binding/erlang` 目录直接用 Makefile：
+
+```
+$ make bench-v4
+$ make bench-v6
+```
+
+#### IPv4 基准测试示例
+
+```
 CPU info:
-model name      : AMD EPYC 7K62 48-Core Processor
-cache size      : 512 KB
-cpu MHz         : 2595.124
-bogomips        : 5190.24
-cores/threads   : 2
+model name      : Apple M4
+cores/threads   : 10/10
 
 Erlang info:
-system_version:Erlang/OTP 24 [erts-12.3.2.2] [source] [64-bit] [smp:2:2] [ds:2:2:10] [async-threads:1] [jit]
-load test data use 4.835593s
+system_version:Erlang/OTP 29 [erts-17.0.2] [source] [64-bit] [smp:10:10] [ds:10:10:10] [async-threads:1] [jit] [dtrace]
+load test data use 1.34496s
 
 start run benchmark tests
 
 search from file:
-ip count:683844,
-total time: 28.201699s,
-search 24248.326315375536 times per second,
-use 41.23995969841075 micro second per search
+ip count:487169,
+total time: 11.564375s,
+search 42126.70377776577 times per second,
+use 23.737912305585947 micro second per search
 
 search from cache:
-ip count:683844,
-total time: 0.671801s,
-search 1017926.4395259906 times per second,
-use 0.9823892583688677 micro second per search
+ip count:487169,
+total time: 0.213552s,
+search 2281266.389450813 times per second,
+use 0.43835301507279817 micro second per search
+
+benchmark test finish
+```
+
+#### IPv6 基准测试示例
+
+```
+CPU info:
+model name      : Apple M4
+cores/threads   : 10/10
+
+Erlang info:
+system_version:Erlang/OTP 29 [erts-17.0.2] [source] [64-bit] [smp:10:10] [ds:10:10:10] [async-threads:1] [jit] [dtrace]
+load test data use 2.472659s
+
+start run benchmark tests
+
+search from file:
+ip count:638953,
+total time: 18.463896s,
+search 34605.535039842085 times per second,
+use 28.897111368128797 micro second per search
+
+search from cache:
+ip count:638953,
+total time: 0.541899s,
+search 1179099.7953493178 times per second,
+use 0.8481046336741513 micro second per search
 
 benchmark test finish
 ```
