@@ -30,11 +30,22 @@ invalid_inputs_test_() ->
         ?_assertEqual({error, bad_ip_format}, ip2region_util:ip_to_bytes("xxx.0.8.0")),
         ?_assertEqual({error, bad_ip_format}, ip2region_util:ip_to_bytes("::ggg")),
         ?_assertEqual({error, bad_ip_format}, ip2region_util:ip_to_bytes({1,2,3})),
+        ?_assertEqual({error, bad_ip_format}, ip2region_util:ip_to_bytes({1,2,3,4,5,6,7})),
         ?_assertEqual({error, bad_ip_format}, ip2region_util:ip_to_bytes(atom)),
         ?_assertEqual({error, bad_ip_format}, ip2region_util:ip_to_bytes(-1)),
         ?_assertEqual({error, bad_ip_format}, ip2region_util:ip_to_bytes(16#100000000)),
         ?_assertEqual({error, bad_ip_format}, ip2region_util:ipv4_to_n(-1)),
         ?_assertEqual({error, bad_ip_format}, ip2region_util:ipv4_to_n(16#100000000))
+    ].
+
+ip_version_test_() ->
+    [
+        ?_assertEqual(ipv4, ip2region_util:ip_version(<<"1.0.8.0">>)),
+        ?_assertEqual(ipv6, ip2region_util:ip_version(<<"::1">>)),
+        ?_assertEqual(ipv4, ip2region_util:ip_version(16779264 + 1)),
+        ?_assertEqual({error, bad_ip_format}, ip2region_util:ip_version("::ggg")),
+        ?_assertEqual({error, bad_ip_format}, ip2region_util:ip_version({1,2,3})),
+        ?_assertEqual({error, bad_ip_format}, ip2region_util:ip_version(16#100000000))
     ].
 
 legacy_ipv4_to_n_test_() ->
