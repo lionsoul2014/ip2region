@@ -11,6 +11,9 @@
     {poolargs, [
         {size, 1},
         {max_overflow, 5}
+    ]},
+    {db, [
+        {ipv4, "ip2region.xdb"}
     ]}
   ]},
   {modules, []},
