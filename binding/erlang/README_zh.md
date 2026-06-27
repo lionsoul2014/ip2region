@@ -12,9 +12,31 @@
     {poolargs, [
         {size, 1},  %% 工作进程默认数量
         {max_overflow, 5}  %% 工作进程最大数量
+    ]},
+    {db, [
+        {ipv4, "ip2region.xdb"}  %% 默认 IPv4 xdb 文件
     ]}
   ]}
 ```
+
+### 双栈配置（IPv4 + IPv6）
+
+如需启用 IPv6 查询，在 `db` 列表中加入 `ipv6` 项，并将两个 xdb 文件放到 `priv/` 目录下：
+
+``` erlang
+  {env,[
+    {poolargs, [
+        {size, 1},
+        {max_overflow, 5}
+    ]},
+    {db, [
+        {ipv4, "ip2region.xdb"},
+        {ipv6, "ip2region_v6.xdb"}
+    ]}
+  ]}
+```
+
+`xdb:search/1` 接口会自动识别 IPv4 与 IPv6 输入，并将其路由到对应的工作进程池。
 
 ### 编译
 

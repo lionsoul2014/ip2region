@@ -15,9 +15,31 @@ The configurable parameters for this application are in `ip2region.app.src`, as 
     {poolargs, [
         {size, 1},  %% Default number of worker processes
         {max_overflow, 5}  %% Maximum number of worker processes
+    ]},
+    {db, [
+        {ipv4, "ip2region.xdb"}  %% Default IPv4 xdb file
     ]}
   ]}
 ```
+
+### Dual-stack configuration (IPv4 + IPv6)
+
+To enable IPv6 queries, add the `ipv6` entry to the `db` list and place both xdb files under `priv/`:
+
+```erlang
+  {env,[
+    {poolargs, [
+        {size, 1},
+        {max_overflow, 5}
+    ]},
+    {db, [
+        {ipv4, "ip2region.xdb"},
+        {ipv6, "ip2region_v6.xdb"}
+    ]}
+  ]}
+```
+
+The `xdb:search/1` interface automatically detects IPv4 and IPv6 inputs and routes them to the correct worker pool.
 
 ### Compile
 
@@ -37,17 +59,28 @@ Call the `xdb:search/1` interface in the Erlang shell to query IP address inform
 
 ```
 1> xdb:search("1.0.8.0").
-[20013,22269,124,48,124,24191,19996,30465,124,24191,24030,
- 24066,124,30005,20449]
+[20013,22269,124,24191,19996,30465,124,24191,24030,24066,
+ 124,20013,22269,30005,20449,124,67,78]
 2>
 3> io:format("~ts~n", [xdb:search("1.0.8.0")]).
-中国|0|广东省|广州市|电信
-io:format("~ts~n", [xdb:search(<<"1.0.8.0">>)]).
-中国|0|广东省|广州市|电信
-4> io:format("~ts~n", [xdb:search({1,0,8,0})]).
-中国|0|广东省|广州市|电信
+中国|广东省|广州市|中国电信|CN
+4> io:format("~ts~n", [xdb:search(<<"1.0.8.0">>)]).
+中国|广东省|广州市|中国电信|CN
+5> io:format("~ts~n", [xdb:search({1,0,8,0})]).
+中国|广东省|广州市|中国电信|CN
 6> io:format("~ts~n", [xdb:search(16779264)]).
-中国|0|广东省|广州市|电信
+中国|广东省|广州市|中国电信|CN
+```
+
+With dual-stack enabled, IPv6 addresses are supported in the same way:
+
+```
+1> io:format("~ts~n", [xdb:search("2001:4860:4860::8888")]).
+...
+2> io:format("~ts~n", [xdb:search(<<"2001:4860:4860::8888">>)]).
+...
+3> io:format("~ts~n", [xdb:search({8193,10304,10304,0,0,0,0,34952})]).
+...
 ```
 
 ### Usage
@@ -92,8 +125,8 @@ $ rebar3 eunit
 XdbFile:/home/admin/erl-workspace/ip2region/binding/erlang/_build/test/lib/ip2region/priv/ip2region.xdb
 
 ....
-Finished in 0.074 seconds
-4 tests, 0 failures
+Finished in 0.150 seconds
+34 tests, 0 failures
 ```
 
 ### Benchmark
