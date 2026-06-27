@@ -49,20 +49,30 @@ $ rebar3 compile
 ```
 $ rebar3 shell
 ```
-在erlang shell中调用xdb:search/1接口查询Ip地址信息, 该接口支持以list格式字符串、binary格式字符串、tuple和整数表示的IP地址，如下：
+在 Erlang shell 中调用 `xdb:search/1` 接口查询 IP 地址信息。该接口支持 list 字符串、binary 字符串、tuple 和整数表示的 IP 地址：
 ```
 1> xdb:search("1.0.8.0").
-[20013,22269,124,48,124,24191,19996,30465,124,24191,24030,
- 24066,124,30005,20449]
+[20013,22269,124,24191,19996,30465,124,24191,24030,24066,
+ 124,20013,22269,30005,20449,124,67,78]
 2>
 3> io:format("~ts~n", [xdb:search("1.0.8.0")]).
-中国|0|广东省|广州市|电信
-io:format("~ts~n", [xdb:search(<<"1.0.8.0">>)]).
-中国|0|广东省|广州市|电信
-4> io:format("~ts~n", [xdb:search({1,0,8,0})]).
-中国|0|广东省|广州市|电信
+中国|广东省|广州市|中国电信|CN
+4> io:format("~ts~n", [xdb:search(<<"1.0.8.0">>)]).
+中国|广东省|广州市|中国电信|CN
+5> io:format("~ts~n", [xdb:search({1,0,8,0})]).
+中国|广东省|广州市|中国电信|CN
 6> io:format("~ts~n", [xdb:search(16779264)]).
-中国|0|广东省|广州市|电信
+中国|广东省|广州市|中国电信|CN
+```
+
+启用双栈后，IPv6 地址也按同样方式支持：
+```
+1> io:format("~ts~n", [xdb:search("2001:4860:4860::8888")]).
+United States|Florida|Miami|Google LLC|US
+2> io:format("~ts~n", [xdb:search(<<"2001:4860:4860::8888">>)]).
+United States|Florida|Miami|Google LLC|US
+3> io:format("~ts~n", [xdb:search({8193,18528,18528,0,0,0,0,34952})]).
+United States|Florida|Miami|Google LLC|US
 ```
 
 ### 使用方法
@@ -72,22 +82,14 @@ io:format("~ts~n", [xdb:search(<<"1.0.8.0">>)]).
   ip2region
 ]}.
 ```
-* 启动ip2region Application
-```
-......
-
-application:ensure_started(ip2region),
-
-......
+* 启动 ip2region Application
+```erlang
+{ok, _} = application:ensure_all_started(ip2region).
 ```
 
-* 调用xdb:search/1接口查询IP信息
-```
-......
-
-ip2region:search("1.0.8.0"),
-
-......
+* 调用 `xdb:search/1` 接口查询 IP 信息
+```erlang
+xdb:search("1.0.8.0").
 ```
 
 ### 单元测试
@@ -98,12 +100,12 @@ $ rebar3 eunit
 ===> Analyzing applications...
 ===> Compiling ip2region
 ===> Performing EUnit tests...
-=INFO REPORT==== 17-Jan-2023::11:52:59.920155 ===
-XdbFile:/home/admin/erl-workspace/ip2region/binding/erlang/_build/test/lib/ip2region/priv/ip2region.xdb
+=INFO REPORT==== 28-Jun-2026::04:53:28 ===
+XdbFile:/Users/nana/Documents/code/ip2region/.worktrees/erlang-ipv6/binding/erlang/_build/test/lib/ip2region/priv/ip2region.xdb
 
 ....
-Finished in 0.074 seconds
-4 tests, 0 failures
+Finished in 0.192 seconds
+38 tests, 0 failures
 ```
 
 ### 基准测试

@@ -55,7 +55,7 @@ Place the xdb file in the `priv` directory, then start the Erlang node:
 $ rebar3 shell
 ```
 
-Call the `xdb:search/1` interface in the Erlang shell to query IP address information. This interface supports IP addresses represented as list strings, binary strings, tuples, and integers, as follows:
+Call the `xdb:search/1` interface in the Erlang shell to query IP address information. This interface supports IP addresses represented as list strings, binary strings, tuples, and integers:
 
 ```
 1> xdb:search("1.0.8.0").
@@ -76,11 +76,11 @@ With dual-stack enabled, IPv6 addresses are supported in the same way:
 
 ```
 1> io:format("~ts~n", [xdb:search("2001:4860:4860::8888")]).
-...
+United States|Florida|Miami|Google LLC|US
 2> io:format("~ts~n", [xdb:search(<<"2001:4860:4860::8888">>)]).
-...
-3> io:format("~ts~n", [xdb:search({8193,10304,10304,0,0,0,0,34952})]).
-...
+United States|Florida|Miami|Google LLC|US
+3> io:format("~ts~n", [xdb:search({8193,18528,18528,0,0,0,0,34952})]).
+United States|Florida|Miami|Google LLC|US
 ```
 
 ### Usage
@@ -95,22 +95,14 @@ With dual-stack enabled, IPv6 addresses are supported in the same way:
 
 * Start the ip2region Application
 
-```
-......
-
-application:ensure_started(ip2region),
-
-......
+```erlang
+{ok, _} = application:ensure_all_started(ip2region).
 ```
 
 * Call the `xdb:search/1` interface to query IP information
 
-```
-......
-
-ip2region:search("1.0.8.0"),
-
-......
+```erlang
+xdb:search("1.0.8.0").
 ```
 
 ### Unit Test
@@ -121,12 +113,12 @@ $ rebar3 eunit
 ===> Analyzing applications...
 ===> Compiling ip2region
 ===> Performing EUnit tests...
-=INFO REPORT==== 17-Jan-2023::11:52:59.920155 ===
-XdbFile:/home/admin/erl-workspace/ip2region/binding/erlang/_build/test/lib/ip2region/priv/ip2region.xdb
+=INFO REPORT==== 28-Jun-2026::04:53:28 ===
+XdbFile:/Users/nana/Documents/code/ip2region/.worktrees/erlang-ipv6/binding/erlang/_build/test/lib/ip2region/priv/ip2region.xdb
 
 ....
-Finished in 0.150 seconds
-34 tests, 0 failures
+Finished in 0.192 seconds
+38 tests, 0 failures
 ```
 
 ### Benchmark
