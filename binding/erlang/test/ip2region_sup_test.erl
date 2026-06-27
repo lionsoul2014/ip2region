@@ -3,8 +3,8 @@
 -include("ip2region.hrl").
 
 pools_started_test() ->
-    application:stop(ip2region),
-    application:unload(ip2region),
+    try application:stop(ip2region) catch _:_ -> ok end,
+    try application:unload(ip2region) catch _:_ -> ok end,
     ok = application:load(ip2region),
     %% NOTE: rebar3 compiles tests under _build/test/lib/ip2region via a
     %% symlink back to the source tree, so ?FILE resolves to the original
@@ -19,6 +19,6 @@ pools_started_test() ->
         {ipv4, "ip2region.xdb"},
         {ipv6, V6File}
     ]),
-    application:ensure_started(ip2region),
+    {ok, _} = application:ensure_all_started(ip2region),
     ?assert(is_pid(whereis(?IP2REGION_POOL_V4))),
     ?assert(is_pid(whereis(?IP2REGION_POOL_V6))).

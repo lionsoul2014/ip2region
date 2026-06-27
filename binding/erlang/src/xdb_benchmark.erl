@@ -14,7 +14,7 @@ main(DataFile) ->
     %% Keep benchmark output clean while still surfacing real errors.
     _ = logger:set_handler_config(default, level, error),
     _ = logger:set_primary_config(level, error),
-    application:ensure_started(ip2region),
+    {ok, _} = application:ensure_all_started(ip2region),
     show_hw_sw_info(),
     IpList = load_test_data(DataFile),
     run(IpList).

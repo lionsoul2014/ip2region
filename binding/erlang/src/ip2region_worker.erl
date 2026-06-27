@@ -124,7 +124,7 @@ do_call(stop, _From, State) ->
 
 do_call(Request, From, State) ->
     error_logger:error_report(io_lib:format("unknown request: ~p, from:~p", [Request, From])),
-    {noreply, State}.
+    {reply, {error, unknown_request}, State}.
 
 do_cast(Msg, State) ->
     error_logger:error_report(io_lib:format("unknown msg: ~p", [Msg])),
@@ -154,14 +154,15 @@ load_vector_index(IoDevice, Version) ->
     %% so the current file pointer position does not affect correctness.
     Table = ip2region_xdb:vector_index_table(Version),
     case ets:info(Table, size) of
+        ?XDB_VECTOR_INDEX_COUNT ->
+            ok;
         undefined ->
             Opts = [named_table, set, public, {read_concurrency, true}, {keypos, 1}],
             ets:new(Table, Opts),
             load_vector_index_data(IoDevice, Table);
-        0 ->
-            load_vector_index_data(IoDevice, Table);
         _ ->
-            ok
+            %% A previous worker may have crashed midway; reload to be safe.
+            load_vector_index_data(IoDevice, Table)
     end.
 
 load_vector_index_data(IoDevice, Table) ->
@@ -215,8 +216,7 @@ ip_in_range(Ip, SIp, EIp, ipv6) ->
     end.
 
 read_file(IoDevice, Position, DataLength) ->
-    file:position(IoDevice, {bof, Position}),
-    file:read(IoDevice, DataLength).
+    file:pread(IoDevice, Position, DataLength).
 
 read_segment_index(IoDevice, SPtr, SegSize, SegmentTable) ->
     case ets:lookup(SegmentTable, SPtr) of
