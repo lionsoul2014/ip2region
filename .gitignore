@@ -89,3 +89,6 @@ target
 #vscode
 .vscode
 build
+
+# git worktrees
+.worktrees/
