@@ -19,6 +19,6 @@
   ]},
   {modules, []},
 
-  {licenses, ["Apache-2.0"]},
+  {licenses, ["Apache-2.0", "MIT"]},
   {links, [{"Github", "https://github.com/lionsoul2014/ip2region/tree/master/binding/erlang"}]}
  ]}.
