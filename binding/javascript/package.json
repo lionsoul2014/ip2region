@@ -31,11 +31,29 @@
     "ipv6-search"
   ],
   "author": "lionsoul2014",
-  "license": "ISC",
+  "license": "Apache-2.0 OR MIT",
   "bugs": {
     "url": "https://github.com/lionsoul2014/ip2region/issues"
   },
   "homepage": "https://github.com/lionsoul2014/ip2region#readme",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "searcher.js",
+    "util.js",
+    "README.md",
+    "README_zh.md",
+    "LICENSE.md"
+  ],
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    }
+  },
   "devDependencies": {
     "@types/jest": "^30.0.0",
     "argparse": "^2.0.1",
