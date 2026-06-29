@@ -5,7 +5,7 @@
         <version>3.0.2</version>
         <title>IP2Region.Net</title>
         <authors>Alan Lee;Argo Zhang(argo@live.ca)</authors>
-        <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+        <PackageLicenseExpression>Apache-2.0 OR MIT</PackageLicenseExpression>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageProjectUrl>https://github.com/lionsoul2014/ip2region/tree/master/binding/csharp</PackageProjectUrl>
         <RepositoryUrl>https://github.com/lionsoul2014/ip2region/tree/master/binding/csharp</RepositoryUrl>
@@ -22,6 +22,7 @@
 	
     <ItemGroup>
         <None Include="..\README.md" Pack="true" PackagePath="\" />
+        <None Include="LICENSE.md" Pack="true" PackagePath="\" />
     </ItemGroup>
 	
     <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
