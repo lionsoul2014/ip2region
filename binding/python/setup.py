@@ -8,7 +8,7 @@ setuptools.setup(
     long_description_content_type='text/markdown',
 
     url="https://github.com/lionsoul2014/ip2region",
-    license="Apache-2.0 License",
+    license="Apache-2.0 OR MIT",
     author_email="chenxin619315@gmail.com",
     author="lionsoul2014",
 
