@@ -4,7 +4,7 @@ version = "0.2.1"
 edition = "2024"
 rust-version = "1.89.0"
 description = "The rust binding for ip2region"
-license = "Apache-2.0"
+license = "Apache-2.0 OR MIT"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
