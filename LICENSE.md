@@ -1,3 +1,11 @@
+ip2region is dual-licensed under the Apache License 2.0 and the MIT License.
+
+You may use, distribute, and modify this software under either license,
+at your option. The full text of both licenses appears below.
+
+SPDX-License-Identifier: Apache-2.0 OR MIT
+
+==============================================================================
                                  Apache License
                            Version 2.0, January 2004
                         http://www.apache.org/licenses/
