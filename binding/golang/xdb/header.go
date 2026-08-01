@@ -61,7 +61,7 @@ type Header struct {
 }
 
 func NewHeader(input []byte) (*Header, error) {
-	if len(input) < 16 {
+	if len(input) < 20 {
 		return nil, fmt.Errorf("invalid input buffer")
 	}
 
