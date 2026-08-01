@@ -70,6 +70,7 @@ func newConfig(cachePolicy int, ipVersion *xdb.Version, xdbPath string, searcher
 	if err != nil {
 		return nil, err
 	}
+	defer handle.Close()
 
 	// 1, verify the xdb
 	err = xdb.Verify(handle)
