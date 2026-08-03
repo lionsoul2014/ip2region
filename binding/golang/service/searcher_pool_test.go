@@ -7,6 +7,7 @@ package service
 import (
 	"fmt"
 	"testing"
+	"time"
 )
 
 func TestV4SearcherPool(t *testing.T) {
@@ -67,4 +68,32 @@ func TestV6SearcherPool(t *testing.T) {
 
 	// close the searcher pool
 	searcherPool.Close()
+}
+
+func TestCloseTimeoutBounded(t *testing.T) {
+	v4Config, err := NewV4Config(VIndexCache, "../../../data/ip2region_v4.xdb", 2)
+	if err != nil {
+		t.Fatalf("failed to new v4 config: %s", err)
+	}
+
+	searcherPool, err := NewSearcherPool(v4Config)
+	if err != nil {
+		t.Fatalf("failed to create searcher pool: %s", err)
+	}
+
+	// borrow one searcher and never return it,
+	// CloseTimeout should return roughly after the given duration
+	s := searcherPool.BorrowSearcher()
+	defer s.Close()
+
+	start := time.Now()
+	searcherPool.CloseTimeout(200 * time.Millisecond)
+	elapsed := time.Since(start)
+
+	if elapsed < 200*time.Millisecond {
+		t.Fatalf("CloseTimeout returned too early: %s", elapsed)
+	}
+	if elapsed > 2*time.Second {
+		t.Fatalf("CloseTimeout took too long: %s", elapsed)
+	}
 }

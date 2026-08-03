@@ -91,12 +91,18 @@ func (sp *SearcherPool) Close() {
 
 func (sp *SearcherPool) CloseTimeout(d time.Duration) {
 	close(sp.closing)
+
+	// use a single timer for the whole closing progress
+	// so the max wait duration is bounded by d instead of d * pool size.
+	timer := time.NewTimer(d)
+	defer timer.Stop()
+
 	for {
 		timeout := false
 		select {
 		case s := <-sp.pool:
 			s.Close()
-		case <-time.After(d):
+		case <-timer.C:
 			// check if all the loaned searchers was closed
 			timeout = true
 		}
