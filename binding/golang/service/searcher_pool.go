@@ -64,10 +64,15 @@ func (sp *SearcherPool) LoanCount() int {
 }
 
 func (sp *SearcherPool) BorrowSearcher() *xdb.Searcher {
-	// @Note: still accept searcher borrow while closing
-	s := <-sp.pool
-	atomic.AddInt32(&sp.loanCount, 1)
-	return s
+	// @Note: still accept searcher borrow while closing,
+	// return nil directly once the pool was closed to avoid blocking forever.
+	select {
+	case <-sp.closing:
+		return nil
+	case s := <-sp.pool:
+		atomic.AddInt32(&sp.loanCount, 1)
+		return s
+	}
 }
 
 func (sp *SearcherPool) ReturnSearcher(searcher *xdb.Searcher) {
