@@ -16,6 +16,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"sync"
 )
 
 type Searcher struct {
@@ -32,6 +33,45 @@ type Searcher struct {
 	// content buffer.
 	// running with the whole xdb file cached
 	contentBuff []byte
+}
+
+// searchBufPool caches the temporary buffers used by a single Search call,
+// so the repeated queries do not need to allocate new buffers each time.
+// @Note: the buffers are borrowed and returned within the same Search call,
+// concurrent searches on different goroutines get their own buffers.
+// the pool stores *[]byte instead of []byte to avoid the interface boxing
+// allocations of sync.Pool (SA6002).
+var searchBufPool = sync.Pool{
+	New: func() any {
+		buf := make([]byte, 0, 64)
+		return &buf
+	},
+}
+
+// maxCachedSearchBufSize limits the buffer size that will be kept in the pool,
+// oversized buffers are dropped to avoid memory bloat.
+const maxCachedSearchBufSize = 1 << 10 // 1KiB
+
+// getSearchBuf borrow a buffer from the pool with at least the given size,
+// the returned *[]byte should be passed to putSearchBuf to return the buffer.
+func getSearchBuf(size int) ([]byte, *[]byte) {
+	bufPtr := searchBufPool.Get().(*[]byte)
+	if cap(*bufPtr) < size {
+		*bufPtr = make([]byte, size)
+	}
+
+	return (*bufPtr)[:size], bufPtr
+}
+
+// putSearchBuf return a buffer to the pool, oversized ones are dropped
+func putSearchBuf(bufPtr *[]byte) {
+	if bufPtr == nil {
+		return
+	}
+
+	if cap(*bufPtr) <= maxCachedSearchBufSize {
+		searchBufPool.Put(bufPtr)
+	}
 }
 
 func NewWithFileOnly(version *Version, dbFile string) (*Searcher, error) {
@@ -123,6 +163,16 @@ func (s *Searcher) Search(ip any) (string, error) {
 		return "", fmt.Errorf("invalid ip value type %s", v)
 	}
 
+	// borrow the temporary buffers from the pool to avoid per-search heap
+	// allocations, they will be returned before this function returns.
+	var idxPtr, segPtr, regionPtr *[]byte
+	var idxBuff, segBuff, regionBuff []byte
+	defer func() {
+		putSearchBuf(idxPtr)
+		putSearchBuf(segPtr)
+		putSearchBuf(regionPtr)
+	}()
+
 	// ip version check
 	if len(ipBytes) != s.version.Bytes {
 		return "", fmt.Errorf("invalid ip address(%s expected)", s.version.Name)
@@ -143,14 +193,14 @@ func (s *Searcher) Search(ip any) (string, error) {
 		ePtr = binary.LittleEndian.Uint32(s.contentBuff[HeaderInfoLength+idx+4:])
 	} else {
 		// read the vector index block
-		var buff = make([]byte, VectorIndexSize)
-		err := s.read(int64(HeaderInfoLength+idx), buff)
+		idxBuff, idxPtr = getSearchBuf(VectorIndexSize)
+		err := s.read(int64(HeaderInfoLength+idx), idxBuff)
 		if err != nil {
 			return "", fmt.Errorf("read vector index block at %d: %w", HeaderInfoLength+idx, err)
 		}
 
-		sPtr = binary.LittleEndian.Uint32(buff)
-		ePtr = binary.LittleEndian.Uint32(buff[4:])
+		sPtr = binary.LittleEndian.Uint32(idxBuff)
+		ePtr = binary.LittleEndian.Uint32(idxBuff[4:])
 	}
 
 	// fmt.Printf("sPtr=%d, ePtr=%d\n", sPtr, ePtr)
@@ -164,24 +214,24 @@ func (s *Searcher) Search(ip any) (string, error) {
 	var bytes, dBytes = len(ipBytes), len(ipBytes) << 1
 	var segIndexSize = uint32(s.version.SegmentIndexSize)
 	var dataLen, dataPtr = 0, uint32(0)
-	var buff = make([]byte, segIndexSize)
+	segBuff, segPtr = getSearchBuf(int(segIndexSize))
 	var l, h = 0, int((ePtr - sPtr) / segIndexSize)
 	for l <= h {
 		m := (l + h) >> 1
 		p := sPtr + uint32(m)*segIndexSize
-		err := s.read(int64(p), buff)
+		err := s.read(int64(p), segBuff)
 		if err != nil {
 			return "", fmt.Errorf("read segment index at %d: %w", p, err)
 		}
 
 		// decode the data step by step to reduce the unnecessary operations
-		if s.version.IPCompare(ipBytes, buff[0:bytes]) < 0 {
+		if s.version.IPCompare(ipBytes, segBuff[0:bytes]) < 0 {
 			h = m - 1
-		} else if s.version.IPCompare(ipBytes, buff[bytes:dBytes]) > 0 {
+		} else if s.version.IPCompare(ipBytes, segBuff[bytes:dBytes]) > 0 {
 			l = m + 1
 		} else {
-			dataLen = int(binary.LittleEndian.Uint16(buff[dBytes:]))
-			dataPtr = binary.LittleEndian.Uint32(buff[dBytes+2:])
+			dataLen = int(binary.LittleEndian.Uint16(segBuff[dBytes:]))
+			dataPtr = binary.LittleEndian.Uint32(segBuff[dBytes+2:])
 			break
 		}
 	}
@@ -192,7 +242,7 @@ func (s *Searcher) Search(ip any) (string, error) {
 	}
 
 	// load and return the region data
-	var regionBuff = make([]byte, dataLen)
+	regionBuff, regionPtr = getSearchBuf(dataLen)
 	err = s.read(int64(dataPtr), regionBuff)
 	if err != nil {
 		return "", fmt.Errorf("read region at %d: %w", dataPtr, err)
