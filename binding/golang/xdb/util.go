@@ -222,6 +222,10 @@ func LoadHeaderFromFile(dbFile string) (*Header, error) {
 
 // LoadHeaderFromBuff wrap the header info from the content buffer
 func LoadHeaderFromBuff(cBuff []byte) (*Header, error) {
+	if len(cBuff) < HeaderInfoLength {
+		return nil, fmt.Errorf("invalid content buffer: %d bytes, %d expected", len(cBuff), HeaderInfoLength)
+	}
+
 	return NewHeader(cBuff[0:HeaderInfoLength])
 }
 
