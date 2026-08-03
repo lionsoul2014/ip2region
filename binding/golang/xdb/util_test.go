@@ -9,6 +9,7 @@
 package xdb
 
 import (
+	"bytes"
 	"encoding/binary"
 	"fmt"
 	"testing"
@@ -42,29 +43,29 @@ func TestIPCompare(t *testing.T) {
 	}
 }
 
-func TestIPSub(t *testing.T) {
-	var strToSub = "1.2.3.4"
-	bytesToSub, err := ParseIP(strToSub)
+func TestIPAdd(t *testing.T) {
+	var strToAdd = "1.2.3.4"
+	bytesToAdd, err := ParseIP(strToAdd)
 	if err != nil {
-		t.Fatalf("failed to parse ip %s", strToSub)
+		t.Fatalf("failed to parse ip %s", strToAdd)
 	}
-	var intToSub = int(binary.BigEndian.Uint32(bytesToSub))
-	t.Logf("to sub ip: %d -> %s", intToSub, strToSub)
+	var intToAdd = int(binary.BigEndian.Uint32(bytesToAdd))
+	t.Logf("to add ip: %d -> %s", intToAdd, strToAdd)
 
 	counter := 0
 	buf := make([]byte, 4)
 	for i := 0; i < 0x2FFFFFFF; i++ {
 		binary.BigEndian.PutUint32(buf, uint32(i))
-		subVal, err := IPSub(buf, bytesToSub)
+		addVal, err := IPAdd(buf, bytesToAdd)
 		if err != nil {
-			t.Fatalf("failed to IPSub(%s,%s): %s", IP2String(buf), strToSub, err)
+			t.Fatalf("failed to IPAdd(%s,%s): %s", IP2String(buf), strToAdd, err)
 		}
 
 		// do it as two integers
-		byteSub := int(binary.BigEndian.Uint32(subVal))
-		intSub := i + intToSub
-		if byteSub != intSub {
-			t.Fatal("byte and int sub value are not the same")
+		byteAdd := int(binary.BigEndian.Uint32(addVal))
+		intAdd := i + intToAdd
+		if byteAdd != intAdd {
+			t.Fatal("byte and int add value are not the same")
 		}
 
 		counter++
@@ -88,7 +89,7 @@ func TestIPHalf(t *testing.T) {
 	}
 }
 
-func TestSubOverflow(t *testing.T) {
+func TestAddOverflow(t *testing.T) {
 	var ip1Str = "255.255.255.250"
 	ip1Bytes, err := ParseIP(ip1Str)
 	if err != nil {
@@ -98,12 +99,32 @@ func TestSubOverflow(t *testing.T) {
 	var buff = make([]byte, 4)
 	for i := 0; i < 10; i++ {
 		binary.BigEndian.PutUint32(buff, uint32(i))
-		ipSub, err := IPSub(ip1Bytes, buff)
+		ipAdd, err := IPAdd(ip1Bytes, buff)
 		if err != nil {
-			t.Fatalf("failed to IPSub(%s, %s): %s", ip1Str, IP2String(buff), err)
+			t.Fatalf("failed to IPAdd(%s, %s): %s", ip1Str, IP2String(buff), err)
 		}
 
-		t.Logf("IPSub(%s, %s) = %+v", ip1Str, IP2String(buff), ipSub)
+		t.Logf("IPAdd(%s, %s) = %+v", ip1Str, IP2String(buff), ipAdd)
+	}
+}
+
+// TestIPSubCompat verifies the deprecated IPSub alias keeps working
+func TestIPSubCompat(t *testing.T) {
+	sip := []byte{1, 2, 3, 4}
+	eip := []byte{4, 3, 2, 1}
+
+	sub, err := IPSub(sip, eip)
+	if err != nil {
+		t.Fatalf("failed to IPSub(%s, %s): %s", IP2String(sip), IP2String(eip), err)
+	}
+
+	add, err := IPAdd(sip, eip)
+	if err != nil {
+		t.Fatalf("failed to IPAdd(%s, %s): %s", IP2String(sip), IP2String(eip), err)
+	}
+
+	if !bytes.Equal(sub, add) {
+		t.Fatalf("IPSub and IPAdd should be the same, got %v vs %v", sub, add)
 	}
 }
 

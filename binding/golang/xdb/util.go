@@ -82,8 +82,10 @@ func IPSubOne(ip []byte) []byte {
 	return r
 }
 
-// IPSub Sub the spcecified two byte ip
-func IPSub(sip, eip []byte) ([]byte, error) {
+// IPAdd Add the specified two byte ips.
+// @Note: the implementation adds the two ips, which is the sum of them,
+// the original misleading name IPSub was renamed to IPAdd.
+func IPAdd(sip, eip []byte) ([]byte, error) {
 	if len(sip) != len(eip) {
 		return []byte{}, fmt.Errorf("length of the two ips are not the same")
 	}
@@ -104,6 +106,13 @@ func IPSub(sip, eip []byte) ([]byte, error) {
 	} else {
 		return result[1:], nil
 	}
+}
+
+// IPSub is deprecated, use IPAdd instead.
+// The old implementation actually adds the two ips,
+// so it was renamed to IPAdd to reflect the real behavior.
+func IPSub(sip, eip []byte) ([]byte, error) {
+	return IPAdd(sip, eip)
 }
 
 // IPHalf get the half value of an input byte ip
@@ -127,9 +136,9 @@ func IPHalf(ip []byte) []byte {
 
 // IPMiddle get the middle value of two input ip address
 func IPMiddle(sip, eip []byte) ([]byte, error) {
-	buf, err := IPSub(sip, eip)
+	buf, err := IPAdd(sip, eip)
 	if err != nil {
-		return []byte{}, fmt.Errorf("IPSub(%s, %s): %w", IP2String(sip), IP2String(eip), err)
+		return []byte{}, fmt.Errorf("IPAdd(%s, %s): %w", IP2String(sip), IP2String(eip), err)
 	}
 
 	return IPHalf(buf), nil
