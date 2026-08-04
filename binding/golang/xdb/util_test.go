@@ -42,29 +42,29 @@ func TestIPCompare(t *testing.T) {
 	}
 }
 
-func TestIPSub(t *testing.T) {
-	var strToSub = "1.2.3.4"
-	bytesToSub, err := ParseIP(strToSub)
+func TestIPAdd(t *testing.T) {
+	var strToAdd = "1.2.3.4"
+	bytesToAdd, err := ParseIP(strToAdd)
 	if err != nil {
-		t.Fatalf("failed to parse ip %s", strToSub)
+		t.Fatalf("failed to parse ip %s", strToAdd)
 	}
-	var intToSub = int(binary.BigEndian.Uint32(bytesToSub))
-	t.Logf("to sub ip: %d -> %s", intToSub, strToSub)
+	var intToAdd = int(binary.BigEndian.Uint32(bytesToAdd))
+	t.Logf("to add ip: %d -> %s", intToAdd, strToAdd)
 
 	counter := 0
 	buf := make([]byte, 4)
 	for i := 0; i < 0x2FFFFFFF; i++ {
 		binary.BigEndian.PutUint32(buf, uint32(i))
-		subVal, err := IPSub(buf, bytesToSub)
+		addVal, err := IPAdd(buf, bytesToAdd)
 		if err != nil {
-			t.Fatalf("failed to IPSub(%s,%s): %s", IP2String(buf), strToSub, err)
+			t.Fatalf("failed to IPAdd(%s,%s): %s", IP2String(buf), strToAdd, err)
 		}
 
 		// do it as two integers
-		byteSub := int(binary.BigEndian.Uint32(subVal))
-		intSub := i + intToSub
-		if byteSub != intSub {
-			t.Fatal("byte and int sub value are not the same")
+		byteAdd := int(binary.BigEndian.Uint32(addVal))
+		intAdd := i + intToAdd
+		if byteAdd != intAdd {
+			t.Fatal("byte and int add value are not the same")
 		}
 
 		counter++
@@ -98,7 +98,7 @@ func TestSubOverflow(t *testing.T) {
 	var buff = make([]byte, 4)
 	for i := 0; i < 10; i++ {
 		binary.BigEndian.PutUint32(buff, uint32(i))
-		ipSub, err := IPSub(ip1Bytes, buff)
+		ipSub, err := IPAdd(ip1Bytes, buff)
 		if err != nil {
 			t.Fatalf("failed to IPSub(%s, %s): %s", ip1Str, IP2String(buff), err)
 		}

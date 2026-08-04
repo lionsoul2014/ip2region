@@ -82,8 +82,8 @@ func IPSubOne(ip []byte) []byte {
 	return r
 }
 
-// IPSub Sub the spcecified two byte ip
-func IPSub(sip, eip []byte) ([]byte, error) {
+// IPAdd Add the spcecified two byte ip
+func IPAdd(sip, eip []byte) ([]byte, error) {
 	if len(sip) != len(eip) {
 		return []byte{}, fmt.Errorf("length of the two ips are not the same")
 	}
@@ -127,7 +127,7 @@ func IPHalf(ip []byte) []byte {
 
 // IPMiddle get the middle value of two input ip address
 func IPMiddle(sip, eip []byte) ([]byte, error) {
-	buf, err := IPSub(sip, eip)
+	buf, err := IPAdd(sip, eip)
 	if err != nil {
 		return []byte{}, fmt.Errorf("IPSub(%s, %s): %w", IP2String(sip), IP2String(eip), err)
 	}
