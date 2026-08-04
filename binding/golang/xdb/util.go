@@ -165,7 +165,7 @@ func Verify(handle *os.File) error {
 		return fmt.Errorf("file stat: %w", err)
 	}
 
-	maxFilePtr := int64(1<<(runtimePtrBytes*8) - 1)
+	maxFilePtr := int64(1)<<(runtimePtrBytes*8) - 1
 	if stat.Size() > maxFilePtr {
 		return fmt.Errorf("xdb file exceeds the maximum supported bytes: %d", maxFilePtr)
 	}
