@@ -42,9 +42,15 @@ var (
 		IPCompare: func(ip1, ip2 []byte) int {
 			// ip1 - with Big endian byte order parsed from an input
 			// ip2 - with Little endian byte order read from the xdb index
-			ip2[0], ip2[3] = ip2[3], ip2[0]
-			ip2[1], ip2[2] = ip2[2], ip2[1]
-			return bytes.Compare(ip1, ip2)
+			// compare from the tail of ip2 to avoid mutating the input buffer
+			for i, j := 0, len(ip1)-1; i < len(ip1); i, j = i+1, j-1 {
+				if ip1[i] < ip2[j] {
+					return -1
+				} else if ip1[i] > ip2[j] {
+					return 1
+				}
+			}
+			return 0
 		},
 	}
 	IPv6 = &Version{
