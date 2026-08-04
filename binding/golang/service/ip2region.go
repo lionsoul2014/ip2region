@@ -153,6 +153,9 @@ func (ip2r *Ip2Region) v4Search(ipBytes []byte) (string, error) {
 	}
 
 	v4Searcher := ip2r.v4Pool.BorrowSearcher()
+	if v4Searcher == nil {
+		return "", fmt.Errorf("v4 searcher pool already closed")
+	}
 	defer ip2r.v4Pool.ReturnSearcher(v4Searcher)
 	return v4Searcher.Search(ipBytes)
 }
@@ -168,6 +171,9 @@ func (ip2r *Ip2Region) v6Search(ipBytes []byte) (string, error) {
 	}
 
 	v6Searcher := ip2r.v6Pool.BorrowSearcher()
+	if v6Searcher == nil {
+		return "", fmt.Errorf("v6 searcher pool already closed")
+	}
 	defer ip2r.v6Pool.ReturnSearcher(v6Searcher)
 	return v6Searcher.Search(ipBytes)
 }

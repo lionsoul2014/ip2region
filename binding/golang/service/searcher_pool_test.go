@@ -7,6 +7,7 @@ package service
 import (
 	"fmt"
 	"testing"
+	"time"
 )
 
 func TestV4SearcherPool(t *testing.T) {
@@ -67,4 +68,33 @@ func TestV6SearcherPool(t *testing.T) {
 
 	// close the searcher pool
 	searcherPool.Close()
+}
+
+func TestBorrowAfterClose(t *testing.T) {
+	v4Config, err := NewV4Config(VIndexCache, "../../../data/ip2region_v4.xdb", 2)
+	if err != nil {
+		t.Fatalf("failed to new v4 config: %s", err)
+	}
+
+	searcherPool, err := NewSearcherPool(v4Config)
+	if err != nil {
+		t.Fatalf("failed to create searcher pool: %s", err)
+	}
+
+	searcherPool.Close()
+
+	// borrowing after close should return nil immediately instead of blocking forever
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		if s := searcherPool.BorrowSearcher(); s != nil {
+			t.Errorf("BorrowSearcher after close: %v returned, nil expected", s)
+		}
+	}()
+
+	select {
+	case <-done:
+	case <-time.After(3 * time.Second):
+		t.Fatal("BorrowSearcher after close blocked forever")
+	}
 }
