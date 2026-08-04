@@ -173,3 +173,18 @@ func TestLoadHeader(t *testing.T) {
 	fmt.Printf("IPVersion       : %d\n", header.IPVersion)
 	fmt.Printf("RuntimePtrBytes : %d\n", header.RuntimePtrBytes)
 }
+
+func TestLoadHeaderFromBuffShortBuffer(t *testing.T) {
+	// a short buffer should return an error instead of panicking on slice out of range
+	if _, err := LoadHeaderFromBuff(make([]byte, HeaderInfoLength-1)); err == nil {
+		t.Fatal("LoadHeaderFromBuff with short buffer: error expected")
+	}
+
+	header, err := LoadHeaderFromBuff(make([]byte, HeaderInfoLength))
+	if err != nil {
+		t.Fatalf("LoadHeaderFromBuff with full buffer: %s", err)
+	}
+	if header == nil {
+		t.Fatal("LoadHeaderFromBuff returned a nil header")
+	}
+}
