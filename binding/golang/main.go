@@ -342,12 +342,11 @@ func testBench() {
 		for _, ip := range [][]byte{sip, eip} {
 			sTime := time.Now()
 			region, err := searcher.Search(ip)
+			costs += time.Since(sTime).Nanoseconds()
 			if err != nil {
 				fmt.Printf("failed to search ip '%s': %s\n", xdb.IP2String(ip), err)
 				return
 			}
-
-			costs += time.Since(sTime).Nanoseconds()
 
 			// check the region info
 			if region != ps[2] {
@@ -364,14 +363,16 @@ func testBench() {
 		return
 	}
 
-	if count == 0 {
-		fmt.Printf("no valid ip segment found in source file `%s`, nothing to bench\n", srcFile)
-		return
+	cAvg := int64(0)
+	if count > 0 {
+		cAvg = costs / count / 1000
 	}
 
 	cost := time.Since(tStart)
-	fmt.Printf("Bench finished, {cachePolicy: %s, total: %d, took: %s, cost: %d μs/op}\n",
-		cachePolicy, count, cost, costs/count/1000)
+	fmt.Printf(
+		"Bench finished, {cachePolicy: %s, total: %d, took: %s, cost: %d μs/op}\n",
+		cachePolicy, count, cost, cAvg,
+	)
 }
 
 func main() {
