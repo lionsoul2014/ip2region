@@ -136,9 +136,15 @@ func (s *Searcher) Search(ip any) (string, error) {
 	var idx = il0*VectorIndexCols*VectorIndexSize + il1*VectorIndexSize
 	var sPtr, ePtr = uint32(0), uint32(0)
 	if s.vectorIndex != nil {
+		if len(s.vectorIndex) < idx+VectorIndexSize {
+			return "", fmt.Errorf("vector index buffer too short: %d bytes, %d expected", len(s.vectorIndex), idx+VectorIndexSize)
+		}
 		sPtr = binary.LittleEndian.Uint32(s.vectorIndex[idx:])
 		ePtr = binary.LittleEndian.Uint32(s.vectorIndex[idx+4:])
 	} else if s.contentBuff != nil {
+		if len(s.contentBuff) < HeaderInfoLength+idx+VectorIndexSize {
+			return "", fmt.Errorf("content buffer too short: %d bytes, %d expected", len(s.contentBuff), HeaderInfoLength+idx+VectorIndexSize)
+		}
 		sPtr = binary.LittleEndian.Uint32(s.contentBuff[HeaderInfoLength+idx:])
 		ePtr = binary.LittleEndian.Uint32(s.contentBuff[HeaderInfoLength+idx+4:])
 	} else {
@@ -206,6 +212,9 @@ func (s *Searcher) Search(ip any) (string, error) {
 // this operation will invoke the Seek for file based read.
 func (s *Searcher) read(offset int64, buff []byte) error {
 	if s.contentBuff != nil {
+		if offset < 0 || offset+int64(len(buff)) > int64(len(s.contentBuff)) {
+			return fmt.Errorf("content buffer out of range: read %d bytes at %d, buffer %d bytes", len(buff), offset, len(s.contentBuff))
+		}
 		cLen := copy(buff, s.contentBuff[offset:])
 		if cLen != len(buff) {
 			return fmt.Errorf("incomplete read: readed bytes should be %d", len(buff))
