@@ -98,3 +98,50 @@ func TestBorrowAfterClose(t *testing.T) {
 		t.Fatal("BorrowSearcher after close blocked forever")
 	}
 }
+
+func TestCloseIdempotent(t *testing.T) {
+	v4Config, err := NewV4Config(VIndexCache, "../../../data/ip2region_v4.xdb", 2)
+	if err != nil {
+		t.Fatalf("failed to new v4 config: %s", err)
+	}
+
+	searcherPool, err := NewSearcherPool(v4Config)
+	if err != nil {
+		t.Fatalf("failed to create searcher pool: %s", err)
+	}
+
+	// closing the pool multiple times must not panic
+	// (regression: close of closed channel)
+	searcherPool.Close()
+	searcherPool.Close()
+	searcherPool.CloseTimeout(time.Second)
+}
+
+func TestCloseIdempotentConcurrent(t *testing.T) {
+	v4Config, err := NewV4Config(VIndexCache, "../../../data/ip2region_v4.xdb", 3)
+	if err != nil {
+		t.Fatalf("failed to new v4 config: %s", err)
+	}
+
+	searcherPool, err := NewSearcherPool(v4Config)
+	if err != nil {
+		t.Fatalf("failed to create searcher pool: %s", err)
+	}
+
+	// concurrent closes must also be safe with sync.Once
+	done := make(chan struct{})
+	for i := 0; i < 8; i++ {
+		go func() {
+			defer func() {
+				if r := recover(); r != nil {
+					t.Errorf("panic on concurrent close: %v", r)
+				}
+			}()
+			searcherPool.CloseTimeout(time.Second)
+			done <- struct{}{}
+		}()
+	}
+	for i := 0; i < 8; i++ {
+		<-done
+	}
+}

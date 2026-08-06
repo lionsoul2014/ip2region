@@ -6,6 +6,7 @@ package service
 
 import (
 	"fmt"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -27,6 +28,9 @@ type SearcherPool struct {
 
 	// for pool close
 	closing chan struct{}
+
+	// make the pool close idempotent
+	closeOnce sync.Once
 
 	// searcher number that was loaned out
 	loanCount int32
@@ -95,29 +99,28 @@ func (sp *SearcherPool) Close() {
 }
 
 func (sp *SearcherPool) CloseTimeout(d time.Duration) {
-	close(sp.closing)
+	// close the pool only once, so Close/CloseTimeout could be
+	// called multiple times without panicking on a closed channel.
+	sp.closeOnce.Do(func() {
+		close(sp.closing)
+	})
 
 	// wait timeout
 	timer := time.NewTimer(d)
 	defer timer.Stop()
 
 	for {
-		timeout := false
-		select {
-		case s := <-sp.pool:
-			s.Close()
-		case <-timer.C:
-			// check if all the loaned searchers was closed
-			timeout = true
-		}
-
+		// all the searchers are closed already, done.
 		lc, left := sp.LoanCount(), len(sp.pool)
 		if left == 0 && lc == 0 {
 			break
 		}
 
-		if timeout {
-			break
+		select {
+		case s := <-sp.pool:
+			s.Close()
+		case <-timer.C:
+			return
 		}
 	}
 }
