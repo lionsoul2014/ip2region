@@ -28,6 +28,11 @@ type SearcherPool struct {
 	// for pool close
 	closing chan struct{}
 
+	// notify the close process that a loaned searcher was returned
+	// and closed, so CloseTimeout can bail out as soon as all the
+	// loaned searchers are back instead of waiting the full timeout.
+	returned chan struct{}
+
 	// searcher number that was loaned out
 	loanCount int32
 }
@@ -54,6 +59,7 @@ func NewSearcherPool(config *Config) (*SearcherPool, error) {
 		pool:   pool,
 
 		closing:   make(chan struct{}, 1),
+		returned:  make(chan struct{}, config.searchers+1),
 		loanCount: 0,
 	}, nil
 }
@@ -83,6 +89,13 @@ func (sp *SearcherPool) ReturnSearcher(searcher *xdb.Searcher) {
 
 		// decrease the loan count
 		atomic.AddInt32(&sp.loanCount, -1)
+
+		// notify the close process so it can bail out as soon as
+		// every loaned searcher is back, avoid waiting the full timeout.
+		select {
+		case sp.returned <- struct{}{}:
+		default:
+		}
 	default:
 		// return the searcher
 		sp.pool <- searcher
@@ -102,22 +115,19 @@ func (sp *SearcherPool) CloseTimeout(d time.Duration) {
 	defer timer.Stop()
 
 	for {
-		timeout := false
-		select {
-		case s := <-sp.pool:
-			s.Close()
-		case <-timer.C:
-			// check if all the loaned searchers was closed
-			timeout = true
-		}
-
+		// all the searchers are closed already, done
 		lc, left := sp.LoanCount(), len(sp.pool)
 		if left == 0 && lc == 0 {
 			break
 		}
 
-		if timeout {
-			break
+		select {
+		case s := <-sp.pool:
+			s.Close()
+		case <-sp.returned:
+			// a loaned searcher was returned and closed, re-check
+		case <-timer.C:
+			return
 		}
 	}
 }

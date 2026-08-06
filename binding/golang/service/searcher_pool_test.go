@@ -98,3 +98,40 @@ func TestBorrowAfterClose(t *testing.T) {
 		t.Fatal("BorrowSearcher after close blocked forever")
 	}
 }
+
+func TestCloseTimeoutReturnsEarlyWhenAllLoaned(t *testing.T) {
+	v4Config, err := NewV4Config(VIndexCache, "../../../data/ip2region_v4.xdb", 2)
+	if err != nil {
+		t.Fatalf("failed to new v4 config: %s", err)
+	}
+
+	searcherPool, err := NewSearcherPool(v4Config)
+	if err != nil {
+		t.Fatalf("failed to create searcher pool: %s", err)
+	}
+
+	// borrow all the searchers
+	s1 := searcherPool.BorrowSearcher()
+	s2 := searcherPool.BorrowSearcher()
+	if s1 == nil || s2 == nil {
+		t.Fatal("failed to borrow searchers")
+	}
+
+	// close the pool while all the searchers are loaned out;
+	// returning them must let CloseTimeout finish well before the timeout
+	done := make(chan struct{})
+	go func() {
+		searcherPool.CloseTimeout(10 * time.Second)
+		close(done)
+	}()
+
+	time.Sleep(200 * time.Millisecond)
+	searcherPool.ReturnSearcher(s1)
+	searcherPool.ReturnSearcher(s2)
+
+	select {
+	case <-done:
+	case <-time.After(2 * time.Second):
+		t.Fatal("CloseTimeout did not return early after all loaned searchers were returned")
+	}
+}
