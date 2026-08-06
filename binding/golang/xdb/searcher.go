@@ -165,7 +165,9 @@ func (s *Searcher) Search(ip any) (string, error) {
 	var segIndexSize = uint32(s.version.SegmentIndexSize)
 	var dataLen, dataPtr = 0, uint32(0)
 	var buff = make([]byte, segIndexSize)
-	var l, h = 0, int((ePtr - sPtr) / segIndexSize)
+	// the segment index entries are numbered [0, N-1], so the upper bound
+	// is N-1. N (=0) means an empty index, the loop will be skipped safely.
+	var l, h = 0, int((ePtr-sPtr)/segIndexSize) - 1
 	for l <= h {
 		m := (l + h) >> 1
 		p := sPtr + uint32(m)*segIndexSize
