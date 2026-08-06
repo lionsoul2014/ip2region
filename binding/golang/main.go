@@ -359,6 +359,16 @@ func testBench() {
 		}
 	}
 
+	if err := scanner.Err(); err != nil {
+		fmt.Printf("failed to scan source text file: %s\n", err)
+		return
+	}
+
+	if count == 0 {
+		fmt.Printf("no valid ip segment found in source file `%s`, nothing to bench\n", srcFile)
+		return
+	}
+
 	cost := time.Since(tStart)
 	fmt.Printf("Bench finished, {cachePolicy: %s, total: %d, took: %s, cost: %d μs/op}\n",
 		cachePolicy, count, cost, costs/count/1000)
