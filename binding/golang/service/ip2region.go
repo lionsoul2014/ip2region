@@ -23,13 +23,13 @@ type Ip2Region struct {
 	// v4 pool for cache policy vIndex or NoCache
 	v4Pool *SearcherPool
 
-	// v4 xdb searcher for full in-memeory search
+	// v4 xdb searcher for full in-memory search
 	v4InMemSearcher *xdb.Searcher
 
 	// v6 pool for cache policy vIndex or NoCache:w
 	v6Pool *SearcherPool
 
-	// v6 xdb searcher for full in-memeory search
+	// v6 xdb searcher for full in-memory search
 	v6InMemSearcher *xdb.Searcher
 }
 
@@ -75,7 +75,7 @@ func NewIp2Region(v4Config *Config, v6Config *Config) (*Ip2Region, error) {
 		v6InMemSearcher = nil
 		v6Pool, err = NewSearcherPool(v6Config)
 		if err != nil {
-			return nil, fmt.Errorf("failed to create v6 in-memeory searcher pool: %w", err)
+			return nil, fmt.Errorf("failed to create v6 searcher pool: %w", err)
 		}
 	}
 
