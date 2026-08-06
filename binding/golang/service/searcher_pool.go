@@ -42,6 +42,13 @@ func NewSearcherPool(config *Config) (*SearcherPool, error) {
 	for i := 0; i < config.searchers; i++ {
 		searcher, err := xdb.NewSearcher(config.ipVersion, config.xdbPath, config.vIndex, config.cBuffer)
 		if err != nil {
+			// close the searchers that were already created to
+			// avoid leaking the underlying file handles.
+			for j := 0; j < i; j++ {
+				s := <-pool
+				s.Close()
+			}
+
 			return nil, fmt.Errorf("failed to create the %dth searcher: %w", i+1, err)
 		}
 

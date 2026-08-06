@@ -6,6 +6,7 @@ package service
 
 import (
 	"fmt"
+	"os"
 	"testing"
 	"time"
 )
@@ -97,4 +98,32 @@ func TestBorrowAfterClose(t *testing.T) {
 	case <-time.After(3 * time.Second):
 		t.Fatal("BorrowSearcher after close blocked forever")
 	}
+}
+
+func TestNewSearcherPoolCreateFailure(t *testing.T) {
+	const xdbPath = "../../../data/ip2region_v4.xdb"
+	const tmpPath = xdbPath + ".tmp"
+
+	cfg, err := NewV4Config(VIndexCache, xdbPath, 3)
+	if err != nil {
+		t.Fatalf("failed to new v4 config: %s", err)
+	}
+
+	// temporarily move the xdb file away so that re-opening it in
+	// NewSearcherPool fails, and make sure it is restored afterwards
+	if err := os.Rename(xdbPath, tmpPath); err != nil {
+		t.Fatalf("failed to move xdb file: %s", err)
+	}
+	defer func() {
+		if err := os.Rename(tmpPath, xdbPath); err != nil {
+			t.Errorf("failed to restore xdb file: %s", err)
+		}
+	}()
+
+	pool, err := NewSearcherPool(cfg)
+	if err == nil {
+		pool.Close()
+		t.Fatal("expected error from NewSearcherPool with missing xdb file")
+	}
+	t.Logf("NewSearcherPool failed as expected: %s", err)
 }
