@@ -6,6 +6,7 @@ package xdb
 
 import (
 	"bytes"
+	"strings"
 	"testing"
 )
 
@@ -41,5 +42,29 @@ func TestIPv4IPCompare(t *testing.T) {
 		if (r < 0 && c.exp >= 0) || (r == 0 && c.exp != 0) || (r > 0 && c.exp <= 0) {
 			t.Errorf("IPv4.IPCompare(%v, %v) = %d, sign %d expected", c.ip1, c.ip2, r, c.exp)
 		}
+	}
+}
+
+func TestVersionFromHeaderInvalidVersion(t *testing.T) {
+	// an unknown structure version must be reported with the version field value
+	h := &Header{Version: 99, IPVersion: 4}
+	_, err := VersionFromHeader(h)
+	if err == nil {
+		t.Fatal("expected error with invalid structure version")
+	}
+	if !strings.Contains(err.Error(), "99") {
+		t.Fatalf("error `%s` does not contain the invalid version value 99", err)
+	}
+}
+
+func TestVersionFromHeaderInvalidIPVersion(t *testing.T) {
+	// an unknown ip version must be reported with the ip version field value
+	h := &Header{Version: Structure30, IPVersion: 5}
+	_, err := VersionFromHeader(h)
+	if err == nil {
+		t.Fatal("expected error with invalid ip version")
+	}
+	if !strings.Contains(err.Error(), "5") {
+		t.Fatalf("error `%s` does not contain the invalid ip version value 5", err)
 	}
 }

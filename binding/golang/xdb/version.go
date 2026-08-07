@@ -97,7 +97,7 @@ func VersionFromHeader(header *Header) (*Version, error) {
 
 	// structure 3.0 after IPv6 supporting
 	if header.Version != Structure30 {
-		return IPvx, fmt.Errorf("invalid version `%d`", header.IPVersion)
+		return IPvx, fmt.Errorf("invalid version `%d`", header.Version)
 	}
 
 	switch header.IPVersion {
@@ -106,6 +106,6 @@ func VersionFromHeader(header *Header) (*Version, error) {
 	case IPv6VersionNo:
 		return IPv6, nil
 	default:
-		return IPvx, fmt.Errorf("invalid version `%d`", header.Version)
+		return IPvx, fmt.Errorf("invalid version `%d`", header.IPVersion)
 	}
 }
