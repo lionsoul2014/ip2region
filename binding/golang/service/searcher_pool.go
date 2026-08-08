@@ -37,25 +37,35 @@ func NewSearcherPool(config *Config) (*SearcherPool, error) {
 		return nil, fmt.Errorf("config.searchers must > 0")
 	}
 
-	pool := make(chan *xdb.Searcher, config.searchers+1)
+	var eExit = false
+	var spObj = &SearcherPool{
+		config: config,
+		pool:   make(chan *xdb.Searcher, config.searchers+1),
+
+		closing:   make(chan struct{}, 1),
+		loanCount: 0,
+	}
+
+	// error closing
+	defer func() {
+		if eExit {
+			spObj.Close()
+		}
+	}()
+
 	// check and create all the searchers
 	for i := 0; i < config.searchers; i++ {
 		searcher, err := xdb.NewSearcher(config.ipVersion, config.xdbPath, config.vIndex, config.cBuffer)
 		if err != nil {
+			eExit = true // active the auto error closing
 			return nil, fmt.Errorf("failed to create the %dth searcher: %w", i+1, err)
 		}
 
 		// push the search to the pool
-		pool <- searcher
+		spObj.pool <- searcher
 	}
 
-	return &SearcherPool{
-		config: config,
-		pool:   pool,
-
-		closing:   make(chan struct{}, 1),
-		loanCount: 0,
-	}, nil
+	return spObj, nil
 }
 
 // get the loaned count
@@ -102,22 +112,17 @@ func (sp *SearcherPool) CloseTimeout(d time.Duration) {
 	defer timer.Stop()
 
 	for {
-		timeout := false
+		// check if all the loaned searchers was closed
+		lc, left := sp.LoanCount(), len(sp.pool)
+		if lc == 0 && left == 0 {
+			break
+		}
+
 		select {
 		case s := <-sp.pool:
 			s.Close()
 		case <-timer.C:
-			// check if all the loaned searchers was closed
-			timeout = true
-		}
-
-		lc, left := sp.LoanCount(), len(sp.pool)
-		if left == 0 && lc == 0 {
-			break
-		}
-
-		if timeout {
-			break
+			return
 		}
 	}
 }
