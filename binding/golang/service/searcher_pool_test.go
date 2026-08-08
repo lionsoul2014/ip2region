@@ -6,6 +6,8 @@ package service
 
 import (
 	"fmt"
+	"io"
+	"os"
 	"testing"
 	"time"
 )
@@ -97,4 +99,43 @@ func TestBorrowAfterClose(t *testing.T) {
 	case <-time.After(3 * time.Second):
 		t.Fatal("BorrowSearcher after close blocked forever")
 	}
+}
+
+func _copyFile(src, dst string) error {
+	srcFile, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer srcFile.Close()
+
+	dstFile, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer dstFile.Close()
+
+	_, err = io.Copy(dstFile, srcFile)
+	return err
+}
+
+func TestSearcherPoolErrorClose(t *testing.T) {
+	// copy the xdb to a temp file
+	var tmpFile = "/tmp/ip2region_v4.xdb"
+	err := _copyFile("../../../data/ip2region_v4.xdb", tmpFile)
+	if err != nil {
+		t.Fatalf("copy ip2region_v4.xdb: %s", err)
+	}
+
+	v4Config, err := NewV4Config(VIndexCache, tmpFile, 5)
+	if err != nil {
+		t.Fatalf("failed to new v4 config: %s", err)
+	}
+
+	// remove the tmp file
+	if err = os.Remove(tmpFile); err != nil {
+		t.Logf("failed to remove tmp file %s: %s", tmpFile, err)
+	}
+
+	_, err = NewSearcherPool(v4Config)
+	t.Logf("searcher pool create: %s", err)
 }
