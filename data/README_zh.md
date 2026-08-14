@@ -1,3 +1,5 @@
+:globe_with_meridians: [中文简体](README_zh.md) | [English](README.md)
+
 # 原始数据
 1. `ipv4_source.txt`: ipv4 原始数据，包含了全部的 ipv4 数据段。
 2. `ipv6_source.txt`: ipv6 原始数据，包含了全部的 ipv6 数据段。
