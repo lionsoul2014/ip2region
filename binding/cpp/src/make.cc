@@ -5,8 +5,12 @@
 
 namespace xdb {
 
+make_t::vector_bucket_t &make_t::vector_bucket(unsigned row, unsigned col) {
+    return vector_index[row * 256 + col];
+}
+
 void make_t::vector_index_push_back(int row, int col, const node_t &node) {
-    vector_index[row][col].push_back(
+    vector_bucket(row, col).push_back(
         std::make_pair<string, string>(node.to_bit(), string(node.region)));
 }
 
@@ -99,7 +103,7 @@ void make_t::handle_header() {
 
     for (int i = 0; i < 256; ++i)
         for (int j = 0; j < 256; ++j)
-            content_right += vector_index[i][j].size() * content_size;
+            content_right += vector_bucket(i, j).size() * content_size;
     content_right -= content_size;
     write_uint(content_left, buf + 8);
     write_uint(content_right, buf + 12);
@@ -115,12 +119,12 @@ void make_t::handle_vector_index() {
         index += d.first.size();
     for (unsigned i = 0; i < 256; ++i)
         for (unsigned j = 0; j < 256; ++j)
-            if (vector_index[i][j].size() == 0) {
+            if (vector_bucket(i, j).empty()) {
                 write_uint(0, db);
                 write_uint(0, db);
             } else {
                 write_uint(index, db);
-                index += content_size * vector_index[i][j].size();
+                index += content_size * vector_bucket(i, j).size();
                 write_uint(index, db);
             }
 }
@@ -136,7 +140,7 @@ void make_t::handle_content() {
     fseek(db, 0, SEEK_END);
     for (unsigned i = 0; i < 256; ++i)
         for (unsigned j = 0; j < 256; ++j)
-            for (auto d : vector_index[i][j]) {
+            for (const auto &d : vector_bucket(i, j)) {
                 write_string(d.first.data(), d.first.size(), db);
                 write_ushort(d.second.size(), db);
                 write_uint(region[d.second], db);
@@ -144,7 +148,7 @@ void make_t::handle_content() {
 }
 
 make_t::make_t(const string &src, const string &dst, int version)
-    : region_index(length_vector + length_header) {
+    : vector_index(256 * 256), region_index(length_vector + length_header) {
     unsigned long long tv1 = get_time();
 
     init_xdb(version);

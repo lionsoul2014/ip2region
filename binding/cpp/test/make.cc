@@ -2,6 +2,9 @@
 #include "../src/make.h"
 #include "../src/search.h"
 
+static_assert(sizeof(xdb::make_t) < 1024,
+              "make_t must keep its vector index off the stack");
+
 void test(const std::string& prompt,
           const std::string& filename_xdb,
           const std::string& filename_src,
