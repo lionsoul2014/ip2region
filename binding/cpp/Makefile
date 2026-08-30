@@ -1,27 +1,25 @@
 
-all: bin header search bench make edit
+CMAKE ?= cmake
+BUILD_DIR ?= build
+BUILD_TYPE ?= Release
 
-FILES=$(wildcard src/*.cc)
+.PHONY: all configure header search bench make edit test clean
 
-bin:
-	mkdir -p bin
+all: configure
+	$(CMAKE) --build $(BUILD_DIR) --config $(BUILD_TYPE) --parallel
 
-header: $(FILES) test/header.cc
-	g++ -std=c++11 -O2 $^ -o bin/$@
+configure:
+	$(CMAKE) -S . -B $(BUILD_DIR) -DCMAKE_BUILD_TYPE=$(BUILD_TYPE)
 
-search: $(FILES) test/search.cc
-	g++ -std=c++11 -O2 $^ -o bin/$@
+header search bench make: configure
+	$(CMAKE) --build $(BUILD_DIR) --config $(BUILD_TYPE) --target xdb_$@ --parallel
 
-bench: $(FILES) test/bench.cc
-	g++ -std=c++11 -O2 $^ -o bin/$@
+edit: configure
+	$(CMAKE) --build $(BUILD_DIR) --config $(BUILD_TYPE) --target edit_v4 edit_v6 --parallel
 
-make: $(FILES) test/make.cc
-	g++ -std=c++11 -O2 $^ -o bin/$@
-
-edit: $(FILES)
-	g++ -std=c++11 -O2 $^ test/edit_v4.cc -o bin/edit_v4
-	g++ -std=c++11 -O2 $^ test/edit_v6.cc -o bin/edit_v6
+test: all
+	ctest --test-dir $(BUILD_DIR) -C $(BUILD_TYPE) --output-on-failure
 
 clean:
-	rm -rf bin
-
+	$(CMAKE) -E remove_directory $(BUILD_DIR)
+	$(CMAKE) -E remove_directory bin

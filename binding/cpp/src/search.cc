@@ -1,14 +1,23 @@
 
 #include "search.h"
 
+namespace {
+
+FILE* open_database(const xdb::string& file) {
+    FILE* db = fopen(file.c_str(), "rb");
+    if (db == NULL)
+        xdb::log_exit("can't open " + file);
+    return db;
+}
+
+}  // namespace
+
 namespace xdb {
 
 search_t::search_t(const string &file, int version, int p)
-    : db(fopen(file.data(), "r")), header(db), policy(p) {
+    : db(open_database(file)), header(db), policy(p) {
     init_xdb(version);
 
-    if (db == NULL)
-        log_exit("can't open " + file);
     if (header.ip_version() != version)
         log_exit("ip 版本不匹配");
 

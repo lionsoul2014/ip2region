@@ -1,6 +1,8 @@
 
 #include "make.h"
 
+#include <ctime>
+
 namespace xdb {
 
 void make_t::vector_index_push_back(int row, int col, const node_t &node) {
@@ -149,7 +151,7 @@ make_t::make_t(const string &src, const string &dst, int version)
 
     handle_input(src);
 
-    db = fopen(dst.data(), "w");
+    db = fopen(dst.c_str(), "wb");
     if (db == NULL)
         log_exit("can't open " + dst);
 

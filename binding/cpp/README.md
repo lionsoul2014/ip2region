@@ -37,11 +37,23 @@ readme.md --------- readme
 
 ```
 
-## 1. Compilation
+## 1. Build and Test
 
+The C++ binding uses CMake 3.16 or later and supports GCC, Clang, Apple Clang,
+and Microsoft Visual C++.
+
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --config Release --parallel
+ctest --test-dir build -C Release --output-on-failure
 ```
-$ make
-```
+
+On Linux and macOS, `make` and `make test` are equivalent convenience entry
+points. On Windows, run the commands above from a Visual Studio Developer
+PowerShell. CMake links the required Windows Sockets library automatically.
+
+The test suite validates IPv4 and IPv6 address conversion, xdb headers, every
+search cache policy, and queries against freshly generated xdb files.
 
 ## 2. Search
 

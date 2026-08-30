@@ -4,7 +4,11 @@
 void test(const std::string& prompt, const std::string& file_name) {
     std::cout << prompt << std::endl;
 
-    xdb::header_t head(fopen(file_name.data(), "r"));
+    FILE* db = fopen(file_name.c_str(), "rb");
+    if (db == NULL)
+        xdb::log_exit("can't open " + file_name);
+    xdb::header_t head(db);
+    fclose(db);
 
     std::cout << "版本号: " << head.version() << std::endl;
     std::cout << "缓存策略: " << head.index_policy() << std::endl;

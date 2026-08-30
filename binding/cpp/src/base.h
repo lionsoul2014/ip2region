@@ -1,11 +1,10 @@
 #ifndef BASE_H
 #define BASE_H
 
-#include <arpa/inet.h>
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/time.h>
 
 #include <algorithm>
 #include <iostream>

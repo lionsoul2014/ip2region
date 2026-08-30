@@ -1,5 +1,6 @@
 
 #include "../src/make.h"
+#include "../src/search.h"
 
 void test(const std::string& prompt,
           const std::string& filename_xdb,
@@ -9,6 +10,15 @@ void test(const std::string& prompt,
 ) {
     std::cout << prompt;
     xdb::make_t(filename_xdb, filename_src, version);
+}
+
+void expect_region(const std::string& filename_xdb,
+                   int version,
+                   const std::string& ip,
+                   const std::string& region) {
+    xdb::search_t search(filename_xdb, version, xdb::policy_content);
+    if (search.search(ip) != region)
+        xdb::log_exit("generated xdb query failed for " + ip);
 }
 
 int main() {
@@ -21,6 +31,15 @@ int main() {
          "../../data/ipv6_source.txt",
          "./ip2region_v6.xdb",
          xdb::ipv6);
+
+    expect_region("./ip2region_v4.xdb",
+                  xdb::ipv4,
+                  "1.2.3.4",
+                  "Australia|Queensland|Brisbane|0|AU");
+    expect_region("./ip2region_v6.xdb",
+                  xdb::ipv6,
+                  "2001:200:124::",
+                  "Japan|Tokyo|Asagaya-minami|WIDE Project|JP");
 
     return 0;
 }

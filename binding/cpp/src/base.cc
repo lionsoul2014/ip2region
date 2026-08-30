@@ -1,6 +1,8 @@
 
 #include "base.h"
 
+#include <chrono>
+
 namespace xdb {
 
 int ip_version;  // ip 版本
@@ -66,9 +68,11 @@ void write_string(const char *buf, unsigned len, FILE *dst) {
 }
 
 unsigned long long get_time() {
-    struct timeval tv1;
-    gettimeofday(&tv1, NULL);
-    return (unsigned long long)tv1.tv_sec * 1000 * 1000 + tv1.tv_usec;
+    using std::chrono::duration_cast;
+    using std::chrono::microseconds;
+    using std::chrono::steady_clock;
+
+    return duration_cast<microseconds>(steady_clock::now().time_since_epoch()).count();
 }
 
 }  // namespace xdb
