@@ -4,7 +4,7 @@
 namespace {
 
 FILE* open_database(const xdb::string& file) {
-    FILE* db = fopen(file.c_str(), "rb");
+    FILE* db = xdb::open_file(file, "rb");
     if (db == NULL)
         xdb::log_exit("can't open " + file);
     return db;

@@ -20,6 +20,15 @@ void log_exit(const string &msg) {
     exit(-1);
 }
 
+FILE *open_file(const string &path, const char *mode) {
+#ifdef _MSC_VER
+    FILE *file = NULL;
+    return fopen_s(&file, path.c_str(), mode) == 0 ? file : NULL;
+#else
+    return fopen(path.c_str(), mode);
+#endif
+}
+
 void read_bin(int index, char *buf, size_t len, FILE *db) {
     fseek(db, index, SEEK_SET);
     if (fread(buf, 1, len, db) != len)
@@ -27,12 +36,15 @@ void read_bin(int index, char *buf, size_t len, FILE *db) {
 }
 
 unsigned to_uint(const char *buf) {
-    return ((buf[0]) & 0x000000FF) | ((buf[1] << 8) & 0x0000FF00) |
-           ((buf[2] << 16) & 0x00FF0000) | ((buf[3] << 24) & 0xFF000000);
+    return static_cast<unsigned char>(buf[0]) |
+           (static_cast<unsigned>(static_cast<unsigned char>(buf[1])) << 8) |
+           (static_cast<unsigned>(static_cast<unsigned char>(buf[2])) << 16) |
+           (static_cast<unsigned>(static_cast<unsigned char>(buf[3])) << 24);
 }
 
 unsigned to_ushort(const char *buf) {
-    return ((buf[0]) & 0x000000FF) | ((buf[1] << 8) & 0x0000FF00);
+    return static_cast<unsigned char>(buf[0]) |
+           (static_cast<unsigned>(static_cast<unsigned char>(buf[1])) << 8);
 }
 
 unsigned to_int(const char *buf, int n) {

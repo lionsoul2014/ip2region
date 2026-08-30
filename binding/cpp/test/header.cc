@@ -4,7 +4,7 @@
 void test(const std::string& prompt, const std::string& file_name) {
     std::cout << prompt << std::endl;
 
-    FILE* db = fopen(file_name.c_str(), "rb");
+    FILE* db = xdb::open_file(file_name, "rb");
     if (db == NULL)
         xdb::log_exit("can't open " + file_name);
     xdb::header_t head(db);

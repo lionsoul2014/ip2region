@@ -75,7 +75,7 @@ void make_t::handle_input_help(char *buf) {
 }
 
 void make_t::handle_input(const std::string &file_name) {
-    FILE *src = fopen(file_name.data(), "r");
+    FILE *src = open_file(file_name, "r");
     if (src == NULL)
         log_exit("can't open " + file_name);
 
@@ -151,7 +151,7 @@ make_t::make_t(const string &src, const string &dst, int version)
 
     handle_input(src);
 
-    db = fopen(dst.c_str(), "wb");
+    db = open_file(dst, "wb");
     if (db == NULL)
         log_exit("can't open " + dst);
 

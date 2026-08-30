@@ -36,6 +36,8 @@ void init_xdb(int version);
 
 void log_exit(const string &msg);
 
+FILE *open_file(const string &path, const char *mode);
+
 void read_bin(int index, char *buf, size_t len, FILE *db);
 
 unsigned to_uint(const char *buf);
