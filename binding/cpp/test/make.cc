@@ -47,14 +47,18 @@ int main(int argc, char* argv[]) {
              xdb::ipv6);
 
     if (fixture_mode) {
-        expect_region(ipv4_xdb,
-                      xdb::ipv4,
-                      "1.2.3.4",
-                      "Example|Documentation|Fixture|Test ISP|EX");
-        expect_region(ipv6_xdb,
-                      xdb::ipv6,
-                      "2001:db8::1",
-                      "Example|Documentation|Fixture|Test ISP|EX");
+        const std::string reserved_region = "Reserved|Reserved|Reserved|0|ZZ";
+        const std::string example_region  = "Example|Documentation|Fixture|Test ISP|EX";
+
+        expect_region(ipv4_xdb, xdb::ipv4, "0.0.0.0", reserved_region);
+        expect_region(ipv4_xdb, xdb::ipv4, "1.2.3.0", example_region);
+        expect_region(ipv4_xdb, xdb::ipv4, "1.2.3.255", example_region);
+        expect_region(ipv4_xdb, xdb::ipv4, "1.2.4.0", reserved_region);
+
+        expect_region(ipv6_xdb, xdb::ipv6, "::", reserved_region);
+        expect_region(ipv6_xdb, xdb::ipv6, "2001:db8::", example_region);
+        expect_region(ipv6_xdb, xdb::ipv6, "2001:db8::ffff", example_region);
+        expect_region(ipv6_xdb, xdb::ipv6, "2001:db8::1:0", reserved_region);
     }
 
     return 0;
