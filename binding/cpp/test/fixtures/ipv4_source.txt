@@ -1,0 +1,3 @@
+0.0.0.0|1.2.2.255|Reserved|Reserved|Reserved|0|ZZ
+1.2.3.0|1.2.3.255|Example|Documentation|Fixture|Test ISP|EX
+1.2.4.0|255.255.255.255|Reserved|Reserved|Reserved|0|ZZ

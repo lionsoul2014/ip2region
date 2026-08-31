@@ -60,11 +60,23 @@ if(BUILD_TESTING)
     if(IP2REGION_BUILD_TOOLS)
         add_test(NAME cpp.header COMMAND xdb_header)
         add_test(NAME cpp.search COMMAND xdb_search)
-        add_test(NAME cpp.make COMMAND xdb_make)
+        set(cpp_make_output_directory "${CMAKE_CURRENT_BINARY_DIR}/test-output")
+        file(MAKE_DIRECTORY "${cpp_make_output_directory}")
+        add_test(
+            NAME cpp.make
+            COMMAND
+                xdb_make
+                "${CMAKE_CURRENT_SOURCE_DIR}/test/fixtures"
+                "${cpp_make_output_directory}"
+        )
 
         set_tests_properties(
-            cpp.header cpp.search cpp.make
+            cpp.header cpp.search
             PROPERTIES WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+        )
+        set_tests_properties(
+            cpp.make
+            PROPERTIES WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
         )
     endif()
 endif()
