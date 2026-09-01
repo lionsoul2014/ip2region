@@ -4,13 +4,13 @@
 namespace xdb {
 
 void handle_ip_txt(const string& name, std::list<node_t>& regions) {
-    FILE* f = fopen(name.data(), "r");
+    FILE* f = open_file(name, "r");
     if (f == NULL)
         log_exit("can't open " + name);
 
     char buf[1024];
     while (fgets(buf, sizeof(buf), f) != NULL) {
-        unsigned int buf_len = strlen(buf);
+        size_t buf_len = strlen(buf);
         // 去掉多余的空
         while (buf_len > 0 && isspace(buf[buf_len - 1]))
             --buf_len;
@@ -108,7 +108,7 @@ void edit_t::merge() {
 }
 
 void edit_t::write_old_file(const std::string& file_name) {
-    FILE* f = fopen(file_name.data(), "w");
+    FILE* f = open_file(file_name, "w");
     if (f == NULL)
         log_exit("can't open " + file_name);
 

@@ -1,6 +1,8 @@
 
 #include "base.h"
 
+#include <chrono>
+
 namespace xdb {
 
 int ip_version;  // ip 版本
@@ -18,6 +20,15 @@ void log_exit(const string &msg) {
     exit(-1);
 }
 
+FILE *open_file(const string &path, const char *mode) {
+#ifdef _MSC_VER
+    FILE *file = NULL;
+    return fopen_s(&file, path.c_str(), mode) == 0 ? file : NULL;
+#else
+    return fopen(path.c_str(), mode);
+#endif
+}
+
 void read_bin(int index, char *buf, size_t len, FILE *db) {
     fseek(db, index, SEEK_SET);
     if (fread(buf, 1, len, db) != len)
@@ -25,12 +36,15 @@ void read_bin(int index, char *buf, size_t len, FILE *db) {
 }
 
 unsigned to_uint(const char *buf) {
-    return ((buf[0]) & 0x000000FF) | ((buf[1] << 8) & 0x0000FF00) |
-           ((buf[2] << 16) & 0x00FF0000) | ((buf[3] << 24) & 0xFF000000);
+    return static_cast<unsigned char>(buf[0]) |
+           (static_cast<unsigned>(static_cast<unsigned char>(buf[1])) << 8) |
+           (static_cast<unsigned>(static_cast<unsigned char>(buf[2])) << 16) |
+           (static_cast<unsigned>(static_cast<unsigned char>(buf[3])) << 24);
 }
 
 unsigned to_ushort(const char *buf) {
-    return ((buf[0]) & 0x000000FF) | ((buf[1] << 8) & 0x0000FF00);
+    return static_cast<unsigned char>(buf[0]) |
+           (static_cast<unsigned>(static_cast<unsigned char>(buf[1])) << 8);
 }
 
 unsigned to_int(const char *buf, int n) {
@@ -66,9 +80,11 @@ void write_string(const char *buf, unsigned len, FILE *dst) {
 }
 
 unsigned long long get_time() {
-    struct timeval tv1;
-    gettimeofday(&tv1, NULL);
-    return (unsigned long long)tv1.tv_sec * 1000 * 1000 + tv1.tv_usec;
+    using std::chrono::duration_cast;
+    using std::chrono::microseconds;
+    using std::chrono::steady_clock;
+
+    return duration_cast<microseconds>(steady_clock::now().time_since_epoch()).count();
 }
 
 }  // namespace xdb

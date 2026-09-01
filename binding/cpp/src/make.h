@@ -10,6 +10,10 @@ public:
     make_t(const string &src, const string &dst, int version);
 
 private:
+    using vector_bucket_t = std::vector<std::pair<string, string>>;
+
+    vector_bucket_t &vector_bucket(unsigned row, unsigned col);
+
     void vector_index_push_back(int row, int col, const node_t &node);
     void vector_index_push_back(node_t &node);
     void handle_input_help(char buf[]);
@@ -22,7 +26,7 @@ private:
 
     FILE *db = NULL;
 
-    std::vector<std::pair<string, string>> vector_index[256][256];
+    std::vector<vector_bucket_t> vector_index;
 
     std::unordered_map<string, unsigned> region;
 

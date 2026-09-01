@@ -1,11 +1,10 @@
 #ifndef BASE_H
 #define BASE_H
 
-#include <arpa/inet.h>
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/time.h>
 
 #include <algorithm>
 #include <iostream>
@@ -36,6 +35,8 @@ extern int content_size;
 void init_xdb(int version);
 
 void log_exit(const string &msg);
+
+FILE *open_file(const string &path, const char *mode);
 
 void read_bin(int index, char *buf, size_t len, FILE *db);
 

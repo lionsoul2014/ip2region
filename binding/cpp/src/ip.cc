@@ -1,6 +1,42 @@
 
 #include "ip.h"
 
+#ifdef _WIN32
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0600
+#endif
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#else
+#include <arpa/inet.h>
+#endif
+
+namespace {
+
+bool parse_ip_address(int family, const std::string& address, void* destination) {
+#ifdef _WIN32
+    return InetPtonA(family, address.c_str(), destination) == 1;
+#else
+    return inet_pton(family, address.c_str(), destination) == 1;
+#endif
+}
+
+const char* format_ip_address(int family,
+                              const void* address,
+                              char* destination,
+                              size_t destination_size) {
+#ifdef _WIN32
+    return InetNtopA(family,
+                     const_cast<void*>(address),
+                     destination,
+                     static_cast<DWORD>(destination_size));
+#else
+    return inet_ntop(family, address, destination, destination_size);
+#endif
+}
+
+}  // namespace
+
 namespace xdb {
 
 ip_t::ip_t() {
@@ -21,7 +57,7 @@ ip_t::ip_t(const char* p) {
 
 bool ip_t::from_str(const string& str) {
     int af_inet = ip_version == ipv4 ? AF_INET : AF_INET6;
-    return inet_pton(af_inet, str.data(), p) == 1;
+    return parse_ip_address(af_inet, str, p);
 }
 
 void ip_t::from_xdb(const char str[16]) {
@@ -74,7 +110,8 @@ bool ip_t::operator!=(const ip_t& rhs) const {
 string ip_t::to_string() const {
     char buf[INET6_ADDRSTRLEN + 1];
     int  af_inet = ip_version == ipv4 ? AF_INET : AF_INET6;
-    inet_ntop(af_inet, p, buf, sizeof(buf));
+    if (format_ip_address(af_inet, p, buf, sizeof(buf)) == NULL)
+        log_exit("failed to format ipv" + std::to_string(ip_version));
     return string(buf);
 }
 

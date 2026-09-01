@@ -35,10 +35,23 @@ bin/edit_v6 ------- 测试 原始数据编辑(ipv6)
 readme.md --------- readme
 ```
 
-## 1. 编译
+## 1. 构建与测试
+
+C++ binding 使用 CMake 3.16 或更高版本，支持 GCC、Clang、Apple Clang 和
+Microsoft Visual C++。
+
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --config Release --parallel
+ctest --test-dir build -C Release --output-on-failure
 ```
-$ make
-```
+
+在 Linux 和 macOS 上，`make` 与 `make test` 分别是对应构建和测试命令的便捷
+入口。在 Windows 上，请从 Visual Studio Developer PowerShell 运行上述命令；
+CMake 会自动链接所需的 Windows Sockets 库。
+
+测试套件会验证 IPv4/IPv6 地址转换、xdb header、全部搜索缓存策略，并查询刚刚
+生成的 xdb 文件。
 
 ## 2. 查找
 ### 2.1 示例

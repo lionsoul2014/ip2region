@@ -32,7 +32,7 @@ void bench_t::test_line(char *buf) {
 }
 
 void bench_t::test_file(const std::string &file_name) {
-    FILE *f = fopen(file_name.data(), "r");
+    FILE *f = open_file(file_name, "r");
     if (f == NULL)
         xdb::log_exit("can't open " + file_name);
     char buf[1024];
