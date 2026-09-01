@@ -10,7 +10,6 @@ struct ip_t {
 
     ip_t();
     ip_t(const char* p);
-    // val 为 0 或 255 时, 将 ip 的后几位置为 val
     ip_t(const ip_t& rhs, int val = -1);
 
     bool from_str(const string& str);

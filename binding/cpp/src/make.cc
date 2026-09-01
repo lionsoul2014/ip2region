@@ -53,7 +53,6 @@ void make_t::vector_index_push_back(node_t &node) {
 }
 
 void make_t::handle_input_help(char *buf) {
-    // 去掉多余的空
     unsigned int buf_len = strlen(buf);
     while (buf_len > 0 && isspace(buf[buf_len - 1]))
         --buf_len;
@@ -64,7 +63,7 @@ void make_t::handle_input_help(char *buf) {
     node_t node(buf);
 
     if (node.ip1 < next_ip) {
-        log_exit("ip 未排序: " + node.ip1.to_string() + ", " +
+        log_exit("Unsorted IP: " + node.ip1.to_string() + ", " +
                  next_ip.to_string());
     }
 
@@ -92,10 +91,10 @@ void make_t::handle_input(const std::string &file_name) {
 void make_t::handle_header() {
     char buf[length_header];
     memset(buf, 0, length_header);
-    write_ushort(3, buf);             // 版本号
-    write_ushort(1, buf + 2);         // 缓存策略
-    write_uint(time(NULL), buf + 4);  // 时间
-    // 索引
+    write_ushort(3, buf);             // xdb version
+    write_ushort(1, buf + 2);         // cache policy
+    write_uint(time(NULL), buf + 4);  // created
+    // index block
     unsigned int content_left = length_header + length_vector;
     for (auto &d : region)
         content_left += d.first.size();
@@ -107,8 +106,8 @@ void make_t::handle_header() {
     content_right -= content_size;
     write_uint(content_left, buf + 8);
     write_uint(content_right, buf + 12);
-    write_ushort(ip_version, buf + 16);  // IP
-    write_ushort(4, buf + 18);           // 指针数
+    write_ushort(ip_version, buf + 16);  // IP version
+    write_ushort(4, buf + 18);           // ptr bytes
 
     write_string(buf, length_header, db);
 }

@@ -11,7 +11,7 @@ void handle_ip_txt(const string& name, std::list<node_t>& regions) {
     char buf[1024];
     while (fgets(buf, sizeof(buf), f) != NULL) {
         size_t buf_len = strlen(buf);
-        // 去掉多余的空
+        // clear the spaces
         while (buf_len > 0 && isspace(buf[buf_len - 1]))
             --buf_len;
         if (buf_len == 0)
@@ -24,10 +24,10 @@ void handle_ip_txt(const string& name, std::list<node_t>& regions) {
 }
 
 void edit_t::handle_new_file(const std::string& file_name) {
-    handle_ip_txt(file_name, new_regions);  // 输入
-    new_regions.sort();                     // 排序
+    handle_ip_txt(file_name, new_regions); 
+    new_regions.sort();                     // sort the segments
 
-    // 检验及其去重
+    // check and deduplicate
     auto it = new_regions.begin();
 
     for (;;) {
@@ -38,16 +38,14 @@ void edit_t::handle_new_file(const std::string& file_name) {
         if (next == new_regions.end())
             break;
         if (it->ip1 > it->ip2)
-            it = new_regions.erase(it);  // 非法, 直接跳过
+            it = new_regions.erase(it);  // ignore the invalid data
         else if (it->ip1 == next->ip1 || next->ip1 <= it->ip2) {
-            // 数据重叠
             if (it->region != next->region)
-                log_exit("数据有二义性: " + it->to_string() + ", " +
+                log_exit("invalid data: " + it->to_string() + ", " +
                          next->to_string());
             it->ip2 = std::max(it->ip2, next->ip2);
             new_regions.erase(next);
         } else if (it->ip2 + 1 == next->ip1 && it->region == next->region) {
-            // 数据连接
             it->ip2 = next->ip2;
             new_regions.erase(next);
         } else {
@@ -114,7 +112,7 @@ void edit_t::write_old_file(const std::string& file_name) {
 
     auto it = old_regions.begin();
 
-    // 删除非法的数据
+    // remove the invalid data
     for (;;) {
         if (it == old_regions.end())
             break;
@@ -124,7 +122,7 @@ void edit_t::write_old_file(const std::string& file_name) {
             ++it;
     }
 
-    // 合并数据域相同的相邻数据
+    // Merge the adjacent segments
     it = old_regions.begin();
     for (;;) {
         if (it == old_regions.end())

@@ -10,13 +10,13 @@ public:
     header_t(FILE* db);
     virtual ~header_t();
 
-    int version();       // 版本号
-    int index_policy();  // 缓存策略
-    int create_at();     // 文件生成时间
-    int index_start();   // 索引起始地址
-    int index_end();     // 索引结束地址
-    int ip_version();    // IP 版本
-    int ptr();           // 指针字节数
+    int version();       // xdb structure version
+    int index_policy();  // cache policy
+    int create_at();     // created unix timestamp
+    int index_start();   // index start ptr
+    int index_end();     // index end ptr
+    int ip_version();    // IP version
+    int ptr();           // ptr bytes
 
 protected:
     char header[length_header];
