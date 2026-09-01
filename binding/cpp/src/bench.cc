@@ -19,11 +19,10 @@ void bench_t::test_line(char *buf) {
     size_t buf_len = strlen(buf);
     if (buf_len == 0)
         return;
-    buf[buf_len - 1] = '\0';  // 去掉换行符
+    buf[buf_len - 1] = '\0';  // remove the newline char
 
     node_t node(buf);
 
-    // 只测五个
     for (int i = 0; i < 5 && node.ip1 < node.ip2; ++i) {
         test_one(node.ip1, node.region);
         node.ip1 = node.ip1 + 1;

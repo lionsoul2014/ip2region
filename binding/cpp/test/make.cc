@@ -36,12 +36,12 @@ int main(int argc, char* argv[]) {
     const std::string ipv4_xdb     = join_path(output_dir, "ip2region_v4.xdb");
     const std::string ipv6_xdb     = join_path(output_dir, "ip2region_v6.xdb");
 
-    make_xdb("生成 ipv4 的 xdb 文件, ",
+    make_xdb("Making ipv4 xdb, ",
              join_path(source_dir, "ipv4_source.txt"),
              ipv4_xdb,
              xdb::ipv4);
 
-    make_xdb("生成 ipv6 的 xdb 文件, ",
+    make_xdb("Making ipv6 xdb, ",
              join_path(source_dir, "ipv6_source.txt"),
              ipv6_xdb,
              xdb::ipv6);

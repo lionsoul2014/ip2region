@@ -19,7 +19,7 @@ search_t::search_t(const string &file, int version, int p)
     init_xdb(version);
 
     if (header.ip_version() != version)
-        log_exit("ip 版本不匹配");
+        log_exit("invalid ip version");
 
     if (policy != policy_file) {
         read_bin(length_header, vector, length_vector, db);

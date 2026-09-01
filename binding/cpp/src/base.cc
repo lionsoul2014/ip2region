@@ -5,8 +5,8 @@
 
 namespace xdb {
 
-int ip_version;  // ip 版本
-int ip_size;     // ip 占的字节数
+int ip_version;  // ip version
+int ip_size;     // ip bytes
 int content_size;
 
 void init_xdb(int version) {

@@ -28,8 +28,8 @@ constexpr int policy_content = 2;
 constexpr int length_header = 256;
 constexpr int length_vector = 256 * 256 * 8;
 
-extern int ip_version;  // ip 版本
-extern int ip_size;     // ip 占的字节数
+extern int ip_version;  // ip version
+extern int ip_size;     // ip bytes
 extern int content_size;
 
 void init_xdb(int version);
