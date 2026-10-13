@@ -324833,7 +324833,10 @@
 160.242.0.0|160.242.127.255|Namibia|Khomas Region|0|0|NA
 160.242.128.0|160.242.191.255|Mauritius|Port Louis|0|0|MU
 160.242.192.0|160.242.255.255|Togo|Maritime|0|0|TG
-160.243.0.0|160.250.255.255|Japan|Tokyo|Asagaya-minami|0|JP
+160.243.0.0|160.250.119.255|Japan|Tokyo|Asagaya-minami|0|JP
+160.250.120.0|160.250.120.255|印度|Maharashtra|Mumbai|Asagaya-minami|IN
+160.250.121.0|160.250.121.255|印度|Delhi|Delhi|Asagaya-minami|IN
+160.250.122.0|160.250.255.255|Japan|Tokyo|Asagaya-minami|0|JP
 160.251.0.0|160.251.127.255|Japan|Kanagawa|Yokohama|0|JP
 160.251.128.0|160.251.255.255|Japan|Tokyo|Tokyo|GMO Internet,Inc|JP
 160.252.0.0|160.252.255.255|Japan|Nagano|Matsumoto|0|JP
