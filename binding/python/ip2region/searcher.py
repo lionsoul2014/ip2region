@@ -26,7 +26,7 @@ class Searcher(object):
         self.version = version
         self.__db_path = db_path
         self.__io_count = 0
-        if c_buffer != None:
+        if c_buffer is not None:
             self.__handle = None
             self.vector_index: Optional[bytes] = None
             self.c_buffer = c_buffer
@@ -62,10 +62,10 @@ class Searcher(object):
         # located the segment index block based on the vector index
         s_ptr, e_ptr, i0, i1 = 0, 0, ip_bytes[0], ip_bytes[1]
         idx = i0 * util.VectorIndexCols * util.VectorIndexSize + i1 * util.VectorIndexSize
-        if self.vector_index != None:
+        if self.vector_index is not None:
             s_ptr = util.le_get_uint32(self.vector_index, idx)
             e_ptr = util.le_get_uint32(self.vector_index, idx + 4)
-        elif self.c_buffer != None:
+        elif self.c_buffer is not None:
             offset = util.HeaderInfoLength + idx
             s_ptr = util.le_get_uint32(self.c_buffer, offset)
             e_ptr = util.le_get_uint32(self.c_buffer, offset + 4)
@@ -110,7 +110,7 @@ class Searcher(object):
 
     def read(self, offset: int, length: int) -> bytes:
         # check the content buffer first
-        if self.c_buffer != None:
+        if self.c_buffer is not None:
             return self.c_buffer[offset:offset+length]
         
         # load the buffer from file
@@ -119,7 +119,7 @@ class Searcher(object):
         return self.__handle.read(length)
 
     def close(self) -> None:
-        if self.__handle != None:
+        if self.__handle is not None:
             self.__handle.close()
 
     def __str__(self) -> str:
