@@ -1,4 +1,4 @@
-﻿# Copyright 2022 The Ip2Region Authors. All rights reserved.
+# Copyright 2022 The Ip2Region Authors. All rights reserved.
 # Use of this source code is governed by a Apache2.0-style
 # license that can be found in the LICENSE file.
 
@@ -7,34 +7,39 @@
 
 import io
 import ip2region.util as util
-from typing import Union
+from typing import Optional, Union
 
 class Searcher(object):
     '''
     xdb searcher class with Both IPv4 and IPv6 supported.
     three kinds of cache policy: file / vectorIndex / content
     '''
-    def __init__(self, version: util.Version, 
-                 db_path: str, vector_index: bytes, c_buffer: bytes):
+    def __init__(
+        self,
+        version: util.Version,
+        db_path: Optional[str],
+        vector_index: Optional[bytes],
+        c_buffer: Optional[bytes]
+    ) -> None:
         self.version = version
         self.__db_path = db_path
         self.__io_count = 0
         if c_buffer != None:
             self.__handle = None
-            self.vector_index = None
+            self.vector_index: Optional[bytes] = None
             self.c_buffer = c_buffer
         else:
             self.__handle = io.open(db_path, "rb")
             self.vector_index = vector_index
-            self.c_buffer = None
+            self.c_buffer: Optional[bytes] = None
 
-    def get_ip_version(self):
+    def get_ip_version(self) -> util.Version:
         return self.version
 
-    def get_io_count(self):
+    def get_io_count(self) -> int:
         return self.__io_count
 
-    def search(self, ip: Union[bytes, str]):
+    def search(self, ip: Union[bytes, str]) -> str:
         # check and parse the string ip
         ip_bytes = None
         if isinstance(ip, str):
@@ -101,7 +106,7 @@ class Searcher(object):
         # read and return the region info
         return self.read(d_ptr, d_len).decode("utf-8")
 
-    def read(self, offset: int, length: int):
+    def read(self, offset: int, length: int) -> bytes:
         # check the content buffer first
         if self.c_buffer != None:
             return self.c_buffer[offset:offset+length]
@@ -111,11 +116,11 @@ class Searcher(object):
         self.__io_count += 1
         return self.__handle.read(length)
 
-    def close(self):
+    def close(self) -> None:
         if self.__handle != None:
             self.__handle.close()
 
-    def __str__(self):
+    def __str__(self) -> str:
         return '{{"version": {}, "db_path": "{}", "v_index": {}, "c_buffer": {}}}'.format(
             self.version.name,
             self.__db_path,
@@ -127,11 +132,15 @@ class Searcher(object):
 # ---
 # functions to create Searcher with different cache policy
 
-def new_with_file_only(version: util.Version, db_path: str):
+def new_with_file_only(version: util.Version, db_path: str) -> Searcher:
     return Searcher(version, db_path, None, None)
 
-def new_with_vector_index(version: util.Version, db_path: str, vector_index: bytes):
+def new_with_vector_index(
+    version: util.Version,
+    db_path: str,
+    vector_index: bytes,
+) -> Searcher:
     return Searcher(version, db_path, vector_index, None)
 
-def new_with_buffer(version: util.Version, c_buffer: bytes):
+def new_with_buffer(version: util.Version, c_buffer: bytes) -> Searcher:
     return Searcher(version, None, None, c_buffer)
