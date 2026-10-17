@@ -6,6 +6,8 @@
 
 This implementation is compatible with Python `>=` **`3.7`**
 
+The package includes type annotations
+
 # Usage
 
 ### Install `py-ip2region`
