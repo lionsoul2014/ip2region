@@ -1,4 +1,4 @@
-﻿# Copyright 2022 The Ip2Region Authors. All rights reserved.
+# Copyright 2022 The Ip2Region Authors. All rights reserved.
 # Use of this source code is governed by a Apache2.0-style
 # license that can be found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 import io
 import os
 import ipaddress
-from typing import Callable
+from typing import BinaryIO, Callable, Optional
 
 # global constants
 XdbStructure20 = 2
@@ -24,7 +24,7 @@ VectorIndexSize  = 8
 VectorIndexLength = 524288
 
 class Header(object):
-    def __init__(self, buff: bytes):
+    def __init__(self, buff: bytes) -> None:
         self.version = le_get_uint16(buff, 0)
         self.indexPolicy = le_get_uint16(buff, 2)
         self.createdAt = le_get_uint32(buff, 4)
@@ -39,7 +39,7 @@ class Header(object):
         # keep the raw data
         self.buff = buff
 
-    def __str__(self):
+    def __str__(self) -> str:
         return '''{{
     "version": {},
     "indexPolicy": {},
@@ -62,19 +62,19 @@ class Header(object):
 # ---
 # ip parse and convert functions
 
-def parse_ip(ip_string: str):
+def parse_ip(ip_string: str) -> bytes:
     try:
         return ipaddress.ip_address(ip_string).packed
     except:
         raise ValueError("invalid ip address `{}`".format(ip_string))
 
-def ip_to_string(ip_bytes: bytes):
+def ip_to_string(ip_bytes: bytes) -> str:
     if isinstance(ip_bytes, bytes):
         return str(ipaddress.ip_address(ip_bytes))
     else:
         raise ValueError("invalid bytes ip `{}`".format(ip_bytes))
 
-def ip_compare(ip1: bytes, ip2: bytes):
+def ip_compare(ip1: bytes, ip2: bytes) -> int:
     if ip1 > ip2:
         return 1
     elif ip1 < ip2:
@@ -82,7 +82,7 @@ def ip_compare(ip1: bytes, ip2: bytes):
     else:
         return 0
 
-def ip_sub_compare(ip1: bytes, buff: bytes, offset: int):
+def ip_sub_compare(ip1: bytes, buff: bytes, offset: int) -> int:
     ip2 = buff[offset:offset+len(ip1)]
     if ip1 > ip2:
         return 1
@@ -103,13 +103,13 @@ class Version(object):
         self.index_size = index_size
         self.ip_compare = ip_compare
 
-    def ip_compare(self, ip1: bytes, ip2: bytes):
+    def ip_compare(self, ip1: bytes, ip2: bytes) -> int:
         return self.ip_compare(ip1, ip2, 0)
 
-    def ip_sub_compare(self, ip1: bytes, buff: bytes, offset: int):
+    def ip_sub_compare(self, ip1: bytes, buff: bytes, offset: int) -> int:
         return self.ip_compare(ip1, buff, offset)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return '{{"id": {}, "name": "{}", "bytes": {}, "index_size": {}}}'.format(
             self.id, 
             self.name, 
@@ -117,7 +117,7 @@ class Version(object):
             self.index_size
         )
 
-def _v4_sub_compare(ip1: bytes, buff: bytes, offset: int):
+def _v4_sub_compare(ip1: bytes, buff: bytes, offset: int) -> int:
     # ip1: Big endian byte order parsed from input
     # ip2: Little endian byte order read from xdb index.
     # @Note: to compatible with the old Litten endian index encode implementation.
@@ -144,7 +144,7 @@ IPv4 = Version(XdbIPv4Id, "IPv4", 4, 14, _v4_sub_compare)
 # 38 = 16 + 16 + 2 + 4
 IPv6 = Version(XdbIPv6Id, "IPv6", 16, 38, ip_sub_compare)
 
-def version_from_name(name: str):
+def version_from_name(name: str) -> Optional[Version]:
     u_name = name.upper()
     if u_name == "IPV4" or u_name == "V4":
         return IPv4
@@ -153,7 +153,7 @@ def version_from_name(name: str):
     else:
         return None
 
-def version_from_header(header: bytes):
+def version_from_header(header: Header) -> Optional[Version]:
     # old xdb 2.0 with IPv4 supports ONLY
     if header.version < XdbStructure30:
         return IPv4
@@ -171,7 +171,7 @@ def version_from_header(header: bytes):
 # ---
 # buffer decode functions
 
-def le_get_uint32(buff: bytes, offset: int):
+def le_get_uint32(buff: bytes, offset: int) -> int:
     '''
     decode an unsinged 4-bytes int from a buffer started from offset
     with little byte endian
@@ -183,7 +183,7 @@ def le_get_uint32(buff: bytes, offset: int):
         ((buff[offset+3] << 24) & 0xFF000000)
     )
 
-def le_get_uint16(buff: bytes, offset: int):
+def le_get_uint16(buff: bytes, offset: int) -> int:
     '''
     decode an unsinged 2-bytes short from a buffer started from offset
     with little byte endian
@@ -197,40 +197,40 @@ def le_get_uint16(buff: bytes, offset: int):
 # ---
 # xdb buffer load functions
 
-def load_header(handle):
+def load_header(handle: BinaryIO) -> Header:
     '''
     load xdb header from a specified file handle
     '''
     handle.seek(0)
     return Header(handle.read(HeaderInfoLength))
 
-def load_header_from_file(db_file: str):
+def load_header_from_file(db_file: str) -> Header:
     handle = io.open(db_file, "rb")
     header = load_header(handle)
     handle.close()
     return header
 
-def load_vector_index(handle):
+def load_vector_index(handle: BinaryIO) -> bytes:
     '''
     load xdb vector index from a specified file handle
     '''
     handle.seek(HeaderInfoLength)
     return handle.read(VectorIndexLength)
 
-def load_vector_index_from_file(db_file: str):
+def load_vector_index_from_file(db_file: str) -> bytes:
     handle = io.open(db_file, "rb")
     v_index = load_vector_index(handle)
     handle.close()
     return v_index
 
-def load_content(handle):
+def load_content(handle: BinaryIO) -> bytes:
     '''
     load the whole xdb content from a specified file handle
     '''
     handle.seek(0)
     return handle.read()
 
-def load_content_from_file(db_file: str):
+def load_content_from_file(db_file: str) -> bytes:
     handle = io.open(db_file, "rb")
     c_buff = load_content(handle)
     handle.close()
@@ -243,7 +243,7 @@ def load_content_from_file(db_file: str):
 # 
 # @Note: You Just need to check this ONCE when the service starts
 # Or use another process (eg, A command) to check once Just to confirm the suitability.
-def verify(handle):
+def verify(handle: BinaryIO) -> None:
     header = load_header(handle)
 
     # get the runtime ptr bytes
@@ -264,7 +264,7 @@ def verify(handle):
     if __file_bytes > max_file_ptr:
         raise Exception("xdb file exceeds the maximum supported bytes: {}".format(max_file_ptr))
 
-def verify_from_file(db_file: str):
+def verify_from_file(db_file: str) -> None:
     handle = io.open(db_file, "rb")
     verify(handle)
     handle.close()
