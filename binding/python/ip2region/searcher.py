@@ -83,17 +83,17 @@ class Searcher(object):
         # binary search the segment index block to get the region info
         _bytes, _d_bytes = len(ip_bytes), len(ip_bytes) << 1
         index_size = self.version.index_size
-        d_len, d_ptr, l, h = 0, 0, int(0), int((e_ptr - s_ptr) / index_size)
-        while l <= h:
-            m = (l + h) >> 1
-            p = int(s_ptr + m * index_size)
+        d_len, d_ptr, low, high = 0, 0, int(0), int((e_ptr - s_ptr) / index_size)
+        while low <= high:
+            mid = (low + high) >> 1
+            p = int(s_ptr + mid * index_size)
 
             # read the segment index
             buff = self.read(p, index_size)
             if self.version.ip_sub_compare(ip_bytes, buff, 0) < 0:
-                h = m - 1
+                high = mid - 1
             elif self.version.ip_sub_compare(ip_bytes, buff, _bytes) > 0:
-                l = m + 1
+                low = mid + 1
             else:
                 d_len = util.le_get_uint16(buff, _d_bytes)
                 d_ptr = util.le_get_uint32(buff, _d_bytes + 2)
