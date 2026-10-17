@@ -4,9 +4,7 @@
 
 # Version Compatibility
 
-This implementation is compatible with Python `>=` **`3.7`**
-
-The package includes type annotations
+This implementation is compatible with Python `>=` **`3.7`** and includes the type annotations.
 
 # Usage
 
