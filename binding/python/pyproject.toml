@@ -1,0 +1,76 @@
+[build-system]
+requires = [
+    "setuptools>=61,<68; python_version < '3.8'",
+    "setuptools>=68; python_version >= '3.8'",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "py-ip2region"
+version = "3.0.4"
+description = "ip2region official python binding with both IPv4 and IPv6 supported"
+readme = "README.md"
+requires-python = ">=3.7"
+license = { text = "Apache-2.0 License" }
+authors = [{ name = "lionsoul2014", email = "chenxin619315@gmail.com" }]
+dependencies = []
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+keywords = [
+    "ip2region",
+    "ip-address",
+    "ip-region",
+    "ip-location",
+    "ip-lookup",
+    "ip-search",
+    "ipv4-address",
+    "ipv4-region",
+    "ipv4-location",
+    "ipv4-lookup",
+    "ipv4-search",
+    "ipv6-address",
+    "ipv6-region",
+    "ipv6-location",
+    "ipv6-lookup",
+    "ipv6-search",
+]
+
+[project.urls]
+Homepage = "https://github.com/lionsoul2014/ip2region"
+
+[dependency-groups]
+dev = [
+    "mypy>=1.4,<1.5",
+    "ruff>=0.14,<0.15",
+]
+
+[tool.uv.dependency-groups]
+dev = { requires-python = ">=3.7,<3.12" }
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["ip2region*"]
+
+[tool.setuptools.package-data]
+ip2region = ["py.typed"]
+
+[tool.ruff]
+target-version = "py37"
+include = ["ip2region/**/*.py", "tests/**/*.py"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]
+
+[tool.mypy]
+python_version = "3.7"
+files = ["ip2region", "tests"]
+disallow_untyped_defs = true
+check_untyped_defs = true
+warn_return_any = true
+warn_unused_ignores = true
+no_implicit_optional = true
