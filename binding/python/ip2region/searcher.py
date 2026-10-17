@@ -29,11 +29,13 @@ class Searcher(object):
         if c_buffer is not None:
             self.__handle = None
             self.vector_index: Optional[bytes] = None
-            self.c_buffer = c_buffer
+            self.c_buffer: Optional[bytes] = c_buffer
         else:
+            if db_path is None:
+                raise ValueError("db_path is required without a content buffer")
             self.__handle = io.open(db_path, "rb")
             self.vector_index = vector_index
-            self.c_buffer: Optional[bytes] = None
+            self.c_buffer = None
 
     def get_ip_version(self) -> util.Version:
         return self.version
@@ -114,6 +116,8 @@ class Searcher(object):
             return self.c_buffer[offset:offset+length]
         
         # load the buffer from file
+        if self.__handle is None:
+            raise ValueError("no db handle available")
         self.__handle.seek(offset)
         self.__io_count += 1
         return self.__handle.read(length)
