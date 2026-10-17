@@ -6,8 +6,10 @@
 # Author Leon<chenxin619315@gmail.com>
 
 import io
-import ip2region.util as util
 from typing import Optional, Union
+
+import ip2region.util as util
+
 
 class Searcher(object):
     '''

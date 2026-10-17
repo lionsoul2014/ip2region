@@ -6,8 +6,8 @@
 # Author Leon<chenxin619315@gmail.com>
 
 import io
-import os
 import ipaddress
+import os
 from typing import BinaryIO, Callable, Optional
 
 # global constants
