@@ -1,4 +1,4 @@
-# Copyright 2022 The Ip2Region Authors. All rights reserved.
+﻿# Copyright 2022 The Ip2Region Authors. All rights reserved.
 # Use of this source code is governed by a Apache2.0-style
 # license that can be found in the LICENSE file.
 
@@ -96,18 +96,25 @@ def ip_sub_compare(ip1: bytes, buff: bytes, offset: int) -> int:
 # ip version class and functions
 
 class Version(object):
-    def __init__(self, id: int, name: str, byte_num: int, index_size: int, ip_compare: Callable[[bytes, bytes, int], int]):
+    def __init__(
+        self,
+        id: int,
+        name: str,
+        byte_num: int,
+        index_size: int,
+        ip_compare: Callable[[bytes, bytes, int], int],
+    ) -> None:
         self.id = id
         self.name = name
         self.byte_num = byte_num
         self.index_size = index_size
-        self.ip_compare = ip_compare
+        self._ip_compare = ip_compare
 
     def ip_compare(self, ip1: bytes, ip2: bytes) -> int:
-        return self.ip_compare(ip1, ip2, 0)
+        return self._ip_compare(ip1, ip2, 0)
 
     def ip_sub_compare(self, ip1: bytes, buff: bytes, offset: int) -> int:
-        return self.ip_compare(ip1, buff, offset)
+        return self._ip_compare(ip1, buff, offset)
 
     def __str__(self) -> str:
         return '{{"id": {}, "name": "{}", "bytes": {}, "index_size": {}}}'.format(
