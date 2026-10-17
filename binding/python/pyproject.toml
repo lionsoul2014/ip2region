@@ -61,14 +61,14 @@ ip2region = ["py.typed"]
 
 [tool.ruff]
 target-version = "py37"
-include = ["ip2region/**/*.py", "tests/**/*.py"]
+include = ["ip2region/**/*.py"]
 
 [tool.ruff.lint]
 select = ["E4", "E7", "E9", "F", "I"]
 
 [tool.mypy]
 python_version = "3.7"
-files = ["ip2region", "tests"]
+files = ["ip2region"]
 disallow_untyped_defs = true
 check_untyped_defs = true
 warn_return_any = true
