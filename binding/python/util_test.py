@@ -117,7 +117,7 @@ def test_ip_search():
         for meta in s_list:
             searcher = meta[1]()
             region = searcher.search(ip_str)
-            if b_region != None:
+            if b_region is not None:
                 assert b_region == region, f"region and b_region is not the same"
             print(f"{meta[0]}.search({ip_str}): {region}")
 
@@ -135,7 +135,7 @@ def test_ip_search():
         for meta in s_list:
             searcher = meta[1]()
             region = searcher.search(ip_str)
-            if b_region != None:
+            if b_region is not None:
                 assert b_region == region, f"region and b_region is not the same"
             print(f"{meta[0]}.search({ip_str}): {region}")
 

@@ -1,4 +1,4 @@
-﻿import setuptools
+import setuptools
 
 setuptools.setup(
     name="py-ip2region",

@@ -31,3 +31,7 @@ ENV/
 
 # PyPI configuration file
 .pypirc
+
+# Tool caches
+.mypy_cache/
+.ruff_cache/

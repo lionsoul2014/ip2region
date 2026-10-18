@@ -6,8 +6,10 @@
 # Author Leon<chenxin619315@gmail.com>
 
 import io
-import ip2region.util as util
 from typing import Optional, Union
+
+import ip2region.util as util
+
 
 class Searcher(object):
     '''
@@ -24,14 +26,16 @@ class Searcher(object):
         self.version = version
         self.__db_path = db_path
         self.__io_count = 0
-        if c_buffer != None:
+        if c_buffer is not None:
             self.__handle = None
             self.vector_index: Optional[bytes] = None
-            self.c_buffer = c_buffer
+            self.c_buffer: Optional[bytes] = c_buffer
         else:
+            if db_path is None:
+                raise ValueError("db_path is required without a content buffer")
             self.__handle = io.open(db_path, "rb")
             self.vector_index = vector_index
-            self.c_buffer: Optional[bytes] = None
+            self.c_buffer = None
 
     def get_ip_version(self) -> util.Version:
         return self.version
@@ -60,10 +64,10 @@ class Searcher(object):
         # located the segment index block based on the vector index
         s_ptr, e_ptr, i0, i1 = 0, 0, ip_bytes[0], ip_bytes[1]
         idx = i0 * util.VectorIndexCols * util.VectorIndexSize + i1 * util.VectorIndexSize
-        if self.vector_index != None:
+        if self.vector_index is not None:
             s_ptr = util.le_get_uint32(self.vector_index, idx)
             e_ptr = util.le_get_uint32(self.vector_index, idx + 4)
-        elif self.c_buffer != None:
+        elif self.c_buffer is not None:
             offset = util.HeaderInfoLength + idx
             s_ptr = util.le_get_uint32(self.c_buffer, offset)
             e_ptr = util.le_get_uint32(self.c_buffer, offset + 4)
@@ -81,17 +85,17 @@ class Searcher(object):
         # binary search the segment index block to get the region info
         _bytes, _d_bytes = len(ip_bytes), len(ip_bytes) << 1
         index_size = self.version.index_size
-        d_len, d_ptr, l, h = 0, 0, int(0), int((e_ptr - s_ptr) / index_size)
-        while l <= h:
-            m = (l + h) >> 1
-            p = int(s_ptr + m * index_size)
+        d_len, d_ptr, low, high = 0, 0, int(0), int((e_ptr - s_ptr) / index_size)
+        while low <= high:
+            mid = (low + high) >> 1
+            p = int(s_ptr + mid * index_size)
 
             # read the segment index
             buff = self.read(p, index_size)
             if self.version.ip_sub_compare(ip_bytes, buff, 0) < 0:
-                h = m - 1
+                high = mid - 1
             elif self.version.ip_sub_compare(ip_bytes, buff, _bytes) > 0:
-                l = m + 1
+                low = mid + 1
             else:
                 d_len = util.le_get_uint16(buff, _d_bytes)
                 d_ptr = util.le_get_uint32(buff, _d_bytes + 2)
@@ -108,16 +112,18 @@ class Searcher(object):
 
     def read(self, offset: int, length: int) -> bytes:
         # check the content buffer first
-        if self.c_buffer != None:
+        if self.c_buffer is not None:
             return self.c_buffer[offset:offset+length]
         
         # load the buffer from file
+        if self.__handle is None:
+            raise ValueError("no db handle available")
         self.__handle.seek(offset)
         self.__io_count += 1
         return self.__handle.read(length)
 
     def close(self) -> None:
-        if self.__handle != None:
+        if self.__handle is not None:
             self.__handle.close()
 
     def __str__(self) -> str:

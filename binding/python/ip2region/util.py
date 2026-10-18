@@ -1,4 +1,4 @@
-﻿# Copyright 2022 The Ip2Region Authors. All rights reserved.
+# Copyright 2022 The Ip2Region Authors. All rights reserved.
 # Use of this source code is governed by a Apache2.0-style
 # license that can be found in the LICENSE file.
 
@@ -6,8 +6,8 @@
 # Author Leon<chenxin619315@gmail.com>
 
 import io
-import os
 import ipaddress
+import os
 from typing import BinaryIO, Callable, Optional
 
 # global constants
@@ -65,7 +65,7 @@ class Header(object):
 def parse_ip(ip_string: str) -> bytes:
     try:
         return ipaddress.ip_address(ip_string).packed
-    except:
+    except ValueError:
         raise ValueError("invalid ip address `{}`".format(ip_string))
 
 def ip_to_string(ip_bytes: bytes) -> str:
