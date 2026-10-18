@@ -7,7 +7,6 @@
 
 import io
 from typing import Optional, Union
-
 import ip2region.util as util
 
 
@@ -88,10 +87,10 @@ class Searcher(object):
         d_len, d_ptr, low, high = 0, 0, int(0), int((e_ptr - s_ptr) / index_size)
         while low <= high:
             mid = (low + high) >> 1
-            p = int(s_ptr + mid * index_size)
+            ptr = int(s_ptr + mid * index_size)
 
             # read the segment index
-            buff = self.read(p, index_size)
+            buff = self.read(ptr, index_size)
             if self.version.ip_sub_compare(ip_bytes, buff, 0) < 0:
                 high = mid - 1
             elif self.version.ip_sub_compare(ip_bytes, buff, _bytes) > 0:
