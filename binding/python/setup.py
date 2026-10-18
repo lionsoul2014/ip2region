@@ -8,18 +8,19 @@ setuptools.setup(
     long_description_content_type='text/markdown',
 
     url="https://github.com/lionsoul2014/ip2region",
-    license="Apache-2.0 License",
+    # The license has been declared via TOML configuration.
+    # license="Apache-2.0",
     author_email="chenxin619315@gmail.com",
     author="lionsoul2014",
 
     packages=setuptools.find_packages(),
     include_package_data=True,
     install_requires=[],
-    classifiers=(
+    classifiers=[
         "Programming Language :: Python :: 3",
         "Operating System :: OS Independent",
-    ),
-    keywords=(
+    ],
+    keywords=[
         "ip2region",
         "ip-address",
         "ip-region",
@@ -36,5 +37,5 @@ setuptools.setup(
         "ipv6-location",
         "ipv6-lookup",
         "ipv6-search"
-    )
+    ]
 )
