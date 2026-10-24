@@ -14,14 +14,10 @@
 #include "sys/time.h"
 #endif
 
-#ifdef XDB_WINDOWS
-#include <time.h>
-#endif
-
 // @Note: since 2023/10/13 to compatible with the windows system
 #ifdef XDB_WINDOWS
 static int winsock_initialized = 0;
-XDB_PUBLIC(int) xdb_init_winsock() {
+XDB_PUBLIC(int) xdb_init_winsock(void) {
     if (winsock_initialized == 1) {
         return 0;
     }
@@ -34,33 +30,15 @@ XDB_PUBLIC(int) xdb_init_winsock() {
     return 0;
 }
 
-XDB_PUBLIC(void) xdb_clean_winsock() {
+XDB_PUBLIC(void) xdb_clean_winsock(void) {
     if (winsock_initialized == 1) {
         WSACleanup();
         winsock_initialized = 0;
     }
 }
-
-XDB_PRIVATE(int) gettimeofday(struct timeval* tp, void* tzp) {
-    time_t clock;
-    struct tm tm;
-    SYSTEMTIME wtm;
-    GetLocalTime(&wtm);
-    tm.tm_year = wtm.wYear - 1900;
-    tm.tm_mon = wtm.wMonth - 1;
-    tm.tm_mday = wtm.wDay;
-    tm.tm_hour = wtm.wHour;
-    tm.tm_min = wtm.wMinute;
-    tm.tm_sec = wtm.wSecond;
-    tm.tm_isdst = -1;
-    clock = mktime(&tm);
-    tp->tv_sec = clock;
-    tp->tv_usec = wtm.wMilliseconds * 1000;
-    return (0);
-}
 #else
-XDB_PUBLIC(int) xdb_init_winsock() {return 0;}
-XDB_PUBLIC(void) xdb_clean_winsock() {}
+XDB_PUBLIC(int) xdb_init_winsock(void) {return 0;}
+XDB_PUBLIC(void) xdb_clean_winsock(void) {}
 #endif
 
 // --- xdb buffer function implementations
@@ -94,8 +72,8 @@ XDB_PUBLIC(xdb_header_t *) xdb_load_header(FILE *handle) {
     header->end_index_ptr = xdb_le_get_uint32(header->buffer,12);
 
     // since IPv6 supporting
-    header->ip_version = xdb_le_get_uint16(header->buffer, 16);
-    header->runtime_ptr_bytes = xdb_le_get_uint16(header->buffer, 18);
+    header->ip_version = (unsigned short) xdb_le_get_uint16(header->buffer, 16);
+    header->runtime_ptr_bytes = (unsigned short) xdb_le_get_uint16(header->buffer, 18);
 
     return header;
 }
@@ -316,11 +294,11 @@ static xdb_version_t _ip_version_list[] = {
     {0, NULL, 0, 0, NULL}
 };
 
-XDB_PUBLIC(xdb_version_t *) xdb_version_v4() {
+XDB_PUBLIC(xdb_version_t *) xdb_version_v4(void) {
     return &_ip_version_list[0];
 }
 
-XDB_PUBLIC(xdb_version_t *) xdb_version_v6() {
+XDB_PUBLIC(xdb_version_t *) xdb_version_v6(void) {
     return &_ip_version_list[1];
 }
 
@@ -335,7 +313,7 @@ XDB_PUBLIC(int) xdb_version_is_v6(const xdb_version_t *version) {
 XDB_PUBLIC(xdb_version_t *) xdb_version_from_name(char *name) {
     // to upper case the name
     for (int i = 0; name[i] != '\0'; i++) {
-        name[i] = toupper((unsigned char) name[i]);
+        name[i] = (char) toupper((unsigned char) name[i]);
     }
 
     if (strcmp(name, "V4") == 0 || strcmp(name, "IPV4") == 0) {
@@ -369,10 +347,20 @@ XDB_PUBLIC(xdb_version_t *) xdb_version_from_header(xdb_header_t *header) {
 
 // --- END ip version
 
-XDB_PUBLIC(long) xdb_now() {
+XDB_PUBLIC(long long) xdb_now(void) {
+#ifdef XDB_WINDOWS
+    // FILETIME counts the 100-nanosecond intervals since 1601-01-01
+    FILETIME file_time;
+    ULARGE_INTEGER intervals;
+    GetSystemTimePreciseAsFileTime(&file_time);
+    intervals.LowPart = file_time.dwLowDateTime;
+    intervals.HighPart = file_time.dwHighDateTime;
+    return (long long) (intervals.QuadPart / 10) - 11644473600000000LL;
+#else
     struct timeval c_time;
     gettimeofday(&c_time, NULL);
-    return c_time.tv_sec * (int)1e6 + c_time.tv_usec;
+    return (long long) c_time.tv_sec * 1000000 + c_time.tv_usec;
+#endif
 }
 
 XDB_PUBLIC(unsigned int) xdb_le_get_uint32(const char *buffer, int offset) {

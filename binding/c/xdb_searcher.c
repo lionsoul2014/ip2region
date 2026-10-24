@@ -32,7 +32,7 @@ XDB_PUBLIC(int) xdb_region_buffer_alloc(xdb_region_buffer_t *region, int length)
 
     // no allocation supports for the buffer wapper
     if (region->type == xdb_region_buffer_wrapper) {
-        if (length >= region->length) {
+        if ((size_t) length >= region->length) {
             return 2;
         }
 
@@ -133,6 +133,10 @@ XDB_PUBLIC(int) xdb_new_with_vector_index(xdb_version_t *version, xdb_searcher_t
 }
 
 XDB_PUBLIC(int) xdb_new_with_buffer(xdb_version_t *version, xdb_searcher_t *xdb, const xdb_content_t *c_buffer) {
+    if (c_buffer == NULL) {
+        return 1;
+    }
+
     return xdb_new_base(version, xdb, NULL, NULL, c_buffer);
 }
 
@@ -170,7 +174,6 @@ XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, const bytes_ip_t *ip_bytes, int 
 
     // some resets
     err = 0;
-    data_len = 0;
     bytes   = xdb->version->bytes;
     d_bytes = xdb->version->bytes << 1;
     xdb->io_count = 0;

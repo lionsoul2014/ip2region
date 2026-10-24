@@ -86,9 +86,9 @@ int main(int argc, char *argv[]) {
     const char *ip_string = "1.2.3.4";
     // ip_string = "240e:3b7:3272:d8d0:db09:c067:8d59:539e"; // IPv6
 
-    long cost_time = 0, s_time = xdb_now();
+    long long s_time = xdb_now();
     err = xdb_search_by_string(&searcher, ip_string, &region);
-    cost_time = (int) (xdb_now() - s_time);
+    int cost_time = (int) (xdb_now() - s_time);
     if (err != 0) {
         printf("failed search(%s) with errno=%d\n", ip_string, err);
     } else {
@@ -155,9 +155,9 @@ int main(int argc, char *argv[]) {
     const char *ip_string = "1.2.3.4";
     // ip_string = "240e:3b7:3272:d8d0:db09:c067:8d59:539e"; // IPv6
 
-    long cost_time = 0, s_time = xdb_now();
+    long long s_time = xdb_now();
     err = xdb_search_by_string(&searcher, ip_string, &region);
-    cost_time = (int) (xdb_now() - s_time);
+    int cost_time = (int) (xdb_now() - s_time);
     if (err != 0) {
         printf("failed search(%s) with errno=%d\n", ip_string, err);
     } else {
@@ -224,9 +224,9 @@ int main(int argc, char *argv[]) {
     const char *ip_string = "1.2.3.4";
     // ip_string = "240e:3b7:3272:d8d0:db09:c067:8d59:539e"; // IPv6
 
-    long cost_time = 0, s_time = xdb_now();
+    long long s_time = xdb_now();
     err = xdb_search_by_string(&searcher, ip_string, &region);
-    cost_time = (int) (xdb_now() - s_time);
+    int cost_time = (int) (xdb_now() - s_time);
     if (err != 0) {
         printf("failed search(%s) with errno=%d\n", ip_string, err);
     } else {
@@ -280,9 +280,16 @@ xdb_region_buffer_free(&region);
 
 # 测试程序编译
 
-通过如下方式编译得到 xdb_searcher 可执行程序：
+C binding 使用 CMake 3.16 或更高版本构建，支持 GCC、Clang、Apple Clang 和 Microsoft Visual C++：
 ```bash
 # cd 到 c binding 根目录
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --config Release --parallel
+ctest --test-dir build -C Release --output-on-failure
+```
+
+CMake 把 `xdb_searcher` 和 `test_util` 程序输出到 `build` 目录。在 Windows 上，请在 Visual Studio Developer PowerShell 中执行上面的命令。在 Linux 和 macOS 上，也可以用 `make` 在 c binding 根目录下编译这两个程序：
+```bash
 ➜  c git:(master) ✗ make
 gcc -std=c99 -Wall -O2 -I./ xdb_util.c xdb_searcher.c main.c -o xdb_searcher
 gcc -std=c99 -Wall -O2 -I./ xdb_util.c test_util.c -o test_util
