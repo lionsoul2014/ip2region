@@ -42,11 +42,11 @@ def gen_db():
             print("missing = for args pair '{}'".format(r))
             return
         if r[2:s_idx] == "src":
-            src_file = r[s_idx + 1:]
+            src_file = r[s_idx + 1 :]
         elif r[2:s_idx] == "dst":
-            dst_file = r[s_idx + 1:]
+            dst_file = r[s_idx + 1 :]
         elif r[2:s_idx] == "index":
-            index_policy = idx.index_policy_from_string(r[s_idx + 1:])
+            index_policy = idx.index_policy_from_string(r[s_idx + 1 :])
         else:
             print("undefined option `{}`".format(r))
             return

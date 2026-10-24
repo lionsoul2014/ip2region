@@ -53,7 +53,7 @@ class SegmentIndexBlock:
         self.data_ptr = dp
 
     def __str__(self):
-        return "{sip: {}, eip: {}, len: {}, ptr: {}}".format(
+        return "{{sip: {}, eip: {}, len: {}, ptr: {}}}".format(
             self.start_ip, self.end_ip, self.data_len, self.data_ptr
         )
 
