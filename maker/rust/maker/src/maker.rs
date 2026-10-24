@@ -16,7 +16,7 @@ pub struct Maker {
     ip_version: IpVersion,
     dst_file: File,
     region_pool: HashMap<Arc<String>, u32>,
-    vector_index: [[[u8; VECTOR_INDEX_SIZE]; VECTOR_INDEX_ROWS]; VECTOR_INDEX_COLS],
+    vector_index: Box<[[[u8; VECTOR_INDEX_SIZE]; VECTOR_INDEX_ROWS]]>,
     segments: Vec<Segment>,
     header: Header,
 }
@@ -54,7 +54,8 @@ impl Maker {
             ip_version,
             dst_file,
             region_pool,
-            vector_index: [[[0; VECTOR_INDEX_SIZE]; VECTOR_INDEX_ROWS]; VECTOR_INDEX_COLS],
+            vector_index: vec![[[0; VECTOR_INDEX_SIZE]; VECTOR_INDEX_ROWS]; VECTOR_INDEX_COLS]
+                .into_boxed_slice(),
             segments,
             header,
         })
