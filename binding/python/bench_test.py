@@ -1,4 +1,4 @@
-﻿# Copyright 2022 The Ip2Region Authors. All rights reserved.
+# Copyright 2022 The Ip2Region Authors. All rights reserved.
 # Use of this source code is governed by a Apache2.0-style
 # license that can be found in the LICENSE file.
 
@@ -47,25 +47,16 @@ def create_searcher(db_path, cache_policy):
 
 def run_bench_test(db_path: str, src_path: str, cache_policy: str):
     # create the searcher
-    searcher = None
-    try:
-        searcher = create_searcher(db_path, cache_policy)
-    except Exception as e:
-        print("failed to create searcher: {}".format(str(e)))
-        return
-
+    searcher = create_searcher(db_path, cache_policy)
     print("searcher ->", searcher)
+
     # read the source lines and do the search test
     count, total_secs = 0, 0
-    try:
-        handle = io.open(src_path, "rb")
-        while True:
-            line = handle.readline().decode("utf-8").strip()
-            # ignore empty  or comment line
-            if len(line) < 1:
-                break
-
-            if line[0] == "#":
+    with io.open(src_path, "r", encoding="utf-8") as handle:
+        for line in handle:
+            line = line.strip()
+            # ignore empty or comment line
+            if len(line) < 1 or line[0] == "#":
                 continue
 
             # line splits
@@ -86,14 +77,8 @@ def run_bench_test(db_path: str, src_path: str, cache_policy: str):
                 region = searcher.search(ip_bytes)
                 if region != ps[2]:
                     raise Exception(f"failed to search({util.ip_to_string(ip_bytes)}) with {region} != {ps[2]}")
-            
-            total_secs = total_secs + (time.time() - start_time)
 
-        # resource cleanup
-        handle.close()
-    except Exception as e:
-        print(f"bench failed: {str(e)}")
-        return
+            total_secs = total_secs + (time.time() - start_time)
 
     # print the stats info
     each_us = total_secs * 1000_000 / count
