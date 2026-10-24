@@ -17,6 +17,8 @@ static char *ngx_http_ip2region_init(ngx_conf_t *cf,
 
 static ngx_int_t ngx_http_ip2region_variable(ngx_http_request_t *r,
     ngx_http_variable_value_t *v, uintptr_t data);
+static ngx_int_t ngx_http_ip2region_set_region(ngx_http_request_t *r,
+    ngx_http_variable_value_t *v, xdb_region_buffer_t *region);
 
 static ngx_http_module_t ngx_http_ip2region_ctx = {
     ngx_http_ip2region_add_variables,                                          /* pre configuration */
@@ -98,9 +100,7 @@ ngx_http_ip2region_init_searcher(ngx_conf_t *cf, char *db_name,
                                "failed to allocate memory for db_path");
             return NGX_CONF_ERROR;
         }
-        memset(db_path, '\0', len);
-        memcpy(db_path, ngx_cycle->conf_prefix.data, ngx_cycle->conf_prefix.len);
-        strcat(db_path, db_name);
+        ngx_snprintf((u_char *) db_path, len, "%V%s%Z", &ngx_cycle->conf_prefix, db_name);
     }
 
     ip2region_searcher = ngx_palloc(cf->pool, sizeof(ip2region_searcher_t));
@@ -396,10 +396,7 @@ ngx_http_ip2region_variable(ngx_http_request_t *r,
                 err = xdb_search(searcher_ptr, ip_bytes, 4, &region);
             }
             if (err == 0) {
-                v->data = (unsigned char *)region.value;
-                v->len = strlen(region.value);
-                xdb_region_buffer_free(&region);
-                return NGX_OK;
+                return ngx_http_ip2region_set_region(r, v, &region);
             } else {
                 ngx_log_error(NGX_LOG_WARN, r->connection->log, 0,
                               "ip2region search failed for IPv4 address");
@@ -430,10 +427,7 @@ ngx_http_ip2region_variable(ngx_http_request_t *r,
                         err = xdb_search(searcher_ptr, ip_bytes, 4, &region);
                     }
                     if (err == 0) {
-                        v->data = (unsigned char *)region.value;
-                        v->len = strlen(region.value);
-                        xdb_region_buffer_free(&region);
-                        return NGX_OK;
+                        return ngx_http_ip2region_set_region(r, v, &region);
                     } else {
                         ngx_log_error(NGX_LOG_WARN, r->connection->log, 0,
                                       "ip2region search failed for IPv4-mapped IPv6 address");
@@ -443,15 +437,10 @@ ngx_http_ip2region_variable(ngx_http_request_t *r,
                 // 处理纯IPv6地址
                 if (ip2region_conf->v6_searcher != NULL) {
                     searcher_ptr = &ip2region_conf->v6_searcher->searcher;
-                    bytes_ip_t ip6_bytes[16];
                     if (p != NULL) {
-                        memcpy(ip6_bytes, p, 16);
-                        err = xdb_search(searcher_ptr, ip6_bytes, 16, &region);
+                        err = xdb_search(searcher_ptr, p, 16, &region);
                         if (err == 0) {
-                            v->data = (unsigned char *)region.value;
-                            v->len = strlen(region.value);
-                            xdb_region_buffer_free(&region);
-                            return NGX_OK;
+                            return ngx_http_ip2region_set_region(r, v, &region);
                         } else {
                             ngx_log_error(NGX_LOG_WARN, r->connection->log, 0,
                                           "ip2region search failed for IPv6 address");
@@ -473,6 +462,29 @@ ngx_http_ip2region_variable(ngx_http_request_t *r,
     ngx_log_error(NGX_LOG_INFO, r->connection->log, 0,
                   "ip2region: no region found for IP address");
     v->not_found = 1;
+    return NGX_OK;
+}
+
+
+// copy the region out of the stack buffer since the value outlives the handler
+static ngx_int_t
+ngx_http_ip2region_set_region(ngx_http_request_t *r,
+    ngx_http_variable_value_t *v, xdb_region_buffer_t *region)
+{
+    ngx_str_t  value;
+
+    value.len = ngx_strlen(region->value);
+    value.data = (u_char *) region->value;
+    v->data = ngx_pstrdup(r->pool, &value);
+    xdb_region_buffer_free(region);
+    if (v->data == NULL) {
+        return NGX_ERROR;
+    }
+
+    v->len = value.len;
+    v->valid = 1;
+    v->no_cacheable = 0;
+    v->not_found = 0;
     return NGX_OK;
 }
 
