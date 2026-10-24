@@ -18,8 +18,17 @@
     ipv4 | ipv6 | {error, atom()}.
 ip_version(Ip) when is_integer(Ip), Ip >= 0, Ip =< 16#FFFFFFFF -> ipv4;
 ip_version({A, B, C, D}) when ?IS_UINT8(A), ?IS_UINT8(B), ?IS_UINT8(C), ?IS_UINT8(D) -> ipv4;
-ip_version({A, B, C, D, E, F, G, H}) when ?IS_UINT16(A), ?IS_UINT16(B), ?IS_UINT16(C), ?IS_UINT16(D),
-                                            ?IS_UINT16(E), ?IS_UINT16(F), ?IS_UINT16(G), ?IS_UINT16(H) -> ipv6;
+ip_version({A, B, C, D, E, F, G, H}) when
+    ?IS_UINT16(A),
+    ?IS_UINT16(B),
+    ?IS_UINT16(C),
+    ?IS_UINT16(D),
+    ?IS_UINT16(E),
+    ?IS_UINT16(F),
+    ?IS_UINT16(G),
+    ?IS_UINT16(H)
+->
+    ipv6;
 ip_version(Ip) when is_binary(Ip) ->
     ip_version(binary_to_list(Ip));
 ip_version(Ip) when is_list(Ip) ->
@@ -37,8 +46,16 @@ ip_to_bytes(Ip) when is_integer(Ip), Ip >= 0, Ip =< 16#FFFFFFFF ->
     {ok, ipv4, <<Ip:32>>};
 ip_to_bytes({A, B, C, D}) when ?IS_UINT8(A), ?IS_UINT8(B), ?IS_UINT8(C), ?IS_UINT8(D) ->
     {ok, ipv4, <<A, B, C, D>>};
-ip_to_bytes({A, B, C, D, E, F, G, H}) when ?IS_UINT16(A), ?IS_UINT16(B), ?IS_UINT16(C), ?IS_UINT16(D),
-                                              ?IS_UINT16(E), ?IS_UINT16(F), ?IS_UINT16(G), ?IS_UINT16(H) ->
+ip_to_bytes({A, B, C, D, E, F, G, H}) when
+    ?IS_UINT16(A),
+    ?IS_UINT16(B),
+    ?IS_UINT16(C),
+    ?IS_UINT16(D),
+    ?IS_UINT16(E),
+    ?IS_UINT16(F),
+    ?IS_UINT16(G),
+    ?IS_UINT16(H)
+->
     {ok, ipv6, <<A:16, B:16, C:16, D:16, E:16, F:16, G:16, H:16>>};
 ip_to_bytes(Ip) when is_binary(Ip) ->
     ip_to_bytes(binary_to_list(Ip));

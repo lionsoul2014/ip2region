@@ -10,9 +10,15 @@
 -module(ip2region_xdb).
 
 -export([parse_header/1]).
--export([header_version/1, header_index_policy/1, header_created_at/1,
-         header_start_index_ptr/1, header_end_index_ptr/1,
-         header_ip_version/1, header_runtime_ptr_bytes/1]).
+-export([
+    header_version/1,
+    header_index_policy/1,
+    header_created_at/1,
+    header_start_index_ptr/1,
+    header_end_index_ptr/1,
+    header_ip_version/1,
+    header_runtime_ptr_bytes/1
+]).
 -export([segment_index_size/1]).
 -export([vector_index_table/1, segment_index_table/1, cache_table/1]).
 
@@ -20,9 +26,8 @@
 
 -spec parse_header(binary()) -> {ok, #xdb_header{}} | {error, invalid_header}.
 parse_header(Bin) when is_binary(Bin), byte_size(Bin) >= 20 ->
-    <<Version:16/little, IndexPolicy:16/little, CreatedAt:32/little,
-      StartIndexPtr:32/little, EndIndexPtr:32/little,
-      IpVersion:16/little, RuntimePtrBytes:16/little, _/binary>> = Bin,
+    <<Version:16/little, IndexPolicy:16/little, CreatedAt:32/little, StartIndexPtr:32/little,
+        EndIndexPtr:32/little, IpVersion:16/little, RuntimePtrBytes:16/little, _/binary>> = Bin,
     {ok, #xdb_header{
         version = Version,
         index_policy = IndexPolicy,

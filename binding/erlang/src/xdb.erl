@@ -27,7 +27,8 @@ search(Ip) ->
 do_search(PoolName, Version, IpBin) ->
     CacheTable = ip2region_xdb:cache_table(Version),
     case ets:lookup(CacheTable, IpBin) of
-        [{_, Region}] -> Region;
+        [{_, Region}] ->
+            Region;
         _ ->
             case whereis(PoolName) of
                 undefined ->
@@ -36,7 +37,8 @@ do_search(PoolName, Version, IpBin) ->
                     Worker = poolboy:checkout(PoolName, true, infinity),
                     try
                         case ip2region_worker:search(Worker, IpBin) of
-                            {error, _} = Err -> Err;
+                            {error, _} = Err ->
+                                Err;
                             Region ->
                                 ets:insert(CacheTable, {IpBin, Region}),
                                 Region

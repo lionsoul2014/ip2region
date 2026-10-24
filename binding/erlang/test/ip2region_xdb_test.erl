@@ -4,9 +4,9 @@
 -include("ip2region.hrl").
 
 valid_v4_header_test() ->
-    HeaderBin = <<2:16/little, 1:16/little, 0:32/little,
-                  256:32/little, 1024:32/little,
-                  ?IP_VERSION_4:16/little, 4:16/little>>,
+    HeaderBin =
+        <<2:16/little, 1:16/little, 0:32/little, 256:32/little, 1024:32/little,
+            ?IP_VERSION_4:16/little, 4:16/little>>,
     {ok, Header} = ip2region_xdb:parse_header(HeaderBin),
     ?assertEqual(2, ip2region_xdb:header_version(Header)),
     ?assertEqual(1, ip2region_xdb:header_index_policy(Header)),
@@ -16,9 +16,9 @@ valid_v4_header_test() ->
     ?assertEqual(4, ip2region_xdb:header_runtime_ptr_bytes(Header)).
 
 valid_v6_header_test() ->
-    HeaderBin = <<3:16/little, 1:16/little, 0:32/little,
-                  256:32/little, 1024:32/little,
-                  ?IP_VERSION_6:16/little, 4:16/little>>,
+    HeaderBin =
+        <<3:16/little, 1:16/little, 0:32/little, 256:32/little, 1024:32/little,
+            ?IP_VERSION_6:16/little, 4:16/little>>,
     {ok, Header} = ip2region_xdb:parse_header(HeaderBin),
     ?assertEqual(3, ip2region_xdb:header_version(Header)),
     ?assertEqual(?IP_VERSION_6, ip2region_xdb:header_ip_version(Header)).

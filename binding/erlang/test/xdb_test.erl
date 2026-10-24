@@ -9,7 +9,7 @@ search_test_() ->
     A = "中国|广东省|广州市|中国电信|CN",
     Region0 = xdb:search("1.0.8.0"),
     Region1 = xdb:search(<<"1.0.8.0">>),
-    Region2 = xdb:search({1,0,8,0}),
+    Region2 = xdb:search({1, 0, 8, 0}),
     Region3 = xdb:search("xxx.0.8.0"),
     [
         ?_assert(A =:= Region0),
@@ -31,18 +31,16 @@ invalid_search_test_() ->
     [
         ?_assertEqual({error, bad_ip_format}, xdb:search("xxx.0.8.0")),
         ?_assertEqual({error, bad_ip_format}, xdb:search("::ggg")),
-        ?_assertEqual({error, bad_ip_format}, xdb:search({1,2,3}))
+        ?_assertEqual({error, bad_ip_format}, xdb:search({1, 2, 3}))
     ].
 
 ipv6_pool_not_configured_test() ->
-    {ok, _} = ip2region_test_util:start_app([{ipv4, "ip2region.xdb"}]),
+    {ok, _} = ip2region_test_util:start_app([{ipv4, ip2region_test_util:v4_xdb_path()}]),
     ?assertEqual({error, pool_not_configured}, xdb:search("2001:4860:4860::8888")).
 
 xdb_version_mismatch_test() ->
     {ok, _} = ip2region_test_util:start_app(),
-    V4File = filename:join([
-        ip2region_test_util:repo_root(), "binding", "erlang", "priv", "ip2region.xdb"
-    ]),
+    V4File = ip2region_test_util:v4_xdb_path(),
     error_logger:tty(false),
     try
         ?assertEqual(
