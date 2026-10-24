@@ -25,10 +25,8 @@ class UtilTests {
 
     @TestCase
     func testIPCompareEqual() {
-        let a = Array<Byte>(4, repeat: 0)
-        var v: Byte = 1; a[0] = v; v = 2; a[1] = v; v = 3; a[2] = v; v = 4; a[3] = v
-        let b = Array<Byte>(4, repeat: 0)
-        v = 1; b[0] = v; v = 2; b[1] = v; v = 3; b[2] = v; v = 4; b[3] = v
+        let a: Array<Byte> = [1, 2, 3, 4]
+        let b: Array<Byte> = [1, 2, 3, 4]
         let r = ipCompare(a, b)
         if (r != 0) {
             throw Exception("expected 0, got ${r}")
@@ -37,10 +35,8 @@ class UtilTests {
 
     @TestCase
     func testIPCompareLess() {
-        let a = Array<Byte>(4, repeat: 0)
-        var v: Byte = 1; a[0] = v; v = 2; a[1] = v; v = 3; a[2] = v; v = 4; a[3] = v
-        let b = Array<Byte>(4, repeat: 0)
-        v = 1; b[0] = v; v = 2; b[1] = v; v = 3; b[2] = v; v = 5; b[3] = v
+        let a: Array<Byte> = [1, 2, 3, 4]
+        let b: Array<Byte> = [1, 2, 3, 5]
         let r = ipCompare(a, b)
         if (r != -1) {
             throw Exception("expected -1, got ${r}")
@@ -49,10 +45,8 @@ class UtilTests {
 
     @TestCase
     func testIPCompareGreater() {
-        let a = Array<Byte>(4, repeat: 0)
-        var v: Byte = 1; a[0] = v; v = 2; a[1] = v; v = 3; a[2] = v; v = 5; a[3] = v
-        let b = Array<Byte>(4, repeat: 0)
-        v = 1; b[0] = v; v = 2; b[1] = v; v = 3; b[2] = v; v = 4; b[3] = v
+        let a: Array<Byte> = [1, 2, 3, 5]
+        let b: Array<Byte> = [1, 2, 3, 4]
         let r = ipCompare(a, b)
         if (r != 1) {
             throw Exception("expected 1, got ${r}")
@@ -61,8 +55,7 @@ class UtilTests {
 
     @TestCase
     func testReadLEUint32() {
-        let buf = Array<Byte>(4, repeat: 0)
-        var v: Byte = 0x78; buf[0] = v; v = 0x56; buf[1] = v; v = 0x34; buf[2] = v; v = 0x12; buf[3] = v
+        let buf: Array<Byte> = [0x78, 0x56, 0x34, 0x12]
         let val = readLEUint32(buf, 0)
         let expected: Int64 = 0x12345678
         if (val != expected) {
@@ -72,8 +65,7 @@ class UtilTests {
 
     @TestCase
     func testReadLEUint16() {
-        let buf = Array<Byte>(2, repeat: 0)
-        var v: Byte = 0x34; buf[0] = v; v = 0x12; buf[1] = v
+        let buf: Array<Byte> = [0x34, 0x12]
         let val = readLEUint16(buf, 0)
         if (val != 0x1234) {
             throw Exception("expected 0x1234, got ${val}")
@@ -82,8 +74,7 @@ class UtilTests {
 
     @TestCase
     func testIpToString() {
-        let ip = Array<Byte>(4, repeat: 0)
-        var v: Byte = 127; ip[0] = v; v = 0; ip[1] = v; v = 0; ip[2] = v; v = 1; ip[3] = v
+        let ip: Array<Byte> = [127, 0, 0, 1]
         let s = ipToString(ip)
         if (s != "127.0.0.1") {
             throw Exception("expected 127.0.0.1, got ${s}")
@@ -92,11 +83,8 @@ class UtilTests {
 
     @TestCase
     func testCompareIPv4() {
-        let ip = Array<Byte>(4, repeat: 0)
-        var v: Byte = 1; ip[0] = v; v = 2; ip[1] = v; v = 3; ip[2] = v; v = 4; ip[3] = v
-        let entry = Array<Byte>(8, repeat: 0)
-        v = 4; entry[0] = v; v = 3; entry[1] = v; v = 2; entry[2] = v; v = 1; entry[3] = v
-        v = 8; entry[4] = v; v = 7; entry[5] = v; v = 6; entry[6] = v; v = 5; entry[7] = v
+        let ip: Array<Byte> = [1, 2, 3, 4]
+        let entry: Array<Byte> = [4, 3, 2, 1, 8, 7, 6, 5]
         let r = compareIPv4(ip, entry, 0)
         if (r != 0) {
             throw Exception("expected equal, got ${r}")
@@ -105,10 +93,8 @@ class UtilTests {
 
     @TestCase
     func testCompareIPv6() {
-        let ip = Array<Byte>(16, repeat: 0)
-        var v: Byte = 0x20; ip[0] = v; v = 0x01; ip[1] = v; v = 0x0d; ip[2] = v; v = 0xb8; ip[3] = v
-        let entry = Array<Byte>(16, repeat: 0)
-        v = 0x20; entry[0] = v; v = 0x01; entry[1] = v; v = 0x0d; entry[2] = v; v = 0xb8; entry[3] = v
+        let ip: Array<Byte> = [0x20, 0x01, 0x0d, 0xb8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        let entry = ip.clone()
         let r = compareIPv6(ip, entry, 0)
         if (r != 0) {
             throw Exception("expected equal, got ${r}")
@@ -119,8 +105,7 @@ class UtilTests {
     func testLoadVectorIndex() {
         let viSize = VectorIndexRows * VectorIndexCols * VectorIndexSize
         let cBuff = Array<Byte>(HeaderInfoLength + viSize, repeat: 0)
-        var v: Byte = 0x42
-        cBuff[HeaderInfoLength] = v
+        cBuff[HeaderInfoLength] = 0x42
         let vi = loadVectorIndex(cBuff)
         if (vi.size != viSize) {
             throw Exception("expected size ${viSize}, got ${vi.size}")

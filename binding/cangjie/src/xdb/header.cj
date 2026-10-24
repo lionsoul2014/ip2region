@@ -5,8 +5,8 @@ public let HeaderInfoLength: Int64 = 256
 public let VectorIndexRows: Int64 = 256
 public let VectorIndexCols: Int64 = 256
 public let VectorIndexSize: Int64 = 8
-public let IPv4SegmentIndexSize: Int64 = 14  // 4 + 4 + 2 + 4
-public let IPv6SegmentIndexSize: Int64 = 38  // 16 + 16 + 2 + 4
+public let IPv4SegmentIndexSize: Int64 = 14 // 4 + 4 + 2 + 4
+public let IPv6SegmentIndexSize: Int64 = 38 // 16 + 16 + 2 + 4
 
 public let Structure20: Int64 = 2
 public let Structure30: Int64 = 3

@@ -6,14 +6,10 @@ import ip2region.xdb.*
 class HeaderTests {
     func makeHeaderBytes(): Array<Byte> {
         let buf = Array<Byte>(256, repeat: 0)
-        var v: Byte
-        v = 3; buf[0] = v; v = 0; buf[1] = v
-        v = 1; buf[2] = v; v = 0; buf[3] = v
-        v = 0xA0; buf[4] = v; v = 0x86; buf[5] = v; v = 0x01; buf[6] = v; v = 0x00; buf[7] = v
-        v = 0xE8; buf[8] = v; v = 0x03; buf[9] = v; v = 0x00; buf[10] = v; v = 0x00; buf[11] = v
-        v = 0xD0; buf[12] = v; v = 0x07; buf[13] = v; v = 0x00; buf[14] = v; v = 0x00; buf[15] = v
-        v = 4; buf[16] = v; v = 0; buf[17] = v
-        v = 0; buf[18] = v; v = 0; buf[19] = v
+        // version 3, index policy 1, created at, start and end index ptr
+        let fields: Array<Byte> = [3, 0, 1, 0, 0xA0, 0x86, 0x01, 0x00, 0xE8, 0x03, 0x00, 0x00, 0xD0, 0x07, 0x00, 0x00]
+        fields.copyTo(buf, 0, 0, fields.size)
+        buf[16] = 4 // IPv4
         return buf
     }
 
@@ -52,7 +48,7 @@ class HeaderTests {
     @TestCase
     func testVersionFromHeaderV6() {
         let buf = makeHeaderBytes()
-        var v: Byte = 6; buf[16] = v
+        buf[16] = 6
         let h = newHeaderFromBytes(buf)
         let ver = versionFromHeader(h)
         if (ver.id != IPv6VersionNo) {
@@ -63,8 +59,8 @@ class HeaderTests {
     @TestCase
     func testVersionFromHeader20() {
         let buf = makeHeaderBytes()
-        var v: Byte = 2; buf[0] = v
-        v = 0; buf[16] = v
+        buf[0] = 2
+        buf[16] = 0
         let h = newHeaderFromBytes(buf)
         let ver = versionFromHeader(h)
         if (ver.id != IPv4VersionNo) {
@@ -74,10 +70,20 @@ class HeaderTests {
 
     @TestCase
     func testHeaderConstants() {
-        if (HeaderInfoLength != 256) { throw Exception("expected 256") }
-        if (VectorIndexRows != 256) { throw Exception("expected 256") }
-        if (VectorIndexSize != 8) { throw Exception("expected 8") }
-        if (IPv4SegmentIndexSize != 14) { throw Exception("expected 14") }
-        if (IPv6SegmentIndexSize != 38) { throw Exception("expected 38") }
+        if (HeaderInfoLength != 256) {
+            throw Exception("expected 256")
+        }
+        if (VectorIndexRows != 256) {
+            throw Exception("expected 256")
+        }
+        if (VectorIndexSize != 8) {
+            throw Exception("expected 8")
+        }
+        if (IPv4SegmentIndexSize != 14) {
+            throw Exception("expected 14")
+        }
+        if (IPv6SegmentIndexSize != 38) {
+            throw Exception("expected 38")
+        }
     }
 }
