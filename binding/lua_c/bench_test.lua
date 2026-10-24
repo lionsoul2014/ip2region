@@ -11,7 +11,7 @@ package.path = "./?.lua;" .. package.path
 package.cpath = "./?.so;" .. package.cpath
 local xdb = require("xdb_searcher")
 
-function printHelp()
+local function printHelp()
     print("lua bench_test.lua [command options]")
     print("options: ")
     print(" --db string             ip2region binary xdb file path")
@@ -28,25 +28,17 @@ end
 local dbFile, srcFile = "", ""
 local cachePolicy = "vectorIndex"
 for _, r in ipairs(arg) do
-    if string.len(r) < 5 then
-        -- continue and do nothing here
-    elseif string.sub(r, 1, 2) ~= "--" then
-        -- continue and do nothing here
-    else
-        for k, v in string.gmatch(string.sub(r, 3), "([^=]+)=([^%s]+)") do
-            if k == "db" then
-                dbFile = v
-            elseif k == "src" then
-                srcFile = v
-            elseif k == "cache-policy" then
-                cachePolicy = v
-            else
-                print(string.format("undefined option `%s`", r))
-                return
-            end
-
-            -- break the match iterate
-            break
+    if string.len(r) >= 5 and string.sub(r, 1, 2) == "--" then
+        local k, v = string.match(string.sub(r, 3), "([^=]+)=([^%s]+)")
+        if k == "db" then
+            dbFile = v
+        elseif k == "src" then
+            srcFile = v
+        elseif k == "cache-policy" then
+            cachePolicy = v
+        else
+            print(string.format("undefined option `%s`", r))
+            return
         end
     end
 end
@@ -59,21 +51,19 @@ end
 
 -- verify the xdb from header
 if xdb.verify(dbFile) == false then
-    print(string.format("failed to verify the xdb file: %s", dbFile))
-    return
+    error(string.format("failed to verify the xdb file: %s", dbFile))
 end
 
 -- detect the version from the xdb header
-header, err = xdb.load_header(dbFile)
+local header, err = xdb.load_header(dbFile)
 if err ~= nil then
-    print(string.format("failed to load header: %s", err))
-    return
+    error(string.format("failed to load header: %s", err))
 end
 
+local version
 version, err = xdb.version_from_header(header);
 if err ~= nil then
-    print(string.format("failed to detect version from header: %s", err))
-    return
+    error(string.format("failed to detect version from header: %s", err))
 end
 
 -- create the searcher based on the cache-policy
@@ -81,90 +71,71 @@ local searcher, v_index, content
 if cachePolicy == "file" then
     searcher, err = xdb.new_with_file_only(version, dbFile)
     if err ~= nil then
-        print(string.format("failed to create searcher: %s", err))
-        return
+        error(string.format("failed to create searcher: %s", err))
     end
 elseif cachePolicy == "vectorIndex" then
     v_index, err = xdb.load_vector_index(dbFile)
     if err ~= nil then
-        print(string.format("failed to load vector index: %s", err))
-        return
+        error(string.format("failed to load vector index: %s", err))
     end
 
     searcher, err = xdb.new_with_vector_index(version, dbFile, v_index)
     if err ~= nil then
-        print(string.format("failed to create vector index searcher: %s", err))
-        return
+        error(string.format("failed to create vector index searcher: %s", err))
     end
 elseif cachePolicy == "content" then
     content, err = xdb.load_content(dbFile)
     if err ~= nil then
-        print(string.format("failed to load xdb content from '%s'", dbFile))
-        return
+        error(string.format("failed to load xdb content from '%s'", dbFile))
     end
 
     searcher, err = xdb.new_with_buffer(version, content)
     if err ~= nil then
-        print(string.format("failed to create content buffer searcher: %s", err))
-        return
+        error(string.format("failed to create content buffer searcher: %s", err))
     end
 else
-    print(string.format("undefined cache-policy `%s`", cachePolicy))
-    return
+    error(string.format("undefined cache-policy `%s`", cachePolicy))
 end
 
 -- do the bench test
 local handle = io.open(srcFile, "r")
 if handle == nil then
-    print(string.format("failed to open src text file `%s`", handle))
-    return
+    error(string.format("failed to open src text file `%s`", srcFile))
 end
 
 local lines = handle:lines()
-local sip_str, eip_str, s_region, region, err = "", "", "", "", 0
-local count, t_time, c_time = 0, 0, 0
+local count, c_time = 0, 0
 local s_time = xdb.now()
 for l in lines do
-    if string.len(l) < 1 then
-        -- continue and do nothing here
-    else
-        for v1, v2, v3 in string.gmatch(l, "([^|]+)|([^|]+)|([^\n]+)") do
-            -- print(sip_str, eip_str, region)
-            sip_str = v1
-            eip_str = v2
-            s_region = v3
-            break
-        end
+    if string.len(l) > 0 then
+        local sip_str, eip_str, s_region = string.match(l, "([^|]+)|([^|]+)|([^\n]+)")
 
-        t_time = xdb.now()
+        local t_time = xdb.now()
+        local sip_bytes, eip_bytes
         sip_bytes, err = xdb.parse_ip(sip_str)
         if err ~= nil then
-            print(string.format("invalid start ip `%s`", sip_str))
-            return
+            error(string.format("invalid start ip `%s`", sip_str))
         end
 
         eip_bytes, err = xdb.parse_ip(eip_str)
         if err ~= nil then
-            print(string.format("invalid end ip `%s`", sip_str))
-            return
+            error(string.format("invalid end ip `%s`", eip_str))
         end
 
         if xdb.ip_compare(sip_bytes, eip_bytes) > 0 then
-            print(string.format("start ip(%s) should not be greater than end ip(%s)\n", sip_str, eip_str))
-            return
+            error(string.format("start ip(%s) should not be greater than end ip(%s)", sip_str, eip_str))
         end
 
         for _, ip_bytes in ipairs({sip_bytes, eip_bytes}) do
+            local region
             region, err = searcher:search(ip_bytes)
             if err ~= nil then
-                print(string.format("failed to search ip `%s`", xdb.ip_to_string(ip_bytes)))
-                return
+                error(string.format("failed to search ip `%s`: %s", xdb.ip_to_string(ip_bytes), err))
             end
 
             -- check the region
             if region ~= s_region then
-                print(string.format("failed search(%s) with (%s != %s)\n", xdb.ip_to_string(ip_bytes), region, s_region))
-                return
+                error(string.format("failed search(%s) with (%s != %s)", xdb.ip_to_string(ip_bytes), region, s_region))
             end
 
             count = count + 1
@@ -192,4 +163,4 @@ if count > 0 then
     avg_costs = c_time / count
 end
 print(string.format("Bench finished, {cachePolicy: %s, total: %d, took: %.3f s, cost: %.3f μs/op}",
-         cachePolicy, count, (xdb.now() - s_time)/1e6, c_time / count))
+         cachePolicy, count, (xdb.now() - s_time)/1e6, avg_costs))
