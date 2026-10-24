@@ -1,0 +1,20 @@
+toolchain = { name = "python" }
+platforms = ["linux", "macos", "windows"]
+
+[[lint]]
+name = "Check formatting"
+run = ["uvx", "ruff@0.14.14", "format", "--check"]
+
+[[lint]]
+name = "Ruff"
+run = ["uvx", "ruff@0.14.14", "check"]
+
+[[test]]
+name = "Build the IPv4 xdb"
+run = ["uv", "run", "--no-project", "--python", "3.14", "python", "main.py", "gen", "--src=../../data/ipv4_source.txt", "--dst=./ci-ipv4.xdb"]
+timeout = 1800
+
+# The maker implements IPv4 only.
+[[accept]]
+name = "Compare the IPv4 xdb with data/ip2region_v4.xdb"
+run = ["ip2region-ci", "xdb-diff", "../../data/ip2region_v4.xdb", "ci-ipv4.xdb"]

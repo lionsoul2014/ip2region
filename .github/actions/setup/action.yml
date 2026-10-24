@@ -1,0 +1,116 @@
+name: Set up a component toolchain
+description: Installs uv and the toolchain a component's ci.toml names.
+
+inputs:
+  component:
+    description: Component path, such as binding/golang.
+    required: true
+  toolchain:
+    description: Toolchain name from the component's ci.toml.
+    required: true
+  version:
+    description: Toolchain version from the component's ci.toml.
+    required: false
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+      with:
+        enable-cache: true
+        cache-dependency-glob: scripts/ci/uv.lock
+
+    - if: inputs.toolchain == 'cangjie'
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ runner.temp }}/cangjie-sdk
+        key: cangjie-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('scripts/ci/src/ip2region_ci/cangjie.py') }}
+
+    - if: inputs.toolchain == 'cangjie'
+      shell: bash
+      env:
+        SDK: ${{ runner.temp }}/cangjie-sdk
+      run: | # zizmor: ignore[github-env] the paths come from the pinned SDK
+        envsetup="$(uv run ip2region-ci install-cangjie "$SDK")"
+        native=(echo)
+        if [[ "$RUNNER_OS" == Windows ]]; then
+          envsetup="$(cygpath -u "$envsetup")"
+          native=(cygpath -w)
+        fi
+        # shellcheck disable=SC1090
+        source "$envsetup"
+        IFS=: read -ra entries <<< "$PATH"
+        for entry in "${entries[@]}"; do
+          if [[ "$entry" == "$CANGJIE_HOME"/* ]]; then
+            "${native[@]}" "$entry" >> "$GITHUB_PATH"
+          fi
+        done
+        echo "CANGJIE_HOME=$("${native[@]}" "$CANGJIE_HOME")" >> "$GITHUB_ENV"
+        for name in LD_LIBRARY_PATH SDKROOT; do
+          if [[ -n "${!name:-}" ]]; then
+            echo "$name=${!name}" >> "$GITHUB_ENV"
+          fi
+        done
+
+    - if: inputs.toolchain == 'go'
+      uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+      with:
+        go-version: ${{ inputs.version }}
+        cache-dependency-path: ${{ inputs.component }}/go.sum
+
+    - if: inputs.toolchain == 'java'
+      uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+      with:
+        distribution: zulu
+        java-version: ${{ inputs.version }}
+        cache: maven
+        cache-dependency-path: ${{ inputs.component }}/pom.xml
+
+    - if: inputs.toolchain == 'node'
+      uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: ${{ inputs.version }}
+
+    - if: inputs.toolchain == 'dotnet'
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        dotnet-version: ${{ inputs.version }}
+
+    - if: inputs.toolchain == 'rust'
+      shell: bash
+      env:
+        RUST_VERSION: ${{ inputs.version }}
+      run: |
+        rustup toolchain install "$RUST_VERSION" --profile minimal --component rustfmt,clippy
+        rustup default "$RUST_VERSION"
+
+    - if: inputs.toolchain == 'lua' && runner.os == 'Windows'
+      uses: step-security/msvc-dev-cmd@22c98154b708dbd743e6f27a933cf6ceba3305c4 # v1.13.1
+      with:
+        arch: ${{ runner.arch == 'ARM64' && 'arm64' || 'x64' }}
+
+    - if: inputs.toolchain == 'lua'
+      uses: leafo/gh-actions-lua@32909a2dea0a48c433aec79e7fcd31b4cd55800f # v13.1.0
+      with:
+        luaVersion: ${{ inputs.version }}
+
+    - if: inputs.toolchain == 'lua' && github.job == 'lint'
+      uses: leafo/gh-actions-luarocks@1c4a92caecc8f6850f673cbadfd57b3e555417ce # v6.1.1
+
+    - if: inputs.toolchain == 'lua' && github.job == 'lint'
+      shell: bash
+      run: luarocks install luacheck 1.2.0
+
+    - if: inputs.toolchain == 'php'
+      uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
+      with:
+        php-version: ${{ inputs.version }}
+        coverage: none
+        tools: ${{ github.job == 'lint' && 'phpstan:2.3.1' || 'none' }}
+
+    - if: inputs.toolchain == 'erlang'
+      uses: erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124 # v1.24.1
+      with:
+        version-file: ${{ inputs.component }}/.tool-versions
+        version-type: strict

@@ -1,0 +1,178 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+  workflow_dispatch:
+    inputs:
+      components:
+        description: Space-separated component paths, such as binding/c. Empty runs all.
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  UV_PROJECT: ${{ github.workspace }}/scripts/ci
+
+jobs:
+  control:
+    name: Control plane
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: scripts/ci
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        with:
+          enable-cache: true
+          cache-dependency-glob: scripts/ci/uv.lock
+      - run: uv sync --locked
+      - run: uv run ruff format --check
+      - run: uv run ruff check
+      - run: uv run pytest
+      - run: uv run ip2region-ci validate
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: uv run zizmor ../../.github
+      - name: Run actionlint
+        env:
+          ACTIONLINT_VERSION: v1.7.12
+        run: go run "github.com/rhysd/actionlint/cmd/actionlint@${ACTIONLINT_VERSION}"
+        working-directory: .
+
+  plan:
+    name: Plan
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      lint: ${{ steps.plan.outputs.lint }}
+      test: ${{ steps.plan.outputs.test }}
+      data: ${{ steps.plan.outputs.data }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        with:
+          enable-cache: true
+          cache-dependency-glob: scripts/ci/uv.lock
+      - id: plan
+        env:
+          SINCE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          ONLY: ${{ inputs.components }}
+        run: |
+          args=(--since "$SINCE")
+          for component in $ONLY; do
+            args+=(--only "$component")
+          done
+          uv run ip2region-ci plan "${args[@]}" | tee -a "$GITHUB_OUTPUT"
+
+  data:
+    name: Sync real data
+    needs: plan
+    if: needs.plan.outputs.test != '[]'
+    runs-on: ${{ fromJSON(needs.plan.outputs.data).runner }}
+    timeout-minutes: 30
+    env:
+      UV_NO_DEV: "1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+        with:
+          component: ${{ fromJSON(needs.plan.outputs.data).component }}
+          toolchain: ${{ fromJSON(needs.plan.outputs.data).toolchain }}
+          version: ${{ fromJSON(needs.plan.outputs.data).toolchain-version }}
+      - run: uv run ip2region-ci sync-data "$RUNNER_TEMP/data"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: data
+          path: ${{ runner.temp }}/data
+          if-no-files-found: error
+          retention-days: 1
+
+  lint:
+    name: Lint ${{ matrix.component }}
+    needs: plan
+    if: needs.plan.outputs.lint != '[]'
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    env:
+      UV_NO_DEV: "1"
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.lint) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+        with:
+          component: ${{ matrix.component }}
+          toolchain: ${{ matrix.toolchain }}
+          version: ${{ matrix.toolchain-version }}
+      - env:
+          COMPONENT: ${{ matrix.component }}
+        run: uv run ip2region-ci run "$COMPONENT" lint
+
+  test:
+    name: Test ${{ matrix.component }} on ${{ matrix.target }}
+    needs: [plan, data]
+    if: needs.plan.outputs.test != '[]'
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.test) }}
+    env:
+      COMPONENT: ${{ matrix.component }}
+      TARGET: ${{ matrix.target }}
+      UV_NO_DEV: "1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: data
+          path: data
+      - uses: ./.github/actions/setup
+        with:
+          component: ${{ matrix.component }}
+          toolchain: ${{ matrix.toolchain }}
+          version: ${{ matrix.toolchain-version }}
+      - run: uv run ip2region-ci check-runner "$COMPONENT" "$TARGET"
+      - run: uv run ip2region-ci run "$COMPONENT" test --target "$TARGET"
+      - run: uv run ip2region-ci run "$COMPONENT" accept --target "$TARGET"
+
+  result:
+    name: Result
+    needs: [control, plan, data, lint, test]
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "$RESULTS"
+          [[ " $RESULTS " != *" failure "* && " $RESULTS " != *" cancelled "* ]]

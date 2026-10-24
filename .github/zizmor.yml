@@ -1,0 +1,4 @@
+rules:
+  # actionlint does not parse the $/ form of local actions yet.
+  self-repository:
+    disable: true

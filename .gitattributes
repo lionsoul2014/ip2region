@@ -1,0 +1,3 @@
+# Benches read the files under data/ byte for byte on every platform.
+data/** text eol=lf
+*.xdb binary

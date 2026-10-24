@@ -1,0 +1,78 @@
+toolchain = { name = "lua", version = "5.4" }
+platforms = ["linux", "macos", "windows"]
+depends_on = ["binding/c"]
+
+# gh-actions-lua installs the Lua headers and libraries in ../../.lua.
+[[lint]]
+name = "Luacheck"
+run = ["luacheck", "."]
+
+[[lint]]
+name = "Build with warnings as errors"
+run = ["make", "LUA_INCDIR=../../.lua/include", "CFLAGS=-std=c99 -Wall -Werror -O2"]
+
+[[test]]
+name = "Build"
+run = ["make", "LUA_INCDIR=../../.lua/include"]
+platforms = ["linux", "macos"]
+
+# Both directories hold an xdb_searcher.c, so the objects go to separate files.
+[[test]]
+name = "Create the object directory"
+run = ["cmake", "-E", "make_directory", "build/c"]
+platforms = ["windows"]
+
+[[test]]
+name = "Build"
+run = [
+  "cl", "/nologo", "/O2", "/W3", "/c", "/I../../.lua/include", "/Fobuild/c/",
+  "../c/xdb_util.c", "../c/xdb_searcher.c",
+]
+platforms = ["windows"]
+
+[[test]]
+name = "Link"
+run = [
+  "cl", "/nologo", "/O2", "/W3", "/LD", "/I../c", "/I../../.lua/include", "/Fobuild/",
+  "xdb_searcher.c", "build/c/xdb_util.obj", "build/c/xdb_searcher.obj", "/Fexdb_searcher.dll",
+  "/link", "/EXPORT:luaopen_xdb_searcher", "/IMPLIB:build/xdb_searcher.lib", "../../.lua/lib/lua54.lib",
+]
+platforms = ["windows"]
+
+[[test]]
+name = "Run test_parse_ip"
+run = ["lua", "util_test.lua", "test_parse_ip"]
+
+[[test]]
+name = "Run test_print_const"
+run = ["lua", "util_test.lua", "test_print_const"]
+
+[[test]]
+name = "Run test_version_info"
+run = ["lua", "util_test.lua", "test_version_info"]
+
+[[test]]
+name = "Run test_load_header"
+run = ["lua", "util_test.lua", "test_load_header"]
+
+[[test]]
+name = "Run test_load_vector_index"
+run = ["lua", "util_test.lua", "test_load_vector_index"]
+
+[[test]]
+name = "Run test_load_content"
+run = ["lua", "util_test.lua", "test_load_content"]
+
+[[test]]
+name = "Run test_search"
+run = ["lua", "util_test.lua", "test_search"]
+
+[[accept]]
+name = "Bench the IPv4 xdb against its source"
+run = ["lua", "bench_test.lua", "--db=../../data/ip2region_v4.xdb", "--src=../../data/ipv4_source.txt"]
+timeout = 1800
+
+[[accept]]
+name = "Bench the IPv6 xdb against its source"
+run = ["lua", "bench_test.lua", "--db=../../data/ip2region_v6.xdb", "--src=../../data/ipv6_source.txt"]
+timeout = 1800

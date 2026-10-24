@@ -1,0 +1,20 @@
+# Repository-wide CI settings. Each component directory under the roots
+# below describes its own jobs in a ci.toml file.
+component_roots = ["binding", "maker"]
+
+# A change under any of these paths runs every component.
+global_paths = [".github", "data", "scripts/ci"]
+
+[runners]
+linux-x64 = "ubuntu-24.04"
+linux-arm64 = "ubuntu-24.04-arm"
+macos-x64 = "macos-26-intel"
+macos-arm64 = "macos-26"
+windows-x64 = "windows-2025"
+windows-arm64 = "windows-11-arm"
+
+[skip]
+"binding/nodejs" = "Points to binding/javascript."
+"binding/typescript" = "Points to binding/javascript."
+"maker/c" = "Holds documentation only."
+"maker/cpp" = "Built and tested by binding/cpp."

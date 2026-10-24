@@ -1,0 +1,36 @@
+toolchain = { name = "native" }
+platforms = ["linux", "macos", "windows"]
+
+[[lint]]
+name = "Configure with warnings as errors"
+run = ["cmake", "-S", ".", "-B", "build/lint", "-DCMAKE_COMPILE_WARNING_AS_ERROR=ON", "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"]
+
+[[lint]]
+name = "Build with warnings as errors"
+run = ["cmake", "--build", "build/lint"]
+
+[[lint]]
+name = "Run clang-tidy"
+run = ["clang-tidy", "-p", "build/lint", "--warnings-as-errors=*", "xdb_util.c", "xdb_searcher.c", "main.c", "test_util.c"]
+
+[[test]]
+name = "Configure"
+run = ["cmake", "-S", ".", "-B", "build", "-DCMAKE_BUILD_TYPE=Release"]
+
+[[test]]
+name = "Build"
+run = ["cmake", "--build", "build", "--config", "Release", "--parallel"]
+
+[[test]]
+name = "Unit tests"
+run = ["ctest", "--test-dir", "build", "-C", "Release", "--output-on-failure"]
+
+[[accept]]
+name = "Bench the IPv4 xdb against its source"
+run = ["build/xdb_searcher", "bench", "--db=../../data/ip2region_v4.xdb", "--src=../../data/ipv4_source.txt"]
+timeout = 1200
+
+[[accept]]
+name = "Bench the IPv6 xdb against its source"
+run = ["build/xdb_searcher", "bench", "--db=../../data/ip2region_v6.xdb", "--src=../../data/ipv6_source.txt"]
+timeout = 1200

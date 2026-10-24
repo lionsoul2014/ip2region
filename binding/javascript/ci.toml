@@ -1,0 +1,31 @@
+toolchain = { name = "node", version = "24" }
+platforms = ["linux", "macos", "windows"]
+
+[[lint]]
+name = "Install dependencies"
+run = ["npm", "install", "--ignore-scripts"]
+timeout = 900
+
+[[lint]]
+name = "Lint"
+run = ["npm", "run", "lint"]
+
+[[test]]
+name = "Install dependencies"
+run = ["npm", "install", "--ignore-scripts"]
+timeout = 900
+
+[[test]]
+name = "Unit tests"
+run = ["npm", "test", "--", "--runInBand"]
+timeout = 900
+
+[[accept]]
+name = "Search every IPv4 source range"
+run = ["node", "tests/bench.app.js", "--db=../../data/ip2region_v4.xdb", "--src=../../data/ipv4_source.txt"]
+timeout = 900
+
+[[accept]]
+name = "Search every IPv6 source range"
+run = ["node", "tests/bench.app.js", "--db=../../data/ip2region_v6.xdb", "--src=../../data/ipv6_source.txt"]
+timeout = 900

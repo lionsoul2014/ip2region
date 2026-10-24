@@ -1,0 +1,32 @@
+toolchain = { name = "go", version = "1.18" }
+platforms = ["linux", "macos", "windows"]
+
+# dyld on the Intel macOS 26 runner refuses Go 1.18 binaries, which have no
+# LC_UUID load command. The arm64 runner builds amd64 binaries and runs them
+# under Rosetta instead.
+[target.macos-x64]
+host = "macos-arm64"
+env = { GOARCH = "amd64" }
+
+[[lint]]
+name = "Check formatting"
+run = ["gofmt", "-l", "."]
+fail_on_output = true
+
+[[lint]]
+name = "Vet"
+run = ["go", "vet", "./..."]
+
+[[test]]
+name = "Unit tests"
+run = ["go", "test", "./..."]
+
+[[accept]]
+name = "Bench the IPv4 xdb against its source"
+run = ["go", "run", ".", "bench", "--db=../../data/ip2region_v4.xdb", "--src=../../data/ipv4_source.txt"]
+timeout = 1200
+
+[[accept]]
+name = "Bench the IPv6 xdb against its source"
+run = ["go", "run", ".", "bench", "--db=../../data/ip2region_v6.xdb", "--src=../../data/ipv6_source.txt"]
+timeout = 1200
