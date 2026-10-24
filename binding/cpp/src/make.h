@@ -32,6 +32,7 @@ private:
 
     unsigned region_index;
     ip_t     next_ip;
+    node_t   last_node;
 };
 
 }  // namespace xdb
