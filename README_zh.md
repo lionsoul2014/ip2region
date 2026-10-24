@@ -48,6 +48,7 @@ API 介绍，使用文档和测试程序请参考对应 `searcher` 查询客户�
 | [Csharp](binding/csharp)                      | csharp 查询客户端       | :white_check_mark: | :white_check_mark: |
 | [Erlang](binding/erlang/README_zh.md)         | erlang 查询客户端       | :white_check_mark: | :white_check_mark: |
 | [Nginx](binding/nginx)                        | nginx 扩展查询客户端    | :white_check_mark: | :white_check_mark: |
+| [Logstash](binding/logstash/README_zh.md)     | logstash 过滤器插件     | :white_check_mark: | :white_check_mark: |
 | [C++](binding/cpp/README_zh.md)               | C++ 查询客户端          | :white_check_mark: | :white_check_mark: |
 | [Cangjie](binding/cangjie/README.md)          | 仓颉 查询客户端         | :white_check_mark: | :white_check_mark: |
 

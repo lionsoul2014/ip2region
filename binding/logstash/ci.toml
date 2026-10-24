@@ -1,0 +1,22 @@
+toolchain = { name = "docker" }
+platforms = ["linux"]
+
+[[test]]
+name = "Run the specs on Logstash 9"
+run = ["docker", "build", "--file", "Dockerfile", "--target", "test", "--build-arg", "LOGSTASH_VERSION=9.5.5", "../.."]
+timeout = 1800
+
+[[test]]
+name = "Run the specs on Logstash 8"
+run = ["docker", "build", "--file", "Dockerfile", "--target", "test", "--build-arg", "LOGSTASH_VERSION=8.19.23", "../.."]
+timeout = 1800
+
+[[accept]]
+name = "Install the gem and run a pipeline on Logstash 9"
+run = ["docker", "build", "--file", "Dockerfile", "--build-arg", "LOGSTASH_VERSION=9.5.5", "../.."]
+timeout = 1800
+
+[[accept]]
+name = "Install the gem and run a pipeline on Logstash 8"
+run = ["docker", "build", "--file", "Dockerfile", "--build-arg", "LOGSTASH_VERSION=8.19.23", "../.."]
+timeout = 1800

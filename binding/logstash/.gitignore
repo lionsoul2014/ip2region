@@ -1,0 +1,3 @@
+/vendor
+/Gemfile.lock
+/*.gem
