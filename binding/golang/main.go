@@ -248,8 +248,7 @@ type 'quit' to exit
 	}
 }
 
-func testBench() {
-	var err error
+func testBench() error {
 	var dbFile, srcFile, cachePolicy = "", "", "vectorIndex"
 	for i := 2; i < len(os.Args); i++ {
 		r := os.Args[i]
@@ -263,8 +262,7 @@ func testBench() {
 
 		var sIdx = strings.Index(r, "=")
 		if sIdx < 0 {
-			fmt.Printf("missing = for args pair '%s'\n", r)
-			return
+			return fmt.Errorf("missing = for args pair '%s'", r)
 		}
 
 		switch r[2:sIdx] {
@@ -275,8 +273,7 @@ func testBench() {
 		case "cache-policy":
 			cachePolicy = r[sIdx+1:]
 		default:
-			fmt.Printf("undefined option `%s`\n", r)
-			return
+			return fmt.Errorf("undefined option `%s`", r)
 		}
 	}
 
@@ -286,19 +283,17 @@ func testBench() {
 		fmt.Printf(" --db string              ip2region binary xdb file path\n")
 		fmt.Printf(" --src string             source ip text file path\n")
 		fmt.Printf(" --cache-policy string    cache policy: file/vectorIndex/content\n")
-		return
+		return fmt.Errorf("both --db and --src are required")
 	}
 
 	dbPath, err := homedir.Expand(dbFile)
 	if err != nil {
-		fmt.Printf("invalid xdb file path `%s`: %s", dbFile, err)
-		return
+		return fmt.Errorf("invalid xdb file path `%s`: %w", dbFile, err)
 	}
 
 	searcher, err := createSearcher(dbPath, cachePolicy)
 	if err != nil {
-		fmt.Printf("failed to create searcher: %s\n", err.Error())
-		return
+		return fmt.Errorf("failed to create searcher: %w", err)
 	}
 	defer func() {
 		searcher.Close()
@@ -306,8 +301,7 @@ func testBench() {
 
 	handle, err := os.OpenFile(srcFile, os.O_RDONLY, 0600)
 	if err != nil {
-		fmt.Printf("failed to open source text file: %s\n", err)
-		return
+		return fmt.Errorf("failed to open source text file: %w", err)
 	}
 	defer handle.Close()
 
@@ -318,25 +312,21 @@ func testBench() {
 		var l = strings.TrimSpace(strings.TrimSuffix(scanner.Text(), "\n"))
 		var ps = strings.SplitN(l, "|", 3)
 		if len(ps) != 3 {
-			fmt.Printf("invalid ip segment line `%s`\n", l)
-			return
+			return fmt.Errorf("invalid ip segment line `%s`", l)
 		}
 
 		sip, err := xdb.ParseIP(ps[0])
 		if err != nil {
-			fmt.Printf("check start ip `%s`: %s\n", ps[0], err)
-			return
+			return fmt.Errorf("check start ip `%s`: %w", ps[0], err)
 		}
 
 		eip, err := xdb.ParseIP(ps[1])
 		if err != nil {
-			fmt.Printf("check end ip `%s`: %s\n", ps[1], err)
-			return
+			return fmt.Errorf("check end ip `%s`: %w", ps[1], err)
 		}
 
 		if xdb.IPCompare(sip, eip) > 0 {
-			fmt.Printf("start ip(%s) should not be greater than end ip(%s)\n", ps[0], ps[1])
-			return
+			return fmt.Errorf("start ip(%s) should not be greater than end ip(%s)", ps[0], ps[1])
 		}
 
 		for _, ip := range [][]byte{sip, eip} {
@@ -344,14 +334,12 @@ func testBench() {
 			region, err := searcher.Search(ip)
 			costs += time.Since(sTime).Nanoseconds()
 			if err != nil {
-				fmt.Printf("failed to search ip '%s': %s\n", xdb.IP2String(ip), err)
-				return
+				return fmt.Errorf("failed to search ip '%s': %w", xdb.IP2String(ip), err)
 			}
 
 			// check the region info
 			if region != ps[2] {
-				fmt.Printf("failed Search(%s) with (%s != %s)\n", xdb.IP2String(ip), region, ps[2])
-				return
+				return fmt.Errorf("failed Search(%s) with (%s != %s)", xdb.IP2String(ip), region, ps[2])
 			}
 
 			count++
@@ -359,8 +347,7 @@ func testBench() {
 	}
 
 	if err := scanner.Err(); err != nil {
-		fmt.Printf("failed to scan source text file: %s\n", err)
-		return
+		return fmt.Errorf("failed to scan source text file: %w", err)
 	}
 
 	cAvg := int64(0)
@@ -373,6 +360,7 @@ func testBench() {
 		"Bench finished, {cachePolicy: %s, total: %d, took: %s, cost: %d μs/op}\n",
 		cachePolicy, count, cost, cAvg,
 	)
+	return nil
 }
 
 func main() {
@@ -387,7 +375,10 @@ func main() {
 	case "search":
 		testSearch()
 	case "bench":
-		testBench()
+		if err := testBench(); err != nil {
+			fmt.Fprintf(os.Stderr, "bench failed: %s\n", err)
+			os.Exit(1)
+		}
 	default:
 		printHelp()
 	}
