@@ -11,12 +11,27 @@ local header_info_length  = 256
 local vector_index_rows   = 256
 local vector_index_cols   = 256
 local vector_index_size   = 8
-local vector_index_length = 524288  -- cols x rows * 8
+local vector_index_length = vector_index_rows * vector_index_cols * vector_index_size
 
 local xdb_structure_20 = 2
 local xdb_structure_30 = 3
 local xdb_ipv4_id = 4
 local xdb_ipv6_id = 6
+
+-- internal function to decode buffer
+local function le_get_uint32(buff, idx)
+    local i1 = (string.byte(buff, idx))
+    local i2 = (string.byte(buff, idx+1) << 8)
+    local i3 = (string.byte(buff, idx+2) << 16)
+    local i4 = (string.byte(buff, idx+3) << 24)
+    return (i1 | i2 | i3 | i4)
+end
+
+local function le_get_uint16(buff, idx)
+    local i1 = (string.byte(buff, idx))
+    local i2 = (string.byte(buff, idx+1) << 8)
+    return (i1 | i2)
+end
 
 local xdb = {
     -- ip version
@@ -38,12 +53,12 @@ local xdb = {
 
 -- index and to string attribute set
 xdb.__index = xdb
-xdb.__tostring = function(self)
+xdb.__tostring = function()
     return "xdb searcher object (lua)"
 end
 
 -- construct functions
-function new_base(version, db_path, v_index, c_buffer)
+local function new_base(version, db_path, v_index, c_buffer)
     local obj = setmetatable({}, xdb)
     obj.version = version
     if c_buffer ~= nil then
@@ -53,7 +68,7 @@ function new_base(version, db_path, v_index, c_buffer)
     else
         obj.io_count = 0
         obj.vector_index = v_index
-        obj.handle = io.open(db_path, "r")
+        obj.handle = io.open(db_path, "rb")
         if obj.handle == nil then
             return nil, string.format("failed to open xdb file `%s`", db_path)
         end
@@ -110,7 +125,7 @@ function xdb:search(ip_bytes)
     local il0 = string.byte(ip_bytes, 1) & 0xFF
     local il1 = string.byte(ip_bytes, 2) & 0xFF
     local idx = il0 * vector_index_cols * vector_index_size + il1 * vector_index_size
-    local s_ptr, e_ptr = 0, 0
+    local s_ptr, e_ptr
     if vector_index ~= nil then
         s_ptr = le_get_uint32(vector_index, idx + 1)
         e_ptr = le_get_uint32(vector_index, idx + 5)
@@ -119,7 +134,7 @@ function xdb:search(ip_bytes)
         e_ptr = le_get_uint32(content_buff, header_info_length + idx + 5)
     else
         -- load from the file
-        buff, err = read_data(self, header_info_length + idx, vector_index_size)
+        local buff, err = read_data(self, header_info_length + idx, vector_index_size)
         if err ~= nil then
             return "", string.format("read buffer: %s", err)
         end
@@ -139,15 +154,14 @@ function xdb:search(ip_bytes)
     -- binary search to get the data
     local index_size, ip_sub_compare = version.index_size, version.ip_sub_compare
     local bytes, d_bytes = version.bytes, version.bytes << 1
-    local data_ptr, data_len, p = 0, 0, 0
-    local buff, err = nil, nil
-    local l, m, h = 0, 0, (e_ptr - s_ptr) / index_size
+    local data_ptr, data_len = 0, 0
+    local l, h = 0, (e_ptr - s_ptr) / index_size
     while l <= h do
-        m = (l + h) >> 1
-        p = s_ptr + m * index_size
+        local m = (l + h) >> 1
+        local p = s_ptr + m * index_size
 
         -- read the segment index
-        buff, err = read_data(self, p, index_size)
+        local buff, err = read_data(self, p, index_size)
         if err ~= nil then
             return "", string.format("read segment index at %d", p)
         end
@@ -171,7 +185,7 @@ function xdb:search(ip_bytes)
     end
 
     -- load and return the region data
-    buff, err = read_data(self, data_ptr, data_len)
+    local buff, err = read_data(self, data_ptr, data_len)
     if err ~= nil then
         return "", string.format("read data at %d:%d", data_ptr, data_len)
     end
@@ -221,22 +235,6 @@ function xdb:close()
     end
 end
 
----
--- internal function to decode buffer
-function le_get_uint32(buff, idx)
-    local i1 = (string.byte(buff, idx))
-    local i2 = (string.byte(buff, idx+1) << 8)
-    local i3 = (string.byte(buff, idx+2) << 16)
-    local i4 = (string.byte(buff, idx+3) << 24)
-    return (i1 | i2 | i3 | i4)
-end
-
-function le_get_uint16(buff, idx)
-    local i1 = (string.byte(buff, idx))
-    local i2 = (string.byte(buff, idx+1) << 8)
-    return (i1 | i2)
-end
-
 -- static util functions
 
 function xdb.open_file(db_path, mode)
@@ -244,14 +242,14 @@ function xdb.open_file(db_path, mode)
     local _closer = nil
     if t == "userdata" then
         handle = db_path   -- file handle
-        _closer = function(caller) end
+        _closer = function() end
     elseif t == "string" then
         handle = io.open(db_path, mode)
         if handle == nil then
             return nil, nil, string.format("failed to open xdb file `%s`", db_path)
         end
 
-        _closer = function(caller) 
+        _closer = function()
             handle:close()
         end
     end
@@ -317,6 +315,10 @@ end
 
 function xdb.load_content(db_path)
     local handle, closer, err = xdb.open_file(db_path, "rb")
+    if err ~= nil then
+        return nil, err
+    end
+
     local c = handle:read("*a")
     if c == nil then
         closer("load_content")
@@ -340,14 +342,15 @@ function xdb.verify(db_path)
     end
 
     -- load the header from handle
-    local header, err = xdb.load_header(handle)
+    local header
+    header, err = xdb.load_header(handle)
     if err ~= nil then
         closer()
         return string.format("failed to load header: %s", err)
     end
 
     -- get the runtime ptr bytes
-    local runtime_ptr_bytes = 0
+    local runtime_ptr_bytes
     if header.version == xdb_structure_20 then
         runtime_ptr_bytes = 4
     elseif header.version == xdb_structure_30 then
@@ -371,10 +374,10 @@ function xdb.verify(db_path)
     return nil
 end
 
--- 
+--
 -- parse ip string
-function split(str, sep)
-    local ps, sIndex, length = {}, 1, #str
+local function split(str, sep)
+    local ps, sIndex = {}, 1
     -- loop to find all parts
     while true do
         local mi = string.find(str, sep, sIndex, true)
@@ -385,7 +388,7 @@ function split(str, sep)
 
         if sIndex == mi then
             table.insert(ps, "")
-        else 
+        else
             table.insert(ps, string.sub(str, sIndex, mi - 1))
         end
 
@@ -396,7 +399,7 @@ function split(str, sep)
     return ps
 end
 
-function _parse_ipv4_addr(v4_str)
+local function _parse_ipv4_addr(v4_str)
     local ps = split(v4_str, ".")
     if #ps ~= 4 then
         return nil, string.format("invalid ipv4 address `%s`", v4_str)
@@ -419,7 +422,7 @@ function _parse_ipv4_addr(v4_str)
     return string.char(table.unpack(bytes)), nil
 end
 
-function _parse_ipv6_addr(v6_str)
+local function _parse_ipv6_addr(v6_str)
     local ps = split(v6_str, ':')
     if #ps < 3 or #ps > 8 then
         return nil, string.format("invalid ipv6 address `%s`", v6_str)
@@ -432,7 +435,8 @@ function _parse_ipv6_addr(v6_str)
         0x00, 0x00, 0x00, 0x00
     }
 
-    local i, v, dc_num, offset, length = 1, 0, 0, 1, #ps
+    local v
+    local i, dc_num, offset, length = 1, 0, 1, #ps
 
     -- process the v6 parts
     while i <= length do
@@ -503,26 +507,26 @@ end
 
 --
 -- ip to string
-function _ipv4_to_string(ip_bytes)
+local function _ipv4_to_string(ip_bytes)
     return string.format(
-        "%d.%d.%d.%d", 
-        string.byte(ip_bytes, 1), 
+        "%d.%d.%d.%d",
+        string.byte(ip_bytes, 1),
         string.byte(ip_bytes, 2),
         string.byte(ip_bytes, 3),
         string.byte(ip_bytes, 4)
     ), nil
 end
 
-function _ipv6_to_string(ip_bytes, compress)
-    local ps, i, hex = {}, 0, 0
+local function _ipv6_to_string(ip_bytes, compress)
+    local ps = {}
     local last_hex, need_compress = -1, false
     for i = 1, #ip_bytes, 2 do
-        hex = (string.byte(ip_bytes, i) << 8) | string.byte(ip_bytes, i + 1)
+        local hex = (string.byte(ip_bytes, i) << 8) | string.byte(ip_bytes, i + 1)
         table.insert(ps, string.format("%x", hex))
 
         -- check the necessity for compress
-        if last_hex > -1 
-            and hex == 0 
+        if last_hex > -1
+            and hex == 0
             and last_hex == 0 then
             need_compress = true
         end
@@ -573,7 +577,7 @@ function _ipv6_to_string(ip_bytes, compress)
         if i == mi and #_ < length then
             table.insert(_, '')
         end
-        
+
         --continue
         ::continue::
         i = i + 1
@@ -593,7 +597,7 @@ function xdb.ip_to_string(ip_bytes, compress)
     end
 end
 
--- 
+--
 -- ip bytes compare
 function xdb.ip_sub_compare(ip1, buff, offset)
     local ip2 = string.sub(buff, offset, offset + #ip1 - 1)
@@ -649,7 +653,7 @@ local IPv4 = {
             if i1 < i2 then
                 return -1
             end
-            
+
             j = j - 1
         end
 
