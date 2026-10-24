@@ -181,7 +181,8 @@ public class MakerApp {
         try {
             genDb(args);
         } catch (Exception e) {
-            System.out.printf("failed running genDb: %s\n", e);
+            System.err.printf("failed running genDb: %s\n", e);
+            System.exit(1);
         }
     }
 

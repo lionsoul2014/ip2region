@@ -6,6 +6,8 @@ package org.lionsoul.ip2region.xdb;
 
 public class InvalidInetAddressException extends Exception {
 
+    private static final long serialVersionUID = 1L;
+
     public InvalidInetAddressException(String str) {
         super(str);
     }
