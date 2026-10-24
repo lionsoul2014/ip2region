@@ -19,6 +19,8 @@
 // -- 4bytes: generate unix timestamp (version)
 // -- 4bytes: index block start ptr
 // -- 4bytes: index block end ptr
+// -- 2bytes: ip version number (4/6 since IPv6 supporting)
+// -- 2bytes: runtime ptr bytes
 //
 //
 // 2. data block : region or whatever data info.
@@ -55,7 +57,9 @@ namespace IP2RegionMaker.XDB
 {
     public class Maker
     {
-        const ushort VersionNo = 2;
+        const ushort VersionNo = 3;
+        const ushort IPv4VersionNo = 4;
+        const ushort RuntimePtrSize = 4;
         const int HeaderInfoLength = 256;
         const int VectorIndexRows = 256;
         const int VectorIndexCols = 256;
@@ -70,7 +74,7 @@ namespace IP2RegionMaker.XDB
         private readonly Dictionary<string, uint> _regionPool;
         private readonly byte[] _vectorIndex;
 
-        public Maker(IndexPolicy indexPolicy,string srcFile, string dstFile)
+        public Maker(IndexPolicy indexPolicy, string srcFile, string dstFile)
         {
             _indexPolicy = indexPolicy;
 
@@ -97,6 +101,8 @@ namespace IP2RegionMaker.XDB
             BitConverter.GetBytes(DateTimeOffset.UtcNow.ToUnixTimeSeconds()).CopyTo(header, 4);
             BitConverter.GetBytes((uint)0).CopyTo(header, 8);
             BitConverter.GetBytes((uint)0).CopyTo(header, 12);
+            BitConverter.GetBytes(IPv4VersionNo).CopyTo(header, 16);
+            BitConverter.GetBytes(RuntimePtrSize).CopyTo(header, 18);
 
             using var writer = new BinaryWriter(_dstHandle, Encoding.UTF8, true);
             writer.Write(header);
@@ -115,12 +121,12 @@ namespace IP2RegionMaker.XDB
 
                 if (line == null) break;
 
-                var seg=Util.GetSegment(line);
+                var seg = Util.GetSegment(line);
 
                 _segments?.Add(seg);
             }
 
-            if (_segments!=null)
+            if (_segments != null)
             {
                 Util.CheckSegments(_segments);
             }
@@ -144,11 +150,8 @@ namespace IP2RegionMaker.XDB
 
             foreach (var seg in _segments)
             {
-                Console.WriteLine($"try to write region {seg.Region}");
-
-                if (_regionPool.TryGetValue(seg.Region, out var value))
+                if (_regionPool.ContainsKey(seg.Region))
                 {
-                    Console.WriteLine($"--[Cached] with ptr={value}");
                     continue;
                 }
 
@@ -187,7 +190,6 @@ namespace IP2RegionMaker.XDB
                 }
 
                 var segList = seg.Split();
-                Console.WriteLine($"try to index segment({segList.Count}) {seg} ...");
 
                 foreach (var item in segList)
                 {
@@ -200,7 +202,6 @@ namespace IP2RegionMaker.XDB
 
                     writer.Write(indexBuff);
 
-                    Console.WriteLine($"|-segment index: {counter}, ptr: {pos}, segment: {seg}");
                     SetVectorIndex(item.StartIP, (uint)pos);
 
                     counter++;
@@ -223,7 +224,7 @@ namespace IP2RegionMaker.XDB
             Console.WriteLine("try to write the segment index ptr ... ");
             BitConverter.GetBytes((uint)startPtr).CopyTo(indexBuff, 0);
             BitConverter.GetBytes((uint)endPtr).CopyTo(indexBuff, 4);
-            _dstHandle.Seek(0, SeekOrigin.Begin);
+            _dstHandle.Seek(8, SeekOrigin.Begin);
 
             writer.Write(indexBuff[..8]);
 
