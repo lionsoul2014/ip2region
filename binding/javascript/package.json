@@ -6,7 +6,8 @@
   "main": "index.js",
   "types": "index.d.ts",
   "scripts": {
-    "test": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' jest"
+    "lint": "oxlint --deny-warnings",
+    "test": "node --experimental-vm-modules --no-warnings node_modules/jest/bin/jest.js"
   },
   "repository": {
     "type": "git",
@@ -50,6 +51,7 @@
     "argparse": "^2.0.1",
     "jest": "^30.2.0",
     "n-readlines": "^1.0.1",
+    "oxlint": "^1.89.0",
     "ts-jest": "^29.4.5",
     "typescript": "^5.9.3"
   }

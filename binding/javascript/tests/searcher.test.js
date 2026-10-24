@@ -13,7 +13,6 @@ import {
     loadVectorIndexFromFile, loadContentFromFile, 
     newWithFileOnly, newWithVectorIndex, newWithBuffer
 } from '../index.js';
-import { fail } from 'assert';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const dbPath = {

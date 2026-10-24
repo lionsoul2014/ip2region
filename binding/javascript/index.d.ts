@@ -43,7 +43,7 @@ export declare class Searcher {
     getIPVersion(): Version;
     getIOCount(): number;
     search(ip: string | Buffer): string;
-    read(offset: number, buff: Buffer, stats?: any): void;
+    read(offset: number, buff: Buffer): void;
     close(): void;
 }
 
