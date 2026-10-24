@@ -6,6 +6,8 @@ package org.lionsoul.ip2region.xdb;
 
 public class XdbException extends Exception {
 
+    private static final long serialVersionUID = 1L;
+
     public XdbException(String str) {
         super(str);
     }

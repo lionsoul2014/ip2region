@@ -228,62 +228,39 @@ public class SearcherTest {
         long count = 0, costs = 0, tStart = System.nanoTime();
         String line;
         final Charset charset = Charset.forName("utf-8");
-        final FileInputStream fis = new FileInputStream(srcPath);
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(fis, charset));
-        while ((line = reader.readLine()) != null) {
-            String l = line.trim();
-            String[] ps = l.split("\\|", 3);
-            if (ps.length != 3) {
-                reader.close();
-                System.out.printf("invalid ip segment `%s`\n", l);
-                return;
-            }
-
-            // mark the start time
-            long sTime = System.nanoTime();
-
-            byte[] sip;
-            try {
-                sip = Util.parseIP(ps[0]);
-            } catch (Exception e) {
-                reader.close();
-                System.out.printf("check start ip `%s`: %s\n", ps[0], e);
-                return;
-            }
-
-            byte[] eip;
-            try {
-                eip = Util.parseIP(ps[1]);
-            } catch (Exception e) {
-                reader.close();
-                System.out.printf("check end ip `%s`: %s\n", ps[1], e);
-                return;
-            }
-
-            if (Util.ipCompare(sip, eip) > 0) {
-                reader.close();
-                System.out.printf("start ip(%s) should not be greater than end ip(%s)\n", ps[0], ps[1]);
-                return;
-            }
-
-            for (final byte[] ip : new byte[][]{sip, eip}) {
-                String region = searcher.search(ip);
-
-                // check the region info
-                if (!ps[2].equals(region)) {
-                    System.out.printf("failed search(%s) with (%s != %s)\n", Util.ipToString(ip), region, ps[2]);
-                    reader.close();
-                    return;
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(srcPath), charset))) {
+            while ((line = reader.readLine()) != null) {
+                String l = line.trim();
+                String[] ps = l.split("\\|", 3);
+                if (ps.length != 3) {
+                    throw new XdbException(String.format("invalid ip segment `%s`", l));
                 }
 
-                count++;
+                // mark the start time
+                long sTime = System.nanoTime();
+
+                final byte[] sip = Util.parseIP(ps[0]);
+                final byte[] eip = Util.parseIP(ps[1]);
+                if (Util.ipCompare(sip, eip) > 0) {
+                    throw new XdbException(String.format("start ip(%s) should not be greater than end ip(%s)", ps[0], ps[1]));
+                }
+
+                for (final byte[] ip : new byte[][]{sip, eip}) {
+                    String region = searcher.search(ip);
+
+                    // check the region info
+                    if (!ps[2].equals(region)) {
+                        throw new XdbException(String.format("failed search(%s) with (%s != %s)", Util.ipToString(ip), region, ps[2]));
+                    }
+
+                    count++;
+                }
+
+                costs += System.nanoTime() - sTime;
             }
-
-            costs += System.nanoTime() - sTime;
+        } finally {
+            searcher.close();
         }
-
-        reader.close();
-        searcher.close();
         long took = System.nanoTime() - tStart;
         System.out.printf("Bench finished, {cachePolicy: %s, total: %d, took: %ds, cost: %d μs/op}\n",
                 cachePolicy, count, TimeUnit.NANOSECONDS.toSeconds(took),
@@ -306,7 +283,8 @@ public class SearcherTest {
             try {
                 benchTest(args);
             } catch (Exception e) {
-                System.out.printf("fwailed running bench test: %s\n", e);
+                System.err.printf("failed running bench test: %s\n", e);
+                System.exit(1);
             }
         } else {
             printHelp(args);
