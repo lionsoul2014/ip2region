@@ -31,6 +31,21 @@ RUN eval "./configure $(cat /tmp/conf_arg)"
 RUN make modules && \
     cp objs/ngx_http_ip2region_module.so /etc/nginx/modules
 
+# static analysis of the module with its nginx compile command
+FROM build AS lint
+ARG NGINX_VERSION
+RUN apt-get install -y bear clang-tidy
+WORKDIR /usr/src/nginx-$NGINX_VERSION
+RUN bear -- make -B modules && \
+    clang-tidy -p . --warnings-as-errors='*' /usr/src/ip2region/binding/nginx/src/ngx_http_ip2region_module.c
+
+# run the Test::Nginx suite against the module
+FROM build AS test
+RUN apt-get install -y cpanminus && \
+    cpanm --notest Test::Nginx@0.32
+WORKDIR /usr/src/ip2region/binding/nginx
+CMD ["prove", "t"]
+
 # for buildx export
 FROM scratch AS export_so
 ARG NGINX_VERSION
