@@ -66,8 +66,7 @@ if (strlen($dbFile) < 1 || strlen($srcFile) < 1) {
 // printf("debug: dbFile: %s, cachePolicy: %s\n", $dbFile, $cachePolicy);
 $handle = fopen($dbFile, 'r');
 if ($handle === false) {
-    printf("failed to open the xdb file `{$dbFile}`\n");
-    return;
+    throw new Exception("failed to open the xdb file `{$dbFile}`");
 }
 
 // verify the xdb file
@@ -76,74 +75,48 @@ if ($handle === false) {
 // @see the Util.verify function for details.
 $err = Util::verify($handle);
 if ($err != null) {
-    printf("failed to verify xdb file `%s`: %s\n", $dbFile, $err);
-    return;
+    throw new Exception("failed to verify xdb file `{$dbFile}`: {$err}");
 }
 
 // load header
 $header = Util::loadHeader($handle);
 if ($header == null) {
-    printf("failed to load the header\n");
-    return;
+    throw new Exception("failed to load the header");
 }
 
 // get the version number from the xdb header
-try {
-    $version = Util::versionFromHeader($header);
-} catch (Exception $e) {
-    printf("failed to detect version from header: {$e->getMessage()}\n");
-    return;
-}
+$version = Util::versionFromHeader($header);
 
 // create the xdb searcher by the cache-policy
 switch ( $cachePolicy ) {
     case 'file':
-        try {
-            $searcher = Searcher::newWithFileOnly($version, $dbFile);
-        } catch (Exception $e) {
-            printf("failed to create searcher with '%s': %s\n", $dbFile, $e);
-            return;
-        }
+        $searcher = Searcher::newWithFileOnly($version, $dbFile);
         break;
     case 'vectorIndex':
         $vIndex = Util::loadVectorIndex($handle);
         if ($vIndex == null) {
-            printf("failed to load vector index from '%s'\n", $dbFile);
-            return;
+            throw new Exception("failed to load vector index from '{$dbFile}'");
         }
 
-        try {
-            $searcher = Searcher::newWithVectorIndex($version, $dbFile, $vIndex);
-        } catch (Exception $e) {
-            printf("failed to create vector index cached searcher with '%s': %s\n", $dbFile, $e);
-            return;
-        }
+        $searcher = Searcher::newWithVectorIndex($version, $dbFile, $vIndex);
         break;
     case 'content':
         $cBuff = Util::loadContent($handle);
         if ($cBuff == null) {
-            printf("failed to load xdb content from '%s'\n", $dbFile);
-            return;
+            throw new Exception("failed to load xdb content from '{$dbFile}'");
         }
 
-        try {
-            $searcher = Searcher::newWithBuffer($version, $cBuff);
-        } catch (Exception $e) {
-            printf("failed to create content cached searcher: %s", $e);
-            return;
-        }
+        $searcher = Searcher::newWithBuffer($version, $cBuff);
         break;
     default:
-        printf("undefined cache-policy `%s`\n", $cachePolicy);
-        return;
+        throw new Exception("undefined cache-policy `{$cachePolicy}`");
 }
 
 
 // do the bench test
 $handle = fopen($srcFile, "r");
 if ($handle === false) {
-    printf("failed to open source text file `%s`\n", $srcFile);
-    return null;
+    throw new Exception("failed to open source text file `{$srcFile}`");
 }
 
 $count = 0;
@@ -162,49 +135,35 @@ while (!feof($handle)) {
 
     $ps = explode('|', $line, 3);
     if (count($ps) != 3) {
-        printf("invalid ip segment line `${line}`\n");
-        return;
+        throw new Exception("invalid ip segment line `{$line}`");
     }
 
     $sip = Util::parseIP($ps[0]);
     if ($sip === null) {
-        printf("invalid start ip `%s`\n", $ps[0]);
-        return;
+        throw new Exception("invalid start ip `{$ps[0]}`");
     }
 
     $eip = Util::parseIP($ps[1]);
     if ($eip === null) {
-        printf("invalid end ip `%s`\n", $ps[1]);
-        return;
+        throw new Exception("invalid end ip `{$ps[1]}`");
     }
 
     if (Util::ipCompare($sip, $eip) > 0) {
-        printf(
-            "start ip(%s) should not be greater than end ip(%s)\n", 
-            Util::ipToString($ps[0]), Util::ipToString($ps[1])
-        );
-        return;
+        throw new Exception("start ip({$ps[0]}) should not be greater than end ip({$ps[1]})");
     }
 
     foreach ([$sip, $eip] as $ip) {
-        try {
-            $cTime = Util::now();
-            $region = $searcher->searchByBytes($ip);
-            $costs += Util::now() - $cTime;
-        } catch (Exception $e) {
-            printf("failed to search ip `%s`: %s\n", Util::ipToString($ip), $e->getMessage());
-            return;
-        }
+        $cTime = Util::now();
+        $region = $searcher->searchByBytes($ip);
+        $costs += Util::now() - $cTime;
 
         if ($region == null) {
-            printf("failed to search ip `%s`: empty region info\n", Util::ipToString($ip));
-            return;
+            throw new Exception(sprintf("failed to search ip `%s`: empty region info", Util::ipToString($ip)));
         }
 
         // check the region info
         if ($region != $ps[2]) {
-            printf("failed search(%s) with (%s != %s)\n", Util::ipToString($ip), $region, $ps[2]);
-            return;
+            throw new Exception(sprintf("failed search(%s) with (%s != %s)", Util::ipToString($ip), $region, $ps[2]));
         }
 
         $count++;

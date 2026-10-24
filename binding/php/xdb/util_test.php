@@ -14,11 +14,10 @@ use \ip2region\xdb\IPv6;
 
 // check and get the function to run
 if($argc < 2) {
-    printf("please specified the function name\n");
-    return;
-} else {
-    $func_name = trim($argv[1]);
+    throw new Exception("please specified the function name");
 }
+
+$func_name = trim($argv[1]);
 
 $basePath = dirname(dirname(dirname(dirname(__FILE__))));
 
@@ -26,8 +25,7 @@ function testLoadHeader() {
     global $basePath;
     $header = Util::loadHeaderFromFile("{$basePath}/data/ip2region_v4.xdb");
     if ($header == null) {
-        printf("failed to load header from file\n");
-        return;
+        throw new Exception("failed to load header from file");
     }
 
     printf("header loaded: ");
@@ -38,8 +36,7 @@ function testLoadVectorIndex() {
     global $basePath;
     $vIndex = Util::loadVectorIndexFromFile("{$basePath}/data/ip2region_v4.xdb");
     if ($vIndex == null) {
-        printf("failed to load vector index from file\n");
-        return;
+        throw new Exception("failed to load vector index from file");
     }
 
     printf("vector index loaded: length=%d\n", strlen($vIndex));
@@ -49,8 +46,7 @@ function testLoadContent() {
     global $basePath;
     $cBuff = Util::loadContentFromFile("{$basePath}/data/ip2region_v4.xdb");
     if ($cBuff == null) {
-        printf("failed to load content from file\n");
-        return;
+        throw new Exception("failed to load content from file");
     }
 
     printf("content loaded, length=%d\n", strlen($cBuff));
@@ -114,11 +110,11 @@ function testAttributes() {
 
 
 if (!function_exists($func_name)) {
-    printf("function {$func_name} not found\n");
-} else {
-    printf("calling {$func_name} ... \n");
-    $now = Util::now();
-    $func_name();
-    $cost = Util::now() - $now;
-    printf("done, cost: %0.5f ms\n", $cost);
+    throw new Exception("function {$func_name} not found");
 }
+
+printf("calling {$func_name} ... \n");
+$now = Util::now();
+$func_name();
+$cost = Util::now() - $now;
+printf("done, cost: %0.5f ms\n", $cost);

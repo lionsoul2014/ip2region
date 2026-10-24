@@ -136,7 +136,7 @@ default:
 
 printf(<<<EOF
 ip2region xdb searcher test program
-source xdb file: {$dbFile} ({$version->name}, ${cachePolicy})
+source xdb file: {$dbFile} ({$version->name}, {$cachePolicy})
 type 'quit' to exit\n
 EOF);
 while ( true ) {
