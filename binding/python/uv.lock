@@ -79,7 +79,7 @@ wheels = [
 
 [[package]]
 name = "py-ip2region"
-version = "3.0.4"
+version = "3.0.6"
 source = { editable = "." }
 
 [package.dev-dependencies]
