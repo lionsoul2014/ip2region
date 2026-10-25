@@ -34,7 +34,7 @@ extern int content_size;
 
 void init_xdb(int version);
 
-void log_exit(const string &msg);
+[[noreturn]] void log_exit(const string &msg);
 
 FILE *open_file(const string &path, const char *mode);
 

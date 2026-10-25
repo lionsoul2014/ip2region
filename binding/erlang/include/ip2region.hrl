@@ -7,15 +7,19 @@
 -define(XDB_HEADER_SIZE, 256).
 -define(XDB_VECTOR_COLS, 256).
 -define(XDB_VECTOR_INDEX_SIZE, 8).
--define(XDB_VECTOR_INDEX_COUNT, (16#10000)). %% 256*256
+%% 256*256
+-define(XDB_VECTOR_INDEX_COUNT, (16#10000)).
 
 %% IP versions as stored in xdb header
 -define(IP_VERSION_4, 4).
 -define(IP_VERSION_6, 6).
 
 %% Segment index sizes (bytes): start_ip + end_ip + data_len + data_ptr
--define(XDB_SEGMENT_INDEX_SIZE_V4, 14).  %% 4 + 4 + 2 + 4
--define(XDB_SEGMENT_INDEX_SIZE_V6, 38).  %% 16 + 16 + 2 + 4
+
+%% 4 + 4 + 2 + 4
+-define(XDB_SEGMENT_INDEX_SIZE_V4, 14).
+%% 16 + 16 + 2 + 4
+-define(XDB_SEGMENT_INDEX_SIZE_V6, 38).
 
 %% Per-version ETS tables
 -define(XDB_VECTOR_INDEX_V4, ets_xdb_vector_index_v4).

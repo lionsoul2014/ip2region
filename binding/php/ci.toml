@@ -1,0 +1,40 @@
+toolchain = { name = "php", version = "8.4" }
+platforms = ["linux", "macos", "windows"]
+
+[[lint]]
+name = "PHPStan"
+run = ["phpstan", "analyse", "--no-progress", "."]
+
+[[test]]
+name = "Run testLoadHeader"
+run = ["php", "xdb/util_test.php", "testLoadHeader"]
+
+[[test]]
+name = "Run testLoadVectorIndex"
+run = ["php", "xdb/util_test.php", "testLoadVectorIndex"]
+
+[[test]]
+name = "Run testLoadContent"
+run = ["php", "xdb/util_test.php", "testLoadContent"]
+
+[[test]]
+name = "Run testParseIP"
+run = ["php", "xdb/util_test.php", "testParseIP"]
+
+[[test]]
+name = "Run testIPCompare"
+run = ["php", "xdb/util_test.php", "testIPCompare"]
+
+[[test]]
+name = "Run testAttributes"
+run = ["php", "xdb/util_test.php", "testAttributes"]
+
+[[accept]]
+name = "Bench the IPv4 xdb against its source"
+run = ["php", "bench_test.php", "--db=../../data/ip2region_v4.xdb", "--src=../../data/ipv4_source.txt"]
+timeout = 1800
+
+[[accept]]
+name = "Bench the IPv6 xdb against its source"
+run = ["php", "bench_test.php", "--db=../../data/ip2region_v6.xdb", "--src=../../data/ipv6_source.txt"]
+timeout = 1800

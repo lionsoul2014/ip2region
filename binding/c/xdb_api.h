@@ -21,9 +21,9 @@
 #   define XDB_PUBLIC(type)    extern __declspec(dllexport) type
 #   define XDB_PRIVATE(type)   static type
 #   define XDB_WINDOWS
-#include <windows.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#include <windows.h>
 #pragma comment(lib, "ws2_32.lib")
 #elif (defined(linux) || defined(_UNIX) || defined(__APPLE__) || defined(unix) || defined(__unix) || defined(__unix__) || defined(__linux__) || defined(linux) || defined(__linux))
 #   define XDB_PUBLIC(type)    extern type
@@ -150,8 +150,8 @@ struct xdb_ip_version_entry {
 };
 typedef struct xdb_ip_version_entry xdb_version_t;
 
-XDB_PUBLIC(xdb_version_t *) xdb_version_v4();
-XDB_PUBLIC(xdb_version_t *) xdb_version_v6();
+XDB_PUBLIC(xdb_version_t *) xdb_version_v4(void);
+XDB_PUBLIC(xdb_version_t *) xdb_version_v6(void);
 
 XDB_PUBLIC(int) xdb_version_is_v4(const xdb_version_t *);
 XDB_PUBLIC(int) xdb_version_is_v6(const xdb_version_t *);
@@ -165,11 +165,11 @@ XDB_PUBLIC(xdb_version_t *) xdb_version_from_header(xdb_header_t *);
 
 // to compatiable with the windows
 // returns: 0 for ok and -1 for failed
-XDB_PUBLIC(int) xdb_init_winsock();
-XDB_PUBLIC(void) xdb_clean_winsock();
+XDB_PUBLIC(int) xdb_init_winsock(void);
+XDB_PUBLIC(void) xdb_clean_winsock(void);
 
 // get the current time in microseconds
-XDB_PUBLIC(long) xdb_now();
+XDB_PUBLIC(long long) xdb_now(void);
 
 // get unsigned long (4bytes) from a specified buffer start from the specified offset with little-endian
 XDB_PUBLIC(unsigned int) xdb_le_get_uint32(const char *, int);

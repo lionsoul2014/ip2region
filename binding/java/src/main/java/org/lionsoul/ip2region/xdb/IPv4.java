@@ -31,8 +31,8 @@ public class IPv4 extends Version {
         // @Note: to compatible with the old Litten endian index encode implementation.
         int j = offset + ip1.length - 1;
         for (int i = 0; i < ip1.length; i++, j--) {
-            final int i1 = (int) (ip1[i] & 0xFF);
-            final int i2 = (int) (buff[j] & 0xFF);
+            final int i1 = ip1[i] & 0xFF;
+            final int i2 = buff[j] & 0xFF;
             if (i1 < i2) {
                 return -1;
             }

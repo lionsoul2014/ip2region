@@ -1,0 +1,22 @@
+toolchain = { name = "java", version = "17" }
+platforms = ["linux", "macos", "windows"]
+
+[[lint]]
+name = "Compile with javac warnings as errors"
+run = ["mvn", "--batch-mode", "--no-transfer-progress", "-Dmaven.compiler.failOnWarning=true", "test-compile"]
+timeout = 1200
+
+[[test]]
+name = "Unit tests"
+run = ["mvn", "--batch-mode", "--no-transfer-progress", "verify"]
+timeout = 1200
+
+[[accept]]
+name = "Search every IPv4 source range"
+run = ["java", "-cp", "target/classes", "org.lionsoul.ip2region.SearcherTest", "bench", "--db=../../data/ip2region_v4.xdb", "--src=../../data/ipv4_source.txt"]
+timeout = 900
+
+[[accept]]
+name = "Search every IPv6 source range"
+run = ["java", "-cp", "target/classes", "org.lionsoul.ip2region.SearcherTest", "bench", "--db=../../data/ip2region_v6.xdb", "--src=../../data/ipv6_source.txt"]
+timeout = 900

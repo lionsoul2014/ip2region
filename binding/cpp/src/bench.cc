@@ -37,6 +37,7 @@ void bench_t::test_file(const std::string &file_name) {
     char buf[1024];
     while (fgets(buf, sizeof(buf), f) != NULL)
         test_line(buf);
+    fclose(f);
 }
 
 void bench_t::test(const string &file_name) {

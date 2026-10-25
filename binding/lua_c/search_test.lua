@@ -11,7 +11,7 @@ package.path = "./?.lua;" .. package.path
 package.cpath = "./?.so;" .. package.cpath
 local xdb = require("xdb_searcher")
 
-function printHelp()
+local function printHelp()
     print("lua search_test.lua [command options]")
     print("options: ")
     print(" --db string             ip2region binary xdb file path")
@@ -27,23 +27,15 @@ end
 local dbFile = ""
 local cachePolicy = "vectorIndex"
 for _, r in ipairs(arg) do
-    if string.len(r) < 5 then
-        -- continue and do nothing here
-    elseif string.sub(r, 1, 2) ~= "--" then
-        -- continue and do nothing here
-    else
-        for k, v in string.gmatch(string.sub(r, 3), "([^=]+)=([^%s]+)") do
-            if k == "db" then
-                dbFile = v
-            elseif k == "cache-policy" then
-                cachePolicy = v
-            else
-                print(string.format("undefined option `%s`", r))
-                return
-            end
-
-            -- break the match iterate
-            break
+    if string.len(r) >= 5 and string.sub(r, 1, 2) == "--" then
+        local k, v = string.match(string.sub(r, 3), "([^=]+)=([^%s]+)")
+        if k == "db" then
+            dbFile = v
+        elseif k == "cache-policy" then
+            cachePolicy = v
+        else
+            print(string.format("undefined option `%s`", r))
+            return
         end
     end
 end
@@ -61,12 +53,13 @@ if xdb.verify(dbFile) == false then
 end
 
 -- detect the version from the xdb header
-header, err = xdb.load_header(dbFile)
+local header, err = xdb.load_header(dbFile)
 if err ~= nil then
     print(string.format("failed to load header: %s", err))
     return
 end
 
+local version
 version, err = xdb.version_from_header(header);
 if err ~= nil then
     print(string.format("failed to detect version from header: %s", err))
@@ -115,8 +108,6 @@ print(string.format([[
 ip2region xdb searcher test program
 source xdb: %s (%s, %s)
 type 'quit' to exit]], dbFile, xdb.version_info(version).name, cachePolicy))
-local region, err = "", nil
-local s_time, c_time =  0, 0
 while ( true ) do
     io.write("ip2region>> ");
     io.input(io.stdin);
@@ -131,18 +122,18 @@ while ( true ) do
 
     -- empty string ignore
     line = line:gsub("^%s*(.-)%s*$", "%1")
-    if string.len(line) < 1 then
-        -- continue and do nothing here
-    else
-        s_time = xdb.now()
+    if string.len(line) > 0 then
+        local s_time = xdb.now()
+        local ip_bytes
         ip_bytes, err = xdb.parse_ip(line)
         -- print(string.format("parse(%s): %s, err: %s", line, xdb.ip_to_string(ip_bytes), err))
         if err ~= nil then
             print(string.format("invalid ip address `%s`", line))
         else
             -- do the search
+            local region
             region, err = searcher:search(ip_bytes)
-            c_time = xdb.now() - s_time
+            local c_time = xdb.now() - s_time
             if err ~= nil then
                 print(string.format("{err: %s, io_count: %d}", err, searcher:get_io_count()))
             else

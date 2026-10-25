@@ -106,7 +106,7 @@ export class Searcher {
         return region.toString('utf-8');
     }
 
-    read(offset, buff, stats) {
+    read(offset, buff) {
         // check the in-memory buffer first
         if (this.cBuffer != null) {
             this.cBuffer.copy(buff, 0, offset, offset + buff.length);

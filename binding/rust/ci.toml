@@ -1,0 +1,26 @@
+toolchain = { name = "rust", version = "stable" }
+platforms = ["linux", "macos", "windows"]
+depends_on = ["maker/rust"]
+
+[[lint]]
+name = "Check formatting"
+run = ["cargo", "fmt", "--check"]
+
+[[lint]]
+name = "Clippy"
+run = ["cargo", "clippy", "--workspace", "--all-targets", "--", "-D", "warnings"]
+
+[[test]]
+name = "Unit tests"
+run = ["cargo", "test", "--workspace"]
+timeout = 1200
+
+[[accept]]
+name = "Bench the IPv4 xdb against its source"
+run = ["cargo", "run", "--release", "--package", "searcher", "--", "--xdb=../../data/ip2region_v4.xdb", "bench", "../../data/ipv4_source.txt"]
+timeout = 1200
+
+[[accept]]
+name = "Bench the IPv6 xdb against its source"
+run = ["cargo", "run", "--release", "--package", "searcher", "--", "--xdb=../../data/ip2region_v6.xdb", "bench", "../../data/ipv6_source.txt"]
+timeout = 1200

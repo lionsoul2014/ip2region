@@ -1,0 +1,22 @@
+toolchain = { name = "dotnet", version = "10.0.x" }
+platforms = ["linux", "macos", "windows"]
+
+[[lint]]
+name = "Check formatting"
+run = ["dotnet", "format", "IP2Region.Net.slnx", "--verify-no-changes"]
+timeout = 900
+
+[[lint]]
+name = "Build with warnings as errors"
+run = ["dotnet", "build", "IP2Region.Net.slnx", "--configuration", "Release", "-warnaserror"]
+timeout = 900
+
+[[test]]
+name = "Unit tests"
+run = ["dotnet", "test", "IP2Region.Net.slnx", "--configuration", "Release", "--filter", "FullyQualifiedName!~TestBenchSearch"]
+timeout = 1200
+
+[[accept]]
+name = "Search every source range with each cache policy"
+run = ["dotnet", "test", "IP2Region.Net.slnx", "--configuration", "Release", "--filter", "FullyQualifiedName~TestBenchSearch"]
+timeout = 2400

@@ -17,11 +17,12 @@ XdbIPv4Id = 4
 XdbIPv6Id = 6
 
 HeaderInfoLength = 256
-VectorIndexRows  = 256
-VectorIndexCols  = 256
-VectorIndexSize  = 8
+VectorIndexRows = 256
+VectorIndexCols = 256
+VectorIndexSize = 8
 # cache of VectorIndexCols × VectorIndexRows × VectorIndexSize
 VectorIndexLength = 524288
+
 
 class Header(object):
     def __init__(self, buff: bytes) -> None:
@@ -35,12 +36,11 @@ class Header(object):
         self.ipVersion = le_get_uint16(buff, 16)
         self.runtimePtrBytes = le_get_uint16(buff, 18)
 
-
         # keep the raw data
         self.buff = buff
 
     def __str__(self) -> str:
-        return '''{{
+        return """{{
     "version": {},
     "indexPolicy": {},
     "createdAt": {},
@@ -48,19 +48,20 @@ class Header(object):
     "endIndexPtr": {},
     "ipVersion": {},
     "runtimePtrBytes": {}
-}}'''.format(
-        self.version, 
-        self.indexPolicy, 
-        self.createdAt, 
-        self.startIndexPtr, 
-        self.endIndexPtr, 
-        self.ipVersion, 
-        self.runtimePtrBytes
-    )
+}}""".format(
+            self.version,
+            self.indexPolicy,
+            self.createdAt,
+            self.startIndexPtr,
+            self.endIndexPtr,
+            self.ipVersion,
+            self.runtimePtrBytes,
+        )
 
 
 # ---
 # ip parse and convert functions
+
 
 def parse_ip(ip_string: str) -> bytes:
     try:
@@ -68,11 +69,13 @@ def parse_ip(ip_string: str) -> bytes:
     except ValueError:
         raise ValueError("invalid ip address `{}`".format(ip_string))
 
+
 def ip_to_string(ip_bytes: bytes) -> str:
     if isinstance(ip_bytes, bytes):
         return str(ipaddress.ip_address(ip_bytes))
     else:
         raise ValueError("invalid bytes ip `{}`".format(ip_bytes))
+
 
 def ip_compare(ip1: bytes, ip2: bytes) -> int:
     if ip1 > ip2:
@@ -82,8 +85,9 @@ def ip_compare(ip1: bytes, ip2: bytes) -> int:
     else:
         return 0
 
+
 def ip_sub_compare(ip1: bytes, buff: bytes, offset: int) -> int:
-    ip2 = buff[offset:offset+len(ip1)]
+    ip2 = buff[offset : offset + len(ip1)]
     if ip1 > ip2:
         return 1
     elif ip1 < ip2:
@@ -94,6 +98,7 @@ def ip_sub_compare(ip1: bytes, buff: bytes, offset: int) -> int:
 
 # ---
 # ip version class and functions
+
 
 class Version(object):
     def __init__(
@@ -118,11 +123,9 @@ class Version(object):
 
     def __str__(self) -> str:
         return '{{"id": {}, "name": "{}", "bytes": {}, "index_size": {}}}'.format(
-            self.id, 
-            self.name, 
-            self.byte_num, 
-            self.index_size
+            self.id, self.name, self.byte_num, self.index_size
         )
+
 
 def _v4_sub_compare(ip1: bytes, buff: bytes, offset: int) -> int:
     # ip1: Big endian byte order parsed from input
@@ -134,7 +137,7 @@ def _v4_sub_compare(ip1: bytes, buff: bytes, offset: int) -> int:
         i2 = buff[j]
         if i1 < i2:
             return -1
-        
+
         if i1 > i2:
             return 1
 
@@ -151,6 +154,7 @@ IPv4 = Version(XdbIPv4Id, "IPv4", 4, 14, _v4_sub_compare)
 # 38 = 16 + 16 + 2 + 4
 IPv6 = Version(XdbIPv6Id, "IPv6", 16, 38, ip_sub_compare)
 
+
 def version_from_name(name: str) -> Optional[Version]:
     u_name = name.upper()
     if u_name == "IPV4" or u_name == "V4":
@@ -159,6 +163,7 @@ def version_from_name(name: str) -> Optional[Version]:
         return IPv6
     else:
         return None
+
 
 def version_from_header(header: Header) -> Optional[Version]:
     # old xdb 2.0 with IPv4 supports ONLY
@@ -178,38 +183,39 @@ def version_from_header(header: Header) -> Optional[Version]:
 # ---
 # buffer decode functions
 
+
 def le_get_uint32(buff: bytes, offset: int) -> int:
-    '''
+    """
     decode an unsinged 4-bytes int from a buffer started from offset
     with little byte endian
-    '''
+    """
     return (
-        ((buff[offset  ]) & 0x000000FF) |
-        ((buff[offset+1] <<  8) & 0x0000FF00) | 
-        ((buff[offset+2] << 16) & 0x00FF0000) |
-        ((buff[offset+3] << 24) & 0xFF000000)
+        ((buff[offset]) & 0x000000FF)
+        | ((buff[offset + 1] << 8) & 0x0000FF00)
+        | ((buff[offset + 2] << 16) & 0x00FF0000)
+        | ((buff[offset + 3] << 24) & 0xFF000000)
     )
 
+
 def le_get_uint16(buff: bytes, offset: int) -> int:
-    '''
+    """
     decode an unsinged 2-bytes short from a buffer started from offset
     with little byte endian
-    '''
-    return (
-        ((buff[offset  ]) & 0x000000FF) |
-        ((buff[offset+1] <<  8) & 0x0000FF00)
-    )
+    """
+    return ((buff[offset]) & 0x000000FF) | ((buff[offset + 1] << 8) & 0x0000FF00)
 
 
 # ---
 # xdb buffer load functions
 
+
 def load_header(handle: BinaryIO) -> Header:
-    '''
+    """
     load xdb header from a specified file handle
-    '''
+    """
     handle.seek(0)
     return Header(handle.read(HeaderInfoLength))
+
 
 def load_header_from_file(db_file: str) -> Header:
     handle = io.open(db_file, "rb")
@@ -217,12 +223,14 @@ def load_header_from_file(db_file: str) -> Header:
     handle.close()
     return header
 
+
 def load_vector_index(handle: BinaryIO) -> bytes:
-    '''
+    """
     load xdb vector index from a specified file handle
-    '''
+    """
     handle.seek(HeaderInfoLength)
     return handle.read(VectorIndexLength)
+
 
 def load_vector_index_from_file(db_file: str) -> bytes:
     handle = io.open(db_file, "rb")
@@ -230,12 +238,14 @@ def load_vector_index_from_file(db_file: str) -> bytes:
     handle.close()
     return v_index
 
+
 def load_content(handle: BinaryIO) -> bytes:
-    '''
+    """
     load the whole xdb content from a specified file handle
-    '''
+    """
     handle.seek(0)
     return handle.read()
+
 
 def load_content_from_file(db_file: str) -> bytes:
     handle = io.open(db_file, "rb")
@@ -243,11 +253,12 @@ def load_content_from_file(db_file: str) -> bytes:
     handle.close()
     return c_buff
 
+
 # ---
 # Verify if the current Searcher could be used to search the specified xdb file.
 # Why do we need this check ?
 # The future features of the xdb impl may cause the current searcher not able to work properly.
-# 
+#
 # @Note: You Just need to check this ONCE when the service starts
 # Or use another process (eg, A command) to check once Just to confirm the suitability.
 def verify(handle: BinaryIO) -> None:
@@ -269,7 +280,10 @@ def verify(handle: BinaryIO) -> None:
     __file_bytes = os.stat(handle.fileno()).st_size
     # print("max_file_ptr: {}, file_bytes: {}".format(max_file_ptr, __file_bytes))
     if __file_bytes > max_file_ptr:
-        raise Exception("xdb file exceeds the maximum supported bytes: {}".format(max_file_ptr))
+        raise Exception(
+            "xdb file exceeds the maximum supported bytes: {}".format(max_file_ptr)
+        )
+
 
 def verify_from_file(db_file: str) -> None:
     handle = io.open(db_file, "rb")

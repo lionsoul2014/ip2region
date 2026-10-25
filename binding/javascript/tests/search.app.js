@@ -59,7 +59,7 @@ const createSearcher = () => {
 }
 
 const readlineSync = () => {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         process.stdin.resume();
         process.stdin.on('data', (buff) => {
             process.stdin.pause();

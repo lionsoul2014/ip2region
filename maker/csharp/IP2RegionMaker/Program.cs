@@ -45,7 +45,7 @@ for (int i = 0; i < args.Length; i++)
 
 Console.WriteLine(srcFile);
 
-if (string.IsNullOrEmpty(srcFile)||string.IsNullOrEmpty(dstFile))
+if (string.IsNullOrEmpty(srcFile) || string.IsNullOrEmpty(dstFile))
 {
     PrintHelp();
     return;

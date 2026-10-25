@@ -6,11 +6,13 @@
 -- @Author Lion <chenxin619315@gmail.com>
 -- @Date   2022/07/05
 
-package.path = "./?.lua" .. package.path
-package.cpath = "./?.so" .. package.cpath
+package.path = "./?.lua;" .. package.path
+package.cpath = "./?.so;" .. package.cpath
 local xdb = require("xdb_searcher")
 
-function test_version_parse()
+local tests = {}
+
+function tests.test_version_parse()
     print("IPv4", xdb.IPv4)
     print("IPv6", xdb.IPv6)
 
@@ -26,28 +28,28 @@ function test_version_parse()
     end
 end
 
-function test_parse_ip()
+function tests.test_parse_ip()
     local ip_list = {
-        "1.0.0.0", "58.251.30.115", "192.168.1.100", "126.255.32.255", "219.xx.xx.11", 
+        "1.0.0.0", "58.251.30.115", "192.168.1.100", "126.255.32.255", "219.xx.xx.11",
         "::", "::1", "fffe::", "2c0f:fff0::", "2c0f:fff0::1", "2a02:26f7:c409:4001::",
         "2fff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", "240e:982:e617:ffff:ffff:ffff:ffff:ffff", "::xx:ffff"
     }
 
     for _, ip_str in ipairs(ip_list) do
-        ip_bytes, err = xdb.parse_ip(ip_str)
+        local ip_bytes, err = xdb.parse_ip(ip_str)
         if err ~= nil then
             print(string.format("failed to parse ip address `%s`: %s", ip_str, err))
         else
             local ip_to_str = xdb.ip_to_string(ip_bytes)
             print(string.format(
-                "parse_ip(`%s`)->{bytes:%d, to_string:%s, equal:%s}", 
+                "parse_ip(`%s`)->{bytes:%d, to_string:%s, equal:%s}",
                 ip_str, #ip_bytes, ip_to_str, tostring(ip_str == ip_to_str)
             ))
         end
     end
 end
 
-function test_ip_compare()
+function tests.test_ip_compare()
     local ip_list = {
         {"1.0.0.0", "1.0.0.1", -1},
         {"192.168.1.101", "192.168.1.90", 1},
@@ -66,14 +68,15 @@ function test_ip_compare()
 end
 
 ---- buffer loading test
-function test_load_header()
-    header, err = xdb.load_header("../../data/ip2region_v4.xdb")
+function tests.test_load_header()
+    local header, err = xdb.load_header("../../data/ip2region_v4.xdb")
     if err ~= nil then
-        print("failed to load header: ", err)
-    else
-        print("xdb header buffer loaded")
+        error(string.format("failed to load header: %s", err))
+    end
 
-        local tpl = [[
+    print("xdb header buffer loaded")
+
+    local tpl = [[
     header: {
         version: %d
         index_policy: %d
@@ -84,33 +87,32 @@ function test_load_header()
         runtime_ptr_bytes: %d
     }]]
 
-        print(string.format(tpl,
-            header["version"], header["index_policy"],
-            header["created_at"], header["start_index_ptr"], header["end_index_ptr"],
-            header["ip_version"], header["runtime_ptr_bytes"]
-        ))
-    end
+    print(string.format(tpl,
+        header["version"], header["index_policy"],
+        header["created_at"], header["start_index_ptr"], header["end_index_ptr"],
+        header["ip_version"], header["runtime_ptr_bytes"]
+    ))
 end
 
-function test_load_vector_index()
-    v_index, err = xdb.load_vector_index("../../data/ip2region_v4.xdb")
+function tests.test_load_vector_index()
+    local v_index, err = xdb.load_vector_index("../../data/ip2region_v4.xdb")
     if err ~= nil then
-        print("failed to load vector index: ", err)
-    else
-        print("xdb vector index buffer loaded, length=", #v_index)
+        error(string.format("failed to load vector index: %s", err))
     end
+
+    print("xdb vector index buffer loaded, length=", #v_index)
 end
 
-function test_load_content()
-    c_buffer, err = xdb.load_content("../../data/ip2region_v4.xdb")
+function tests.test_load_content()
+    local c_buffer, err = xdb.load_content("../../data/ip2region_v4.xdb")
     if err ~= nil then
-        print("failed to load content: ", err)
-    else
-        print("xdb content buffer loaded, length=", #c_buffer)
+        error(string.format("failed to load content: %s", err))
     end
+
+    print("xdb content buffer loaded, length=", #c_buffer)
 end
 
-function test_verify()
+function tests.test_verify()
     local xdb_files = {
         "../../data/ip2region_v4.xdb",
         "../../data/ip2region_v6.xdb"
@@ -119,14 +121,14 @@ function test_verify()
     for _, path in ipairs(xdb_files) do
         local err = xdb.verify(path)
         if err ~= nil then
-            print(string.format("verify(%s): %s", path, err))
-        else
-            print(string.format("verify(%s): Ok", path))
+            error(string.format("verify(%s): %s", path, err))
         end
+
+        print(string.format("verify(%s): Ok", path))
     end
 end
 
-function test_ip_search()
+function tests.test_ip_search()
     local test_list = {
         -- ipv4
         {"1.2.3.4", xdb.IPv4, "../../data/ip2region_v4.xdb"},
@@ -137,18 +139,23 @@ function test_ip_search()
     for _, test in ipairs(test_list) do
         -- ipv6
         local ip_str = test[1]
-        searcher, err = xdb.new_with_file_only(test[2], test[3])
-        t_start = xdb.now()
+        local searcher, err = xdb.new_with_file_only(test[2], test[3])
+        if err ~= nil then
+            error(string.format("failed to create searcher: %s", err))
+        end
+
+        local t_start = xdb.now()
+        local region
         region, err = searcher:search_by_string(ip_str)
         if err ~= nil then
-            print(string.format("failed to search(%s): %s", ip_str, err))
-        else
-            local c_time = xdb.now() - t_start
-            print(string.format(
-                "search(%s): {region:%s, io_count:%d, took:%dμs}", 
-                ip_str, region, searcher:get_io_count(), c_time
-            ))
+            error(string.format("failed to search(%s): %s", ip_str, err))
         end
+
+        local c_time = xdb.now() - t_start
+        print(string.format(
+            "search(%s): {region:%s, io_count:%d, took:%dμs}",
+            ip_str, region, searcher:get_io_count(), c_time
+        ))
         searcher:close()
     end
 end
@@ -158,17 +165,16 @@ end
 
 local func_name = arg[1]
 if func_name == nil then
-    print("please specified the function to test")
-    return
+    error("please specified the function to test")
 end
 
-if (_G[func_name] == nil) then
-    print(string.format("undefined function `%s` to call", func_name))
-    return
+local test = tests[func_name]
+if test == nil then
+    error(string.format("undefined function `%s` to call", func_name))
 end
 
 local s_time = xdb.now();
 print(string.format("+---calling test function %s ...", func_name))
-_G[func_name]();
+test();
 local cost_time = xdb.now() - s_time
 print(string.format("|---done, elapsed %.3fμs", cost_time))

@@ -7,20 +7,22 @@
 
 import io
 from typing import Optional, Union
+
 import ip2region.util as util
 
 
 class Searcher(object):
-    '''
+    """
     xdb searcher class with Both IPv4 and IPv6 supported.
     three kinds of cache policy: file / vectorIndex / content
-    '''
+    """
+
     def __init__(
         self,
         version: util.Version,
         db_path: Optional[str],
         vector_index: Optional[bytes],
-        c_buffer: Optional[bytes]
+        c_buffer: Optional[bytes],
     ) -> None:
         self.version = version
         self.__db_path = db_path
@@ -54,15 +56,20 @@ class Searcher(object):
 
         # ip version check
         if len(ip_bytes) != self.version.byte_num:
-            raise ValueError("invalid ip address `{}` ({} expected)".format(
-                util.ip_to_string(ip_bytes), self.version.name))
+            raise ValueError(
+                "invalid ip address `{}` ({} expected)".format(
+                    util.ip_to_string(ip_bytes), self.version.name
+                )
+            )
 
         # reset the global io_count
         self.__io_count = 0
 
         # located the segment index block based on the vector index
         s_ptr, e_ptr, i0, i1 = 0, 0, ip_bytes[0], ip_bytes[1]
-        idx = i0 * util.VectorIndexCols * util.VectorIndexSize + i1 * util.VectorIndexSize
+        idx = (
+            i0 * util.VectorIndexCols * util.VectorIndexSize + i1 * util.VectorIndexSize
+        )
         if self.vector_index is not None:
             s_ptr = util.le_get_uint32(self.vector_index, idx)
             e_ptr = util.le_get_uint32(self.vector_index, idx + 4)
@@ -74,7 +81,7 @@ class Searcher(object):
             buff = self.read(util.HeaderInfoLength + idx, util.VectorIndexSize)
             s_ptr = util.le_get_uint32(buff, 0)
             e_ptr = util.le_get_uint32(buff, 4)
-        
+
         # print("s_ptr: {}, e_ptr: {}".format(s_ptr, e_ptr))
         # @Note: ptr validate, zero ptr means source data missing
         # so we could just stop here and return an empty string.
@@ -112,8 +119,8 @@ class Searcher(object):
     def read(self, offset: int, length: int) -> bytes:
         # check the content buffer first
         if self.c_buffer is not None:
-            return self.c_buffer[offset:offset+length]
-        
+            return self.c_buffer[offset : offset + length]
+
         # load the buffer from file
         if self.__handle is None:
             raise ValueError("no db handle available")
@@ -126,19 +133,23 @@ class Searcher(object):
             self.__handle.close()
 
     def __str__(self) -> str:
-        return '{{"version": {}, "db_path": "{}", "v_index": {}, "c_buffer": {}}}'.format(
-            self.version.name,
-            self.__db_path,
-            None if self.vector_index is None else len(self.vector_index),
-            None if self.c_buffer is None else len(self.c_buffer)
+        return (
+            '{{"version": {}, "db_path": "{}", "v_index": {}, "c_buffer": {}}}'.format(
+                self.version.name,
+                self.__db_path,
+                None if self.vector_index is None else len(self.vector_index),
+                None if self.c_buffer is None else len(self.c_buffer),
+            )
         )
 
 
 # ---
 # functions to create Searcher with different cache policy
 
+
 def new_with_file_only(version: util.Version, db_path: str) -> Searcher:
     return Searcher(version, db_path, None, None)
+
 
 def new_with_vector_index(
     version: util.Version,
@@ -146,6 +157,7 @@ def new_with_vector_index(
     vector_index: bytes,
 ) -> Searcher:
     return Searcher(version, db_path, vector_index, None)
+
 
 def new_with_buffer(version: util.Version, c_buffer: bytes) -> Searcher:
     return Searcher(version, None, None, c_buffer)

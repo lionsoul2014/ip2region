@@ -31,9 +31,11 @@ start_link() ->
 %%                  modules => modules()}   % optional
 init([]) ->
     create_table(),
-    SupFlags = #{strategy => one_for_one,
-                 intensity => 10,
-                 period => 5},
+    SupFlags = #{
+        strategy => one_for_one,
+        intensity => 10,
+        period => 5
+    },
     ChildSpecs = pool_child_specs(),
     {ok, {SupFlags, ChildSpecs}}.
 
@@ -59,13 +61,17 @@ pool_child_specs() ->
     {ok, DbConfig} = application:get_env(db),
     {ok, PoolArgsCfg} = application:get_env(poolargs),
     lists:foldl(
-        fun({ipv4, File}, Acc) ->
+        fun
+            ({ipv4, File}, Acc) ->
                 [make_pool_spec(?IP2REGION_POOL_V4, ipv4, File, PoolArgsCfg) | Acc];
-           ({ipv6, File}, Acc) ->
+            ({ipv6, File}, Acc) ->
                 [make_pool_spec(?IP2REGION_POOL_V6, ipv6, File, PoolArgsCfg) | Acc];
-           (_, Acc) ->
+            (_, Acc) ->
                 Acc
-        end, [], DbConfig).
+        end,
+        [],
+        DbConfig
+    ).
 
 make_pool_spec(PoolName, Version, File, PoolArgsCfg) ->
     PoolArgs = [

@@ -1,0 +1,21 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directories: ["/", "/.github/actions/setup"]
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
+    groups:
+      actions:
+        patterns: ["*"]
+
+  - package-ecosystem: uv
+    directory: /scripts/ci
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
+    groups:
+      control-plane:
+        patterns: ["*"]

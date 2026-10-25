@@ -1,0 +1,44 @@
+toolchain = { name = "erlang" }
+platforms = ["linux", "macos", "windows"]
+# Erlang/OTP publishes Windows builds for x64 only.
+exclude = ["windows-arm64"]
+
+[[lint]]
+name = "Check formatting"
+run = ["rebar3", "fmt", "--check"]
+
+[[lint]]
+name = "Xref"
+run = ["rebar3", "xref"]
+
+[[lint]]
+name = "Dialyzer"
+run = ["rebar3", "dialyzer"]
+timeout = 1200
+
+[[test]]
+name = "Unit tests"
+run = ["rebar3", "eunit"]
+timeout = 1200
+
+[[accept]]
+name = "Build"
+run = ["rebar3", "compile"]
+
+[[accept]]
+name = "Bench the IPv4 xdb against its source"
+run = [
+  "erl", "-noshell", "-pa", "_build/default/lib/poolboy/ebin", "-pa", "_build/default/lib/ip2region/ebin",
+  "-run", "xdb_benchmark", "main", "ipv4", "../../data/ip2region_v4.xdb", "../../data/ipv4_source.txt",
+  "-s", "init", "stop",
+]
+timeout = 1800
+
+[[accept]]
+name = "Bench the IPv6 xdb against its source"
+run = [
+  "erl", "-noshell", "-pa", "_build/default/lib/poolboy/ebin", "-pa", "_build/default/lib/ip2region/ebin",
+  "-run", "xdb_benchmark", "main", "ipv6", "../../data/ip2region_v6.xdb", "../../data/ipv6_source.txt",
+  "-s", "init", "stop",
+]
+timeout = 1800

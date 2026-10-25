@@ -16,7 +16,9 @@ class SearcherV4Tests {
 
     @TestCase
     func testSearchContentMode() {
-        if (!this.initialized) { return }
+        if (!this.initialized) {
+            return
+        }
         let header = newHeaderFromBytes(this.v4Content)
         let version = versionFromHeader(header)
         let searcher = Searcher(version, this.v4Content, "../../data/ip2region_v4.xdb")
@@ -30,7 +32,9 @@ class SearcherV4Tests {
 
     @TestCase
     func testSearchVectorIndexMode() {
-        if (!this.initialized) { return }
+        if (!this.initialized) {
+            return
+        }
         let header = newHeaderFromBytes(this.v4Content)
         let version = versionFromHeader(header)
         let vIndex = loadVectorIndex(this.v4Content)
@@ -45,7 +49,9 @@ class SearcherV4Tests {
 
     @TestCase
     func testSearchFileMode() {
-        if (!this.initialized) { return }
+        if (!this.initialized) {
+            return
+        }
         let header = newHeaderFromBytes(this.v4Content)
         let version = versionFromHeader(header)
         let searcher = Searcher(version, "../../data/ip2region_v4.xdb")
@@ -59,7 +65,9 @@ class SearcherV4Tests {
 
     @TestCase
     func testAllModesSameResult() {
-        if (!this.initialized) { return }
+        if (!this.initialized) {
+            return
+        }
         let header = newHeaderFromBytes(this.v4Content)
         let version = versionFromHeader(header)
         let vIndex = loadVectorIndex(this.v4Content)
@@ -70,7 +78,9 @@ class SearcherV4Tests {
         let r1 = s1.search(ip)
         let r2 = s2.search(ip)
         let r3 = s3.search(ip)
-        s1.close(); s2.close(); s3.close()
+        s1.close()
+        s2.close()
+        s3.close()
         if (r1 != r2 || r2 != r3) {
             throw Exception("all modes should return same result")
         }
@@ -78,7 +88,9 @@ class SearcherV4Tests {
 
     @TestCase
     func testSearchByString() {
-        if (!this.initialized) { return }
+        if (!this.initialized) {
+            return
+        }
         let header = newHeaderFromBytes(this.v4Content)
         let version = versionFromHeader(header)
         let searcher = Searcher(version, this.v4Content, "../../data/ip2region_v4.xdb")
@@ -103,7 +115,9 @@ class SearcherV6Tests {
 
     @TestCase
     func testSearchV6ContentMode() {
-        if (!this.initialized) { return }
+        if (!this.initialized) {
+            return
+        }
         let header = newHeaderFromBytes(this.v6Content)
         let version = versionFromHeader(header)
         let searcher = Searcher(version, this.v6Content, "../../data/ip2region_v6.xdb")
@@ -117,7 +131,9 @@ class SearcherV6Tests {
 
     @TestCase
     func testSearchV6VectorIndexMode() {
-        if (!this.initialized) { return }
+        if (!this.initialized) {
+            return
+        }
         let header = newHeaderFromBytes(this.v6Content)
         let version = versionFromHeader(header)
         let vIndex = loadVectorIndex(this.v6Content)

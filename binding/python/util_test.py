@@ -1,4 +1,4 @@
-﻿# Copyright 2022 The Ip2Region Authors. All rights reserved.
+# Copyright 2022 The Ip2Region Authors. All rights reserved.
 # Use of this source code is governed by a Apache2.0-style
 # license that can be found in the LICENSE file.
 
@@ -35,21 +35,9 @@ def test_version():
     print("version_from_header(v6_header) -> ", util.version_from_header(v6_header))
 
 def test_verify():
-    # v4 xdb verify
-    try:
-        util.verify_from_file(xdb_v4_path)
-    except Exception as e:
-        print("failed to verify the xdb file `{}`: {}".format(xdb_v4_path, str(e)))
-    else:
-        print("xdb file `{}` verified".format(xdb_v4_path))
-
-    # v6 xdb verify
-    try:
-        util.verify_from_file(xdb_v6_path)
-    except Exception as e:
-        print("failed to verify the xdb file `{}`: {}".format(xdb_v6_path, str(e)))
-    else:
-        print("xdb file `{}` verified".format(xdb_v6_path))
+    for db_path in [xdb_v4_path, xdb_v6_path]:
+        util.verify_from_file(db_path)
+        print("xdb file `{}` verified".format(db_path))
 
 def test_load_header():
     v4_header = util.load_header_from_file(xdb_v4_path)
@@ -108,41 +96,19 @@ def _get_searcher_list(version: util.Version):
     ]
 
 def test_ip_search():
-    # ipv4 search test
-    print("---ipv4 search test:")
-    ip_str = "120.229.45.92"
-    s_list = _get_searcher_list(util.IPv4)
-    try:
-        b_region = None
-        for meta in s_list:
-            searcher = meta[1]()
+    for version, ip_str in [
+        (util.IPv4, "120.229.45.92"),
+        (util.IPv6, "240e:3b7:3272:d8d0:db09:c067:8d59:539e"),
+    ]:
+        print(f"---{version.name} search test:")
+        regions = set()
+        for name, new_searcher in _get_searcher_list(version):
+            searcher = new_searcher()
             region = searcher.search(ip_str)
-            if b_region is not None:
-                assert b_region == region, f"region and b_region is not the same"
-            print(f"{meta[0]}.search({ip_str}): {region}")
-
-            # searcher close
             searcher.close()
-    except Exception as e:
-        print(f"failed to search({ip_str}): {str(e)}")
-
-    # ipv6 search test
-    print("---ipv6 search test:")
-    ip_str = "240e:3b7:3272:d8d0:db09:c067:8d59:539e"
-    s_list = _get_searcher_list(util.IPv6)
-    try:
-        b_region = None
-        for meta in s_list:
-            searcher = meta[1]()
-            region = searcher.search(ip_str)
-            if b_region is not None:
-                assert b_region == region, f"region and b_region is not the same"
-            print(f"{meta[0]}.search({ip_str}): {region}")
-
-            # searcher close
-            searcher.close()
-    except Exception as e:
-        print(f"failed to search({ip_str}): {str(e)}")
+            print(f"{name}.search({ip_str}): {region}")
+            regions.add(region)
+        assert len(regions) == 1, f"searchers disagree on {ip_str}: {regions}"
 
 if __name__ == "__main__":
     # check and call the specified function

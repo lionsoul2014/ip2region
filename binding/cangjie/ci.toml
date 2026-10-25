@@ -1,0 +1,48 @@
+toolchain = { name = "cangjie" }
+platforms = ["linux", "macos", "windows"]
+# Cangjie SDK 1.1.3 has no official builds for these targets.
+exclude = ["macos-x64", "windows-arm64"]
+
+[[lint]]
+name = "Format the library with cjfmt"
+run = ["cjfmt", "-d", "src", "-o", "target/cjfmt"]
+
+[[lint]]
+name = "Format the example with cjfmt"
+run = ["cjfmt", "-d", "example/src", "-o", "target/cjfmt/example"]
+
+[[lint]]
+name = "Check the library formatting"
+run = ["git", "diff", "--no-index", "--exit-code", "src", "target/cjfmt/src"]
+
+[[lint]]
+name = "Check the example formatting"
+run = ["git", "diff", "--no-index", "--exit-code", "example/src", "target/cjfmt/example/src"]
+
+[[test]]
+name = "Build"
+run = ["cjpm", "build"]
+timeout = 900
+
+[[test]]
+name = "Unit tests"
+run = ["cjpm", "test"]
+timeout = 900
+
+[[accept]]
+name = "Build the example"
+run = ["cjpm", "build"]
+working_directory = "example"
+timeout = 900
+
+[[accept]]
+name = "Search every IPv4 source range"
+run = ["target/release/bin/main", "bench", "--db", "../../../data/ip2region_v4.xdb", "--src", "../../../data/ipv4_source.txt"]
+working_directory = "example"
+timeout = 900
+
+[[accept]]
+name = "Search every IPv6 source range"
+run = ["target/release/bin/main", "bench", "--db", "../../../data/ip2region_v6.xdb", "--src", "../../../data/ipv6_source.txt"]
+working_directory = "example"
+timeout = 900

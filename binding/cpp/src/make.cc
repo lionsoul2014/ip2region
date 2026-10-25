@@ -67,6 +67,7 @@ void make_t::handle_input_help(char *buf) {
                  next_ip.to_string());
     }
 
+    const bool consecutive = node.ip1 == next_ip;
     next_ip = node.ip2 + 1;
 
     if (region.find(node.region) == region.end()) {
@@ -74,7 +75,15 @@ void make_t::handle_input_help(char *buf) {
         region_index += node.region.size();
     }
 
-    vector_index_push_back(node);
+    // merge the consecutive segments with the same region
+    if (consecutive && node.region == last_node.region) {
+        last_node.ip2 = node.ip2;
+        return;
+    }
+
+    if (!last_node.region.empty())
+        vector_index_push_back(last_node);
+    last_node = node;
 }
 
 void make_t::handle_input(const std::string &file_name) {
@@ -86,6 +95,9 @@ void make_t::handle_input(const std::string &file_name) {
     while (fgets(buf, sizeof(buf), src) != NULL)
         handle_input_help(buf);
     fclose(src);
+
+    if (!last_node.region.empty())
+        vector_index_push_back(last_node);
 }
 
 void make_t::handle_header() {

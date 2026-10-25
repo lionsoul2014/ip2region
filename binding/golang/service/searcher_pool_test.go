@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"testing"
 	"time"
 )
@@ -120,7 +121,7 @@ func _copyFile(src, dst string) error {
 
 func TestSearcherPoolErrorClose(t *testing.T) {
 	// copy the xdb to a temp file
-	var tmpFile = "/tmp/ip2region_v4.xdb"
+	var tmpFile = filepath.Join(t.TempDir(), "ip2region_v4.xdb")
 	err := _copyFile("../../../data/ip2region_v4.xdb", tmpFile)
 	if err != nil {
 		t.Fatalf("copy ip2region_v4.xdb: %s", err)

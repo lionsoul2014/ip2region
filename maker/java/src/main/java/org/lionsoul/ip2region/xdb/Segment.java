@@ -27,8 +27,8 @@ public class Segment {
 
     // split the current segment for vector index
     public List<Segment> split() {
-        final int sByte1 = (int) (startIP[0] & 0xFF);
-        final int eByte1 = (int) (endIP[0] & 0xFF);
+        final int sByte1 = startIP[0] & 0xFF;
+        final int eByte1 = endIP[0] & 0xFF;
         final List<Segment> tList =  new ArrayList<Segment>();
         for (int i = sByte1; i <= eByte1; i++) {
             final byte[] sip = new byte[startIP.length];
@@ -58,8 +58,8 @@ public class Segment {
         // 2, split the segments with the second byte
         final List<Segment> segList = new ArrayList<Segment>();
         for (Segment seg : tList) {
-            final int sByte2 = (int) (seg.startIP[1] & 0xFF);
-            final int eByte2 = (int) (seg.endIP[1] & 0xFF);
+            final int sByte2 = seg.startIP[1] & 0xFF;
+            final int eByte2 = seg.endIP[1] & 0xFF;
             for (int i = sByte2; i <= eByte2; i++) {
                 final byte[] sip = new byte[seg.startIP.length];
                 final byte[] eip = new byte[seg.startIP.length];

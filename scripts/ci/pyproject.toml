@@ -1,0 +1,41 @@
+[project]
+name = "ip2region-ci"
+version = "0.1.0"
+description = "Builds, lints and tests every ip2region binding and maker"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "pydantic>=2.12.5",
+    "typer>=0.20.0",
+]
+
+[project.scripts]
+ip2region-ci = "ip2region_ci.cli:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.0",
+    "ruamel-yaml>=0.19.0",
+    "ruff>=0.15.0",
+    "zizmor>=1.16.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.11.0,<0.12.0"]
+build-backend = "uv_build"
+
+[[tool.uv.index]]
+name = "pypi"
+url = "https://pypi.org/simple"
+default = true
+
+[tool.pytest.ini_options]
+addopts = "-ra --strict-config --strict-markers"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 80
+target-version = "py314"
+
+[tool.ruff.lint]
+select = ["B", "E", "F", "I", "PT", "RUF", "SIM", "UP", "W"]

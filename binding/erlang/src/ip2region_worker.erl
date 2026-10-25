@@ -51,7 +51,8 @@ init(Args) ->
     PrivDir = code:priv_dir(AppName),
     XdbFileName =
         case proplists:get_value(xdb_file, Args) of
-            undefined -> filename:join([PrivDir, "ip2region.xdb"]);
+            undefined ->
+                filename:join([PrivDir, "ip2region.xdb"]);
             Path ->
                 case filename:pathtype(Path) of
                     absolute -> Path;
@@ -80,8 +81,12 @@ handle_call(Request, From, State) ->
         do_call(Request, From, State)
     catch
         Class:Error:Stacktrace ->
-            error_logger:error_report(io_lib:format("~p handle call error, Req:~p ~p, stacktrace:~p~n",
-                [?MODULE, Request, {Class, Error}, Stacktrace])),
+            error_logger:error_report(
+                io_lib:format(
+                    "~p handle call error, Req:~p ~p, stacktrace:~p~n",
+                    [?MODULE, Request, {Class, Error}, Stacktrace]
+                )
+            ),
             {reply, {error, {Class, Error}}, State}
     end.
 
@@ -90,8 +95,12 @@ handle_cast(Msg, State) ->
         do_cast(Msg, State)
     catch
         Class:Error:Stacktrace ->
-            error_logger:error_report(io_lib:format("~p handle cast error, Msg:~p, ~p, stacktrace:~w~n",
-                [?MODULE, Msg, {Class, Error}, Stacktrace])),
+            error_logger:error_report(
+                io_lib:format(
+                    "~p handle cast error, Msg:~p, ~p, stacktrace:~w~n",
+                    [?MODULE, Msg, {Class, Error}, Stacktrace]
+                )
+            ),
             {noreply, State}
     end.
 
@@ -100,8 +109,12 @@ handle_info(Info, State) ->
         do_info(Info, State)
     catch
         Class:Error:Stacktrace ->
-            error_logger:error_report(io_lib:format("~p handle info error, Info:~p, ~p, stacktrace:~p~n",
-                [?MODULE, Info, {Class, Error}, Stacktrace])),
+            error_logger:error_report(
+                io_lib:format(
+                    "~p handle info error, Info:~p, ~p, stacktrace:~p~n",
+                    [?MODULE, Info, {Class, Error}, Stacktrace]
+                )
+            ),
             {noreply, State}
     end.
 
@@ -122,10 +135,8 @@ code_change(_OldVsn, State, _Extra) ->
 do_call({search, Ip}, _From, #state{xdb_fd = IoDevice} = State) ->
     Reply = search_ip(IoDevice, Ip, State),
     {reply, Reply, State};
-
 do_call(stop, _From, State) ->
     {stop, normal, stopped, State};
-
 do_call(Request, From, State) ->
     error_logger:error_report(io_lib:format("unknown request: ~p, from:~p", [Request, From])),
     {reply, {error, unknown_request}, State}.
@@ -141,14 +152,16 @@ do_info(Info, State) ->
 -spec resolve_version(#xdb_header{}) -> {ok, ipv4 | ipv6} | {error, term()}.
 resolve_version(Header) ->
     case ip2region_xdb:header_version(Header) of
-        2 -> {ok, ipv4};
+        2 ->
+            {ok, ipv4};
         3 ->
             case ip2region_xdb:header_ip_version(Header) of
                 ?IP_VERSION_4 -> {ok, ipv4};
                 ?IP_VERSION_6 -> {ok, ipv6};
                 V -> {error, {invalid_xdb_ip_version, V}}
             end;
-        V -> {error, {invalid_xdb_version, V}}
+        V ->
+            {error, {invalid_xdb_version, V}}
     end.
 
 load_vector_index(IoDevice, Version) ->
@@ -174,7 +187,8 @@ load_vector_index_data(IoDevice, Table) ->
         file:read(IoDevice, ?XDB_VECTOR_INDEX_COUNT * ?XDB_VECTOR_INDEX_SIZE),
     load_vector_index_aux(VectorIndexBin, 0, Table).
 
-load_vector_index_aux(<<>>, _Index, _Table) -> ok;
+load_vector_index_aux(<<>>, _Index, _Table) ->
+    ok;
 load_vector_index_aux(<<SPtr:32/little, EPtr:32/little, VectorIndexBin/binary>>, Index, Table) ->
     ets:insert(Table, {Index, SPtr, EPtr}),
     load_vector_index_aux(VectorIndexBin, Index + 1, Table).
@@ -186,8 +200,17 @@ search_ip(IoDevice, Ip, #state{version = Version}) ->
     <<A:8, B:8, _/binary>> = Ip,
     VectorIdx = A * ?XDB_VECTOR_COLS + B,
     [{_, SPtr, EPtr}] = ets:lookup(VectorTable, VectorIdx),
-    search_ip(IoDevice, Ip, SPtr, EPtr, 0,
-              (EPtr - SPtr) div SegSize, SegSize, Version, SegmentTable).
+    search_ip(
+        IoDevice,
+        Ip,
+        SPtr,
+        EPtr,
+        0,
+        (EPtr - SPtr) div SegSize,
+        SegSize,
+        Version,
+        SegmentTable
+    ).
 
 search_ip(IoDevice, Ip, SPtr, EPtr, Low, High, SegSize, Version, SegmentTable) when Low =< High ->
     Middle = (Low + High) bsr 1,

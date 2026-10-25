@@ -1,0 +1,31 @@
+toolchain = { name = "dotnet", version = "6.0.x" }
+platforms = ["linux", "macos", "windows"]
+
+[[lint]]
+name = "Check formatting of the maker"
+run = ["dotnet", "format", "IP2RegionMaker/IP2RegionMaker.csproj", "--verify-no-changes"]
+timeout = 900
+
+[[lint]]
+name = "Check formatting of the tests"
+run = ["dotnet", "format", "IP2RegionMaker.Test/IP2RegionMaker.Test.csproj", "--verify-no-changes"]
+timeout = 900
+
+[[lint]]
+name = "Build with warnings as errors"
+run = ["dotnet", "build", "IP2RegionMaker.Test/IP2RegionMaker.Test.csproj", "--configuration", "Release", "-warnaserror", "-p:CheckEolTargetFramework=false"]
+timeout = 900
+
+[[test]]
+name = "Unit tests"
+run = ["dotnet", "test", "IP2RegionMaker.Test/IP2RegionMaker.Test.csproj", "--configuration", "Release"]
+timeout = 1200
+
+[[accept]]
+name = "Generate the IPv4 xdb"
+run = ["dotnet", "run", "--project", "IP2RegionMaker", "--configuration", "Release", "--", "--src=../../data/ipv4_source.txt", "--dst=ip2region_v4.xdb"]
+timeout = 900
+
+[[accept]]
+name = "Compare the IPv4 xdb with the committed one"
+run = ["ip2region-ci", "xdb-diff", "../../data/ip2region_v4.xdb", "ip2region_v4.xdb"]

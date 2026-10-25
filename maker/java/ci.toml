@@ -1,0 +1,30 @@
+toolchain = { name = "java", version = "17" }
+platforms = ["linux", "macos", "windows"]
+
+[[lint]]
+name = "Compile with javac warnings as errors"
+run = ["mvn", "--batch-mode", "--no-transfer-progress", "-Dmaven.compiler.failOnWarning=true", "test-compile"]
+timeout = 1200
+
+[[test]]
+name = "Unit tests"
+run = ["mvn", "--batch-mode", "--no-transfer-progress", "verify"]
+timeout = 1200
+
+[[accept]]
+name = "Generate the IPv4 xdb"
+run = ["java", "-cp", "target/classes", "org.lionsoul.ip2region.MakerApp", "--src=../../data/ipv4_source.txt", "--dst=ip2region_v4.xdb", "--version=ipv4"]
+timeout = 900
+
+[[accept]]
+name = "Compare the IPv4 xdb with the committed one"
+run = ["ip2region-ci", "xdb-diff", "../../data/ip2region_v4.xdb", "ip2region_v4.xdb"]
+
+[[accept]]
+name = "Generate the IPv6 xdb"
+run = ["java", "-cp", "target/classes", "org.lionsoul.ip2region.MakerApp", "--src=../../data/ipv6_source.txt", "--dst=ip2region_v6.xdb", "--version=ipv6"]
+timeout = 900
+
+[[accept]]
+name = "Compare the IPv6 xdb with the committed one"
+run = ["ip2region-ci", "xdb-diff", "../../data/ip2region_v6.xdb", "ip2region_v6.xdb"]

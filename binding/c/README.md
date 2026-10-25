@@ -92,9 +92,9 @@ int main(int argc, char *argv[]) {
     const char *ip_string = "1.2.3.4";
     // ip_string = "240e:3b7:3272:d8d0:db09:c067:8d59:539e"; // IPv6
 
-    long cost_time = 0, s_time = xdb_now();
+    long long s_time = xdb_now();
     err = xdb_search_by_string(&searcher, ip_string, &region);
-    cost_time = (int) (xdb_now() - s_time);
+    int cost_time = (int) (xdb_now() - s_time);
     if (err != 0) {
         printf("failed search(%s) with errno=%d\n", ip_string, err);
     } else {
@@ -162,9 +162,9 @@ int main(int argc, char *argv[]) {
     const char *ip_string = "1.2.3.4";
     // ip_string = "240e:3b7:3272:d8d0:db09:c067:8d59:539e"; // IPv6
 
-    long cost_time = 0, s_time = xdb_now();
+    long long s_time = xdb_now();
     err = xdb_search_by_string(&searcher, ip_string, &region);
-    cost_time = (int) (xdb_now() - s_time);
+    int cost_time = (int) (xdb_now() - s_time);
     if (err != 0) {
         printf("failed search(%s) with errno=%d\n", ip_string, err);
     } else {
@@ -232,9 +232,9 @@ int main(int argc, char *argv[]) {
     const char *ip_string = "1.2.3.4";
     // ip_string = "240e:3b7:3272:d8d0:db09:c067:8d59:539e"; // IPv6
 
-    long cost_time = 0, s_time = xdb_now();
+    long long s_time = xdb_now();
     err = xdb_search_by_string(&searcher, ip_string, &region);
-    cost_time = (int) (xdb_now() - s_time);
+    int cost_time = (int) (xdb_now() - s_time);
     if (err != 0) {
         printf("failed search(%s) with errno=%d\n", ip_string, err);
     } else {
@@ -289,10 +289,21 @@ xdb_region_buffer_free(&region);
 
 # Compiling the Test Program
 
-Compile and obtain the `xdb_searcher` executable as follows:
+The C binding builds with CMake 3.16 or later and supports GCC, Clang, Apple
+Clang, and Microsoft Visual C++:
 
 ```bash
 # cd to the c binding root directory
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --config Release --parallel
+ctest --test-dir build -C Release --output-on-failure
+```
+
+CMake writes the `xdb_searcher` and `test_util` programs to `build`. On
+Windows, run the commands above from a Visual Studio Developer PowerShell. On
+Linux and macOS, `make` builds both programs in the c binding root directory:
+
+```bash
 ➜  c git:(master) ✗ make
 gcc -std=c99 -Wall -O2 -I./ xdb_util.c xdb_searcher.c main.c -o xdb_searcher
 gcc -std=c99 -Wall -O2 -I./ xdb_util.c test_util.c -o test_util

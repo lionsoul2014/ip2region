@@ -65,8 +65,8 @@ public class Util
     public static int ipSubCompare(byte[] ip, byte[] buff, int offset) {
         for (int i = 0; i < ip.length; i++) {
             // covert the byte to int to sure the uint8 attribute
-            final int i1 = (int)(ip[i] & 0xFF);
-            final int i2 = (int)(buff[offset+i] & 0xFF);
+            final int i1 = ip[i] & 0xFF;
+            final int i2 = buff[offset+i] & 0xFF;
             if (i1 < i2) {
                 return -1;
             }
@@ -83,7 +83,7 @@ public class Util
         final byte[] r = new byte[ip.length];
         System.arraycopy(ip, 0, r, 0, ip.length);
         for (int i = ip.length - 1; i >= 0; i--) {
-            final int v = (int)(r[i] & 0xFF);
+            final int v = r[i] & 0xFF;
             if (v < 255) {    // No overflow
                 r[i]++;
                 break;
@@ -99,7 +99,7 @@ public class Util
         final byte[] r = new byte[ip.length];
         System.arraycopy(ip, 0, r, 0, ip.length);
         for (int i = ip.length - 1; i >= 0; i--) {
-            final int v = (int)(r[i] & 0xFF);
+            final int v = r[i] & 0xFF;
             if (v > 0) {    // No borrow needed
                 r[i]--;
                 break;

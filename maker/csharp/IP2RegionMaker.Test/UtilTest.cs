@@ -26,14 +26,14 @@ namespace IP2RegionMaker.Test
         {
             Assert.DoesNotThrow(() =>
             {
-                var seg=XDB.Util.GetSegment(value);
+                var seg = XDB.Util.GetSegment(value);
 
-                var segList= seg.Split();
+                var segList = seg.Split();
 
                 XDB.Util.CheckSegments(segList);
 
                 foreach (var item in segList)
-                { 
+                {
                     Console.WriteLine(item);
                 }
             });

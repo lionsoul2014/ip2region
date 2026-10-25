@@ -71,7 +71,7 @@ impl Searcher {
         // @Note: ptr validate, zero ptr means source data missing
         // so we could just stop here and return an empty string.
         if start_ptr == 0 || end_ptr == 0 {
-            return Ok(String::new())
+            return Ok(String::new());
         }
 
         // Binary search the segment index to get the region
@@ -87,9 +87,7 @@ impl Searcher {
             let offset = start_ptr + mid * segment_index_size;
             let buffer_ip_value = self.read_buf(offset, segment_index_size)?;
             if ip.ip_lt(Cow::Borrowed(&buffer_ip_value[0..ip_bytes_len])) {
-                let Some(m) = mid.checked_sub(1) else {
-                    break
-                };
+                let Some(m) = mid.checked_sub(1) else { break };
                 right = m;
             } else if ip.ip_gt(Cow::Borrowed(&buffer_ip_value[ip_bytes_len..ip_end_offset])) {
                 left = mid + 1;

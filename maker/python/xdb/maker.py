@@ -15,11 +15,14 @@
 # +----------------+-------------------+---------------+--------------+
 #
 # 1. padding space : for header info like block index ptr, version, release date eg ... or any other temporary needs.
-# -- 2bytes: version number, different version means structure update, it fixed to 2 for now
+# -- 2bytes: version number, different version means structure update,
+#            it fixed to 2 before IPv6 supporting, then updated to 3 since IPv6 supporting
 # -- 2bytes: index algorithm code.
 # -- 4bytes: generate unix timestamp (version)
 # -- 4bytes: index block start ptr
 # -- 4bytes: index block end ptr
+# -- 2bytes: ip version number (4/6 since IPv6 supporting)
+# -- 2bytes: runtime ptr bytes
 #
 #
 # 2. data block : region or whatever data info.
@@ -52,14 +55,15 @@
 import logging
 import struct
 import time
-import sys
 
 import xdb.segment as seg
 import xdb.index as idx
 import xdb.util as util
 
 
-Version_No = 2
+Version_No = 3
+IPv4_Version_No = 4
+Runtime_Ptr_Size = 4
 Header_Info_Length = 256
 Vector_Index_Rows = 256
 Vector_Index_Cols = 256
@@ -111,6 +115,10 @@ class Maker:
         header[8:12] = int(0).to_bytes(4, byteorder="little")
         # 5. Index block end ptr
         header[12:16] = int(0).to_bytes(4, byteorder="little")
+        # 6. IP version
+        header[16:18] = IPv4_Version_No.to_bytes(2, byteorder="little")
+        # 7. Runtime ptr bytes
+        header[18:20] = Runtime_Ptr_Size.to_bytes(2, byteorder="little")
         # Write header buffer to file
         self.dst_handle.write(header)
 
@@ -274,12 +282,8 @@ class Maker:
         """
         End of make the 'xdb' binary file.
         """
-        try:
-            self.src_handle.close()
-            self.dst_handle.close()
-        except IOError as e:
-            logging.error(e)
-            sys.exit()
+        self.src_handle.close()
+        self.dst_handle.close()
 
 
 def new_maker(policy: int, srcfile: str, dstfile: str) -> Maker:
@@ -290,20 +294,14 @@ def new_maker(policy: int, srcfile: str, dstfile: str) -> Maker:
     :param dstfile: destination binary xdb file path
     :return: the 'xdb' Maker
     """
-    try:
-        sh = open(srcfile, mode="r", encoding="utf-8")
-        dh = open(dstfile, mode="wb")
-        return Maker(
-            sh=sh,
-            dh=dh,
-            ip=policy,
-            sg=[],
-            rp={},
-            vi=[
-                [idx.VectorIndexBlock() for _ in range(Vector_Index_Rows)]
-                for _ in range(Vector_Index_Cols)
-            ],
-        )
-    except IOError as e:
-        logging.error(e)
-        sys.exit()
+    return Maker(
+        sh=open(srcfile, mode="r", encoding="utf-8"),
+        dh=open(dstfile, mode="wb"),
+        ip=policy,
+        sg=[],
+        rp={},
+        vi=[
+            [idx.VectorIndexBlock() for _ in range(Vector_Index_Rows)]
+            for _ in range(Vector_Index_Cols)
+        ],
+    )

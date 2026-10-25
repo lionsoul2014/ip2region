@@ -1,0 +1,52 @@
+toolchain = { name = "native" }
+platforms = ["linux", "macos", "windows"]
+
+[[lint]]
+name = "Configure with warnings as errors"
+run = ["cmake", "-S", ".", "-B", "build/lint", "-DCMAKE_COMPILE_WARNING_AS_ERROR=ON", "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"]
+
+[[lint]]
+name = "Build with warnings as errors"
+run = ["cmake", "--build", "build/lint", "--parallel"]
+timeout = 900
+
+[[lint]]
+name = "Run clang-tidy"
+run = [
+    "clang-tidy", "-p", "build/lint", "--warnings-as-errors=*",
+    "src/base.cc", "src/bench.cc", "src/edit.cc", "src/header.cc", "src/ip.cc", "src/make.cc", "src/search.cc",
+    "test/bench.cc", "test/edit_v4.cc", "test/edit_v6.cc", "test/header.cc", "test/ip.cc", "test/make.cc", "test/search.cc",
+]
+timeout = 900
+
+[[test]]
+name = "Configure"
+run = ["cmake", "-S", ".", "-B", "build", "-DCMAKE_BUILD_TYPE=Release"]
+
+[[test]]
+name = "Build"
+run = ["cmake", "--build", "build", "--config", "Release", "--parallel"]
+timeout = 900
+
+[[test]]
+name = "Unit tests"
+run = ["ctest", "--test-dir", "build", "-C", "Release", "--output-on-failure"]
+timeout = 900
+
+[[accept]]
+name = "Bench every cache policy against the IPv4 and IPv6 sources"
+run = ["bin/bench"]
+timeout = 2400
+
+[[accept]]
+name = "Generate the IPv4 and IPv6 xdb"
+run = ["bin/make"]
+timeout = 900
+
+[[accept]]
+name = "Compare the IPv4 xdb with the committed one"
+run = ["ip2region-ci", "xdb-diff", "../../data/ip2region_v4.xdb", "ip2region_v4.xdb"]
+
+[[accept]]
+name = "Compare the IPv6 xdb with the committed one"
+run = ["ip2region-ci", "xdb-diff", "../../data/ip2region_v6.xdb", "ip2region_v6.xdb"]

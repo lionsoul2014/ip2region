@@ -1,0 +1,33 @@
+toolchain = { name = "rust", version = "stable" }
+platforms = ["linux", "macos", "windows"]
+
+[[lint]]
+name = "Check formatting"
+run = ["cargo", "fmt", "--check", "--manifest-path", "maker/Cargo.toml"]
+
+[[lint]]
+name = "Clippy"
+run = ["cargo", "clippy", "--manifest-path", "maker/Cargo.toml", "--all-targets", "--", "-D", "warnings"]
+
+[[test]]
+name = "Unit tests"
+run = ["cargo", "test", "--manifest-path", "maker/Cargo.toml"]
+timeout = 1200
+
+[[accept]]
+name = "Generate the IPv4 xdb"
+run = ["cargo", "run", "--release", "--manifest-path", "maker/Cargo.toml", "--", "--src=../../data/ipv4_source.txt", "--dst=ip2region_v4.xdb", "--ip-version=v4"]
+timeout = 1200
+
+[[accept]]
+name = "Compare the IPv4 xdb with the committed one"
+run = ["ip2region-ci", "xdb-diff", "../../data/ip2region_v4.xdb", "ip2region_v4.xdb"]
+
+[[accept]]
+name = "Generate the IPv6 xdb"
+run = ["cargo", "run", "--release", "--manifest-path", "maker/Cargo.toml", "--", "--src=../../data/ipv6_source.txt", "--dst=ip2region_v6.xdb", "--ip-version=v6"]
+timeout = 1200
+
+[[accept]]
+name = "Compare the IPv6 xdb with the committed one"
+run = ["ip2region-ci", "xdb-diff", "../../data/ip2region_v6.xdb", "ip2region_v6.xdb"]

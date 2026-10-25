@@ -1,0 +1,44 @@
+toolchain = { name = "go", version = "1.22" }
+platforms = ["linux", "macos", "windows"]
+
+# dyld on macOS 26 refuses native binaries without an LC_UUID load command,
+# which Go 1.22 writes only with -B gobuildid. The x64 jobs run on the arm64
+# runner under Rosetta, as in binding/golang.
+[target.macos-x64]
+host = "macos-arm64"
+env = { GOARCH = "amd64" }
+
+[target.macos-arm64]
+env = { GOFLAGS = "-ldflags=-B=gobuildid" }
+
+[[lint]]
+name = "Check formatting"
+run = ["gofmt", "-l", "."]
+fail_on_output = true
+
+[[lint]]
+name = "Vet"
+run = ["go", "vet", "./..."]
+
+[[test]]
+name = "Unit tests"
+run = ["go", "test", "./..."]
+timeout = 900
+
+[[accept]]
+name = "Generate the IPv4 xdb"
+run = ["go", "run", ".", "gen", "--src=../../data/ipv4_source.txt", "--dst=ip2region_v4.xdb", "--version=ipv4"]
+timeout = 1200
+
+[[accept]]
+name = "Compare the IPv4 xdb with the committed one"
+run = ["ip2region-ci", "xdb-diff", "../../data/ip2region_v4.xdb", "ip2region_v4.xdb"]
+
+[[accept]]
+name = "Generate the IPv6 xdb"
+run = ["go", "run", ".", "gen", "--src=../../data/ipv6_source.txt", "--dst=ip2region_v6.xdb", "--version=ipv6"]
+timeout = 1200
+
+[[accept]]
+name = "Compare the IPv6 xdb with the committed one"
+run = ["ip2region-ci", "xdb-diff", "../../data/ip2region_v6.xdb", "ip2region_v6.xdb"]

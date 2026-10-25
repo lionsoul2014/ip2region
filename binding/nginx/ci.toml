@@ -1,0 +1,18 @@
+toolchain = { name = "docker" }
+platforms = ["linux"]
+depends_on = ["binding/c"]
+
+[[lint]]
+name = "Run clang-tidy in the build image"
+run = ["docker", "build", "--file", "Dockerfile", "--target", "lint", "../.."]
+timeout = 1800
+
+[[test]]
+name = "Build the module test image"
+run = ["docker", "build", "--file", "Dockerfile", "--target", "test", "--tag", "ip2region-nginx-test", "../.."]
+timeout = 1800
+
+[[test]]
+name = "Run the Test::Nginx suite"
+run = ["docker", "run", "--rm", "--init", "ip2region-nginx-test"]
+timeout = 900

@@ -3,7 +3,7 @@
   name = "ip2regionExample"
   version = "1.0.0"
   output-type = "executable"
-  compile-option = "-Woff unused"
+  compile-option = "-Woff unused --set-runtime-rpath"
   description = "ip2region Cangjie CLI example"
 
 [dependencies]

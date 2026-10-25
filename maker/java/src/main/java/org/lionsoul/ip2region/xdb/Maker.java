@@ -239,8 +239,8 @@ public class Maker {
 
     // set the vector index info of the specified ip
     private void setVectorIndex(final byte[] ip, long ptr) {
-        final int il0 = (int) (ip[0] & 0xFF);
-        final int il1 = (int) (ip[1] & 0xFF);
+        final int il0 = ip[0] & 0xFF;
+        final int il1 = ip[1] & 0xFF;
         final int idx = il0 * VectorIndexCols * VectorIndexSize + il1 * VectorIndexSize;
         final long sPtr = LittleEndian.getUint32(vectorIndex, idx);
         if (sPtr == 0) {

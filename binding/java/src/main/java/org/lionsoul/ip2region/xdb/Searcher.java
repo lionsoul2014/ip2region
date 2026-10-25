@@ -120,8 +120,8 @@ public class Searcher {
 
         // locate the segment index block based on the vector index
         long sPtr = 0, ePtr = 0;
-        int il0 = (int) (ip[0] & 0xFF);
-        int il1 = (int) (ip[1] & 0xFF);
+        int il0 = ip[0] & 0xFF;
+        int il1 = ip[1] & 0xFF;
         int idx = il0 * VectorIndexCols * VectorIndexSize + il1 * VectorIndexSize;
         // System.out.printf("il0: %d, il1: %d, idx: %d\n", il0, il1, idx);
         if (vectorIndex != null) {

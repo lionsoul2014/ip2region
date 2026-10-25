@@ -139,7 +139,7 @@ static char *get_line(FILE *fp, char *__dst) {
     cs = __dst;
     while ( ( c = getc( fp ) ) != EOF ) {
         if ( c == '\n' ) break;
-        *cs++ = c;
+        *cs++ = (char) c;
     }
     *cs = '\0';
 
@@ -154,7 +154,7 @@ void print_help(char *argv[]) {
     printf("  bench     search bench test\n");
 }
 
-void test_search(int argc, char *argv[]) {
+int test_search(int argc, char *argv[]) {
     int i, n, err;
 
     // for args parse
@@ -162,7 +162,7 @@ void test_search(int argc, char *argv[]) {
     char db_file[256] = {'\0'}, cache_policy[16] = {"vectorIndex"};
 
     // for search
-    long s_time, c_time;
+    long long s_time, c_time;
     char line[512] = {'\0'};
 
     // ip parse
@@ -183,13 +183,13 @@ void test_search(int argc, char *argv[]) {
 
         if (strchr(r, '=') == NULL) {
             printf("missing = for args pair '%s'\n", r);
-            return;
+            return 1;
         }
 
         n = sscanf(r+2, "%32[^=]=%255[^\n]", key, val);
         if (n != 2) {
             printf("invalid option flag `%s`\n", r);
-            return;
+            return 1;
         }
 
         // printf("key=%s, val=%s\n", key, val);
@@ -200,7 +200,7 @@ void test_search(int argc, char *argv[]) {
             // snprintf(cache_policy, sizeof(cache_policy), "%s", val);
         } else {
             printf("undefined option `%s`\n", r);
-            return;
+            return 1;
         }
     }
 
@@ -209,21 +209,21 @@ void test_search(int argc, char *argv[]) {
         printf("options:\n");
         printf(" --db string              ip2region binary xdb file path\n");
         printf(" --cache-policy string    cache policy: file/vectorIndex/content\n");
-        return;
+        return 1;
     }
 
     // init the win sock
     err = xdb_init_winsock();
     if (err != 0) {
         printf("failed to init the winsock with errno=%d\n", err);
-        return;
+        return 1;
     }
 
     // printf("db_file=%s, cache_policy=%s\n", db_file, cache_policy);
     err = init_searcher_test(&test, db_file, cache_policy);
     if (err != 0) {
         // init program will print the error reasons;
-        return;
+        return 1;
     }
 
     printf("ip2region xdb searcher test program\n"
@@ -252,7 +252,7 @@ void test_search(int argc, char *argv[]) {
             printf("{err: %d, io_count: %d}\n", err, xdb_get_io_count(&test.searcher));
         } else {
             c_time = xdb_now() - s_time;
-            printf("{region: %s, io_count: %d, took: %ld μs}\n", test.region.value, xdb_get_io_count(&test.searcher), c_time);
+            printf("{region: %s, io_count: %d, took: %lld μs}\n", test.region.value, xdb_get_io_count(&test.searcher), c_time);
         }
 
         // free the region
@@ -262,18 +262,19 @@ void test_search(int argc, char *argv[]) {
     destroy_searcher_test(&test);
     xdb_clean_winsock();
     printf("searcher test program exited, thanks for trying\n");
+    return 0;
 }
 
-void test_bench(int argc, char *argv[]) {
-    int i, n, err;
+int test_bench(int argc, char *argv[]) {
+    int i, n, err, errcode = 1;
     char *r, key[33] = {'\0'}, val[256] = {'\0'};
     char db_file[256] = {'\0'}, src_file[256] = {'\0'}, cache_policy[16] = {"vectorIndex"};
 
     FILE *handle;
     char line[1024] = {'\0'}, sip_str[INET6_ADDRSTRLEN+1] = {'\0'}, eip_str[INET6_ADDRSTRLEN+1] = {'\0'};
     char src_region[512] = {'\0'};
-    int count = 0, took;
-    long s_time, t_time, c_time = 0;
+    int count = 0;
+    long long s_time, t_time, c_time = 0, took;
 
     // ip parse
     xdb_version_t *s_version, *e_version;
@@ -294,13 +295,13 @@ void test_bench(int argc, char *argv[]) {
 
         if (strchr(r, '=') == NULL) {
             printf("missing = for args pair '%s'\n", r);
-            return;
+            return 1;
         }
 
         n = sscanf(r+2, "%32[^=]=%255[^\n]", key, val);
         if (n != 2) {
             printf("invalid option flag `%s`\n", r);
-            return;
+            return 1;
         }
 
         if (strcmp(key, "db") == 0) {
@@ -311,7 +312,7 @@ void test_bench(int argc, char *argv[]) {
             memcpy(cache_policy, val, sizeof(cache_policy) - 1);
         } else {
             printf("undefined option `%s`\n", r);
-            return;
+            return 1;
         }
     }
 
@@ -321,14 +322,14 @@ void test_bench(int argc, char *argv[]) {
         printf(" --db string              ip2region binary xdb file path\n");
         printf(" --src string             source ip text file path\n");
         printf(" --cache-policy string    cache policy: file/vectorIndex/content\n");
-        return;
+        return 1;
     }
 
     // init the win sock
     err = xdb_init_winsock();
     if (err != 0) {
         printf("failed to init the winsock with errno=%d\n", err);
-        return;
+        return 1;
     }
 
     // printf("db_file=%s, src_file=%s, cache_policy=%s\n", db_file, src_file, cache_policy);
@@ -336,43 +337,43 @@ void test_bench(int argc, char *argv[]) {
     err = init_searcher_test(&test, db_file, cache_policy);
     if (err != 0) {
         // the init function will print the details;
-        return;
+        return 1;
     }
 
     // open the source file
     handle = fopen(src_file, "r");
     if (handle == NULL) {
         printf("failed to open source text file `%s`\n", src_file);
-        return;
+        return 1;
     }
 
     while(fgets(line, sizeof(line), handle) != NULL) {
         n = sscanf(line, "%46[^|]|%46[^|]|%511[^\n]", sip_str, eip_str, src_region);
         if (n != 3) {
             printf("invalid ip segment line `%s`\n", line);
-            return;
+            goto defer;
         }
 
         s_version = xdb_parse_ip(sip_str, sip_bytes, sizeof(sip_bytes));
         if (s_version == NULL) {
             printf("invalid start ip `%s`\n", sip_str);
-            return;
+            goto defer;
         }
 
         e_version = xdb_parse_ip(eip_str, eip_bytes, sizeof(eip_bytes));
         if (e_version == NULL) {
-            printf("invalid end ip `%s`\n", sip_str);
-            return;
+            printf("invalid end ip `%s`\n", eip_str);
+            goto defer;
         }
 
         if (s_version->id != e_version->id) {
             printf("start ip and end ip version not match for line `%s`\n", line);
-            return;
+            goto defer;
         }
 
         if (xdb_ip_sub_compare(sip_bytes, s_version->bytes, (string_ip_t *) eip_bytes, 0) > 0) {
             printf("start ip(%s) should not be greater than end ip(%s)\n", sip_str, eip_str);
-            return;
+            goto defer;
         }
 
         ip_list[0] = sip_bytes;
@@ -384,14 +385,14 @@ void test_bench(int argc, char *argv[]) {
             if (err != 0) {
                 xdb_ip_to_string(ip_list[i], s_version->bytes, ip_string, sizeof(ip_string));
                 printf("failed to search ip `%s` with errno=%d\n", ip_string, err);
-                return;
+                goto defer;
             }
 
             // check the region info
             if (strcmp(test.region.value, src_region) != 0) {
                 xdb_ip_to_string(ip_list[i], s_version->bytes, ip_string, sizeof(ip_string));
                 printf("failed to search(%s) with (%s != %s)\n", ip_string, test.region.value, src_region);
-                return;
+                goto defer;
             }
 
             // free the region buffer
@@ -402,11 +403,15 @@ void test_bench(int argc, char *argv[]) {
     };
 
     took = xdb_now() - s_time;
+    printf("Bench finished, {cache_policy: %s, total: %d, took: %.3fs, cost: %d μs/op}\n",
+           cache_policy, count, took/1e6, count == 0 ? 0 : (int)(c_time/count));
+    errcode = 0;
+
+defer:
     destroy_searcher_test(&test);
     xdb_clean_winsock();
     fclose(handle);
-    printf("Bench finished, {cache_policy: %s, total: %d, took: %.3fs, cost: %d μs/op}\n",
-           cache_policy, count, took/1e6, count == 0 ? 0 : (int)(c_time/count));
+    return errcode;
 }
 
 int main(int argc, char *argv[]) {
@@ -417,12 +422,11 @@ int main(int argc, char *argv[]) {
 
     char *opt = argv[1];
     if (strcmp(opt, "search") == 0) {
-        test_search(argc, argv);
+        return test_search(argc, argv);
     } else if (strcmp(opt, "bench") == 0) {
-        test_bench(argc, argv);
-    } else {
-        print_help(argv);
+        return test_bench(argc, argv);
     }
 
+    print_help(argv);
     return 0;
 }

@@ -1,0 +1,59 @@
+toolchain = { name = "python" }
+platforms = ["linux", "macos", "windows"]
+
+# The dev dependency group in pyproject.toml requires Python < 3.12.
+# --project and --dev override the UV_PROJECT and UV_NO_DEV that CI sets for
+# ip2region-ci.
+[[lint]]
+name = "Check formatting"
+run = ["uv", "run", "--project", ".", "--dev", "--locked", "--python", "3.11", "ruff", "format", "--check"]
+
+[[lint]]
+name = "Ruff"
+run = ["uv", "run", "--project", ".", "--dev", "--locked", "--python", "3.11", "ruff", "check"]
+
+[[lint]]
+name = "Mypy"
+run = ["uv", "run", "--project", ".", "--dev", "--locked", "--python", "3.11", "mypy"]
+
+[[test]]
+name = "Run test_version"
+run = ["uv", "run", "--no-project", "--python", "3.14", "python", "-X", "utf8", "util_test.py", "test_version"]
+
+[[test]]
+name = "Run test_verify"
+run = ["uv", "run", "--no-project", "--python", "3.14", "python", "-X", "utf8", "util_test.py", "test_verify"]
+
+[[test]]
+name = "Run test_load_header"
+run = ["uv", "run", "--no-project", "--python", "3.14", "python", "-X", "utf8", "util_test.py", "test_load_header"]
+
+[[test]]
+name = "Run test_load_vector_index"
+run = ["uv", "run", "--no-project", "--python", "3.14", "python", "-X", "utf8", "util_test.py", "test_load_vector_index"]
+
+[[test]]
+name = "Run test_load_content"
+run = ["uv", "run", "--no-project", "--python", "3.14", "python", "-X", "utf8", "util_test.py", "test_load_content"]
+
+[[test]]
+name = "Run test_parse_ip"
+run = ["uv", "run", "--no-project", "--python", "3.14", "python", "-X", "utf8", "util_test.py", "test_parse_ip"]
+
+[[test]]
+name = "Run test_ip_compare"
+run = ["uv", "run", "--no-project", "--python", "3.14", "python", "-X", "utf8", "util_test.py", "test_ip_compare"]
+
+[[test]]
+name = "Run test_ip_search"
+run = ["uv", "run", "--no-project", "--python", "3.14", "python", "-X", "utf8", "util_test.py", "test_ip_search"]
+
+[[accept]]
+name = "Bench the IPv4 xdb against its source"
+run = ["uv", "run", "--no-project", "--python", "3.14", "python", "-X", "utf8", "bench_test.py", "--db=../../data/ip2region_v4.xdb", "--src=../../data/ipv4_source.txt"]
+timeout = 1800
+
+[[accept]]
+name = "Bench the IPv6 xdb against its source"
+run = ["uv", "run", "--no-project", "--python", "3.14", "python", "-X", "utf8", "bench_test.py", "--db=../../data/ip2region_v6.xdb", "--src=../../data/ipv6_source.txt"]
+timeout = 1800
