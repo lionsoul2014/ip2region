@@ -21,7 +21,7 @@ dev = [
 ]
 
 [build-system]
-requires = ["uv_build>=0.11.0,<0.12.0"]
+requires = ["uv_build>=0.11.0,<0.14.0"]
 build-backend = "uv_build"
 
 [[tool.uv.index]]
