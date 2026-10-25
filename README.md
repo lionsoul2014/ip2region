@@ -52,6 +52,7 @@ For API introductions, usage documentation, and test programs, please refer to t
 | [Logstash](binding/logstash/README.md)     | logstash filter plugin       | :white_check_mark: | :white_check_mark: |
 | [C++](binding/cpp/README.md)               | C++ query client             | :white_check_mark: | :white_check_mark: |
 | [Cangjie](binding/cangjie/README.md)       | Cangjie query client         | :white_check_mark: | :white_check_mark: |
+| [Logstash](binding/logstash/README.md)     | Logstash filter plugin       | :white_check_mark: | :white_check_mark: |
 
 The following toolchain implementations are contributed by community developers via third-party repositories:
 

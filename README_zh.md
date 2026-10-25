@@ -51,6 +51,7 @@ API 介绍，使用文档和测试程序请参考对应 `searcher` 查询客户�
 | [Logstash](binding/logstash/README_zh.md)     | logstash 过滤器插件     | :white_check_mark: | :white_check_mark: |
 | [C++](binding/cpp/README_zh.md)               | C++ 查询客户端          | :white_check_mark: | :white_check_mark: |
 | [Cangjie](binding/cangjie/README.md)          | 仓颉 查询客户端         | :white_check_mark: | :white_check_mark: |
+| [Logstash](binding/logstash/README_zh.md)     | Logstash 过滤插件       | :white_check_mark: | :white_check_mark: |
 
 
 以下工具链实现由社区开发者通过第三方仓库贡献：
