@@ -1,0 +1,7 @@
+*
+!binding/logstash
+!data/ip2region_v4.xdb
+!data/ip2region_v6.xdb
+binding/logstash/Gemfile.lock
+binding/logstash/vendor
+binding/logstash/*.gem

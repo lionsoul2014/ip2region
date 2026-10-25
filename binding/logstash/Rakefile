@@ -1,0 +1,6 @@
+require "json"
+
+# `rake vendor` (from logstash-devutils) downloads and verifies these files into vendor/
+@files = JSON.parse(File.read(File.join(__dir__, "vendor.json")))
+
+require "logstash/devutils/rake"
