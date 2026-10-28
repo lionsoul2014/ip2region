@@ -33,7 +33,7 @@ target_link_libraries(test_util PRIVATE xdb)
 
 enable_testing()
 
-foreach(test load_header load_vector_index load_content parse_ip ip_compare)
+foreach(test load_header load_vector_index load_content search_malformed_content parse_ip ip_compare)
     add_test(NAME c.${test} COMMAND test_util test_${test})
     set_tests_properties(c.${test} PROPERTIES WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
 endforeach()

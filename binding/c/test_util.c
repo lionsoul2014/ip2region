@@ -186,12 +186,62 @@ int test_ip_compare(void) {
     return errcode;
 }
 
+// searching a truncated or corrupted xdb held in the content buffer must fail
+// with an error code instead of reading outside of the buffer.
+int test_search_malformed_content(void) {
+    int i, err, errcode = 0;
+    xdb_searcher_t searcher;
+    xdb_region_buffer_t region;
+    xdb_content_t content;
+    bytes_ip_t ip_bytes[16] = {'\0'};
+
+    // case 1: the buffer ends before the vector index slot of the queried ip
+    static char small[257];
+    memset(small, 0x00, sizeof(small));
+    content.length = sizeof(small);
+    content.buffer = small;
+    if (xdb_new_with_buffer(xdb_version_v4(), &searcher, &content) != 0) {
+        printf("failed to create the searcher\n");
+        return 1;
+    }
+
+    xdb_region_buffer_init(&region, NULL, 0);
+    xdb_parse_ip("1.1.1.1", ip_bytes, sizeof(ip_bytes));
+    err = xdb_search(&searcher, ip_bytes, 4, &region);
+    printf("truncated vector index: err=%d\n", err);
+    if (err == 0) {
+        errcode = 1;
+    }
+    xdb_region_buffer_free(&region);
+
+    // case 2: the segment index pointers lead outside of the buffer
+    static char bad[262144];
+    memset(bad, 0x00, sizeof(bad));
+    // vector index slot of 1.1: s_ptr=0xffffffff, e_ptr=0xffffffff
+    for (i = 0; i < 8; i++) {
+        bad[256 + 1 * xdb_vector_index_cols * xdb_vector_index_size + 1 * xdb_vector_index_size + i] = (char) 0xff;
+    }
+    content.length = sizeof(bad);
+    content.buffer = bad;
+    xdb_new_with_buffer(xdb_version_v4(), &searcher, &content);
+    xdb_region_buffer_init(&region, NULL, 0);
+    err = xdb_search(&searcher, ip_bytes, 4, &region);
+    printf("segment index outside of the buffer: err=%d\n", err);
+    if (err == 0) {
+        errcode = 1;
+    }
+    xdb_region_buffer_free(&region);
+
+    return errcode;
+}
+
 // please register your function heare
 static test_func_t _test_function_list[] = {
     // xdb buffer
     {"test_load_header", test_load_header},
     {"test_load_vector_index", test_load_vector_index},
     {"test_load_content", test_load_content},
+    {"test_search_malformed_content", test_search_malformed_content},
 
     // ip utils
     {"test_parse_ip", test_parse_ip},

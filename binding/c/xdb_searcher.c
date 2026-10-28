@@ -186,6 +186,12 @@ XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, const bytes_ip_t *ip_bytes, int 
         s_ptr = xdb_le_get_uint32(xdb->v_index->buffer, idx);
         e_ptr = xdb_le_get_uint32(xdb->v_index->buffer, idx + 4);
     } else if (xdb->content != NULL) {
+        // the vector index lookup is driven by the query ip, so make sure
+        // it stays inside a (possibly truncated) content buffer
+        if ((size_t) xdb_header_info_length + (size_t) idx + 8 > (size_t) xdb->content->length) {
+            return 10 + 3;
+        }
+
         s_ptr = xdb_le_get_uint32(xdb->content->buffer, xdb_header_info_length + idx);
         e_ptr = xdb_le_get_uint32(xdb->content->buffer, xdb_header_info_length + idx + 4);
     } else {
@@ -257,6 +263,13 @@ XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, const bytes_ip_t *ip_bytes, int 
 XDB_PRIVATE(int) read(xdb_searcher_t *xdb, long offset, char *buffer, size_t length) {
     // check the xdb content cache first
     if (xdb->content != NULL) {
+        // the offset and length come from the xdb file itself, never read
+        // outside of the cached content buffer
+        if (offset < 0 || (size_t) offset > (size_t) xdb->content->length
+            || length > (size_t) xdb->content->length - (size_t) offset) {
+            return 3;
+        }
+
         memcpy(buffer, xdb->content->buffer + offset, length);
         return 0;
     }
