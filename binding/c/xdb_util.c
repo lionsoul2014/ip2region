@@ -58,7 +58,7 @@ XDB_PUBLIC(xdb_header_t *) xdb_load_header(FILE *handle) {
         return NULL;
     }
 
-    if (fread(header->buffer, 1,size, handle) != size) {
+    if (fread(header->buffer, 1, size, handle) != size) {
         xdb_free(header);
         return NULL;
     }
@@ -136,6 +136,15 @@ XDB_PUBLIC(xdb_vector_index_t *) xdb_load_vector_index_from_file(const char *db_
     return v_index;
 }
 
+XDB_PUBLIC(int) xdb_verify_vector_index(const xdb_vector_index_t *v_index) {
+    // verify the bytes
+    if (v_index->length != xdb_vector_index_length) {
+        return 1;
+    }
+
+    return 0;
+}
+
 XDB_PUBLIC(void) xdb_free_vector_index(void *ptr) {
     xdb_vector_index_t *v_index = (xdb_vector_index_t *) ptr;
     if (v_index->length > 0) {
@@ -157,6 +166,11 @@ XDB_PUBLIC(xdb_content_t *) xdb_load_content(FILE *handle) {
 
     size = (unsigned int) ftell(handle);
     if (fseek(handle, 0, SEEK_SET) == -1) {
+        return NULL;
+    }
+
+    // assert the minimum buffer size
+    if (size <= xdb_buffer_min_bytes) {
         return NULL;
     }
 
@@ -195,6 +209,15 @@ XDB_PUBLIC(xdb_content_t *) xdb_load_content_from_file(const char *db_path) {
     return content;
 }
 
+XDB_PUBLIC(int) xdb_verify_content(const xdb_content_t *content) {
+    // verify the minimum content length
+    if (content->length <= xdb_buffer_min_bytes) {
+        return 1;
+    }
+    
+    return 0;
+}
+
 XDB_PUBLIC(void) xdb_free_content(void *ptr) {
     xdb_content_t *content = (xdb_content_t *) ptr;
     if (content->length > 0) {
@@ -204,6 +227,9 @@ XDB_PUBLIC(void) xdb_free_content(void *ptr) {
         xdb_free(content);
     }
 }
+
+// ---
+// xdb verify
 
 XDB_PUBLIC(int) xdb_verify_from_header(FILE *handle, xdb_header_t *header) {
     unsigned int runtime_ptr_bytes = 0;  // runtime ptr bytes
@@ -227,6 +253,11 @@ XDB_PUBLIC(int) xdb_verify_from_header(FILE *handle, xdb_header_t *header) {
     // printf("fileBytes: %lld, maxFilePtr: %lld\n", fileBytes, maxFilePtr);
     if (fileBytes > maxFilePtr) {
         return 4;
+    }
+
+    // make sure it > minimum xdb file bytes.
+    if (fileBytes <= xdb_buffer_min_bytes) {
+        return 5;
     }
 
     return 0;

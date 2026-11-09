@@ -99,6 +99,26 @@ XDB_PUBLIC(void) xdb_region_buffer_free(xdb_region_buffer_t *region) {
 XDB_PRIVATE(int) read(xdb_searcher_t *, long offset, char *, size_t length);
 
 XDB_PRIVATE(int) xdb_new_base(xdb_version_t *version, xdb_searcher_t *xdb, const char *db_path, const xdb_vector_index_t *v_index, const xdb_content_t *c_buffer) {
+    int _errno = 0;
+
+    // check the v_index
+    if (v_index != NULL) {
+        _errno = xdb_verify_vector_index(v_index);
+        if (_errno != 0) {
+            return 10 + _errno;
+        }
+    }
+
+    // check the xdb content
+    if (c_buffer != NULL) {
+        // verify the content
+        _errno = xdb_verify_content(c_buffer);
+        if (_errno != 0) {
+            return 20 + _errno;
+        }
+    }
+
+    // zero fill the searcher
     memset(xdb, 0x00, sizeof(xdb_searcher_t));
 
     // set the version
@@ -106,19 +126,20 @@ XDB_PRIVATE(int) xdb_new_base(xdb_version_t *version, xdb_searcher_t *xdb, const
 
     // check the content buffer first
     if (c_buffer != NULL) {
+        xdb->handle  = NULL;
         xdb->v_index = NULL;
         xdb->content = c_buffer;
-        return 0;
-    }
+    } else {
+        // open the xdb binary file
+        FILE *handle = fopen(db_path, "rb");
+        if (handle == NULL) {
+            return 1;
+        }
 
-    // open the xdb binary file
-    FILE *handle = fopen(db_path, "rb");
-    if (handle == NULL) {
-        return 1;
+        xdb->handle  = handle;
+        xdb->v_index = v_index;
+        xdb->content = NULL;
     }
-
-    xdb->handle = handle;
-    xdb->v_index = v_index;
 
     return 0;
 }
@@ -255,8 +276,20 @@ XDB_PUBLIC(int) xdb_search(xdb_searcher_t *xdb, const bytes_ip_t *ip_bytes, int 
 }
 
 XDB_PRIVATE(int) read(xdb_searcher_t *xdb, long offset, char *buffer, size_t length) {
+    // @Note: heap-buffer-overflow may happend here CUZ of corrupted .xdb file.
+    // so check the access offset and final ptr here.
+    // Offset: private read for Vector / Binary / Region data ONLY.
+    if (offset < xdb_header_info_length) {
+        return 3;
+    }
+
     // check the xdb content cache first
     if (xdb->content != NULL) {
+        // offset + length should less than xdb buffer length.
+        if ((unsigned int)(offset + length) > xdb->content->length) {
+            return 4;
+        }
+
         memcpy(buffer, xdb->content->buffer + offset, length);
         return 0;
     }

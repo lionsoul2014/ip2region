@@ -58,6 +58,9 @@
 #define xdb_ipv6_bytes 16
 // cache of vector_index_row × vector_index_rows × vector_index_size
 #define xdb_vector_index_length 524288
+// cache of xdb_header_info_length + xdb_vector_index_length
+// = 256 + 256 * 256 * 8
+#define xdb_buffer_min_bytes 524544
 
 // --- xdb buffer functions
 
@@ -98,6 +101,8 @@ XDB_PUBLIC(xdb_vector_index_t *) xdb_load_vector_index(FILE *);
 
 XDB_PUBLIC(xdb_vector_index_t *) xdb_load_vector_index_from_file(const char *);
 
+XDB_PUBLIC(int) xdb_verify_vector_index(const xdb_vector_index_t *);
+
 XDB_PUBLIC(void) xdb_free_vector_index(void *);
 
 
@@ -111,6 +116,8 @@ typedef struct xdb_content xdb_content_t;
 XDB_PUBLIC(xdb_content_t *) xdb_load_content(FILE *);
 
 XDB_PUBLIC(xdb_content_t *) xdb_load_content_from_file(const char *);
+
+XDB_PUBLIC(int) xdb_verify_content(const xdb_content_t *);
 
 XDB_PUBLIC(void) xdb_free_content(void *);
 
