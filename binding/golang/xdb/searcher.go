@@ -47,44 +47,45 @@ func NewWithBuffer(version *Version, cBuff []byte) (*Searcher, error) {
 }
 
 func NewSearcher(version *Version, dbFile string, vIndex []byte, cBuff []byte) (*Searcher, error) {
-	var err error
-
-	// content buff first
-	if cBuff != nil {
-		return &Searcher{
-			version:     version,
-			vectorIndex: nil,
-			contentBuff: cBuff,
-		}, nil
-	}
-
 	// open the xdb binary file
 	handle, err := os.OpenFile(dbFile, os.O_RDONLY, 0600)
 	if err != nil {
 		return nil, err
 	}
 
-	return &Searcher{
-		version:     version,
-		dbReader:    handle,
-		vectorIndex: vIndex,
-	}, nil
+	return INewSearcher(version, handle, vIndex, cBuff)
 }
 
-func INewSearcher(version *Version, dbReader io.ReadSeekCloser, vIndex []byte, cBuff []byte) *Searcher {
+func INewSearcher(version *Version, dbReader io.ReadSeekCloser, vIndex []byte, cBuff []byte) (*Searcher, error) {
+	// assert the vector index
+	if vIndex != nil {
+		if len(vIndex) != VectorIndexBytes {
+			return nil, fmt.Errorf("invalid vector index with bytes != %d", VectorIndexBytes)
+		}
+	}
+
+	// assert the content buffer
+	if cBuff != nil {
+		if len(cBuff) <= XdbBufferMinBytes {
+			return nil, fmt.Errorf("invalid content buffer with bytes <= %d", XdbBufferMinBytes)
+		}
+	}
+
 	// content buff first
 	if cBuff != nil {
 		return &Searcher{
 			version:     version,
+			dbReader:    nil,
 			vectorIndex: nil,
 			contentBuff: cBuff,
-		}
+		}, nil
 	} else {
 		return &Searcher{
 			version:     version,
 			dbReader:    dbReader,
 			vectorIndex: vIndex,
-		}
+			contentBuff: nil,
+		}, nil
 	}
 }
 
@@ -205,26 +206,41 @@ func (s *Searcher) Search(ip any) (string, error) {
 // content buffer first or will read from the file.
 // this operation will invoke the Seek for file based read.
 func (s *Searcher) read(offset int64, buff []byte) error {
+	// check the offset
+	if offset < HeaderInfoLength {
+		return fmt.Errorf("invalid reader offset(%d) < %d", offset, HeaderInfoLength)
+	}
+
+	// reader from content buffer
 	if s.contentBuff != nil {
+		// offset + length should less than the xdb buffer length.
+		var idx = int(offset) + len(buff)
+		if idx > len(s.contentBuff) {
+			return fmt.Errorf("heap-buffer-overflow with offset(%d) > buffer length(%d)", idx, len(s.contentBuff))
+		}
+
 		cLen := copy(buff, s.contentBuff[offset:])
 		if cLen != len(buff) {
 			return fmt.Errorf("incomplete read: readed bytes should be %d", len(buff))
 		}
-	} else {
-		_, err := s.dbReader.Seek(offset, 0)
-		if err != nil {
-			return fmt.Errorf("seek to %d: %w", offset, err)
-		}
 
-		s.ioCount++
-		rLen, err := s.dbReader.Read(buff)
-		if err != nil {
-			return fmt.Errorf("handle read: %w", err)
-		}
+		return nil
+	}
 
-		if rLen != len(buff) {
-			return fmt.Errorf("incomplete read: readed bytes should be %d", len(buff))
-		}
+	// read from file
+	_, err := s.dbReader.Seek(offset, 0)
+	if err != nil {
+		return fmt.Errorf("seek to %d: %w", offset, err)
+	}
+
+	s.ioCount++
+	rLen, err := s.dbReader.Read(buff)
+	if err != nil {
+		return fmt.Errorf("handle read: %w", err)
+	}
+
+	if rLen != len(buff) {
+		return fmt.Errorf("incomplete read: readed bytes should be %d", len(buff))
 	}
 
 	return nil
