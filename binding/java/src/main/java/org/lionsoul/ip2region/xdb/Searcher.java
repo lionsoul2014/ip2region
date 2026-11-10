@@ -25,6 +25,14 @@ public class Searcher {
     public static final int VectorIndexCols  = 256;
     public static final int VectorIndexSize  = 8;
 
+    // vector index block bytes in total.
+    // cache of VectorIndexRows x VectorIndexCols x VectorIndexSize
+    public static final int VectorIndexBytes = 524288;
+
+    // minimum bytes of a xdb file.
+    // cache of HeaderInfoLength + VectorIndexBytes
+    public static final int XdbMinBytes = 524544;
+
     // maximum slice bytes for dynamic buffer array.
     // Linux max write / read bytes.
     // Check https://mp.weixin.qq.com/s/4xHRcnQbIcjtMGdXEGrxsA 
@@ -78,6 +86,21 @@ public class Searcher {
     // --- End of creator
 
     public Searcher(Version version, File xdbFile, byte[] vectorIndex, LongByteArray cBuff) throws IOException {
+        // assert bytes of the vector index
+        if (vectorIndex != null) {
+            if (vectorIndex.length != VectorIndexBytes) {
+                throw new IOException("invalid vector index with bytes !=" + VectorIndexBytes);
+            }
+        }
+
+        // assert the bytes of content buffer
+        if (cBuff != null) {
+            if (cBuff.length() <= XdbMinBytes) {
+                throw new IOException("invalid content buffer with bytes <="+XdbMinBytes);
+            }
+        }
+
+        // do the init
         this.version = version;
         this.xdbFile = xdbFile;
         if (cBuff != null) {
@@ -237,11 +260,10 @@ public class Searcher {
 
     public static byte[] loadVectorIndex(RandomAccessFile handle) throws IOException {
         handle.seek(HeaderInfoLength);
-        int len = VectorIndexRows * VectorIndexCols * VectorIndexSize;
-        final byte[] buff = new byte[len];
+        final byte[] buff = new byte[VectorIndexBytes];
         int rLen = handle.read(buff);
-        if (rLen != len) {
-            throw new IOException("incomplete read: read bytes should be " + len);
+        if (rLen != VectorIndexBytes) {
+            throw new IOException("incomplete read: read bytes should be " + VectorIndexBytes);
         }
 
         return buff;
@@ -259,8 +281,7 @@ public class Searcher {
     }
 
     public static byte[] loadVectorIndexFromBuffer(LongByteArray cBuffer) throws IOException {
-        final int len = VectorIndexRows * VectorIndexCols * VectorIndexSize;
-        return cBuffer.slice(HeaderInfoLength, len);
+        return cBuffer.slice(HeaderInfoLength, VectorIndexBytes);
     }
 
     // --- read xdb content
@@ -382,6 +403,11 @@ public class Searcher {
         final long maxFilePtr = (1L << (runtimePtrBytes * 8)) - 1;
         if (fileBytes > maxFilePtr) {
             throw new XdbException("xdb file exceeds the maximum supported bytes: "+maxFilePtr+"");
+        }
+
+        // make sure it > minimum xdb file bytes.
+        if (fileBytes <= XdbMinBytes) {
+            throw new XdbException("xdb file is smaller than the minimum expected bytes: "+XdbMinBytes+"");
         }
     }
 

@@ -9,7 +9,7 @@
 <dependency>
     <groupId>org.lionsoul</groupId>
     <artifactId>ip2region</artifactId>
-    <version>3.3.7</version>
+    <version>3.3.8</version>
 </dependency>
 ```
 
