@@ -23,6 +23,12 @@ const (
 	VectorIndexRows  = 256
 	VectorIndexCols  = 256
 	VectorIndexSize  = 8
+
+	// cache of VectorIndexRows x VectorIndexCols x VectorIndexSize
+	VectorIndexBytes = 524288
+
+	// cache of HeaderInfoLength + VectorIndexBytes
+	XdbBufferMinBytes = 524544
 )
 
 // --- Index policy define

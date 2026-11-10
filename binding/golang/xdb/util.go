@@ -159,15 +159,22 @@ func Verify(handle *os.File) error {
 	}
 
 	// 1, confirm the xdb file size.
-	// to sure that the MaxFilePointer does no overflow
 	stat, err := handle.Stat()
 	if err != nil {
 		return fmt.Errorf("file stat: %w", err)
 	}
 
+	var fileBytes = stat.Size()
+
+	// to sure that the MaxFilePointer does no overflow
 	maxFilePtr := (int64(1) << (runtimePtrBytes * 8)) - 1
-	if stat.Size() > maxFilePtr {
-		return fmt.Errorf("xdb file exceeds the maximum supported bytes: %d", maxFilePtr)
+	if fileBytes > maxFilePtr {
+		return fmt.Errorf("xdb file(%d) exceeds the maximum supported bytes: %d", fileBytes, maxFilePtr)
+	}
+
+	// make sure it > minimum xdb file bytes.
+	if fileBytes <= XdbBufferMinBytes {
+		return fmt.Errorf("xdb file(%d) is smaller than the minimum expected bytes: %d", fileBytes, XdbBufferMinBytes)
 	}
 
 	return nil
