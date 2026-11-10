@@ -4,7 +4,7 @@
 
     <groupId>org.lionsoul</groupId>
     <artifactId>ip2region</artifactId>
-    <version>3.3.7</version>
+    <version>3.3.8</version>
     <packaging>jar</packaging>
 
     <name>ip2region</name>
@@ -52,8 +52,8 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
     </properties>
 
     <dependencies>
@@ -139,12 +139,12 @@
 
     <profiles>
         <profile>
-            <id>jdk9+</id>
+            <id>jdk11+</id>
             <activation>
-                <jdk>[9,)</jdk>
+                <jdk>[11,)</jdk>
             </activation>
             <properties>
-                <maven.compiler.release>8</maven.compiler.release>
+                <maven.compiler.release>11</maven.compiler.release>
             </properties>
         </profile>
         <profile>
