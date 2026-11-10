@@ -43,20 +43,25 @@ func NewWithVectorIndex(version *Version, dbFile string, vIndex []byte) (*Search
 }
 
 func NewWithBuffer(version *Version, cBuff []byte) (*Searcher, error) {
-	return NewSearcher(version, "", nil, cBuff)
+	return NewWithReader(version, nil, nil, cBuff)
 }
 
 func NewSearcher(version *Version, dbFile string, vIndex []byte, cBuff []byte) (*Searcher, error) {
-	// open the xdb binary file
-	handle, err := os.OpenFile(dbFile, os.O_RDONLY, 0600)
-	if err != nil {
-		return nil, err
+	var err error
+	var handle *os.File
+
+	// check and open the xdb binary file
+	if len(dbFile) > 1 {
+		handle, err = os.OpenFile(dbFile, os.O_RDONLY, 0600)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	return INewSearcher(version, handle, vIndex, cBuff)
+	return NewWithReader(version, handle, vIndex, cBuff)
 }
 
-func INewSearcher(version *Version, dbReader io.ReadSeekCloser, vIndex []byte, cBuff []byte) (*Searcher, error) {
+func NewWithReader(version *Version, dbReader io.ReadSeekCloser, vIndex []byte, cBuff []byte) (*Searcher, error) {
 	// assert the vector index
 	if vIndex != nil {
 		if len(vIndex) != VectorIndexBytes {
