@@ -1,5 +1,6 @@
 package org.lionsoul.ip2region.xdb;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 public class UtilTest {
@@ -21,6 +22,20 @@ public class UtilTest {
         for (String ip : ips) {
             final byte[] ipBytes = Util.parseIP(ip);
             log.debugf("%s(v=%s) => %s", ip, Util.ipJoin(ipBytes), Util.ipToString(ipBytes));
+        }
+    }
+
+    @Test
+    public void testRejectNonAddressLiterals() {
+        // anything getByName would resolve through DNS or read as shorthand
+        final String[] inputs = new String[]{"localhost", "github.com", "1", "1.2", "256.1.1.1", "1.2.3.4.5", " 1.2.3.4", "g::1", ""};
+        for (String ip : inputs) {
+            try {
+                Util.parseIP(ip);
+                Assert.fail("parseIP accepted `" + ip + "`");
+            } catch (InetAddressException e) {
+                log.debugf("%s rejected: %s", ip, e.getMessage());
+            }
         }
     }
 
