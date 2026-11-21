@@ -66385,7 +66385,9 @@
 50.114.93.0|50.114.94.255|United States|Utah|Orem|0|US
 50.114.95.0|50.114.95.255|United States|New York|New York City|0|US
 50.114.96.0|50.114.127.255|United States|Illinois|Chicago|0|US
-50.114.128.0|50.114.255.255|United States|New York|New York City|0|US
+50.114.128.0|50.114.171.255|United States|New York|New York City|0|US
+50.114.172.0|50.114.172.255|United States|California|Los Angeles|FAST NETWORK LIMITED|US
+50.114.173.0|50.114.255.255|United States|New York|New York City|0|US
 50.115.0.0|50.115.15.255|United States|Florida|Miami|0|US
 50.115.16.0|50.115.31.255|United States|Florida|St. Petersburg|0|US
 50.115.32.0|50.115.47.255|United States|California|Los Angeles|0|US
@@ -179385,7 +179387,9 @@
 89.41.188.0|89.41.188.255|Israel|Tel Aviv|Tel Aviv|0|IL
 89.41.189.0|89.41.189.255|Türkiye|Istanbul|0|0|TR
 89.41.190.0|89.41.191.255|New Zealand|Auckland|0|0|NZ
-89.41.192.0|89.42.199.255|Iran|Tehran|0|0|IR
+89.41.192.0|89.42.94.255|Iran|Tehran|0|0|IR
+89.42.95.0|89.42.95.255|United States|California|Los Angeles|FAST NETWORK LIMITED|US
+89.42.96.0|89.42.199.255|Iran|Tehran|0|0|IR
 89.42.200.0|89.42.203.255|Romania|Ilfov|Voluntari|0|RO
 89.42.204.0|89.42.207.255|Kazakhstan|Astana|0|0|KZ
 89.42.208.0|89.42.211.255|Iran|Gilan Province|0|0|IR
@@ -256706,7 +256710,9 @@
 107.147.0.0|107.147.159.255|United States|California|Stanton|0|US
 107.147.160.0|107.147.191.255|United States|Indiana|Indianapolis|0|US
 107.147.192.0|107.147.255.255|United States|Michigan|Livonia|0|US
-107.148.0.0|107.149.255.255|Japan|Tokyo|Tokyo|0|JP
+107.148.0.0|107.149.158.255|Japan|Tokyo|Tokyo|0|JP
+107.149.159.0|107.149.159.255|United States|California|Los Angeles|FAST NETWORK LIMITED|US
+107.149.160.0|107.149.255.255|Japan|Tokyo|Tokyo|0|JP
 107.150.0.0|107.150.15.255|United States|Washington|Seattle|0|US
 107.150.16.0|107.150.16.255|New Zealand|Auckland|Auckland|0|NZ
 107.150.17.0|107.150.17.255|United States|California|Los Angeles|0|US
@@ -295921,25 +295927,64 @@
 123.87.236.0|123.87.239.255|中国|云南省|0|中移铁通|CN
 123.87.240.0|123.87.247.255|中国|云南省|红河|中移铁通|CN
 123.87.248.0|123.87.255.255|中国|云南省|昆明市|0|CN
-123.88.0.0|123.88.15.255|中国|广东省|深圳市|移动|CN
-123.88.16.0|123.88.23.255|中国|广东省|湛江市|移动|CN
-123.88.24.0|123.88.31.255|中国|广东省|揭阳市|移动|CN
-123.88.32.0|123.88.47.255|中国|广东省|佛山市|移动|CN
-123.88.48.0|123.88.55.255|中国|广东省|潮州市|移动|CN
-123.88.56.0|123.88.71.255|中国|广东省|惠州市|移动|CN
-123.88.72.0|123.88.79.255|中国|广东省|肇庆市|移动|CN
-123.88.80.0|123.88.103.255|中国|广东省|韶关市|移动|CN
-123.88.104.0|123.88.107.255|中国|广东省|茂名市|移动|CN
-123.88.108.0|123.88.111.255|中国|广东省|梅州市|移动|CN
-123.88.112.0|123.88.127.255|中国|广东省|江门市|移动|CN
-123.88.128.0|123.88.135.255|中国|广东省|汕头市|移动|CN
-123.88.136.0|123.88.143.255|中国|广东省|东莞市|移动|CN
-123.88.144.0|123.88.151.255|中国|广东省|中山市|移动|CN
-123.88.152.0|123.88.159.255|中国|广东省|梅州市|移动|CN
-123.88.160.0|123.88.167.255|中国|广东省|清远市|移动|CN
-123.88.168.0|123.88.175.255|中国|广东省|江门市|移动|CN
-123.88.176.0|123.88.191.255|中国|广东省|东莞市|移动|CN
-123.88.192.0|123.88.255.255|中国|广东省|广州市|移动|CN
+123.88.0.0|123.88.7.255|中国|广东省|珠海市|移动|CN
+123.88.8.0|123.88.15.255|中国|广东省|佛山市|移动|CN
+123.88.16.0|123.88.16.255|中国|广东省|深圳市|移动|CN
+123.88.17.0|123.88.19.255|中国|广东省|广州市|移动|CN
+123.88.20.0|123.88.31.255|中国|广东省|东莞市|移动|CN
+123.88.32.0|123.88.35.255|中国|广东省|广州市|移动|CN
+123.88.36.0|123.88.42.255|中国|广东省|佛山市|移动|CN
+123.88.43.0|123.88.53.255|中国|广东省|深圳市|移动|CN
+123.88.54.0|123.88.59.255|中国|广东省|佛山市|移动|CN
+123.88.60.0|123.88.64.255|中国|广东省|惠州市|移动|CN
+123.88.65.0|123.88.69.255|中国|广东省|中山市|移动|CN
+123.88.70.0|123.88.75.255|中国|广东省|湛江市|移动|CN
+123.88.76.0|123.88.79.255|中国|广东省|江门市|移动|CN
+123.88.80.0|123.88.84.255|中国|广东省|汕头市|移动|CN
+123.88.85.0|123.88.87.255|中国|广东省|梅州市|移动|CN
+123.88.88.0|123.88.93.255|中国|广东省|揭阳市|移动|CN
+123.88.94.0|123.88.98.255|中国|广东省|珠海市|移动|CN
+123.88.99.0|123.88.102.255|中国|广东省|肇庆市|移动|CN
+123.88.103.0|123.88.105.255|中国|广东省|潮州市|移动|CN
+123.88.106.0|123.88.108.255|中国|广东省|阳江市|移动|CN
+123.88.109.0|123.88.111.255|中国|广东省|清远市|移动|CN
+123.88.112.0|123.88.115.255|中国|广东省|茂名市|移动|CN
+123.88.116.0|123.88.118.255|中国|广东省|河源市|移动|CN
+123.88.119.0|123.88.120.255|中国|广东省|韶关市|移动|CN
+123.88.121.0|123.88.123.255|中国|广东省|云浮市|移动|CN
+123.88.124.0|123.88.127.255|中国|广东省|汕尾市|移动|CN
+123.88.128.0|123.88.131.255|中国|广东省|河源市|移动|CN
+123.88.132.0|123.88.135.255|中国|广东省|中山市|移动|CN
+123.88.136.0|123.88.136.255|中国|广东省|汕尾市|移动|CN
+123.88.137.0|123.88.139.255|中国|广东省|东莞市|移动|CN
+123.88.140.0|123.88.143.255|中国|广东省|广州市|移动|CN
+123.88.144.0|123.88.146.255|中国|广东省|东莞市|移动|CN
+123.88.147.0|123.88.147.255|中国|广东省|深圳市|移动|CN
+123.88.148.0|123.88.148.255|中国|广东省|云浮市|移动|CN
+123.88.149.0|123.88.151.255|中国|广东省|中山市|移动|CN
+123.88.152.0|123.88.160.255|中国|广东省|广州市|移动|CN
+123.88.161.0|123.88.161.255|中国|广东省|清远市|移动|CN
+123.88.162.0|123.88.162.255|中国|广东省|江门市|移动|CN
+123.88.163.0|123.88.163.255|中国|广东省|清远市|移动|CN
+123.88.164.0|123.88.164.255|中国|广东省|广州市|移动|CN
+123.88.165.0|123.88.167.255|中国|广东省|清远市|移动|CN
+123.88.168.0|123.88.169.255|中国|广东省|广州市|移动|CN
+123.88.170.0|123.88.170.255|中国|广东省|江门市|移动|CN
+123.88.171.0|123.88.171.255|中国|广东省|广州市|移动|CN
+123.88.172.0|123.88.175.255|中国|广东省|江门市|移动|CN
+123.88.176.0|123.88.223.255|中国|广东省|广州市|移动|CN
+123.88.224.0|123.88.225.255|中国|广东省|潮州市|移动|CN
+123.88.226.0|123.88.226.255|中国|广东省|中山市|移动|CN
+123.88.227.0|123.88.227.255|中国|广东省|广州市|移动|CN
+123.88.228.0|123.88.230.255|中国|广东省|汕头市|移动|CN
+123.88.231.0|123.88.235.255|中国|广东省|广州市|移动|CN
+123.88.236.0|123.88.246.255|中国|广东省|东莞市|移动|CN
+123.88.247.0|123.88.247.255|中国|广东省|珠海市|移动|CN
+123.88.248.0|123.88.248.255|中国|广东省|汕头市|移动|CN
+123.88.249.0|123.88.249.255|中国|广东省|广州市|移动|CN
+123.88.250.0|123.88.250.255|中国|广东省|湛江市|移动|CN
+123.88.251.0|123.88.251.255|中国|广东省|汕头市|移动|CN
+123.88.252.0|123.88.255.255|中国|广东省|东莞市|移动|CN
 123.89.0.0|123.89.7.255|中国|广东省|潮州市|中移铁通|CN
 123.89.8.0|123.89.15.255|中国|广东省|深圳市|中移铁通|CN
 123.89.16.0|123.89.27.255|中国|广东省|茂名市|中移铁通|CN
@@ -306221,7 +306266,13 @@
 135.255.224.0|135.255.239.255|United States|Washington|0|0|US
 135.255.240.0|135.255.255.255|United States|Washington|Redmond|0|US
 136.0.0.0|136.0.15.255|United States|California|Los Angeles|0|US
-136.0.16.0|136.0.255.255|Colombia|Bogota D.C.|Bogotá|0|CO
+136.0.16.0|136.0.33.255|Colombia|Bogota D.C.|Bogotá|0|CO
+136.0.34.0|136.0.34.255|United States|California|Los Angeles|FAST NETWORK LIMITED|US
+136.0.35.0|136.0.36.255|Colombia|Bogota D.C.|Bogotá|0|CO
+136.0.37.0|136.0.37.255|United States|California|Los Angeles|FAST NETWORK LIMITED|US
+136.0.38.0|136.0.72.255|Colombia|Bogota D.C.|Bogotá|0|CO
+136.0.73.0|136.0.73.255|United States|California|Los Angeles|FAST NETWORK LIMITED|US
+136.0.74.0|136.0.255.255|Colombia|Bogota D.C.|Bogotá|0|CO
 136.1.0.0|136.2.255.255|United States|Washington|Seattle|0|US
 136.3.0.0|136.7.255.255|United States|Washington|Seattle|Amazon.com, Inc.|US
 136.8.0.0|136.8.7.255|United States|California|0|0|US
@@ -312607,7 +312658,9 @@
 144.223.190.0|144.223.191.255|United States|Illinois|Chicago|Cogent Communications|US
 144.223.192.0|144.223.254.255|United States|California|Long Beach|Cogent Communications|US
 144.223.255.0|144.224.31.255|United States|Washington, D.C.|Washington, D.C.|Cogent Communications|US
-144.224.32.0|144.227.255.255|United States|Virginia|0|Cogent Communications|US
+144.224.32.0|144.225.32.255|United States|Virginia|0|Cogent Communications|US
+144.225.33.0|144.225.33.255|United States|California|Los Angeles|FAST NETWORK LIMITED|US
+144.225.34.0|144.227.255.255|United States|Virginia|0|Cogent Communications|US
 144.228.0.0|144.228.15.255|United States|Washington, D.C.|Washington, D.C.|Cogent Communications|US
 144.228.16.0|144.228.31.255|United States|Virginia|Ashburn|Cogent Communications|US
 144.228.32.0|144.228.39.255|United States|Washington, D.C.|Washington, D.C.|Cogent Communications|US
@@ -322594,7 +322647,9 @@
 157.254.32.0|157.254.63.255|中国|香港特别行政区|0|0|CN
 157.254.64.0|157.254.159.255|United States|New York|New York City|0|US
 157.254.160.0|157.254.173.255|United Kingdom|England|London|0|GB
-157.254.174.0|157.254.215.255|United States|Florida|Miami|0|US
+157.254.174.0|157.254.204.255|United States|Florida|Miami|0|US
+157.254.205.0|157.254.205.255|United States|California|Los Angeles|FAST NETWORK LIMITED|US
+157.254.206.0|157.254.215.255|United States|Florida|Miami|0|US
 157.254.216.0|157.254.223.255|Japan|Tokyo|Tokyo|0|JP
 157.254.224.0|157.254.228.255|United States|New Jersey|Piscataway|0|US
 157.254.229.0|157.254.229.255|United States|Texas|0|AMTECH BUSINESS SOLUTIONS.|US
@@ -330670,7 +330725,17 @@
 165.254.248.0|165.254.254.255|United States|New York|New York City|NTT America, Inc.|US
 165.254.255.0|165.254.255.255|Netherlands|North Holland|Amsterdam|NTT America, Inc.|NL
 165.255.0.0|165.255.255.255|South Africa|Western Cape|0|0|ZA
-166.0.0.0|166.1.255.255|United States|Utah|Orem|0|US
+166.0.0.0|166.0.96.255|United States|Utah|Orem|0|US
+166.0.97.0|166.0.97.255|United States|California|Los Angeles|FAST NETWORK LIMITED|US
+166.0.98.0|166.0.99.255|United States|Utah|Orem|0|US
+166.0.100.0|166.0.100.255|United States|California|Los Angeles|FAST NETWORK LIMITED|US
+166.0.101.0|166.1.138.255|United States|Utah|Orem|0|US
+166.1.139.0|166.1.139.255|United States|California|Los Angeles|FAST NETWORK LIMITED|US
+166.1.140.0|166.1.217.255|United States|Utah|Orem|0|US
+166.1.218.0|166.1.218.255|United States|California|Los Angeles|FAST NETWORK LIMITED|US
+166.1.219.0|166.1.231.255|United States|Utah|Orem|0|US
+166.1.232.0|166.1.232.255|United States|California|Los Angeles|FAST NETWORK LIMITED|US
+166.1.233.0|166.1.255.255|United States|Utah|Orem|0|US
 166.2.0.0|166.7.255.255|United States|Idaho|Boise|0|US
 166.8.0.0|166.11.255.255|United States|New York|0|0|US
 166.12.0.0|166.15.255.255|Switzerland|Zurich|0|0|CH
@@ -347166,7 +347231,9 @@
 178.79.240.0|178.79.247.255|Germany|Hesse|Frankfurt am Main|0|DE
 178.79.248.0|178.79.255.255|United Kingdom|England|London|0|GB
 178.80.0.0|178.81.255.255|Saudi Arabia|Eastern Province|0|0|SA
-178.82.0.0|178.83.255.255|Switzerland|Grisons|0|Sunrise GmbH|CH
+178.82.0.0|178.83.202.255|Switzerland|Grisons|0|Sunrise GmbH|CH
+178.83.203.0|178.83.203.255|United States|California|Los Angeles|FAST NETWORK LIMITED|US
+178.83.204.0|178.83.255.255|Switzerland|Grisons|0|Sunrise GmbH|CH
 178.84.0.0|178.84.26.255|Netherlands|Gelderland|Apeldoorn|Vodafone Libertel B.V.|NL
 178.84.27.0|178.84.51.255|Netherlands|North Brabant|0|Vodafone Libertel B.V.|NL
 178.84.52.0|178.84.52.255|Netherlands|North Brabant|Eindhoven|Vodafone Libertel B.V.|NL
@@ -382250,7 +382317,10 @@
 192.6.13.0|192.6.19.255|United States|California|Walnut Creek|0|US
 192.6.20.0|192.6.20.255|United States|California|Palo Alto|0|US
 192.6.21.0|192.6.21.255|United States|California|San Francisco|Keysight Technologies, Inc|US
-192.6.22.0|192.6.124.255|United States|Texas|Spring|0|US
+192.6.22.0|192.6.119.255|United States|Texas|Spring|0|US
+192.6.120.0|192.6.120.255|United States|California|Los Angeles|FAST NETWORK LIMITED|US
+192.6.121.0|192.6.121.255|United States|California|Los Angeles|FAST NETWORK LIMITED|US
+192.6.122.0|192.6.124.255|United States|Texas|Spring|0|US
 192.6.125.0|192.6.125.255|India|Uttar Pradesh|0|0|IN
 192.6.126.0|192.6.126.255|United States|California|Palo Alto|0|US
 192.6.127.0|192.6.127.255|United States|Texas|Spring|0|US
@@ -410194,7 +410264,8 @@
 195.72.148.0|195.72.151.255|Poland|Mazovia|0|0|PL
 195.72.152.0|195.72.155.255|France|Rhône-Alpes|0|0|FR
 195.72.156.0|195.72.159.255|Russia|Moscow|0|0|RU
-195.72.160.0|195.72.191.255|United Kingdom|England|0|0|GB
+195.72.160.0|195.72.183.255|United Kingdom|England|0|0|GB
+195.72.184.0|195.72.191.255|United States|California|Los Angeles|FAST NETWORK LIMITED|US
 195.72.192.0|195.72.223.255|Italy|Piedmont|Borgomanero|0|IT
 195.72.224.0|195.72.255.255|Russia|Sakhalin Oblast|Yuzhno-Sakhalinsk|0|RU
 195.73.0.0|195.73.255.255|Netherlands|North Brabant|0|0|NL
