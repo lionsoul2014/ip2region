@@ -269725,7 +269725,9 @@
 111.53.168.0|111.53.175.255|中国|山西省|0|移动|CN
 111.53.176.0|111.53.191.255|中国|山西省|晋中市|移动|CN
 111.53.192.0|111.53.255.255|中国|山西省|太原市|移动|CN
-111.54.0.0|111.55.255.255|中国|0|0|移动|CN
+111.54.0.0|111.55.159.255|中国|0|0|移动|CN
+111.55.160.0|111.55.161.255|中国|海南省|海口市|移动|CN
+111.55.162.0|111.55.255.255|中国|0|0|移动|CN
 111.56.0.0|111.56.1.127|中国|内蒙古|呼和浩特市|移动|CN
 111.56.1.128|111.56.1.239|中国|内蒙古|巴彦淖尔市|移动|CN
 111.56.1.240|111.56.1.255|中国|内蒙古|呼和浩特市|移动|CN
@@ -382318,8 +382320,7 @@
 192.6.20.0|192.6.20.255|United States|California|Palo Alto|0|US
 192.6.21.0|192.6.21.255|United States|California|San Francisco|Keysight Technologies, Inc|US
 192.6.22.0|192.6.119.255|United States|Texas|Spring|0|US
-192.6.120.0|192.6.120.255|United States|California|Los Angeles|FAST NETWORK LIMITED|US
-192.6.121.0|192.6.121.255|United States|California|Los Angeles|FAST NETWORK LIMITED|US
+192.6.120.0|192.6.121.255|United States|California|Los Angeles|FAST NETWORK LIMITED|US
 192.6.122.0|192.6.124.255|United States|Texas|Spring|0|US
 192.6.125.0|192.6.125.255|India|Uttar Pradesh|0|0|IN
 192.6.126.0|192.6.126.255|United States|California|Palo Alto|0|US
