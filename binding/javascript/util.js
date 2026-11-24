@@ -74,58 +74,51 @@ function _parse_ipv4_addr(v4String) {
 
 // parse ipv6 address
 function _parse_ipv6_addr(v6String) {
-    let ps = v6String.split(':', 8);
-    if (ps.length < 3) {
-        throw new Error('invalid ipv6 address');
-    }
-
-    let dc_num = 0, offset = 0;
     const ipBytes = Buffer.alloc(16);
-    for (var i = 0; i < ps.length; i++) {
-        let s = ps[i].trim();
+    let str = v6String.trim(), end = 16;
 
-        // Double colon check and auto padding
-        if (s.length == 0) {
-            // ONLY one double colon allow
-            if (dc_num > 0) {
-                throw new Error('invalid ipv6 address: multi double colon detected');
-            }
-
-            let start = i, mi = ps.length - 1;
-            // clear all the consecutive spaces
-            for (i++;;) {
-                s = ps[i].trim();
-                if (s.length > 0) {
-                    i--;
-                    break;
-                }
-
-                if (i >= mi) {
-                    break;
-                }
-
-                i++;
-            }
-
-            dc_num = 1;
-            // padding = 8 - start - left
-            let padding = 8 - start - (mi - i);
-            offset += 2 * padding;
-            continue;
-        }
-
-        let v = parseInt(s, 16);
-        if (isNaN(v)) {
-            throw new Error(`invalid ipv6 part '${ps[i]}', a valid hex number expected`);
-        }
-
-        if (v < 0 || v > 0xFFFF) {
-            throw new Error(`invalid ipv6 part '${ps[i]}' should >= 0 and <= 65534`);
-        }
-
-        ipBytes.writeUint16BE(v, offset);
-        offset += 2;
+    // a zone id (fe80::1%eth0) doesn't change the address
+    const zone = str.indexOf('%');
+    if (zone > -1) {
+        str = str.substring(0, zone);
     }
+
+    // an embedded ipv4 address (::ffff:1.2.3.4) takes the last 4 bytes
+    const lastColon = str.lastIndexOf(':');
+    if (str.indexOf('.', lastColon) > -1) {
+        const v4String = str.substring(lastColon + 1);
+        if (!/^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$/.test(v4String)) {
+            throw new Error(`invalid ipv4 part '${v4String}' in ipv6 address`);
+        }
+        _parse_ipv4_addr(v4String).copy(ipBytes, 12);
+        str = str.substring(0, str.endsWith('::', lastColon + 1) ? lastColon + 1 : lastColon);
+        end = 12;
+    }
+
+    const halves = str.split('::');
+    if (halves.length > 2) {
+        throw new Error('invalid ipv6 address: multi double colon detected');
+    }
+
+    const head = halves[0].length > 0 ? halves[0].split(':') : [];
+    const tail = halves.length == 2 && halves[1].length > 0 ? halves[1].split(':') : [];
+    const groups = end / 2;
+    // a double colon stands for at least one group of zeros
+    if (halves.length == 1 ? head.length != groups : head.length + tail.length >= groups) {
+        throw new Error(`invalid ipv6 address '${v6String}'`);
+    }
+
+    const write = (parts, offset) => {
+        for (const part of parts) {
+            if (!/^[0-9a-fA-F]{1,4}$/.test(part)) {
+                throw new Error(`invalid ipv6 part '${part}', a valid hex number expected`);
+            }
+            ipBytes.writeUint16BE(parseInt(part, 16), offset);
+            offset += 2;
+        }
+    };
+    write(head, 0);
+    write(tail, end - 2 * tail.length);
 
     return ipBytes;
 }
