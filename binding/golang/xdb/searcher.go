@@ -198,6 +198,16 @@ func (s *Searcher) Search(ip any) (string, error) {
 	}
 
 	// load and return the region data
+	if s.contentBuff != nil {
+		// convert the region in the content buffer to a string without a temporary copy
+		err = s.checkContentRead(int64(dataPtr), dataLen)
+		if err != nil {
+			return "", fmt.Errorf("read region at %d: %w", dataPtr, err)
+		}
+
+		return string(s.contentBuff[dataPtr : int(dataPtr)+dataLen]), nil
+	}
+
 	var regionBuff = make([]byte, dataLen)
 	err = s.read(int64(dataPtr), regionBuff)
 	if err != nil {
@@ -207,21 +217,30 @@ func (s *Searcher) Search(ip any) (string, error) {
 	return string(regionBuff), nil
 }
 
-// do the data read operation based on the setting.
-// content buffer first or will read from the file.
-// this operation will invoke the Seek for file based read.
-func (s *Searcher) read(offset int64, buff []byte) error {
-	// check the offset
+// checkContentRead checks that length bytes at offset are inside the content buffer.
+// It returns the same errors as read.
+func (s *Searcher) checkContentRead(offset int64, length int) error {
 	if offset < HeaderInfoLength {
 		return fmt.Errorf("invalid reader offset(%d) < %d", offset, HeaderInfoLength)
 	}
 
+	// offset + length should less than the xdb buffer length.
+	var idx = int(offset) + length
+	if idx > len(s.contentBuff) {
+		return fmt.Errorf("heap-buffer-overflow with offset(%d) > buffer length(%d)", idx, len(s.contentBuff))
+	}
+
+	return nil
+}
+
+// do the data read operation based on the setting.
+// content buffer first or will read from the file.
+// this operation will invoke the Seek for file based read.
+func (s *Searcher) read(offset int64, buff []byte) error {
 	// reader from content buffer
 	if s.contentBuff != nil {
-		// offset + length should less than the xdb buffer length.
-		var idx = int(offset) + len(buff)
-		if idx > len(s.contentBuff) {
-			return fmt.Errorf("heap-buffer-overflow with offset(%d) > buffer length(%d)", idx, len(s.contentBuff))
+		if err := s.checkContentRead(offset, len(buff)); err != nil {
+			return err
 		}
 
 		cLen := copy(buff, s.contentBuff[offset:])
@@ -230,6 +249,11 @@ func (s *Searcher) read(offset int64, buff []byte) error {
 		}
 
 		return nil
+	}
+
+	// check the offset
+	if offset < HeaderInfoLength {
+		return fmt.Errorf("invalid reader offset(%d) < %d", offset, HeaderInfoLength)
 	}
 
 	// read from file
