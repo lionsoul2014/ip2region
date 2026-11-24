@@ -8120,7 +8120,7 @@
 8.8.0.0|8.8.3.255|United States|Georgia|Atlanta|Level 3 Parent, LLC|US
 8.8.4.0|8.8.4.255|United States|Georgia|Atlanta|Google LLC|US
 8.8.5.0|8.8.7.255|United States|Georgia|Atlanta|Level 3 Parent, LLC|US
-8.8.8.0|8.8.8.255|United States|California|0|Google LLC|US
+8.8.8.0|8.8.8.255|United States|California|Mountain View|Google LLC|US
 8.8.9.0|8.8.9.255|United States|Georgia|Atlanta|Hotwire Communications|US
 8.8.10.0|8.8.31.255|United States|Georgia|0|Level 3 Parent, LLC|US
 8.8.32.0|8.8.33.255|United States|Georgia|Atlanta|Level 3 Parent, LLC|US
@@ -276808,7 +276808,7 @@
 114.113.216.0|114.113.219.255|中国|浙江省|杭州市|网易|CN
 114.113.220.0|114.113.239.255|中国|北京市|北京市|中国联通|CN
 114.113.240.0|114.113.255.255|中国|香港特别行政区|0|0|CN
-114.114.0.0|114.114.255.255|中国|江苏省|南京市|0|CN
+114.114.0.0|114.114.255.255|中国|江苏省|南京市|南京新锋信息|CN
 114.115.0.0|114.115.191.255|中国|北京市|北京市|电信|CN
 114.115.192.0|114.115.223.255|中国|北京市|北京市|联通|CN
 114.115.224.0|114.115.255.255|中国|北京市|北京市|电信|CN
