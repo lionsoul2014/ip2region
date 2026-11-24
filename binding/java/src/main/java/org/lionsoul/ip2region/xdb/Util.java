@@ -16,11 +16,49 @@ public class Util
     // parse the specified IP address and return its bytes.
     // returns: byte[4] for IPv4 and byte[16] for IPv6 and the bytes should be in Big endian order.
     public static byte[] parseIP(String ip) throws InetAddressException {
+        // InetAddress.getByName resolves anything that is not an address literal through DNS
+        if (!isAddressLiteral(ip)) {
+            throw new InetAddressException("invalid ip address `"+ip+"`");
+        }
+
         try {
             return InetAddress.getByName(ip).getAddress();
         } catch (UnknownHostException e) {
             throw new InetAddressException("invalid ip address `"+ip+"`");
         }
+    }
+
+    // check for a dotted IPv4 address or a string getByName parses as an IPv6 literal
+    private static boolean isAddressLiteral(String ip) {
+        if (ip == null || ip.isEmpty()) {
+            return false;
+        }
+
+        if (ip.indexOf(':') > -1) {
+            final char c = ip.charAt(0);
+            return c == ':' || c == '[' || Character.digit(c, 16) != -1;
+        }
+
+        final String[] parts = ip.split("\\.", -1);
+        if (parts.length != 4) {
+            return false;
+        }
+
+        for (String p : parts) {
+            if (p.isEmpty() || p.length() > 3) {
+                return false;
+            }
+            for (int i = 0; i < p.length(); i++) {
+                if (p.charAt(i) < '0' || p.charAt(i) > '9') {
+                    return false;
+                }
+            }
+            if (Integer.parseInt(p) > 255) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     // convert the byte[] ip to string ip address
